@@ -2,15 +2,14 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { signIn, useSession } from "next-auth/react";
+import { auth, googleProvider } from "../firebaseConfig";
+import { signInWithPopup } from "firebase/auth";
 
 export default function Login() {
   const router = useRouter();
-  const { data: session } = useSession();
-
+  const [loading, setLoading] = useState(false);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   // Forgot Password State
@@ -24,10 +23,10 @@ export default function Login() {
   const [forgotSuccess, setForgotSuccess] = useState("");
 
   useEffect(() => {
-    if (session || localStorage.getItem("token")) {
+    if (localStorage.getItem("token")) {
       router.push("/");
     }
-  }, [session, router]);
+  }, [router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -84,6 +83,35 @@ export default function Login() {
       setForgotError(err.response?.data?.message || "Reset failed");
     } finally {
       setForgotLoading(false);
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      
+      const referralCode = localStorage.getItem("referral") || undefined;
+      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/session-login", {
+        email: user.email,
+        name: user.displayName,
+        referralCode
+      });
+
+      if (res.data.token) {
+        localStorage.removeItem("referral");
+      }
+
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      router.push("/");
+    } catch (err) {
+      console.error("Google Auth Error:", err);
+      setError("Google authentication failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -155,8 +183,18 @@ export default function Login() {
           </div>
         )}
 
+        <div className="google-auth-section">
+          <div className="divider">
+            <span>or continue with</span>
+          </div>
+          <button type="button" className="google-btn" onClick={handleGoogleAuth} disabled={loading}>
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+            {loading ? "Connecting..." : "Continue with Google"}
+          </button>
+        </div>
+
         <div className="login-footer">
-          Don't have an account? <span className="highlight" onClick={() => router.push("/signup")}>Sign Up</span> or <span className="highlight" onClick={() => signIn("google")}>with Google</span>
+          Don't have an account? <span className="highlight" onClick={() => router.push("/signup")}>Sign Up</span>
         </div>
       </div>
 
@@ -181,6 +219,13 @@ export default function Login() {
         .success-box { background: rgba(34, 197, 94, 0.1); color: #4ade80; padding: 0.75rem; border-radius: 12px; margin-bottom: 1rem; font-size: 0.85rem; }
         .login-footer { margin-top: 2rem; color: #64748b; font-size: 0.9rem; }
         .highlight { color: #6366f1; font-weight: 700; cursor: pointer; }
+        .google-auth-section { margin-top: 1.5rem; }
+        .divider { position: relative; margin: 1.5rem 0; text-align: center; }
+        .divider::before { content: ""; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(255,255,255,0.1); }
+        .divider span { position: relative; background: #1e293b; padding: 0 10px; color: #64748b; font-size: 0.85rem; }
+        .google-btn { width: 100%; background: white; color: #1e293b; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.3s; }
+        .google-btn:hover:not(:disabled) { background: #f1f5f9; transform: translateY(-1px); }
+        .google-btn img { width: 18px; height: 18px; }
         .animate-in { animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .mt-4 { margin-top: 1rem; }

@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { signIn, useSession } from "next-auth/react";
+import { auth, googleProvider } from "../firebaseConfig";
+import { signInWithPopup } from "firebase/auth";
 
 export default function Signup() {
   const router = useRouter();
-  const { data: session } = useSession();
 
   const [form, setForm] = useState({ name: "", email: "", password: "", otp: "", gender: "Male", country: "India" });
   const [loading, setLoading] = useState(false);
@@ -17,10 +17,10 @@ export default function Signup() {
   const [termsAccepted, setTermsAccepted] = useState(false);
 
   useEffect(() => {
-    if (session || localStorage.getItem("token")) {
+    if (localStorage.getItem("token")) {
       router.push("/");
     }
-  }, [session, router]);
+  }, [router]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -71,6 +71,35 @@ export default function Signup() {
       router.push("/");
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      
+      const referralCode = localStorage.getItem("referral") || undefined;
+      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/session-login", {
+        email: user.email,
+        name: user.displayName,
+        referralCode
+      });
+
+      if (res.data.token) {
+        localStorage.removeItem("referral");
+      }
+
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      router.push("/");
+    } catch (err) {
+      console.error("Google Auth Error:", err);
+      setError("Google authentication failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -141,6 +170,16 @@ export default function Signup() {
           </button>
         </form>
 
+        <div className="google-auth-section">
+          <div className="divider">
+            <span>or continue with</span>
+          </div>
+          <button type="button" className="google-btn" onClick={handleGoogleAuth} disabled={loading}>
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+            {loading ? "Connecting..." : "Continue with Google"}
+          </button>
+        </div>
+
         <div className="login-footer">
           Already have an account? <span className="highlight" onClick={() => router.push("/login")}>Login</span>
         </div>
@@ -176,6 +215,13 @@ export default function Signup() {
         .error-box { background: rgba(239, 68, 68, 0.1); color: #f87171; padding: 0.75rem; border-radius: 12px; margin-bottom: 1rem; font-size: 0.85rem; }
         .success-box { background: rgba(34, 197, 94, 0.1); color: #4ade80; padding: 0.75rem; border-radius: 12px; margin-bottom: 1rem; font-size: 0.85rem; }
         .login-footer { margin-top: 2rem; color: #64748b; font-size: 0.9rem; }
+        .google-auth-section { margin-top: 1.5rem; }
+        .divider { position: relative; margin: 1.5rem 0; text-align: center; }
+        .divider::before { content: ""; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(255,255,255,0.1); }
+        .divider span { position: relative; background: #1e293b; padding: 0 10px; color: #64748b; font-size: 0.85rem; }
+        .google-btn { width: 100%; background: white; color: #1e293b; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.3s; }
+        .google-btn:hover:not(:disabled) { background: #f1f5f9; transform: translateY(-1px); }
+        .google-btn img { width: 18px; height: 18px; }
         .highlight { color: #6366f1; font-weight: 700; cursor: pointer; }
       `}</style>
     </div>
