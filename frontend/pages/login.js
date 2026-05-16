@@ -3,7 +3,7 @@ import axios from "axios";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { auth, googleProvider } from "../firebaseConfig";
-import { signInWithPopup } from "firebase/auth";
+import { signInWithPopup, signInWithRedirect, getRedirectResult } from "firebase/auth";
 
 export default function Login() {
   const router = useRouter();
@@ -25,7 +25,39 @@ export default function Login() {
   useEffect(() => {
     if (localStorage.getItem("token")) {
       router.push("/");
+      return;
     }
+
+    // Handle Redirect Result
+    const handleRedirect = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result && result.user) {
+          setLoading(true);
+          const user = result.user;
+          const referralCode = localStorage.getItem("referral") || undefined;
+          
+          const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/session-login", {
+            email: user.email,
+            name: user.displayName,
+            referralCode
+          });
+
+          if (res.data.token) {
+            localStorage.removeItem("referral");
+            localStorage.setItem("token", res.data.token);
+            localStorage.setItem("user", JSON.stringify(res.data.user));
+            router.push("/");
+          }
+        }
+      } catch (err) {
+        console.error("Redirect Auth Error:", err);
+        setError("Google Login failed: " + (err.code || err.message));
+      } finally {
+        setLoading(false);
+      }
+    };
+    handleRedirect();
   }, [router]);
 
   const handleSubmit = async (e) => {
@@ -90,28 +122,11 @@ export default function Login() {
     setLoading(true);
     setError("");
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-      
-      const referralCode = localStorage.getItem("referral") || undefined;
-      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/session-login", {
-        email: user.email,
-        name: user.displayName,
-        referralCode
-      });
-
-      if (res.data.token) {
-        localStorage.removeItem("referral");
-      }
-
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-      router.push("/");
+      // Use Redirect for better compatibility
+      await signInWithRedirect(auth, googleProvider);
     } catch (err) {
       console.error("Google Auth Error:", err);
-      const msg = err.response?.data?.message || err.message || "Google authentication failed.";
-      setError(msg + " Please try again.");
-    } finally {
+      setError("Failed to start Google Login: " + (err.message || "Unknown error"));
       setLoading(false);
     }
   };
