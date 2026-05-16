@@ -2495,6 +2495,15 @@ async function startServer() {
     
     const d2 = await db.collection("appData").findOne({ _id: "bannedEmails" }); if(d2 && d2.data) bannedEmails = d2.data;
     const d3 = await db.collection("appData").findOne({ _id: "bannedIps" }); if(d3 && d3.data) bannedIps = d3.data;
+
+    // --- TEMPORARY BAN CLEAR ---
+    bannedEmails = [];
+    bannedIps = [];
+    saveBanned();
+    saveBannedIps();
+    console.log("All bans have been cleared.");
+    // ---------------------------
+
     const d4 = await db.collection("appData").findOne({ _id: "transactions" }); if(d4 && d4.data) transactions = d4.data;
     const d5 = await db.collection("appData").findOne({ _id: "coinActivity" }); if(d5 && d5.data) coinActivity = d5.data;
     const d6 = await db.collection("appData").findOne({ _id: "reports" }); if(d6 && d6.data) reports = d6.data;
