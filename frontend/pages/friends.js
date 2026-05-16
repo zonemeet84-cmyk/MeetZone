@@ -178,6 +178,7 @@ export default function Friends() {
     <div className="container">
       <Head>
         <title>Friends | ZoneMeet</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
       </Head>
 
       <div className="bg-gradient" />
@@ -311,6 +312,41 @@ export default function Friends() {
         border-radius: 50%;
         background: currentColor;
         box-shadow: 0 0 8px currentColor;
+      }
+
+      /* MOBILE RESPONSIVENESS FOR FRIENDS */
+      @media (max-width: 1024px) {
+        .dashboard-hero {
+          flex-direction: column !important;
+          gap: 30px !important;
+        }
+        .pricing-card {
+          width: 100% !important;
+          flex: none !important;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .header {
+          padding: 15px 20px !important;
+          flex-direction: column;
+          gap: 15px;
+          text-align: center;
+        }
+        .user-info {
+          flex-direction: column;
+          gap: 8px !important;
+        }
+        .dashboard-hero {
+          padding: 10px !important;
+        }
+        .pricing-card {
+          padding: 20px !important;
+        }
+        .payment-modal-card {
+          width: 90% !important;
+          padding: 30px 20px !important;
+        }
       }
     `}</style>
     </div>

@@ -918,6 +918,7 @@ export default function Dashboard() {
     <div className="container">
       <Head>
         <title>Dashboard | ZoneMeet</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
       </Head>
 
@@ -3885,6 +3886,88 @@ export default function Dashboard() {
         @keyframes status-pulse {
           0%, 100% { opacity: 1; transform: scale(1); }
           50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        /* COMPREHENSIVE MOBILE RESPONSIVENESS */
+        @media (max-width: 1024px) {
+          .experience-section, .friends-promo-section, .support-banner-content {
+            grid-template-columns: 1fr !important;
+            text-align: center;
+            gap: 40px !important;
+          }
+          .experience-text h2, .friends-text h2, .support-banner-text h2 {
+            font-size: 2.5rem !important;
+          }
+          .experience-gallery, .friends-visual {
+            order: 2;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .header {
+            padding: 15px 20px;
+          }
+          .nav-links {
+            display: none; /* Hide nav links on mobile for simplicity, or add hamburger */
+          }
+          .hero-title {
+            font-size: 2.5rem !important;
+          }
+          .hero-subtitle {
+            font-size: 1rem !important;
+          }
+          .main-action-card {
+            padding: 20px !important;
+          }
+          .features-grid {
+            grid-template-columns: 1fr !important;
+            gap: 15px;
+          }
+          .pricing-container {
+            grid-template-columns: 1fr !important;
+          }
+          .footer-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 30px;
+          }
+          .incoming-call-card {
+            width: 90% !important;
+            padding: 30px 20px !important;
+          }
+          .bot-window {
+            width: calc(100vw - 40px) !important;
+            bottom: 80px !important;
+            right: 20px !important;
+          }
+          .premium-modal {
+            width: 95% !important;
+            padding: 20px !important;
+          }
+          .modal-header-premium h2 {
+            font-size: 2rem !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .hero-title {
+            font-size: 2rem !important;
+          }
+          .experience-stats {
+            flex-direction: column;
+            gap: 20px !important;
+          }
+          .support-features {
+            grid-template-columns: 1fr !important;
+          }
+          .brand-group h1 {
+            font-size: 1.2rem;
+          }
+          .header-coins-pill {
+            padding: 4px 10px;
+          }
+          .coin-count {
+            font-size: 0.75rem;
+          }
         }
       `}</style>
       <PremiumModal

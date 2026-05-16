@@ -1331,6 +1331,7 @@ export default function Home() {
       <div className="container chat-page-v2">
         <Head>
           <title>Live Video Chat | ZoneMeet</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
           <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559531/face_mesh.js" crossorigin="anonymous"></script>
         </Head>
 
@@ -3300,6 +3301,71 @@ export default function Home() {
 
         .report-success-toast.show {
           bottom: 40px;
+        }
+
+        /* MOBILE RESPONSIVENESS FOR CHAT */
+        @media (max-width: 1024px) {
+          .chat-main-v2 {
+            flex-direction: column;
+            gap: 20px;
+          }
+          .video-column {
+            max-width: 100% !important;
+            flex-direction: column !important;
+          }
+          .video-card {
+            width: 100% !important;
+            height: 45vh !important;
+          }
+          .chat-column {
+            width: 100% !important;
+            height: 400px;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .toolbar-inner {
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+          }
+          .tool-divider { display: none; }
+          .pricing-modal-content {
+            padding: 1.5rem !important;
+            width: 95% !important;
+          }
+          .pricing-grid-premium {
+            grid-template-columns: 1fr 1fr !important;
+          }
+          .total-amount {
+            font-size: 2.5rem !important;
+          }
+          .identity-container {
+            margin-top: 0;
+            padding: 10px;
+          }
+          .bottom-mini-bar {
+            padding: 10px !important;
+            gap: 10px !important;
+          }
+          .mini-btn-label {
+            display: none;
+          }
+          .incoming-call-card {
+            width: 90% !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .video-card {
+            height: 35vh !important;
+          }
+          .chat-column {
+            height: 300px;
+          }
+          .pricing-grid-premium {
+            grid-template-columns: 1fr !important;
+          }
         }
 
         /* COIN HEADER PILL */
