@@ -902,33 +902,6 @@ export default function Dashboard() {
           <div className="nav-link" onClick={() => router.push("/contact")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', transition: 'all 0.3s' }}>Contact</div>
         </nav>
 
-        {user?.email === "ds9376314@gmail.com" && (
-          <button 
-            className="admin-btn-header" 
-            onClick={() => router.push("/admin")}
-            style={{ 
-              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-              color: '#fff',
-              border: 'none',
-              padding: '5px 12px',
-              borderRadius: '10px',
-              fontWeight: '900',
-              fontSize: '0.75rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)',
-              marginRight: '15px',
-              transition: 'transform 0.2s',
-              whiteSpace: 'nowrap'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-          >
-            ⚡ Admin
-          </button>
-        )}
         {authLoading ? (
           <div className="user-info">
             <span className="loading-dots">Verifying...</span>
@@ -1179,6 +1152,12 @@ export default function Dashboard() {
                         <span>›</span>
                       </button>
 
+                      {user?.email === "ds9376314@gmail.com" && (
+                        <button className="profile-more-btn" onClick={() => router.push("/admin")} style={{ marginTop: '10px', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                          <div className="profile-detail-left">⚡ Admin Dashboard</div>
+                          <span>›</span>
+                        </button>
+                      )}
 
                       {/* Logout */}
                       <button className="profile-more-btn" onClick={logout} style={{ color: '#ef4444' }}>
