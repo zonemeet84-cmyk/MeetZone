@@ -340,12 +340,12 @@ export default function ChatV2() {
   
   return (
     <>
-      <div className=\"container chat-page-v2\">
+      <div className="container chat-page-v2">
         <Head>
           <title>Live Video Chat | ZoneMeet</title>
-          <script src=\"https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559531/face_mesh.js\" crossorigin=\"anonymous\"></script>
-          <script src=\"https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1632432231/camera_utils.js\" crossorigin=\"anonymous\"></script>
-          <script src=\"https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1620248257/drawing_utils.js\" crossorigin=\"anonymous\"></script>
+          <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559531/face_mesh.js" crossOrigin="anonymous"></script>
+          <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1632432231/camera_utils.js" crossOrigin="anonymous"></script>
+          <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1620248257/drawing_utils.js" crossOrigin="anonymous"></script>
         </Head>
         
         {/* Main Content would go here - I will use a single call to restore it properly */}
