@@ -206,12 +206,12 @@ export default function Home() {
       const detectFace = async () => {
         if (localVideo.current && faceMeshRef.current) {
           const filter = activeFilterRef.current;
-          // IMPORTANT: We send the frame ALWAYS for debugging, even if filter is None
-          if (localVideo.current.readyState >= 2) {
+          // Only process frames if a filter is active to save CPU
+          if (filter !== "None" && localVideo.current.readyState >= 2) {
             try {
               await faceMeshRef.current.send({ image: localVideo.current });
             } catch (e) {
-              // Only log once to avoid spam
+              // Ignore errors
             }
           }
         }

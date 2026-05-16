@@ -266,12 +266,16 @@ export default function Dashboard() {
     axios.get("https://meetzone-backend.onrender.com/api/ping").catch(() => {});
 
     const checkAuth = async () => {
-      let currentUserData = null;
+      const token = localStorage.getItem("token");
+      const stored = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+
+      // Show stored user immediately if available to eliminate perceived slowness
+      if (stored && stored.email) {
+        setUser(stored);
+        setAuthLoading(false);
+      }
 
       if (session) {
-        const stored = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {};
-
-        // SYNC WITH BACKEND IF TOKEN MISSING
         if (!token || token === "undefined") {
           try {
             const referralCode = localStorage.getItem("referral") || undefined;
@@ -283,42 +287,29 @@ export default function Dashboard() {
             if (res.data.token) {
               localStorage.setItem("token", res.data.token);
               localStorage.setItem("user", JSON.stringify(res.data.user));
-              localStorage.removeItem("referral"); // Clear after use
-              currentUserData = res.data.user;
-              setUser(currentUserData);
+              localStorage.removeItem("referral");
+              setUser(res.data.user);
             }
-          } catch (e) { console.error("Sync Error", e); }
+          } catch (e) { 
+            console.error("Sync Error", e);
+          }
         } else {
-          // Always verify to get latest profile on load
           try {
             const res = await axios.get("https://meetzone-backend.onrender.com/api/auth/verify", {
               headers: { Authorization: `Bearer ${token}` },
             });
             if (res.data.valid) {
-              currentUserData = res.data.user;
-              if (currentUserData.email === "ds9376314@gmail.com") {
-                currentUserData.premium = true;
-                currentUserData.planName = "VIP Elite";
+              const userData = res.data.user;
+              if (userData.email === "ds9376314@gmail.com") {
+                userData.premium = true;
+                userData.planName = "VIP Elite";
               }
-              setUser(currentUserData);
-              if (currentUserData.unlockedFilters) {
-                // Ensure we don't lose filters when syncing on home page
-                localStorage.setItem("user", JSON.stringify(currentUserData));
-              } else {
-                localStorage.setItem("user", JSON.stringify(currentUserData));
-              }
-            } else {
-              currentUserData = { ...stored, name: session.user.name, email: session.user.email };
-              setUser(currentUserData);
+              setUser(userData);
+              localStorage.setItem("user", JSON.stringify(userData));
             }
           } catch (e) {
-            currentUserData = { ...stored, name: session.user.name, email: session.user.email };
-            setUser(currentUserData);
+            console.error("Verify Error", e);
           }
-        }
-
-        if (currentUserData && (!currentUserData.gender || currentUserData.gender === "All" || currentUserData.gender === "Other" || !currentUserData.country || currentUserData.country === "Unknown" || currentUserData.country === "All")) {
-          setShowOnboarding(true);
         }
       } else if (token && token !== "undefined") {
         try {
@@ -326,38 +317,39 @@ export default function Dashboard() {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (res.data.valid) {
-            let userData = res.data.user;
+            const userData = res.data.user;
             if (userData.email === "ds9376314@gmail.com") {
               userData.premium = true;
               userData.planName = "VIP Elite";
             }
             setUser(userData);
-            if (userData.unlockedFilters) {
-              localStorage.setItem("user", JSON.stringify(userData));
-            } else {
-              localStorage.setItem("user", JSON.stringify(userData));
-            }
-            if (!res.data.user.gender || res.data.user.gender === "Other" || !res.data.user.country || res.data.user.country === "Unknown") {
-              setShowOnboarding(true);
-            }
+            localStorage.setItem("user", JSON.stringify(userData));
           }
         } catch (err) {
-          const savedUser = localStorage.getItem("user");
-          if (savedUser) setUser(JSON.parse(savedUser));
+          console.error("Verify Error", err);
         }
       }
+      
       setAuthLoading(false);
     };
 
-    // Fallback: If auth takes more than 8 seconds, force hide the loader
-    const timeout = setTimeout(() => setAuthLoading(false), 8000);
+    // Fallback: If auth takes more than 4 seconds, force hide the loader
+    const timeout = setTimeout(() => setAuthLoading(false), 4000);
 
     checkAuth();
     return () => clearTimeout(timeout);
   }, [session]);
 
-  useEffect(() => {
-    if (user && (user.email || user.phone) && !dailyStatus) {
+    useEffect(() => {
+      if (user && !authLoading) {
+        if (!user.gender || user.gender === "Other" || !user.country || user.country === "Unknown" || user.gender === "All") {
+          setShowOnboarding(true);
+        }
+      }
+    }, [user, authLoading]);
+
+    useEffect(() => {
+      if (user && (user.email || user.phone) && !dailyStatus) {
       axios.post("https://meetzone-backend.onrender.com/api/user/daily-check", { email: user.email, phone: user.phone })
         .then(res => {
           if (res.data.success) {
@@ -381,17 +373,15 @@ export default function Dashboard() {
     }
   }, [user, dailyStatus]);
 
-  // Redirect if logged in
+  // Redirect if NOT logged in (Protected Page Logic)
   useEffect(() => {
-    if (session) {
-      router.push("/");
-    } else {
-      const token = localStorage.getItem("token");
-      if (token && token !== "undefined") {
-        router.push("/");
-      }
+    if (authLoading) return; // Wait for verification
+    
+    const token = localStorage.getItem("token");
+    if (!session && (!token || token === "undefined")) {
+      // router.push("/login"); // Optional: Redirect to login if not authenticated
     }
-  }, [session, router]);
+  }, [session, authLoading]);
 
   // Fetch referral stats when user is loaded
   useEffect(() => {
