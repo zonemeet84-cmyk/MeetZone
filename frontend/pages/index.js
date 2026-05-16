@@ -871,10 +871,6 @@ export default function Dashboard() {
       <div className="header">
         <div className="brand-group">
           <h1 className="logo-text">Zone<span className="logo-highlight">Meet</span><span className="logo-dot">.</span></h1>
-          <div className={`network-status-pill ${isOnline ? 'online' : 'offline'}`}>
-            <span className="status-dot"></span>
-            {isOnline ? 'Online' : 'Offline'}
-          </div>
           {user?.premium && <span className="premium-badge">{user.planName || "PREMIUM"}</span>}
         </div>
 
@@ -931,6 +927,11 @@ export default function Dashboard() {
               <span className="coin-icon">💰</span>
               <span className="coin-count">{user.coins || 0}</span>
               <span className="plus-icon">+</span>
+            </div>
+
+            <div className={`network-status-pill ${isOnline ? 'online' : 'offline'}`} style={{ marginLeft: '10px' }}>
+              <span className="status-dot"></span>
+              {isOnline ? 'Live' : 'Offline'}
             </div>
 
             <div className="profile-dropdown-container">
