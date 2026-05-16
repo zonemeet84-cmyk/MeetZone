@@ -391,9 +391,16 @@ export default function Dashboard() {
         router.push("/");
       }
     }
-  }, [session]);
+  }, [session, router]);
 
   // Fetch referral stats when user is loaded
+  useEffect(() => {
+    const fetchReferral = async () => {
+      const token = localStorage.getItem("token");
+      if (user && token && !referralStats) {
+        try {
+          const res = await axios.get("https://meetzone-backend.onrender.com/api/referral/stats", {
+            headers: { Authorization: `Bearer ${token}` }
           });
           setReferralStats(res.data);
         } catch (err) {

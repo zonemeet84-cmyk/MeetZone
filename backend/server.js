@@ -280,6 +280,21 @@ function saveUsers() {
   }
 }
 
+// Helper for auth
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ message: "No token" });
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = users.find(u => u.id === decoded.id);
+    if (!req.user) return res.status(401).json({ message: "User not found" });
+    next();
+  } catch (err) {
+    res.status(401).json({ message: "Invalid token" });
+  }
+};
+
 app.post("/api/auth/session-login", (req, res) => {
   const { email, name, referralCode } = req.body;
   if (!email) return res.status(400).json({ message: "Email is required" });
@@ -1284,20 +1299,7 @@ const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] },
 });
 
-// Helper for auth
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).json({ message: "No token" });
-  const token = authHeader.split(" ")[1];
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = users.find(u => u.id === decoded.id);
-    if (!req.user) return res.status(401).json({ message: "User not found" });
-    next();
-  } catch (err) {
-    res.status(401).json({ message: "Invalid token" });
-  }
-};
+// Helper for auth was moved up
 
 // Friends API
 app.get("/api/users/search", authenticateToken, (req, res) => {
