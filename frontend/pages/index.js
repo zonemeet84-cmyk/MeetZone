@@ -871,17 +871,23 @@ export default function Dashboard() {
 
       <div className="bg-gradient" />
 
-      <div className="header">
+      <div className="header" style={user?.email === "ds9376314@gmail.com" ? { padding: '1rem 2rem', backdropFilter: 'blur(25px)' } : {}}>
         <div className="brand-group">
           <h1 className="logo-text">Zone<span className="logo-highlight">Meet</span><span className="logo-dot">.</span></h1>
           {user?.premium && <span className="premium-badge">{user.planName || "PREMIUM"}</span>}
         </div>
 
-        <nav className="header-nav" style={{ display: 'flex', gap: '15px', alignItems: 'center', marginLeft: '20px', marginRight: 'auto' }}>
-          <div className="nav-link" onClick={() => router.push("/")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', transition: 'all 0.3s' }}>Home</div>
-          <div className="nav-link" onClick={() => router.push("/friends")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', transition: 'all 0.3s' }}>Friends</div>
-          <div className="nav-link" onClick={() => setShowHistoryModal(true)} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', transition: 'all 0.3s' }}>History</div>
-          <div className="nav-link" onClick={() => document.getElementById("coins-section")?.scrollIntoView({ behavior: 'smooth' })} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', transition: 'all 0.3s' }}>Coins</div>
+        <nav className="header-nav" style={{ 
+          display: 'flex', 
+          gap: user?.email === "ds9376314@gmail.com" ? '15px' : '24px', 
+          alignItems: 'center', 
+          marginLeft: user?.email === "ds9376314@gmail.com" ? '20px' : '0', 
+          marginRight: user?.email === "ds9376314@gmail.com" ? 'auto' : '0' 
+        }}>
+          <div className="nav-link" onClick={() => router.push("/")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: user?.email === "ds9376314@gmail.com" ? '0.8rem' : '0.9rem', color: user?.email === "ds9376314@gmail.com" ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Home</div>
+          <div className="nav-link" onClick={() => router.push("/friends")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: user?.email === "ds9376314@gmail.com" ? '0.8rem' : '0.9rem', color: user?.email === "ds9376314@gmail.com" ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Friends</div>
+          <div className="nav-link" onClick={() => setShowHistoryModal(true)} style={{ cursor: 'pointer', fontWeight: '700', fontSize: user?.email === "ds9376314@gmail.com" ? '0.8rem' : '0.9rem', color: user?.email === "ds9376314@gmail.com" ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>History</div>
+          <div className="nav-link" onClick={() => document.getElementById("coins-section")?.scrollIntoView({ behavior: 'smooth' })} style={{ cursor: 'pointer', fontWeight: '700', fontSize: user?.email === "ds9376314@gmail.com" ? '0.8rem' : '0.9rem', color: user?.email === "ds9376314@gmail.com" ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Coins</div>
           <div className="nav-link" onClick={() => {
             if (!user) {
               showModal({
@@ -895,11 +901,11 @@ export default function Dashboard() {
             } else {
               document.getElementById("referral-section")?.scrollIntoView({ behavior: 'smooth' });
             }
-          }} style={{ cursor: 'pointer', fontWeight: '800', fontSize: '0.8rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
-             Invite
+          }} style={{ cursor: 'pointer', fontWeight: '800', fontSize: user?.email === "ds9376314@gmail.com" ? '0.8rem' : '0.9rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+             {user?.email === "ds9376314@gmail.com" ? "" : "🎁"} Invite
           </div>
-          <div className="nav-link" onClick={() => document.getElementById("pricing-section")?.scrollIntoView({ behavior: 'smooth' })} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', transition: 'all 0.3s' }}>VIP</div>
-          <div className="nav-link" onClick={() => router.push("/contact")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', transition: 'all 0.3s' }}>Contact</div>
+          <div className="nav-link" onClick={() => document.getElementById("pricing-section")?.scrollIntoView({ behavior: 'smooth' })} style={{ cursor: 'pointer', fontWeight: '700', fontSize: user?.email === "ds9376314@gmail.com" ? '0.8rem' : '0.9rem', color: user?.email === "ds9376314@gmail.com" ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>VIP</div>
+          <div className="nav-link" onClick={() => router.push("/contact")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: user?.email === "ds9376314@gmail.com" ? '0.8rem' : '0.9rem', color: user?.email === "ds9376314@gmail.com" ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Contact</div>
         </nav>
 
         {authLoading ? (
@@ -2828,21 +2834,21 @@ export default function Dashboard() {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 1rem 2rem;
+          padding: 1.25rem 4rem;
           position: fixed;
           top: 0;
           left: 0;
           right: 0;
           z-index: 1000;
-          background: rgba(3, 7, 18, 0.85);
-          backdrop-filter: blur(25px);
-          border-bottom: 1px solid rgba(255,255,255,0.08);
+          background: rgba(3, 7, 18, 0.7);
+          backdrop-filter: blur(20px);
+          border-bottom: 1px solid rgba(255,255,255,0.05);
           transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .header-nav {
            display: flex;
-           gap: 18px;
+           gap: 24px;
            align-items: center;
         }
 
