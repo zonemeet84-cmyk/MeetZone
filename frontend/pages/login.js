@@ -109,7 +109,8 @@ export default function Login() {
       router.push("/");
     } catch (err) {
       console.error("Google Auth Error:", err);
-      setError("Google authentication failed. Please try again.");
+      const msg = err.response?.data?.message || err.message || "Google authentication failed.";
+      setError(msg + " Please try again.");
     } finally {
       setLoading(false);
     }
