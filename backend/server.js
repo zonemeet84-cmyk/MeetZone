@@ -385,7 +385,7 @@ app.post("/api/auth/send-email-otp", async (req, res) => {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Verification <onboarding@resend.dev>', // Update this to your domain email after verification
+      from: 'ZoneMeet <otp@zonemeet.chat>', // Updated to official domain
       to: [email],
       subject: 'ZoneMeet Verification Code',
       html: `
@@ -500,7 +500,7 @@ app.post("/api/auth/forgot-password", async (req, res) => {
 
   try {
     await resend.emails.send({
-      from: 'Recovery <onboarding@resend.dev>',
+      from: 'ZoneMeet <otp@zonemeet.chat>',
       to: [email],
       subject: 'ZoneMeet Password Reset',
       html: `
