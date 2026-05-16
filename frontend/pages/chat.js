@@ -578,6 +578,12 @@ export default function Home() {
       return;
     }
 
+    const targetId = partnerInfo?.id || partnerId;
+    if (!targetId) {
+      alert("Partner connection lost. Cannot submit report.");
+      return;
+    }
+
     setIsReporting(true);
     try {
       // CAPTURE SCREENSHOT EVIDENCE
@@ -593,7 +599,7 @@ export default function Home() {
 
       const token = localStorage.getItem("token");
       await axios.post("https://meetzone-backend.onrender.com/api/report", {
-        targetId: partnerInfo?.id || partnerId,
+        targetId: targetId,
         reason: selectedReason,
         details: reportDetails,
         evidence: screenshot // Send screenshot as base64
@@ -1059,8 +1065,14 @@ export default function Home() {
     if (message.trim() && partnerId) {
       // DEDUCT 5 COINS ONLY IF NOT FRIENDS
       if (!partnerInfo?.isFriend && user.email !== "ds9376314@gmail.com") {
-        setPendingMessage(message);
-        setShowCoinPopup(true);
+        const msgToPrompt = message;
+        setMessage("");
+        setMessages(prev => [...prev, { 
+          sender: 'system', 
+          type: 'coin-prompt',
+          text: `Sending this message costs 5 coins.`,
+          pendingText: msgToPrompt
+        }]);
         return;
       }
 
@@ -1070,22 +1082,27 @@ export default function Home() {
     }
   };
 
-  const confirmAndSendMessage = async () => {
-    if (!pendingMessage) return;
+  const confirmAndSendMessage = async (pendingText) => {
+    if (!pendingText) return;
 
     try {
+      const token = localStorage.getItem("token");
       const res = await axios.post("https://meetzone-backend.onrender.com/api/user/spend-coins", {
         email: user.email,
         amount: 5,
         feature: "Friend Message"
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       if (res.data.success) {
-        socket.emit("send-message", { text: pendingMessage, to: partnerId });
-        setMessages((prev) => [...prev, { text: pendingMessage, sender: "me" }]);
-        setMessage("");
-        setPendingMessage("");
-        setShowCoinPopup(false);
+        socket.emit("send-message", { text: pendingText, to: partnerId });
+        setMessages((prev) => {
+          // Remove the prompt message
+          const filtered = prev.filter(m => m.type !== 'coin-prompt');
+          return [...filtered, { text: pendingText, sender: "me" }];
+        });
+        
         // Update local coins
         const updatedUser = { ...user, coins: res.data.coins };
         setUser(updatedUser);
@@ -1093,7 +1110,7 @@ export default function Home() {
       }
     } catch (err) {
       alert(err.response?.data?.message || "Not enough coins to send message!");
-      setShowCoinPopup(false);
+      setMessages(prev => prev.filter(m => m.type !== 'coin-prompt'));
     }
   };
 
@@ -1621,46 +1638,14 @@ export default function Home() {
                   </div>
                 ) : "Searching..."}
               </div>
-              {partnerId && (
-                <div style={{ display: 'flex', gap: '8px', marginTop: '0.5rem' }}>
-                  <button className="add-friend-btn" onClick={addFriend} disabled={friendReqStatus}>
-                    {friendReqStatus ? "Sent" : "+ Add Friend"}
+
+              <div className="card-controls">
+                {partnerId && (
+                  <button className={`ctrl-btn ${friendReqStatus ? 'active' : ''}`} onClick={addFriend} disabled={friendReqStatus} title="Add Friend">
+                    {friendReqStatus ? "✅" : "👤+"}
                   </button>
-                  <button
-                    className="report-user-btn"
-                    onClick={async () => {
-                      try {
-                        const token = localStorage.getItem("token");
-                        await axios.post("https://meetzone-backend.onrender.com/api/report", { targetId: partnerId }, {
-                          headers: { Authorization: `Bearer ${token}` }
-                        });
-                        alert("User reported successfully.");
-                      } catch (err) {
-                        alert("Failed to report user.");
-                      }
-                    }}
-                    style={{
-                      background: 'rgba(239, 68, 68, 0.2)',
-                      border: '1px solid rgba(239, 68, 68, 0.4)',
-                      color: '#ef4444',
-                      padding: '0.4rem 0.8rem',
-                      borderRadius: '8px',
-                      fontSize: '0.8rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                    }}
-                    onMouseOver={(e) => {
-                      e.target.style.background = 'rgba(239, 68, 68, 0.3)';
-                    }}
-                    onMouseOut={(e) => {
-                      e.target.style.background = 'rgba(239, 68, 68, 0.2)';
-                    }}
-                  >
-                    🚩 Report
-                  </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
             </div>
 
@@ -1807,7 +1792,20 @@ export default function Home() {
               {messages.length === 0 && <div className="empty-chat">Say Hi! 👋</div>}
               {messages.map((msg, i) => (
                 <div key={i} className={`msg-row ${msg.sender}`}>
-                  <div className="msg-content">{msg.text}</div>
+                  {msg.type === 'coin-prompt' ? (
+                    <div className="coin-prompt-inline">
+                      <div className="prompt-text">
+                        <span className="coin-icon">💰</span>
+                        {msg.text}
+                      </div>
+                      <div className="prompt-actions">
+                        <button className="yes-btn" onClick={() => confirmAndSendMessage(msg.pendingText)}>Yes (-5)</button>
+                        <button className="no-btn" onClick={() => setMessages(prev => prev.filter(m => m.type !== 'coin-prompt'))}>No</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="msg-content">{msg.text}</div>
+                  )}
                 </div>
               ))}
               <div ref={chatEndRef} />
@@ -3091,6 +3089,62 @@ export default function Home() {
         .report-submit-btn:disabled {
           opacity: 0.5;
           cursor: not-allowed;
+        }
+
+        .coin-prompt-inline {
+          background: rgba(99, 102, 241, 0.1);
+          border: 1px solid rgba(99, 102, 241, 0.3);
+          padding: 10px 15px;
+          border-radius: 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          width: 100%;
+          margin: 5px 0;
+          animation: slideIn 0.3s ease;
+        }
+
+        .prompt-text {
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: #e2e8f0;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .prompt-actions {
+          display: flex;
+          gap: 8px;
+        }
+
+        .prompt-actions button {
+          flex: 1;
+          padding: 6px;
+          border-radius: 8px;
+          font-size: 0.75rem;
+          font-weight: 800;
+          cursor: pointer;
+          border: none;
+          transition: all 0.2s;
+        }
+
+        .yes-btn {
+          background: #6366f1;
+          color: #fff;
+        }
+
+        .no-btn {
+          background: rgba(255,255,255,0.05);
+          color: #94a3b8;
+        }
+
+        .yes-btn:hover { background: #4f46e5; }
+        .no-btn:hover { background: rgba(255,255,255,0.1); }
+
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateY(5px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         .report-success-toast {

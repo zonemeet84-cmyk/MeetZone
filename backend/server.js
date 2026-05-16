@@ -1595,6 +1595,7 @@ io.on("connection", (socket) => {
     }
 
     socket.user = { ...profile, premium: isPremium, planName: pName };
+    socket.userId = dbUser ? dbUser.id : profile.id;
     socket.name = profile.name;
     socket.gender = profile.gender || (Math.random() > 0.5 ? "Male" : "Female");
     socket.country = profile.country || "India";
