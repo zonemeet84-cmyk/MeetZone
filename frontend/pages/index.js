@@ -1100,7 +1100,7 @@ export default function Dashboard() {
                         }}>
                           <span className="profile-balance-icon">⚡</span>
                           {user.boostExpiry > currentTime ?
-                            `Active (${Math.floor((user.boostExpiry - currentTime) / 60000).toString().padStart(2, '0')}:${Math.floor(((user.boostExpiry - currentTime) % 60000) / 1000).toString().padStart(2, '0')})`
+                            `Active (${Math.floor(Math.min(600000, user.boostExpiry - currentTime) / 60000).toString().padStart(2, '0')}:${Math.floor((Math.min(600000, user.boostExpiry - currentTime) % 60000) / 1000).toString().padStart(2, '0')})`
                             : "Boost"}
                         </div>
                       </div>
