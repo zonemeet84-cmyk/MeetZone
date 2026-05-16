@@ -1144,6 +1144,79 @@ app.post("/api/user/claim-7day-bonus", (req, res) => {
   res.json({ success: true, coins: user.coins, streak: 0, message: "100 Coins added!" });
 });
 
+// SEND GIFT / STICKER ENDPOINT
+app.post("/api/user/send-gift", authenticateToken, (req, res) => {
+  const { recipientId, stickerId, amount, stickerIcon } = req.body;
+  const senderId = req.user.id;
+
+  const sender = users.find(u => u.id === senderId);
+  const recipient = users.find(u => u.id === recipientId);
+
+  if (!sender || !recipient) return res.status(404).json({ success: false, message: "User not found" });
+
+  let usedFreeSticker = false;
+  if (sender.stickers && sender.stickers.includes(stickerId)) {
+    // Free send! Remove one instance
+    const idx = sender.stickers.indexOf(stickerId);
+    sender.stickers.splice(idx, 1);
+    usedFreeSticker = true;
+  } else {
+    // Paid send
+    if (sender.coins < amount && sender.email !== "ds9376314@gmail.com") {
+      return res.status(400).json({ success: false, message: "Insufficient coins" });
+    }
+    if (sender.email !== "ds9376314@gmail.com") {
+      sender.coins -= amount;
+      sender.monthlySpend = (sender.monthlySpend || 0) + amount;
+      checkLeaderboardReset();
+    }
+  }
+
+  // Add coins to recipient (Optional but good for economy)
+  recipient.coins = (recipient.coins || 0) + amount;
+
+  // Track activity
+  const activity = {
+    id: "act" + Date.now(),
+    email: sender.email,
+    type: "spend",
+    amount: usedFreeSticker ? 0 : amount,
+    feature: `Sent ${stickerIcon} to ${recipient.name} ${usedFreeSticker ? '(Free)' : ''}`,
+    timestamp: new Date().toISOString()
+  };
+  coinActivity.push(activity);
+  
+  const recvActivity = {
+    id: "act" + Date.now() + 1,
+    email: recipient.email,
+    type: "earn",
+    amount: amount,
+    feature: `Received ${stickerIcon} from ${sender.name}`,
+    timestamp: new Date().toISOString()
+  };
+  coinActivity.push(recvActivity);
+  
+  saveCoinActivity();
+  saveUsers();
+
+  // Send socket event to receiver
+  const targetSocketId = onlineUsers.get(recipient.id);
+  if (targetSocketId) {
+    io.to(targetSocketId).emit("receive-sticker", { 
+      stickerIcon, 
+      senderName: sender.name, 
+      amount 
+    });
+  }
+
+  res.json({ 
+    success: true, 
+    coins: sender.coins,
+    stickers: sender.stickers,
+    coinActivity: coinActivity.filter(a => a.email === sender.email).slice(-10) 
+  });
+});
+
 app.post("/api/contact", async (req, res) => {
   const { name, email, subject, message } = req.body;
   if (!email || !message) {

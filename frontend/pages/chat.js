@@ -618,7 +618,10 @@ export default function Home() {
       return;
     }
 
-    if (user.coins < sticker.price && user.email !== "ds9376314@gmail.com") {
+    const freeCount = user.stickers ? user.stickers.filter(id => id === sticker.id).length : 0;
+    const isFree = freeCount > 0;
+
+    if (!isFree && user.coins < sticker.price && user.email !== "ds9376314@gmail.com") {
       alert("Insufficient coins! Go to Home to buy more.");
       return;
     }
@@ -636,7 +639,7 @@ export default function Home() {
 
       if (res.data.success) {
         // Update local user state
-        const updatedUser = { ...user, coins: res.data.coins, coinActivity: res.data.coinActivity };
+        const updatedUser = { ...user, coins: res.data.coins, stickers: res.data.stickers, coinActivity: res.data.coinActivity };
         setUser(updatedUser);
         localStorage.setItem("user", JSON.stringify(updatedUser));
 
@@ -1714,13 +1717,17 @@ export default function Home() {
                     <button onClick={() => setShowGiftPanel(false)}>×</button>
                   </div>
                   <div className="gift-grid">
-                    {STICKERS.map(s => (
-                      <div key={s.id} className="gift-item" onClick={() => handleSendGift(s)}>
-                        <span className="gift-icon">{s.icon}</span>
-                        <span className="gift-label">{s.label}</span>
-                        <span className="gift-price">💰 {s.price}</span>
-                      </div>
-                    ))}
+                    {STICKERS.map(s => {
+                      const freeCount = user?.stickers ? user.stickers.filter(id => id === s.id).length : 0;
+                      return (
+                        <div key={s.id} className="gift-item" onClick={() => handleSendGift(s)}>
+                          {freeCount > 0 && <div className="free-badge">{freeCount} Free</div>}
+                          <span className="gift-icon">{s.icon}</span>
+                          <span className="gift-label">{s.label}</span>
+                          <span className="gift-price">{freeCount > 0 ? "🆓 Free" : `💰 ${s.price}`}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                   <div style={{ padding: '10px', textAlign: 'center', fontSize: '0.7rem', color: '#94a3b8', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                     Coins will be sent to <strong>{partnerInfo?.name || "partner"}</strong> instantly.
@@ -3405,6 +3412,22 @@ export default function Home() {
         .gift-icon { font-size: 1.8rem; }
         .gift-label { font-size: 0.7rem; color: #fff; font-weight: 700; }
         .gift-price { font-size: 0.65rem; color: #fbbf24; font-weight: 800; }
+
+        .free-badge {
+          position: absolute;
+          top: -5px;
+          right: -5px;
+          background: #ef4444;
+          color: white;
+          font-size: 0.6rem;
+          font-weight: 900;
+          padding: 2px 6px;
+          border-radius: 10px;
+          border: 1px solid #1e293b;
+          box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4);
+          animation: pulse 2s infinite;
+          z-index: 2;
+        }
 
         .floating-gift-overlay {
           position: absolute;
