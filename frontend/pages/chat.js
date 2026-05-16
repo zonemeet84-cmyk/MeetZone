@@ -870,7 +870,8 @@ export default function Home() {
             if (localVideo.current && localVideo.current.readyState === 4) {
               const predictions = await nsfwModel.current.classify(localVideo.current);
               const nsfw = predictions.find(p => p.className === "Porn" || p.className === "Hentai");
-              if (nsfw && nsfw.probability > 0.93) {
+              // Super high threshold to avoid mistakes with turbans/lighting
+              if (nsfw && nsfw.probability > 0.99) {
                 console.log("NSFW Content Detected! Reporting...");
                 socket.emit("nsfw-detected");
                 return; // Stop checking after detection

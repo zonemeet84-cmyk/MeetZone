@@ -1557,7 +1557,11 @@ const queueUser = (socket) => {
 };
 
 // Global Moderation State
-const BAD_WORDS_LIST = ["abuse", "fake", "sex", "scam", "nude", "porn", "pussy", "dick", "lund", "chod", "gand", "porn", "xxx", "fuck", "bitch"];
+const BAD_WORDS_LIST = [
+  "abuse", "fake", "sex", "scam", "nude", "porn", "pussy", "dick", "xxx", "fuck", "bitch",
+  "lund", "chod", "gand", "porn", "madarchod", "behenchod", "bhenchod", "chutiya", "loda", "lauda",
+  "kamine", "haramkhor", "bsdk", "bhonsdi", "gaand", "randi", "saala", "saali", "harami"
+];
 const userStrikes = new Map(); // email -> strike count
 
 io.on("connection", (socket) => {
