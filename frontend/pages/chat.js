@@ -720,13 +720,19 @@ export default function Home() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [activeIdentityMenu]);
 
-  const servers = {
-    iceServers: [
-      {
-        urls: "stun:stun.l.google.com:19302",
-      },
-    ],
-  };
+  const [iceServers, setIceServers] = useState([
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun1.l.google.com:19302" }
+  ]);
+
+  // Fetch Twilio TURN credentials on load
+  useEffect(() => {
+    axios.get("https://meetzone-backend.onrender.com/api/turn-credentials")
+      .then(res => { if (res.data.iceServers) setIceServers(res.data.iceServers); })
+      .catch(() => {}); // fallback to STUN if fails
+  }, []);
+
+  const servers = { iceServers };
 
   useEffect(() => {
     if (sessionStatus === "loading") return;

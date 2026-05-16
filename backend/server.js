@@ -2152,6 +2152,31 @@ app.get("/api/user/leaderboard", (req, res) => {
   });
 });
 
+// ========= TWILIO TURN SERVER CREDENTIALS =========
+app.get("/api/turn-credentials", (req, res) => {
+  if (!twilioClient) {
+    // Fallback to Google STUN only if Twilio not configured
+    return res.json({
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" }
+      ]
+    });
+  }
+  // Generate temporary Twilio TURN credentials (valid for 1 hour)
+  twilioClient.tokens.create().then(token => {
+    res.json({ iceServers: token.iceServers });
+  }).catch(err => {
+    console.error("Twilio TURN error:", err);
+    res.json({
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" }
+      ]
+    });
+  });
+});
+// ==================================================
 
 async function startServer() {
   try {
