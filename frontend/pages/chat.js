@@ -2470,14 +2470,15 @@ export default function Home() {
           width: 100%;
           height: 100%;
           object-fit: cover;
+          transform: none !important;
         }
 
         .video-card video.mirrored {
-          transform: scaleX(-1);
+          transform: none !important;
         }
 
         .natural-view {
-          transform: scaleX(1) !important;
+          transform: none !important;
         }
 
         /* PARTNER PREVIEW STYLES */

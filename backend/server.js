@@ -1632,6 +1632,8 @@ io.on("connection", (socket) => {
       const lowerText = text.toLowerCase();
       const hasBadWord = BAD_WORDS_LIST.some(word => lowerText.includes(word));
 
+      /*
+      // AI Chat Guard Temporarily Disabled
       if (hasBadWord) {
         let strikes = (userStrikes.get(email) || 0) + 1;
         userStrikes.set(email, strikes);
@@ -1642,9 +1644,10 @@ io.on("connection", (socket) => {
           return;
         } else {
           socket.emit("warning-alert", `Warning: Your message contains restricted words. Strike ${strikes}/2. Continued abuse will lead to a permanent ban.`);
-          return; // Don't send the message
+          return; 
         }
       }
+      */
     }
 
     io.to(to).emit("receive-message", {
