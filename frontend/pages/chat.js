@@ -867,17 +867,19 @@ export default function Home() {
           console.log("NSFW Guardian active.");
           
           const checkVideo = async () => {
+            /* 
+            // AI Video Guard Temporarily Disabled by User Request
             if (localVideo.current && localVideo.current.readyState === 4) {
               const predictions = await nsfwModel.current.classify(localVideo.current);
               const nsfw = predictions.find(p => p.className === "Porn" || p.className === "Hentai");
-              // Super high threshold to avoid mistakes with turbans/lighting
               if (nsfw && nsfw.probability > 0.99) {
                 console.log("NSFW Content Detected! Reporting...");
                 socket.emit("nsfw-detected");
-                return; // Stop checking after detection
+                return;
               }
             }
-            setTimeout(checkVideo, 3000); // Check every 3 seconds
+            */
+            setTimeout(checkVideo, 3000);
           };
           checkVideo();
         } catch (err) {
@@ -1561,6 +1563,7 @@ export default function Home() {
                   autoPlay
                   muted
                   playsInline
+                  className="natural-view"
                   style={{
                     filter: isFaceBlurred ? 'blur(25px)' : 'none',
                     display: activeAvatar !== "None" ? 'none' : 'block'
@@ -1570,6 +1573,7 @@ export default function Home() {
                   ref={canvasRef}
                   width="640"
                   height="480"
+                  className="natural-view"
                   style={{
                     position: "absolute",
                     top: 0,
