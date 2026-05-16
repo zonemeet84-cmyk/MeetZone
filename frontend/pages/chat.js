@@ -703,6 +703,26 @@ export default function Home() {
   const [activeAvatar, setActiveAvatar] = useState("None");
   const [isFaceBlurred, setIsFaceBlurred] = useState(false);
   const [activeIdentityMenu, setActiveIdentityMenu] = useState(null); // 'filters', 'avatars', 'voice', 'privacy'
+  const [partnerIsBlurred, setPartnerIsBlurred] = useState(false);
+  const [partnerAvatar, setPartnerAvatar] = useState("None");
+
+  useEffect(() => {
+    if (!socket) return;
+    
+    socket.on("partner-effect", ({ type, value }) => {
+      if (type === 'blur') setPartnerIsBlurred(value);
+      if (type === 'avatar') setPartnerAvatar(value);
+    });
+
+    return () => socket.off("partner-effect");
+  }, [socket]);
+
+  useEffect(() => {
+    if (socket && partnerId) {
+      socket.emit("partner-effect", { type: 'blur', value: isFaceBlurred });
+      socket.emit("partner-effect", { type: 'avatar', value: activeAvatar });
+    }
+  }, [isFaceBlurred, activeAvatar, partnerId, socket]);
 
 
   // Pending States for "Apply" logic
@@ -1244,8 +1264,19 @@ export default function Home() {
     }
 
     sourceNode.current.connect(filter);
-    // In a real WebRTC app, we'd need to replace the track in the peerConnection with this processed stream
-    // For this demonstration, we are setting the UI state.
+    
+    // Create a destination to capture the processed audio
+    const dest = audioCtx.current.createMediaStreamDestination();
+    filter.connect(dest);
+    
+    // Replace the audio track in the peerConnection so the partner HEARS it
+    if (peerConnection.current) {
+      const senders = peerConnection.current.getSenders();
+      const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
+      if (audioSender) {
+        audioSender.replaceTrack(dest.stream.getAudioTracks()[0]);
+      }
+    }
   };
 
   const toggleCamera = () => {
@@ -1643,7 +1674,28 @@ export default function Home() {
 
 
             <div className="video-card">
-              <video ref={remoteVideo} autoPlay playsInline className="natural-view" />
+              <video ref={remoteVideo} autoPlay playsInline className={`natural-view ${partnerIsBlurred ? 'blurred-face' : ''}`} style={{ filter: partnerIsBlurred ? 'blur(25px)' : 'none' }} />
+
+              {/* SEARCHING OVERLAY */}
+              {!partnerId && !showPartnerPreview && (
+                <div className="searching-overlay-v2">
+                  <div className="searching-ripple"></div>
+                  <div className="searching-ripple" style={{ animationDelay: '1s' }}></div>
+                  <div className="searching-ripple" style={{ animationDelay: '2s' }}></div>
+                  <div className="searching-content">
+                    <div className="searching-icon">🔍</div>
+                    <h3>Searching for Partner...</h3>
+                    <p>Connecting you with someone amazing</p>
+                  </div>
+                </div>
+              )}
+
+              {/* SHARED PARTNER AVATAR */}
+              {partnerAvatar && partnerAvatar !== "None" && (
+                <div className="avatar-video-replacement partner-avatar-view">
+                  <img src={`https://robohash.org/${partnerAvatar}?set=set${partnerAvatar === 'Robot' ? '1' : partnerAvatar === 'Anime' ? '5' : '4'}&key=${partnerAvatar}`} alt="Partner Avatar" />
+                </div>
+              )}
 
               {/* PARTNER PREVIEW OVERLAY */}
               {showPartnerPreview && partnerInfo && (
@@ -2477,6 +2529,60 @@ export default function Home() {
 
         .natural-view {
           transform: scaleX(1) !important;
+        }
+
+        .searching-overlay-v2 {
+          position: absolute;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: #0f172a;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 5;
+          overflow: hidden;
+        }
+
+        .searching-ripple {
+          position: absolute;
+          width: 200px;
+          height: 200px;
+          border: 2px solid rgba(99, 102, 241, 0.3);
+          border-radius: 50%;
+          animation: ripple 3s linear infinite;
+        }
+
+        @keyframes ripple {
+          0% { transform: scale(1); opacity: 0.8; }
+          100% { transform: scale(4); opacity: 0; }
+        }
+
+        .searching-content {
+          position: relative;
+          z-index: 6;
+          text-align: center;
+          animation: pulse 2s ease-in-out infinite;
+        }
+
+        .searching-icon {
+          font-size: 3rem;
+          margin-bottom: 1rem;
+        }
+
+        .searching-content h3 {
+          color: white;
+          font-size: 1.25rem;
+          font-weight: 700;
+          margin-bottom: 0.5rem;
+        }
+
+        .searching-content p {
+          color: #94a3b8;
+          font-size: 0.9rem;
+        }
+
+        .partner-avatar-view {
+          background: #0f172a;
+          z-index: 4;
         }
 
         /* PARTNER PREVIEW STYLES */
