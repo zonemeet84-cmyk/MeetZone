@@ -877,11 +877,11 @@ export default function Dashboard() {
           {user?.premium && <span className="premium-badge">{user.planName || "PREMIUM"}</span>}
         </div>
 
-        <nav className="header-nav" style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-          <div className="nav-link" onClick={() => router.push("/")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Home</div>
-          <div className="nav-link" onClick={() => router.push("/friends")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Friends</div>
-          <div className="nav-link" onClick={() => setShowHistoryModal(true)} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>History</div>
-          <div className="nav-link" onClick={() => document.getElementById("coins-section")?.scrollIntoView({ behavior: 'smooth' })} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Coins</div>
+        <nav className="header-nav" style={{ display: 'flex', gap: '20px', alignItems: 'center', marginLeft: 'auto', marginRight: '20px' }}>
+          <div className="nav-link" onClick={() => router.push("/")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Home</div>
+          <div className="nav-link" onClick={() => router.push("/friends")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Friends</div>
+          <div className="nav-link" onClick={() => setShowHistoryModal(true)} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>History</div>
+          <div className="nav-link" onClick={() => document.getElementById("coins-section")?.scrollIntoView({ behavior: 'smooth' })} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Coins</div>
           <div className="nav-link" onClick={() => {
             if (!user) {
               showModal({
@@ -895,13 +895,39 @@ export default function Dashboard() {
             } else {
               document.getElementById("referral-section")?.scrollIntoView({ behavior: 'smooth' });
             }
-          }} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: '#10b981', transition: 'all 0.3s' }}>🎁 Invite</div>
-          <div className="nav-link" onClick={() => document.getElementById("pricing-section")?.scrollIntoView({ behavior: 'smooth' })} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>VIP</div>
-          <div className="nav-link" onClick={() => router.push("/contact")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Contact</div>
-          {user?.email === "ds9376314@gmail.com" && (
-            <div className="nav-link" onClick={() => router.push("/admin")} style={{ cursor: 'pointer', fontWeight: '800', fontSize: '0.9rem', color: '#f59e0b', transition: 'all 0.3s' }}>⚡ Admin</div>
-          )}
+          }} style={{ cursor: 'pointer', fontWeight: '800', fontSize: '0.85rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+             <span style={{ fontSize: '1rem' }}>🎁</span> Invite
+          </div>
+          <div className="nav-link" onClick={() => document.getElementById("pricing-section")?.scrollIntoView({ behavior: 'smooth' })} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>VIP</div>
+          <div className="nav-link" onClick={() => router.push("/contact")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Contact</div>
         </nav>
+
+        {user?.email === "ds9376314@gmail.com" && (
+          <button 
+            className="admin-btn-header" 
+            onClick={() => router.push("/admin")}
+            style={{ 
+              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              color: '#fff',
+              border: 'none',
+              padding: '6px 14px',
+              borderRadius: '12px',
+              fontWeight: '900',
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)',
+              marginRight: '15px',
+              transition: 'transform 0.2s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            ⚡ Admin
+          </button>
+        )}
         {authLoading ? (
           <div className="user-info">
             <span className="loading-dots">Verifying session...</span>
