@@ -484,13 +484,13 @@ export default function Home() {
   };
 
   useEffect(() => {
+    /*
     if (!localVideo.current || !socket) return;
 
     const interval = setInterval(async () => {
       if (!nsfwModel.current) return;
       try {
         const predictions = await nsfwModel.current.classify(localVideo.current);
-        // Predictions: [{className: "Porn", probability: 0.9}, ...]
         const nsfwClasses = ["Porn", "Hentai", "Sexy"];
         const violation = predictions.find(p => nsfwClasses.includes(p.className) && p.probability > 0.75);
 
@@ -499,11 +499,11 @@ export default function Home() {
           socket.emit("nsfw-detected");
         }
       } catch (err) {
-        // Silent error
       }
     }, 3000);
 
     return () => clearInterval(interval);
+    */
   }, [socket]);
 
   useEffect(() => {
@@ -859,12 +859,6 @@ export default function Home() {
         setStatus("Please allow camera/mic access");
       }
 
-      // 4. AI Guard: NSFW Detection
-      const initNSFW = async () => {
-        try {
-          await tf.ready();
-          nsfwModel.current = await nsfwjs.load();
-          console.log("NSFW Guardian active.");
           
           const checkVideo = async () => {
             /* 

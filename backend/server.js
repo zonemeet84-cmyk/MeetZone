@@ -1734,31 +1734,9 @@ io.on("connection", (socket) => {
     }
   });
 
-  // NSFW Detection Ban (3 Strikes)
+  // NSFW Detection Ban Removed by User Request
   socket.on("nsfw-detected", () => {
-    if (socket.user) {
-      const email = socket.user.email;
-      let strikes = (userStrikes.get(email) || 0) + 1;
-      userStrikes.set(email, strikes);
-
-      console.log(`[AI-GUARD] NSFW detected: ${email}. Strike ${strikes}/2`);
-
-      if (strikes >= 2) {
-        if (!bannedEmails.includes(email)) {
-          bannedEmails.push(email);
-          saveBanned();
-        }
-        const ip = socket.handshake.address;
-        if (!bannedIps.includes(ip)) {
-          bannedIps.push(ip);
-          saveBannedIps();
-        }
-        socket.emit("banned-alert", "Your account has been permanently banned for repeated 18+ Adult Content.");
-        socket.disconnect();
-      } else {
-        socket.emit("warning-alert", `Warning: AI detected inappropriate content. Strike ${strikes}/2. One more violation will result in a permanent ban.`);
-      }
-    }
+    console.log("NSFW detected event ignored.");
   });
 
   socket.on("join-room", (roomId) => {
