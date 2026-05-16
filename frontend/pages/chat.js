@@ -151,7 +151,7 @@ export default function Home() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [currency, setCurrency] = useState("INR");
   const [paymentStep, setPaymentStep] = useState("methods"); // 'methods', 'processing', 'success'
-  const [nsfwModel, setNsfwModel] = useState(null);
+  // const [nsfwModel, setNsfwModel] = useState(null); // REMOVED duplicate
   const [showCoinPopup, setShowCoinPopup] = useState(false);
   const [pendingMessage, setPendingMessage] = useState("");
 
@@ -185,17 +185,19 @@ export default function Home() {
   ];
 
   useEffect(() => {
-    // Load NSFW Model
+    // Load NSFW Model via Ref
     const loadModel = async () => {
-      try {
-        const model = await window.nsfwjs.load();
-        setNsfwModel(model);
-        console.log("NSFW Model Loaded");
-      } catch (err) {
-        console.error("NSFW Model Load Error:", err);
+      if (typeof window !== "undefined" && window.nsfwjs && !nsfwModel.current) {
+        try {
+          const model = await window.nsfwjs.load();
+          nsfwModel.current = model;
+          console.log("NSFW Model Loaded");
+        } catch (err) {
+          console.error("NSFW Model Load Error:", err);
+        }
       }
     };
-    if (window.nsfwjs) loadModel();
+    loadModel();
   }, []);
 
     // ROBUST MANUAL FACE TRACKING
@@ -481,14 +483,15 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (!nsfwModel || !localVideo.current || !socket) return;
+    if (!localVideo.current || !socket) return;
 
     const interval = setInterval(async () => {
+      if (!nsfwModel.current) return;
       try {
-        const predictions = await nsfwModel.classify(localVideo.current);
+        const predictions = await nsfwModel.current.classify(localVideo.current);
         // Predictions: [{className: "Porn", probability: 0.9}, ...]
         const nsfwClasses = ["Porn", "Hentai", "Sexy"];
-        const violation = predictions.find(p => nsfwClasses.includes(p.className) && p.probability > 0.7);
+        const violation = predictions.find(p => nsfwClasses.includes(p.className) && p.probability > 0.75);
 
         if (violation) {
           console.log("NSFW CONTENT DETECTED!", violation);
@@ -497,10 +500,10 @@ export default function Home() {
       } catch (err) {
         // Silent error
       }
-    }, 2000);
+    }, 3000);
 
     return () => clearInterval(interval);
-  }, [nsfwModel, socket]);
+  }, [socket]);
 
   useEffect(() => {
     if (!socket) return;
@@ -746,6 +749,18 @@ export default function Home() {
     let streamInstance;
 
     const init = async () => {
+      // 0. QUICK PROFILE LOAD FROM CACHE
+      const savedUser = localStorage.getItem("user");
+      if (savedUser) {
+        try {
+          const u = JSON.parse(savedUser);
+          setUser(u);
+          if (u.unlockedFilters) setUnlockedFilters(u.unlockedFilters);
+          setAuthLoading(false); // Stop loading immediately if we have a profile
+          console.log("Profile loaded from cache instantly");
+        } catch(e) {}
+      }
+
       const token = localStorage.getItem("token");
 
       // 1. Auth Logic
@@ -755,17 +770,14 @@ export default function Home() {
           ...stored,
           name: session.user.name,
           email: session.user.email,
-          premium: stored.premium || false,
-          planName: stored.planName || null,
+          premium: (stored.premium || (session.user.email === "ds9376314@gmail.com")) || false,
+          planName: (stored.planName || (session.user.email === "ds9376314@gmail.com" ? "VIP Elite" : null)),
           gender: stored.gender || "All",
           country: stored.country || "All",
           state: stored.state || "All States",
           age: stored.age || "All Ages"
         };
-        if (userData.email === "ds9376314@gmail.com") {
-          userData.premium = true;
-          userData.planName = "VIP Elite";
-        }
+        
         setUser(userData);
         if (userData.unlockedFilters) {
           setUnlockedFilters(userData.unlockedFilters);

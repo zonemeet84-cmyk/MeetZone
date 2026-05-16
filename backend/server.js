@@ -138,19 +138,20 @@ function generateReferralCode(name) {
 }
 
 // Ensure users have new fields
-function normalizeUsers() {
+function normalizeUsers(targetUsers) {
   let changed = false;
-  users.forEach(u => {
+  targetUsers.forEach(u => {
     if (u.coins === undefined) { u.coins = 50; changed = true; }
     if (!u.recentStrangers) { u.recentStrangers = []; changed = true; }
     if (!u.boostExpiry) { u.boostExpiry = 0; changed = true; }
     if (u.streak === undefined) { u.streak = 0; changed = true; }
     if (u.lastLoginDate === undefined) { u.lastLoginDate = ""; changed = true; }
     if (u.bonusClaimedToday === undefined) { u.bonusClaimedToday = false; changed = true; }
-    // Referral fields
+    // Referral fields - Ensure they stay the same
     if (!u.referralCode) {
       let code;
-      do { code = generateReferralCode(u.name); } while (users.some(x => x.referralCode === code && x !== u));
+      // Use name if available, otherwise random
+      do { code = generateReferralCode(u.name || "ZM"); } while (targetUsers.some(x => x.referralCode === code && x !== u));
       u.referralCode = code;
       changed = true;
     }
@@ -167,7 +168,6 @@ function normalizeUsers() {
   });
   if (changed) saveUsers();
 }
-normalizeUsers();
 
 // PURGE COIN TRANSACTIONS ON START (As requested)
 transactions = transactions.filter(t => t.type !== "coins");
@@ -2303,11 +2303,6 @@ setInterval(() => {
 async function startServer() {
   const PORT = process.env.PORT || 5000;
   
-  // Start listening immediately so Render/Vercel health check passes
-  server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-
   try {
     console.log("Connecting to MongoDB Atlas...");
     await mongoClient.connect();
@@ -2315,7 +2310,14 @@ async function startServer() {
     console.log("Connected to MongoDB Atlas Successfully");
     
     // Load data from DB into memory
-    const d1 = await db.collection("appData").findOne({ _id: "users" }); if(d1 && d1.data) users = d1.data;
+    const d1 = await db.collection("appData").findOne({ _id: "users" }); 
+    if(d1 && d1.data) {
+      // Merge with any local users that might have registered during downtime if possible, 
+      // but usually DB is source of truth.
+      users = d1.data;
+      console.log(`[DB] Loaded ${users.length} users from MongoDB`);
+    }
+    
     const d2 = await db.collection("appData").findOne({ _id: "bannedEmails" }); if(d2 && d2.data) bannedEmails = d2.data;
     const d3 = await db.collection("appData").findOne({ _id: "bannedIps" }); if(d3 && d3.data) bannedIps = d3.data;
     const d4 = await db.collection("appData").findOne({ _id: "transactions" }); if(d4 && d4.data) transactions = d4.data;
@@ -2324,10 +2326,19 @@ async function startServer() {
     const d7 = await db.collection("appData").findOne({ _id: "contactMessages" }); if(d7 && d7.data) contactMessages = d7.data;
     const d8 = await db.collection("appData").findOne({ _id: "systemConfig" }); if(d8 && d8.data) systemConfig = d8.data;
 
+    // IMPORTANT: Normalize after loading from DB
+    normalizeUsers(users);
+
   } catch(e) {
     console.error("CRITICAL: MongoDB Connection Failed!", e.message);
     console.log("Server will continue running in LOCAL MODE (using local JSON files)");
+    normalizeUsers(users); // Still normalize local users
   }
+
+  // Start listening AFTER data is loaded to prevent race conditions
+  server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 }
 startServer();
 

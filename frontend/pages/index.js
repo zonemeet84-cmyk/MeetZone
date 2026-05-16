@@ -282,14 +282,15 @@ export default function Dashboard() {
     axios.get("https://meetzone-backend.onrender.com/api/ping").catch(() => {});
 
     const checkAuth = async () => {
-      const token = localStorage.getItem("token");
+      // 0. IMMEDIATE CACHE LOAD (Fast UI)
       const stored = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
-
-      // Show stored user immediately if available to eliminate perceived slowness
       if (stored && stored.email) {
+        console.log("Found stored user, displaying immediately");
         setUser(stored);
         setAuthLoading(false);
       }
+
+      const token = localStorage.getItem("token");
 
       if (session) {
         if (!token || token === "undefined") {
@@ -547,6 +548,8 @@ export default function Dashboard() {
         setUser(updatedUser);
         localStorage.setItem("user", JSON.stringify(updatedUser));
         setRedeemCode("");
+        // Notify other tabs
+        window.dispatchEvent(new Event("storage"));
         showModal({
           title: "Referral Applied!",
           message: res.data.message,
