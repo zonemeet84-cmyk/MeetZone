@@ -2202,6 +2202,18 @@ app.get("/api/turn-credentials", (req, res) => {
 });
 // ==================================================
 
+// ========= KEEP ALIVE LOGIC =========
+app.get("/api/ping", (req, res) => {
+  res.json({ status: "alive", timestamp: Date.now() });
+});
+
+// Self-ping every 10 minutes to stay awake on Render
+setInterval(() => {
+  const url = `https://meetzone-backend.onrender.com/api/ping`;
+  axios.get(url).catch(() => {}); // Ignore errors
+}, 600000); 
+// =====================================
+
 async function startServer() {
   try {
     await mongoClient.connect();

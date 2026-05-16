@@ -262,6 +262,9 @@ export default function Dashboard() {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
+    // Wake up the backend immediately
+    axios.get("https://meetzone-backend.onrender.com/api/ping").catch(() => {});
+
     const checkAuth = async () => {
       let currentUserData = null;
 
