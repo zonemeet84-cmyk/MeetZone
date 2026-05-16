@@ -1,4 +1,8 @@
 const express = require("express");
+const { MongoClient } = require('mongodb');
+const MONGO_URI = "mongodb+srv://zonemeet84:kawal%401234@cluster0.rk9oqyx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const mongoClient = new MongoClient(MONGO_URI);
+let db;
 const http = require("http");
 const { Server } = require("socket.io");
 const twilio = require("twilio");
@@ -95,7 +99,8 @@ if (fs.existsSync(REPORTS_FILE)) {
 }
 
 function saveReports() {
-  fs.writeFileSync(REPORTS_FILE, JSON.stringify(reports, null, 2));
+  try { fs.writeFileSync(REPORTS_FILE, JSON.stringify(reports, null, 2)); } catch(e){}
+  if(db) db.collection("appData").updateOne({ _id: "reports" }, { $set: { data: reports } }, { upsert: true }).catch(console.error);
 }
 
 let transactions = [];
@@ -103,7 +108,8 @@ if (fs.existsSync(TRANSACTIONS_FILE)) {
   try { transactions = JSON.parse(fs.readFileSync(TRANSACTIONS_FILE, "utf-8")); } catch (err) { transactions = []; }
 }
 function saveTransactions() {
-  fs.writeFileSync(TRANSACTIONS_FILE, JSON.stringify(transactions, null, 2));
+  try { fs.writeFileSync(TRANSACTIONS_FILE, JSON.stringify(transactions, null, 2)); } catch(e){}
+  if(db) db.collection("appData").updateOne({ _id: "transactions" }, { $set: { data: transactions } }, { upsert: true }).catch(console.error);
 }
 
 let coinActivity = [];
@@ -111,7 +117,8 @@ if (fs.existsSync(COIN_ACTIVITY_FILE)) {
   try { coinActivity = JSON.parse(fs.readFileSync(COIN_ACTIVITY_FILE, "utf-8")); } catch (err) { coinActivity = []; }
 }
 function saveCoinActivity() {
-  fs.writeFileSync(COIN_ACTIVITY_FILE, JSON.stringify(coinActivity.slice(-500), null, 2)); // Keep last 500
+  try { fs.writeFileSync(COINACTIVITY_FILE, JSON.stringify(coinActivity, null, 2)); } catch(e){}
+  if(db) db.collection("appData").updateOne({ _id: "coinActivity" }, { $set: { data: coinActivity } }, { upsert: true }).catch(console.error);
 }
 
 let contactMessages = [];
@@ -119,7 +126,8 @@ if (fs.existsSync(MESSAGES_FILE)) {
   try { contactMessages = JSON.parse(fs.readFileSync(MESSAGES_FILE, "utf-8")); } catch (err) { contactMessages = []; }
 }
 function saveMessages() {
-  fs.writeFileSync(MESSAGES_FILE, JSON.stringify(contactMessages, null, 2));
+  try { fs.writeFileSync(MESSAGES_FILE, JSON.stringify(contactMessages, null, 2)); } catch(e){}
+  if(db) db.collection("appData").updateOne({ _id: "contactMessages" }, { $set: { data: contactMessages } }, { upsert: true }).catch(console.error);
 }
 
 // Generate unique referral code from name + random suffix
@@ -239,11 +247,13 @@ if (fs.existsSync(BANNED_IPS_FILE)) {
 }
 
 function saveBanned() {
-  fs.writeFileSync(BANNED_FILE, JSON.stringify(bannedEmails, null, 2));
+  try { fs.writeFileSync(BANNED_FILE, JSON.stringify(bannedEmails, null, 2)); } catch(e){}
+  if(db) db.collection("appData").updateOne({ _id: "bannedEmails" }, { $set: { data: bannedEmails } }, { upsert: true }).catch(console.error);
 }
 
 function saveBannedIps() {
-  fs.writeFileSync(BANNED_IPS_FILE, JSON.stringify(bannedIps, null, 2));
+  try { fs.writeFileSync(BANNED_IPS_FILE, JSON.stringify(bannedIps, null, 2)); } catch(e){}
+  if(db) db.collection("appData").updateOne({ _id: "bannedIps" }, { $set: { data: bannedIps } }, { upsert: true }).catch(console.error);
 }
 
 // Ensure at least the test user exists
@@ -262,7 +272,8 @@ if (users.length === 0) {
 }
 
 function saveUsers() {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+  try { fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2)); } catch(e){}
+  if(db) db.collection("appData").updateOne({ _id: "users" }, { $set: { data: users } }, { upsert: true }).catch(console.error);
 }
 
 app.post("/api/auth/session-login", (req, res) => {
@@ -2055,7 +2066,8 @@ if (fs.existsSync(SYSTEM_CONFIG_FILE)) {
 }
 
 function saveSystemConfig() {
-  fs.writeFileSync(SYSTEM_CONFIG_FILE, JSON.stringify(systemConfig, null, 2));
+  try { fs.writeFileSync(SYSTEM_CONFIG_FILE, JSON.stringify(systemConfig, null, 2)); } catch(e){}
+  if(db) db.collection("appData").updateOne({ _id: "systemConfig" }, { $set: { data: systemConfig } }, { upsert: true }).catch(console.error);
 }
 
 function checkLeaderboardReset() {
@@ -2140,7 +2152,30 @@ app.get("/api/user/leaderboard", (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+
+async function startServer() {
+  try {
+    await mongoClient.connect();
+    db = mongoClient.db("meetzone");
+    console.log("Connected to MongoDB Atlas");
+    
+    // Load data from DB into memory
+    const d1 = await db.collection("appData").findOne({ _id: "users" }); if(d1 && d1.data) users = d1.data;
+    const d2 = await db.collection("appData").findOne({ _id: "bannedEmails" }); if(d2 && d2.data) bannedEmails = d2.data;
+    const d3 = await db.collection("appData").findOne({ _id: "bannedIps" }); if(d3 && d3.data) bannedIps = d3.data;
+    const d4 = await db.collection("appData").findOne({ _id: "transactions" }); if(d4 && d4.data) transactions = d4.data;
+    const d5 = await db.collection("appData").findOne({ _id: "coinActivity" }); if(d5 && d5.data) coinActivity = d5.data;
+    const d6 = await db.collection("appData").findOne({ _id: "reports" }); if(d6 && d6.data) reports = d6.data;
+    const d7 = await db.collection("appData").findOne({ _id: "contactMessages" }); if(d7 && d7.data) contactMessages = d7.data;
+    const d8 = await db.collection("appData").findOne({ _id: "systemConfig" }); if(d8 && d8.data) systemConfig = d8.data;
+
+    const PORT = process.env.PORT || 5000;
+    server.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch(e) {
+    console.error("MongoDB Error:", e);
+  }
+}
+startServer();
+
