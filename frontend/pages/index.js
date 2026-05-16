@@ -54,7 +54,7 @@ export default function Dashboard() {
     if (user && user.id) {
       if (!socket) {
         socket = io("https://meetzone-backend.onrender.com");
-        
+
         socket.on("connect", () => {
           socket.emit("register-user", user.id);
           setIsSocketConnected(true);
@@ -331,7 +331,7 @@ export default function Dashboard() {
     const token = localStorage.getItem("token");
 
     // Wake up the backend immediately
-    axios.get("https://meetzone-backend.onrender.com/api/ping").catch(() => {});
+    axios.get("https://meetzone-backend.onrender.com/api/ping").catch(() => { });
 
     const checkAuth = async () => {
       // 0. IMMEDIATE CACHE LOAD (Fast UI)
@@ -359,7 +359,7 @@ export default function Dashboard() {
               localStorage.removeItem("referral");
               setUser(res.data.user);
             }
-          } catch (e) { 
+          } catch (e) {
             console.error("Sync Error", e);
           }
         } else {
@@ -398,7 +398,7 @@ export default function Dashboard() {
           console.error("Verify Error", err);
         }
       }
-      
+
       setAuthLoading(false);
     };
 
@@ -409,19 +409,19 @@ export default function Dashboard() {
     return () => clearTimeout(timeout);
   }, [session]);
 
-    useEffect(() => {
-      if (user && !authLoading) {
-        // Only show onboarding if not already completed and profile fields are missing/default
-        if (!user.onboardingCompleted) {
-          if (!user.gender || user.gender === "Other" || !user.country || user.country === "Unknown" || user.gender === "All") {
-            setShowOnboarding(true);
-          }
+  useEffect(() => {
+    if (user && !authLoading) {
+      // Only show onboarding if not already completed and profile fields are missing/default
+      if (!user.onboardingCompleted) {
+        if (!user.gender || user.gender === "Other" || !user.country || user.country === "Unknown" || user.gender === "All") {
+          setShowOnboarding(true);
         }
       }
-    }, [user, authLoading]);
+    }
+  }, [user, authLoading]);
 
-    useEffect(() => {
-      if (user && (user.email || user.phone) && !dailyStatus) {
+  useEffect(() => {
+    if (user && (user.email || user.phone) && !dailyStatus) {
       axios.post("https://meetzone-backend.onrender.com/api/user/daily-check", { email: user.email, phone: user.phone })
         .then(res => {
           if (res.data.success) {
@@ -448,7 +448,7 @@ export default function Dashboard() {
   // Redirect if NOT logged in (Protected Page Logic)
   useEffect(() => {
     if (authLoading) return; // Wait for verification
-    
+
     const token = localStorage.getItem("token");
     if (!session && (!token || token === "undefined")) {
       // router.push("/login"); // Optional: Redirect to login if not authenticated
@@ -917,7 +917,7 @@ export default function Dashboard() {
   return (
     <div className="container">
       <Head>
-        <title>Dashboard | ZoneMeet</title>
+        <title>ZoneMeet.chat</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
       </Head>
@@ -1608,49 +1608,49 @@ export default function Dashboard() {
                 <p style={{ color: '#94a3b8', fontSize: '1.1rem', marginTop: '5px' }}>
                   {leaderboardComingSoon ? "Launch Phase Progress" : `${leaderboardMonth} Rankings & Prizes`}
                 </p>
-                
+
                 {!leaderboardComingSoon && (
                   <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.05)', padding: '5px', borderRadius: '18px', marginTop: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <button 
+                    <button
                       onClick={() => setLeaderboardFilter('all')}
                       style={{ padding: '10px 25px', borderRadius: '14px', border: 'none', background: leaderboardFilter === 'all' ? '#fbbf24' : 'transparent', color: leaderboardFilter === 'all' ? '#000' : '#fff', fontWeight: 800, cursor: 'pointer', transition: '0.3s' }}
                     >🌎 Global</button>
-                    <button 
+                    <button
                       onClick={() => setLeaderboardFilter('india')}
                       style={{ padding: '10px 25px', borderRadius: '14px', border: 'none', background: leaderboardFilter === 'india' ? '#fbbf24' : 'transparent', color: leaderboardFilter === 'india' ? '#000' : '#fff', fontWeight: 800, cursor: 'pointer', transition: '0.3s' }}
                     >🇮🇳 India</button>
                   </div>
                 )}
               </div>
-            {/* Prize Info Footer */}
-            {!leaderboardComingSoon && (
-              <>
-                <div style={{ textAlign: 'center', marginTop: '10px' }}>
-                  <button 
-                    onClick={() => setShowRewardsInfo(!showRewardsInfo)} 
-                    style={{ padding: '8px 20px', borderRadius: '12px', border: '1px solid rgba(251, 191, 36, 0.4)', background: 'rgba(251, 191, 36, 0.1)', color: '#fbbf24', fontWeight: 800, cursor: 'pointer', transition: '0.3s' }}
-                  >
-                    {showRewardsInfo ? 'Hide Rewards 🎁' : 'Show Rewards 🎁'}
-                  </button>
-                </div>
-                {showRewardsInfo && (
-                  <div style={{ marginTop: '15px', padding: '20px', background: 'linear-gradient(90deg, rgba(251, 191, 36, 0.05), transparent)', borderRadius: '20px', border: '1px solid rgba(251, 191, 36, 0.1)', display: 'flex', alignItems: 'center', gap: '20px', animation: 'fadeIn 0.3s ease-in-out' }}>
-                    <div style={{ fontSize: '3rem' }}>🎁</div>
-                    <div style={{ flex: 1 }}>
-                      <h4 style={{ margin: 0, color: '#fbbf24', fontSize: '1.1rem', fontWeight: 900 }}>Monthly Rewards Distribution</h4>
-                      <p style={{ margin: '5px 0 0', color: '#94a3b8', lineHeight: '1.4' }}>
-                        🏆 <strong>Rank 1:</strong> 1000 Coins |
-                        🥈 <strong>Rank 2:</strong> 500 Coins |
-                        🥉 <strong>Rank 3:</strong> 200 Coins
-                      </p>
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 700, textAlign: 'right' }}>
-                      NEXT RESET:<br/> {new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toLocaleDateString()}
-                    </div>
+              {/* Prize Info Footer */}
+              {!leaderboardComingSoon && (
+                <>
+                  <div style={{ textAlign: 'center', marginTop: '10px' }}>
+                    <button
+                      onClick={() => setShowRewardsInfo(!showRewardsInfo)}
+                      style={{ padding: '8px 20px', borderRadius: '12px', border: '1px solid rgba(251, 191, 36, 0.4)', background: 'rgba(251, 191, 36, 0.1)', color: '#fbbf24', fontWeight: 800, cursor: 'pointer', transition: '0.3s' }}
+                    >
+                      {showRewardsInfo ? 'Hide Rewards 🎁' : 'Show Rewards 🎁'}
+                    </button>
                   </div>
-                )}
-              </>
-            )}
+                  {showRewardsInfo && (
+                    <div style={{ marginTop: '15px', padding: '20px', background: 'linear-gradient(90deg, rgba(251, 191, 36, 0.05), transparent)', borderRadius: '20px', border: '1px solid rgba(251, 191, 36, 0.1)', display: 'flex', alignItems: 'center', gap: '20px', animation: 'fadeIn 0.3s ease-in-out' }}>
+                      <div style={{ fontSize: '3rem' }}>🎁</div>
+                      <div style={{ flex: 1 }}>
+                        <h4 style={{ margin: 0, color: '#fbbf24', fontSize: '1.1rem', fontWeight: 900 }}>Monthly Rewards Distribution</h4>
+                        <p style={{ margin: '5px 0 0', color: '#94a3b8', lineHeight: '1.4' }}>
+                          🏆 <strong>Rank 1:</strong> 1000 Coins |
+                          🥈 <strong>Rank 2:</strong> 500 Coins |
+                          🥉 <strong>Rank 3:</strong> 200 Coins
+                        </p>
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 700, textAlign: 'right' }}>
+                        NEXT RESET:<br /> {new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toLocaleDateString()}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
 
               {/* Scrollable Body */}
               <div className="bot-body" style={{ flex: 1, overflowY: 'auto', padding: '0 40px 40px' }}>
@@ -1661,7 +1661,7 @@ export default function Dashboard() {
                     <p style={{ color: '#94a3b8', fontSize: '1.1rem', maxWidth: '400px', margin: '0 auto 40px', lineHeight: '1.6' }}>
                       The Hall of Fame unlocks once we reach **1,000 Global Users**. Be part of the early wave!
                     </p>
-                    
+
                     {/* Progress Bar */}
                     <div style={{ maxWidth: '400px', margin: '0 auto' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '0.9rem', color: '#fbbf24', fontWeight: '800' }}>
@@ -1669,9 +1669,9 @@ export default function Dashboard() {
                         <span>{leaderboardComingSoon.current} / {leaderboardComingSoon.target}</span>
                       </div>
                       <div style={{ height: '14px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <div style={{ 
-                          height: '100%', 
-                          width: `${Math.min((leaderboardComingSoon.current / leaderboardComingSoon.target) * 100, 100)}%`, 
+                        <div style={{
+                          height: '100%',
+                          width: `${Math.min((leaderboardComingSoon.current / leaderboardComingSoon.target) * 100, 100)}%`,
                           background: 'linear-gradient(90deg, #fbbf24, #f59e0b)',
                           transition: 'width 1s ease-out',
                           boxShadow: '0 0 20px rgba(251, 191, 36, 0.4)'
@@ -1682,7 +1682,7 @@ export default function Dashboard() {
                       </p>
                     </div>
 
-                    <button 
+                    <button
                       onClick={() => setIsLeaderboardOpen(false)}
                       style={{ marginTop: '50px', padding: '15px 40px', borderRadius: '30px', border: 'none', background: 'rgba(255,255,255,0.05)', color: '#fff', fontWeight: '700', cursor: 'pointer' }}
                     >
@@ -1749,8 +1749,8 @@ export default function Dashboard() {
                         leaderboardData.slice(leaderboardData.length >= 3 ? 3 : 0).map((item, idx) => {
                           const actualRank = (leaderboardData.length >= 3 ? 3 : 0) + idx + 1;
                           return (
-                            <div key={idx} style={{ 
-                              display: 'flex', alignItems: 'center', gap: '20px', padding: '18px 25px', 
+                            <div key={idx} style={{
+                              display: 'flex', alignItems: 'center', gap: '20px', padding: '18px 25px',
                               borderRadius: '24px', background: item.isMe ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255,255,255,0.03)',
                               border: item.isMe ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid rgba(255,255,255,0.05)',
                               transition: '0.3s'
@@ -2311,14 +2311,14 @@ export default function Dashboard() {
           <p className="section-subtitle" style={{ fontSize: '1.2rem', color: '#94a3b8' }}>Try your luck and win exclusive rewards and VIP statuses!</p>
           <button
             onClick={() => setShowBoxInfo(true)}
-            style={{ 
-              background: 'rgba(251, 191, 36, 0.1)', 
-              border: '1px solid rgba(251, 191, 36, 0.2)', 
-              color: '#fbbf24', 
-              padding: '12px 24px', 
-              borderRadius: '30px', 
-              fontWeight: '800', 
-              marginTop: '10px', 
+            style={{
+              background: 'rgba(251, 191, 36, 0.1)',
+              border: '1px solid rgba(251, 191, 36, 0.2)',
+              color: '#fbbf24',
+              padding: '12px 24px',
+              borderRadius: '30px',
+              fontWeight: '800',
+              marginTop: '10px',
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
@@ -2370,21 +2370,21 @@ export default function Dashboard() {
               <div className="box-rarity" style={{ position: 'absolute', top: '25px', right: '25px', background: `${box.color}22`, color: box.color, padding: '4px 12px', borderRadius: '50px', fontSize: '0.7rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1px', border: `1px solid ${box.color}44` }}>
                 {box.rarity}
               </div>
-              
+
               <div style={{ fontSize: '5rem', marginBottom: '30px', position: 'relative', zIndex: 2, filter: `drop-shadow(0 0 20px ${box.glow})` }}>{box.icon}</div>
-              
+
               <h3 style={{ fontSize: '1.8rem', marginBottom: '15px', color: '#fff', fontWeight: '900', position: 'relative', zIndex: 2 }}>{box.name}</h3>
-              
-              <div style={{ 
-                background: `linear-gradient(135deg, ${box.color}22, rgba(0,0,0,0.2))`, 
-                padding: '12px 25px', 
-                borderRadius: '20px', 
-                display: 'inline-flex', 
+
+              <div style={{
+                background: `linear-gradient(135deg, ${box.color}22, rgba(0,0,0,0.2))`,
+                padding: '12px 25px',
+                borderRadius: '20px',
+                display: 'inline-flex',
                 alignItems: 'center',
                 gap: '10px',
-                fontWeight: '900', 
-                color: box.color, 
-                position: 'relative', 
+                fontWeight: '900',
+                color: box.color,
+                position: 'relative',
                 zIndex: 2,
                 border: `1px solid ${box.color}44`,
                 fontSize: '1.1rem'
@@ -2524,47 +2524,47 @@ export default function Dashboard() {
 
       {confirmOpen && (
         <div className="payment-overlay" style={{ background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(20px)', zIndex: 20000 }}>
-          <div className="premium-modal" style={{ 
-            maxWidth: '450px', 
-            padding: '0', 
-            background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)', 
+          <div className="premium-modal" style={{
+            maxWidth: '450px',
+            padding: '0',
+            background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
             border: '1px solid rgba(255,255,255,0.1)',
             overflow: 'hidden',
             boxShadow: '0 50px 100px rgba(0,0,0,0.8)'
           }}>
             {/* Header with Box Color */}
-            <div style={{ 
-              height: '10px', 
+            <div style={{
+              height: '10px',
               background: confirmOpen === 'bronze' ? '#cd7f32' : confirmOpen === 'silver' ? '#c0c0c0' : '#ffd700',
               boxShadow: `0 0 20px ${confirmOpen === 'bronze' ? '#cd7f32' : confirmOpen === 'silver' ? '#c0c0c0' : '#ffd700'}55`
             }}></div>
-            
+
             <div style={{ padding: '40px 30px' }}>
               <div style={{ fontSize: '5rem', marginBottom: '25px', filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.5))' }} className="mystery-float">
                 {confirmOpen === 'bronze' ? '📦' : confirmOpen === 'silver' ? '🎁' : '✨'}
               </div>
-              
+
               <h3 style={{ fontSize: '2rem', fontWeight: '900', marginBottom: '15px', color: '#fff', letterSpacing: '-1px' }}>
                 Initiate <span style={{ color: confirmOpen === 'bronze' ? '#cd7f32' : confirmOpen === 'silver' ? '#c0c0c0' : '#ffd700' }}>{confirmOpen === 'bronze' ? 'Common' : confirmOpen === 'silver' ? 'Rare' : 'Legendary'}</span> Unlock?
               </h3>
-              
+
               <p style={{ color: '#94a3b8', fontSize: '1.1rem', lineHeight: '1.6', marginBottom: '35px' }}>
-                {user.email === "ds9376314@gmail.com" 
-                  ? "Admin Privileges detected. Unlock this crate for zero cost." 
+                {user.email === "ds9376314@gmail.com"
+                  ? "Admin Privileges detected. Unlock this crate for zero cost."
                   : `You are about to authorize a spend of ${confirmOpen === 'bronze' ? 50 : confirmOpen === 'silver' ? 150 : 500} coins for this transaction.`}
               </p>
-              
+
               <div style={{ display: 'flex', gap: '20px' }}>
                 <button
                   onClick={() => startOpeningFlow(confirmOpen)}
-                  style={{ 
-                    flex: 1.5, 
-                    padding: '18px', 
-                    borderRadius: '20px', 
-                    border: 'none', 
-                    background: 'linear-gradient(135deg, #6366f1, #4f46e5)', 
-                    color: '#fff', 
-                    fontWeight: '900', 
+                  style={{
+                    flex: 1.5,
+                    padding: '18px',
+                    borderRadius: '20px',
+                    border: 'none',
+                    background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+                    color: '#fff',
+                    fontWeight: '900',
                     cursor: 'pointer',
                     fontSize: '1.1rem',
                     boxShadow: '0 10px 20px rgba(99, 102, 241, 0.3)',
@@ -2577,14 +2577,14 @@ export default function Dashboard() {
                 </button>
                 <button
                   onClick={() => setConfirmOpen(null)}
-                  style={{ 
-                    flex: 1, 
-                    padding: '18px', 
-                    borderRadius: '20px', 
-                    border: '1px solid rgba(255,255,255,0.1)', 
-                    background: 'rgba(255,255,255,0.03)', 
-                    color: '#94a3b8', 
-                    fontWeight: '800', 
+                  style={{
+                    flex: 1,
+                    padding: '18px',
+                    borderRadius: '20px',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(255,255,255,0.03)',
+                    color: '#94a3b8',
+                    fontWeight: '800',
                     cursor: 'pointer',
                     fontSize: '1rem',
                     transition: '0.3s'
@@ -2603,7 +2603,7 @@ export default function Dashboard() {
       {showSpinner && (
         <div className="payment-overlay" style={{ background: 'rgba(2, 6, 23, 0.98)', backdropFilter: 'blur(30px)', zIndex: 20000 }}>
           <div className="spinner-container" style={{ textAlign: 'center', position: 'relative', maxWidth: '500px', width: '95%' }}>
-            
+
             {/* Mechanical Frame */}
             <div className="slot-machine-frame" style={{
               background: 'linear-gradient(180deg, #334155 0%, #1e293b 100%)',
@@ -2615,10 +2615,10 @@ export default function Dashboard() {
             }}>
               {/* Flashing Side Lights */}
               <div style={{ position: 'absolute', top: '10%', left: '-15px', height: '80%', width: '10px', display: 'flex', flexDirection: 'column', justifyContent: 'space-around' }}>
-                {[1,2,3,4,5].map(i => <div key={i} style={{ width: '10px', height: '10px', borderRadius: '50%', background: i % 2 === 0 ? '#fbbf24' : '#6366f1', animation: 'pulse 0.5s infinite alternate' }}></div>)}
+                {[1, 2, 3, 4, 5].map(i => <div key={i} style={{ width: '10px', height: '10px', borderRadius: '50%', background: i % 2 === 0 ? '#fbbf24' : '#6366f1', animation: 'pulse 0.5s infinite alternate' }}></div>)}
               </div>
               <div style={{ position: 'absolute', top: '10%', right: '-15px', height: '80%', width: '10px', display: 'flex', flexDirection: 'column', justifyContent: 'space-around' }}>
-                {[1,2,3,4,5].map(i => <div key={i} style={{ width: '10px', height: '10px', borderRadius: '50%', background: i % 2 === 0 ? '#6366f1' : '#fbbf24', animation: 'pulse 0.5s infinite alternate-reverse' }}></div>)}
+                {[1, 2, 3, 4, 5].map(i => <div key={i} style={{ width: '10px', height: '10px', borderRadius: '50%', background: i % 2 === 0 ? '#6366f1' : '#fbbf24', animation: 'pulse 0.5s infinite alternate-reverse' }}></div>)}
               </div>
 
               <div style={{ fontSize: '1.2rem', color: '#fff', fontWeight: '900', marginBottom: '25px', letterSpacing: '5px', textTransform: 'uppercase', textShadow: '0 0 10px #6366f1' }}>
@@ -2644,8 +2644,8 @@ export default function Dashboard() {
                     transform: reelIdx === 1 ? 'scale(1.1)' : 'scale(0.95)',
                     zIndex: reelIdx === 1 ? 10 : 1
                   }}>
-                    <div style={{ 
-                      fontSize: '3.5rem', 
+                    <div style={{
+                      fontSize: '3.5rem',
                       position: 'relative',
                       filter: reelIdx === 1 ? 'none' : 'blur(2px)'
                     }} className="slot-spinning">
@@ -2670,12 +2670,12 @@ export default function Dashboard() {
       {revealPrize && (
         <div className="payment-overlay" style={{ background: 'rgba(2, 6, 23, 0.95)', backdropFilter: 'blur(20px)', zIndex: 20000 }}>
           <div className="reveal-container" style={{ textAlign: 'center', maxWidth: '400px', width: '90%', position: 'relative' }}>
-            
+
             {/* Celebration Lighting */}
-            <div className={`reveal-glow ${revealPrize.isLoss ? 'loss-glow' : 'win-lighting'}`} style={{ 
+            <div className={`reveal-glow ${revealPrize.isLoss ? 'loss-glow' : 'win-lighting'}`} style={{
               position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
               width: '120%', height: '120%', zIndex: -1, borderRadius: '50%',
-              background: revealPrize.isLoss 
+              background: revealPrize.isLoss
                 ? 'radial-gradient(circle, rgba(239, 68, 68, 0.15) 0%, transparent 70%)'
                 : 'radial-gradient(circle, rgba(251, 191, 36, 0.2) 0%, transparent 70%)'
             }}></div>
@@ -2691,8 +2691,8 @@ export default function Dashboard() {
               boxShadow: '0 30px 60px rgba(0,0,0,0.7)',
               animation: 'revealScale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
             }}>
-              <div style={{ 
-                fontSize: '5rem', marginBottom: '20px', 
+              <div style={{
+                fontSize: '5rem', marginBottom: '20px',
                 animation: revealPrize.isLoss ? 'shake 0.5s ease-in-out' : 'float 3s infinite',
                 filter: `drop-shadow(0 0 20px ${revealPrize.isLoss ? 'rgba(239, 68, 68, 0.4)' : 'rgba(251, 191, 36, 0.6)'})`
               }}>
@@ -2702,7 +2702,7 @@ export default function Dashboard() {
               <h2 style={{ fontSize: '2.2rem', fontWeight: '950', marginBottom: '5px', color: '#fff', letterSpacing: '-1.5px' }}>
                 {revealPrize.isLoss ? 'EMPTY' : 'JACKPOT!'}
               </h2>
-              
+
               <p style={{ color: '#94a3b8', fontSize: '1rem', marginBottom: '30px' }}>
                 {revealPrize.isLoss ? "Better luck next time!" : "You've secured a rare item!"}
               </p>
