@@ -1606,6 +1606,10 @@ io.on("connection", (socket) => {
 
     console.log(`User ${socket.id} profile set securely:`, profile.name, socket.premium ? "PREMIUM" : "FREE");
 
+    if (socket.userId) {
+      onlineUsers.set(socket.userId, socket.id);
+    }
+
     if (profile.roomId) {
       return;
     }

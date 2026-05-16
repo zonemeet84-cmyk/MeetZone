@@ -5,6 +5,9 @@ import { useRouter } from "next/router";
 import axios from "axios";
 import { useSession, signOut } from "next-auth/react";
 import { Country, State } from "country-state-city";
+import io from "socket.io-client";
+
+let socket;
 
 // Helper to get Country Flag Image URL from name or ISO code
 const getFlagUrl = (countryInput) => {
@@ -43,8 +46,55 @@ export default function Dashboard() {
     return () => {
       window.removeEventListener("online", updateOnlineStatus);
       window.removeEventListener("offline", updateOnlineStatus);
+      if (socket) socket.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    if (user && user.id) {
+      if (!socket) {
+        socket = io("https://meetzone-backend.onrender.com");
+        
+        socket.on("connect", () => {
+          socket.emit("register-user", user.id);
+          setIsSocketConnected(true);
+          console.log("Global Socket Connected for Calls");
+        });
+
+        socket.on("disconnect", () => {
+          setIsSocketConnected(false);
+        });
+
+        socket.on("incoming-direct-call", (callInfo) => {
+          setIncomingCall(callInfo);
+          // Play a ringtone logic could go here
+        });
+
+        socket.on("direct-call-accepted", ({ roomId }) => {
+          router.push(`/chat?room=${roomId}`);
+        });
+
+        socket.on("direct-call-rejected", () => {
+          alert("Call was declined.");
+        });
+      }
+    }
+  }, [user]);
+
+  const acceptCall = () => {
+    if (incomingCall) {
+      socket.emit("direct-call-accept", { toSocketId: incomingCall.fromSocketId, roomId: incomingCall.roomId });
+      router.push(`/chat?room=${incomingCall.roomId}`);
+      setIncomingCall(null);
+    }
+  };
+
+  const rejectCall = () => {
+    if (incomingCall) {
+      socket.emit("direct-call-reject", { toSocketId: incomingCall.fromSocketId });
+      setIncomingCall(null);
+    }
+  };
 
   const [currency, setCurrency] = useState("INR");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -66,6 +116,8 @@ export default function Dashboard() {
   const [transferAmount, setTransferAmount] = useState("");
   const [isGifting, setIsGifting] = useState(false);
   const [giftRecipientId, setGiftRecipientId] = useState("");
+  const [incomingCall, setIncomingCall] = useState(null);
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
 
   // ZoneMeetBot State
   const [isBotOpen, setIsBotOpen] = useState(false);
@@ -870,6 +922,29 @@ export default function Dashboard() {
       </Head>
 
       <div className="bg-gradient" />
+
+      {/* GLOBAL INCOMING CALL POPUP */}
+      {incomingCall && (
+        <div className="incoming-call-overlay">
+          <div className="incoming-call-card">
+            <div className="call-avatar">
+              {incomingCall.fromUser.name?.charAt(0)}
+            </div>
+            <div className="call-info">
+              <h3>{incomingCall.fromUser.name}</h3>
+              <p>is calling you via ZoneMeet...</p>
+            </div>
+            <div className="call-actions">
+              <button className="accept-btn" onClick={acceptCall}>
+                <span className="icon">📞</span> Accept
+              </button>
+              <button className="decline-btn" onClick={rejectCall}>
+                <span className="icon">✖</span> Decline
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="header">
         <div className="brand-group">
@@ -2867,6 +2942,91 @@ export default function Dashboard() {
 
         .nav-link:hover::after {
            width: 100%;
+        }
+
+        .incoming-call-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0,0,0,0.8);
+          backdrop-filter: blur(10px);
+          z-index: 999999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          animation: fadeIn 0.3s ease;
+        }
+
+        .incoming-call-card {
+          background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+          border: 1px solid rgba(255,255,255,0.1);
+          padding: 40px;
+          border-radius: 30px;
+          text-align: center;
+          width: 350px;
+          box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+          animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .call-avatar {
+          width: 80px;
+          height: 80px;
+          background: linear-gradient(135deg, #6366f1, #ec4899);
+          border-radius: 50%;
+          margin: 0 auto 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 2rem;
+          font-weight: 800;
+          color: white;
+          box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+        }
+
+        .call-info h3 { font-size: 1.5rem; margin-bottom: 5px; color: white; }
+        .call-info p { color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 30px; }
+
+        .call-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .accept-btn, .decline-btn {
+          width: 100%;
+          padding: 15px;
+          border-radius: 15px;
+          border: none;
+          font-weight: 800;
+          font-size: 1rem;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          transition: all 0.2s;
+        }
+
+        .accept-btn {
+          background: #10b981;
+          color: white;
+          box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .decline-btn {
+          background: rgba(239, 68, 68, 0.1);
+          color: #ef4444;
+          border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .accept-btn:hover { transform: scale(1.02); background: #059669; }
+        .decline-btn:hover { background: rgba(239, 68, 68, 0.2); }
+
+        @keyframes scaleUp {
+          from { transform: scale(0.8); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
         }
 
         .dashboard-hero {
