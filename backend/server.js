@@ -1470,6 +1470,10 @@ const queueUser = (socket) => {
   }
 };
 
+// Global Moderation State
+const BAD_WORDS_LIST = ["abuse", "fake", "sex", "scam", "nude", "porn", "pussy", "dick", "lund", "chod", "gand", "porn", "xxx", "fuck", "bitch"];
+const userStrikes = new Map(); // email -> strike count
+
 io.on("connection", (socket) => {
   console.log("User Connected:", socket.id);
 
@@ -1528,6 +1532,26 @@ io.on("connection", (socket) => {
   });
 
   socket.on("send-message", ({ text, to }) => {
+    if (socket.user) {
+      const email = socket.user.email;
+      const lowerText = text.toLowerCase();
+      const hasBadWord = BAD_WORDS_LIST.some(word => lowerText.includes(word));
+
+      if (hasBadWord) {
+        let strikes = (userStrikes.get(email) || 0) + 1;
+        userStrikes.set(email, strikes);
+
+        if (strikes >= 3) {
+          console.log(`[GUARDIAN] CHAT ABUSE detected: ${email}. Banning...`);
+          banUser(email, "AI Detection: Repeated use of restricted words in chat");
+          return;
+        } else {
+          socket.emit("warning-alert", `Warning: Your message contains restricted words. Strike ${strikes}/3. Continued abuse will lead to a permanent ban.`);
+          return; // Don't send the message
+        }
+      }
+    }
+
     io.to(to).emit("receive-message", {
       text,
       senderId: socket.id,

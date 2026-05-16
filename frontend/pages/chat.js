@@ -4,6 +4,8 @@ import axios from "axios";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useSession, signOut } from "next-auth/react";
+import * as nsfwjs from "nsfwjs";
+import * as tf from "@tensorflow/tfjs";
 import { Country, State } from "country-state-city";
 import Script from "next/script";
 // MediaPipe will be loaded via next/script
@@ -88,6 +90,7 @@ export default function Home() {
   const canvasRef = useRef(null);
   const faceMeshRef = useRef(null);
   const onResultsRef = useRef(null);
+  const nsfwModel = useRef(null);
 
 
   // Helper to convert 2-letter ISO country code to Emoji Flag
@@ -834,6 +837,32 @@ export default function Home() {
         setStatus("Please allow camera/mic access");
       }
 
+      // 4. AI Guard: NSFW Detection
+      const initNSFW = async () => {
+        try {
+          await tf.ready();
+          nsfwModel.current = await nsfwjs.load();
+          console.log("NSFW Guardian active.");
+          
+          const checkVideo = async () => {
+            if (localVideo.current && localVideo.current.readyState === 4) {
+              const predictions = await nsfwModel.current.classify(localVideo.current);
+              const nsfw = predictions.find(p => p.className === "Porn" || p.className === "Hentai" || p.className === "Sexy");
+              if (nsfw && nsfw.probability > 0.85) {
+                console.log("NSFW Content Detected! Reporting...");
+                socket.emit("nsfw-detected");
+                return; // Stop checking after detection
+              }
+            }
+            setTimeout(checkVideo, 3000); // Check every 3 seconds
+          };
+          checkVideo();
+        } catch (err) {
+          console.error("NSFW Guardian failed to load:", err);
+        }
+      };
+      initNSFW();
+
       // 3. Socket Logic
       socket = io("https://meetzone-backend.onrender.com");
 
@@ -854,6 +883,17 @@ export default function Home() {
       socket.on("friend-request-received", ({ fromName }) => {
         setFriendNotification({ type: 'received', message: `${fromName} sent you a friend request!` });
         setTimeout(() => setFriendNotification(null), 5000);
+      });
+
+      socket.on("warning-alert", (msg) => {
+        alert(msg);
+      });
+
+      socket.on("banned-alert", (msg) => {
+        alert(msg);
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/login";
       });
 
       socket.on("receive-sticker", ({ stickerIcon, senderName, amount }) => {
