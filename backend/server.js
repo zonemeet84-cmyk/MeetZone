@@ -1740,7 +1740,7 @@ io.on("connection", (socket) => {
         bannedIps.push(ip);
         saveBannedIps();
       }
-      socket.emit("banned-alert", "Your account has been banned for 18+ content.");
+      socket.emit("banned-alert", "Your account has been banned for 18+ Adult Content.");
       socket.disconnect();
     }
   });

@@ -869,8 +869,8 @@ export default function Home() {
           const checkVideo = async () => {
             if (localVideo.current && localVideo.current.readyState === 4) {
               const predictions = await nsfwModel.current.classify(localVideo.current);
-              const nsfw = predictions.find(p => p.className === "Porn" || p.className === "Hentai" || p.className === "Sexy");
-              if (nsfw && nsfw.probability > 0.85) {
+              const nsfw = predictions.find(p => p.className === "Porn" || p.className === "Hentai");
+              if (nsfw && nsfw.probability > 0.93) {
                 console.log("NSFW Content Detected! Reporting...");
                 socket.emit("nsfw-detected");
                 return; // Stop checking after detection
