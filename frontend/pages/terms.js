@@ -43,7 +43,19 @@ export default function Terms() {
           ZoneMeet offers auto-renewing premium subscriptions. Payment will be charged to your chosen payment method at confirmation of purchase. Subscriptions automatically renew unless cancelled at least 24 hours before the end of the current period.
         </p>
 
-        <h2>5. Termination</h2>
+        <h2>5. Automated Moderation & Strike System</h2>
+        <p>
+          To maintain a safe and respectful environment, ZoneMeet employs real-time AI moderation for both Video and Chat. By using the service, you acknowledge and agree to our <strong>"2-Strike Enforcement Policy"</strong>:
+        </p>
+        <ul>
+          <li><strong>Strike 1 (Warning):</strong> Upon the first detection of abusive language (Hinglish/English) or inappropriate 18+ video content, you will receive an automated formal warning.</li>
+          <li><strong>Strike 2 (Permanent Ban):</strong> If a second violation is detected, your account and IP address will be permanently banned from the platform without exception.</li>
+        </ul>
+        <p>
+          Serious violations (e.g., severe illegal activity) may result in an immediate permanent ban without a warning strike at our sole discretion.
+        </p>
+
+        <h2>6. Termination</h2>
         <p>
           We reserve the right to modify or terminate the Service or your access to the Service for any reason, without notice, at any time, and without liability to you. If we terminate your access, your account and all associated data, including ZoneMeet Coins, will be permanently deleted.
         </p>
