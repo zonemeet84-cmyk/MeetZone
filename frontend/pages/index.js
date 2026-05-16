@@ -342,8 +342,11 @@ export default function Dashboard() {
 
     useEffect(() => {
       if (user && !authLoading) {
-        if (!user.gender || user.gender === "Other" || !user.country || user.country === "Unknown" || user.gender === "All") {
-          setShowOnboarding(true);
+        // Only show onboarding if not already completed and profile fields are missing/default
+        if (!user.onboardingCompleted) {
+          if (!user.gender || user.gender === "Other" || !user.country || user.country === "Unknown" || user.gender === "All") {
+            setShowOnboarding(true);
+          }
         }
       }
     }, [user, authLoading]);
@@ -750,9 +753,7 @@ export default function Dashboard() {
 
     // Always prefer the freshest state if available
     const storedUser = user || (localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null);
-    console.log("Active User:", storedUser);
-
-    if (!storedUser || !storedUser.gender || storedUser.gender === "Other" || !storedUser.country || storedUser.country === "Unknown" || storedUser.gender === "All") {
+    if (!storedUser || (!storedUser.onboardingCompleted && (!storedUser.gender || storedUser.gender === "Other" || !storedUser.country || storedUser.country === "Unknown" || storedUser.gender === "All"))) {
       console.log("Incomplete profile, showing onboarding");
       setShowOnboarding(true);
       setStartingChat(false);

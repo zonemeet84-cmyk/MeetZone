@@ -417,17 +417,17 @@ app.post("/api/auth/update-profile", (req, res) => {
 
   let user = users.find((u) => u.email === email);
   if (!user) {
-    // If user doesn't exist (e.g. first time Google login), create them
     user = {
       id: "u" + Date.now(),
       email,
       name: name || email.split("@")[0],
-      password: "google_user_" + Math.random(), // Placeholder for external auth users
+      password: "google_user_" + Math.random(),
       premium: false,
       gender,
       country,
       state,
-      age
+      age,
+      onboardingCompleted: true
     };
     users.push(user);
   } else {
@@ -436,10 +436,11 @@ app.post("/api/auth/update-profile", (req, res) => {
     if (state) user.state = state;
     if (age) user.age = age;
     if (name) user.name = name;
+    user.onboardingCompleted = true;
   }
 
   saveUsers();
-  res.json({ success: true, user: { id: user.id, email: user.email, name: user.name, premium: user.premium, gender: user.gender, country: user.country, state: user.state, age: user.age, planName: user.planName } });
+  res.json({ success: true, user: { ...user, id: user.id } });
 });
 
 // Send OTP endpoint (Twilio Verify - Global 180+ countries)
