@@ -586,7 +586,7 @@ export default function Home() {
       }
 
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:5000/api/report", {
+      await axios.post("https://meetzone-backend.onrender.com/api/report", {
         targetId: partnerInfo?.id || partnerId,
         reason: selectedReason,
         details: reportDetails,
@@ -622,7 +622,7 @@ export default function Home() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.post("http://localhost:5000/api/user/send-gift", {
+      const res = await axios.post("https://meetzone-backend.onrender.com/api/user/send-gift", {
         recipientId: partnerInfo.id,
         stickerId: sticker.id,
         amount: sticker.price,
@@ -656,7 +656,7 @@ export default function Home() {
     setFriendReqStatus(true);
     try {
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:5000/api/friends/request", { targetId: partnerInfo.id }, {
+      await axios.post("https://meetzone-backend.onrender.com/api/friends/request", { targetId: partnerInfo.id }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -766,7 +766,7 @@ export default function Home() {
         setAuthLoading(false);
       } else if (token && token !== "undefined") {
         try {
-          const res = await axios.get("http://localhost:5000/api/auth/verify", {
+          const res = await axios.get("https://meetzone-backend.onrender.com/api/auth/verify", {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (res.data.valid) {
@@ -829,7 +829,7 @@ export default function Home() {
       }
 
       // 3. Socket Logic
-      socket = io("http://localhost:5000");
+      socket = io("https://meetzone-backend.onrender.com");
 
       socket.on("connect", () => {
         setStatus("Waiting for a partner...");
@@ -1013,7 +1013,7 @@ export default function Home() {
     if (!pendingMessage) return;
 
     try {
-      const res = await axios.post("http://localhost:5000/api/user/spend-coins", {
+      const res = await axios.post("https://meetzone-backend.onrender.com/api/user/spend-coins", {
         email: user.email,
         amount: 5,
         feature: "Friend Message"
@@ -1065,7 +1065,7 @@ export default function Home() {
 
     if (confirm(`Unlock ${filter.name} for ${filter.cost} coins?`)) {
       try {
-        const res = await axios.post("http://localhost:5000/api/user/spend-coins", {
+        const res = await axios.post("https://meetzone-backend.onrender.com/api/user/spend-coins", {
           email: user.email,
           userId: user.id,
           amount: filter.cost,
@@ -1195,7 +1195,7 @@ export default function Home() {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      const verifyRes = await axios.post("http://localhost:5000/api/payment/razorpay/verify", {
+      const verifyRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/razorpay/verify", {
         razorpay_order_id: "test_order",
         razorpay_payment_id: "test_payment",
         razorpay_signature: "test_sig",
@@ -1570,7 +1570,7 @@ export default function Home() {
                     onClick={async () => {
                       try {
                         const token = localStorage.getItem("token");
-                        await axios.post("http://localhost:5000/api/report", { targetId: partnerId }, {
+                        await axios.post("https://meetzone-backend.onrender.com/api/report", { targetId: partnerId }, {
                           headers: { Authorization: `Bearer ${token}` }
                         });
                         alert("User reported successfully.");

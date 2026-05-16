@@ -71,7 +71,7 @@ export default function Dashboard() {
   const fetchLeaderboard = async (filterType = leaderboardFilter) => {
     setLeaderboardLoading(true);
     try {
-      const res = await axios.get(`http://localhost:5000/api/user/leaderboard?filter=${filterType}&email=${user?.email || ''}`);
+      const res = await axios.get(`https://meetzone-backend.onrender.com/api/user/leaderboard?filter=${filterType}&email=${user?.email || ''}`);
       if (res.data.success) {
         if (res.data.comingSoon) {
           setLeaderboardComingSoon({ current: res.data.currentCount, target: res.data.targetCount });
@@ -272,7 +272,7 @@ export default function Dashboard() {
         if (!token || token === "undefined") {
           try {
             const referralCode = localStorage.getItem("referral") || undefined;
-            const res = await axios.post("http://localhost:5000/api/auth/session-login", {
+            const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/session-login", {
               email: session.user.email,
               name: session.user.name,
               referralCode
@@ -288,7 +288,7 @@ export default function Dashboard() {
         } else {
           // Always verify to get latest profile on load
           try {
-            const res = await axios.get("http://localhost:5000/api/auth/verify", {
+            const res = await axios.get("https://meetzone-backend.onrender.com/api/auth/verify", {
               headers: { Authorization: `Bearer ${token}` },
             });
             if (res.data.valid) {
@@ -319,7 +319,7 @@ export default function Dashboard() {
         }
       } else if (token && token !== "undefined") {
         try {
-          const res = await axios.get("http://localhost:5000/api/auth/verify", {
+          const res = await axios.get("https://meetzone-backend.onrender.com/api/auth/verify", {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (res.data.valid) {
@@ -351,7 +351,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (user && (user.email || user.phone) && !dailyStatus) {
-      axios.post("http://localhost:5000/api/user/daily-check", { email: user.email, phone: user.phone })
+      axios.post("https://meetzone-backend.onrender.com/api/user/daily-check", { email: user.email, phone: user.phone })
         .then(res => {
           if (res.data.success) {
             setDailyStatus(res.data);
@@ -380,7 +380,7 @@ export default function Dashboard() {
       const token = localStorage.getItem("token");
       if (user && token && !referralStats) {
         try {
-          const res = await axios.get("http://localhost:5000/api/referral/stats", {
+          const res = await axios.get("https://meetzone-backend.onrender.com/api/referral/stats", {
             headers: { Authorization: `Bearer ${token}` }
           });
           setReferralStats(res.data);
@@ -399,7 +399,7 @@ export default function Dashboard() {
 
   const collectDailyReward = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/user/collect-daily-reward", { email: user.email, phone: user.phone });
+      const res = await axios.post("https://meetzone-backend.onrender.com/api/user/collect-daily-reward", { email: user.email, phone: user.phone });
       if (res.data.success) {
         const updated = { ...user, coins: res.data.coins, streak: res.data.streak, bonusClaimedToday: true };
         setUser(updated);
@@ -456,7 +456,7 @@ export default function Dashboard() {
         try {
           // Show processing state in the message or modal if needed
           // For now, just proceed with the call
-          const res = await axios.post('http://localhost:5000/api/user/spend-coins', {
+          const res = await axios.post('https://meetzone-backend.onrender.com/api/user/spend-coins', {
             email: user.email,
             amount: isAdmin ? 0 : cost,
             feature: featureName.toLowerCase().replace(/\s+/g, '_')
@@ -508,7 +508,7 @@ export default function Dashboard() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.post("http://localhost:5000/api/referral/redeem", {
+      const res = await axios.post("https://meetzone-backend.onrender.com/api/referral/redeem", {
         referralCode: redeemCode
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -546,7 +546,7 @@ export default function Dashboard() {
       onConfirm: async () => {
         try {
           const token = localStorage.getItem("token");
-          const res = await axios.post("http://localhost:5000/api/user/transfer-coins", {
+          const res = await axios.post("https://meetzone-backend.onrender.com/api/user/transfer-coins", {
             recipientId: transferRecipientId,
             amount: Number(transferAmount)
           }, {
@@ -612,7 +612,7 @@ export default function Dashboard() {
     }, 100);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/user/open-box", {
+      const res = await axios.post("https://meetzone-backend.onrender.com/api/user/open-box", {
         email: user.email,
         boxType: type
       });
@@ -634,7 +634,7 @@ export default function Dashboard() {
 
   const saveStreak = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/user/save-streak", {
+      const res = await axios.post("https://meetzone-backend.onrender.com/api/user/save-streak", {
         email: user.email,
         oldStreak: dailyStatus.oldStreak
       });
@@ -676,7 +676,7 @@ export default function Dashboard() {
       // Let's assume we need to update the user in users.json.
       // I'll check if there's a profile update endpoint in server.js.
 
-      const res = await axios.post("http://localhost:5000/api/auth/update-profile", {
+      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/update-profile", {
         email: user.email,
         name: user.name,
         ...updatedData
@@ -776,7 +776,7 @@ export default function Dashboard() {
       // 1. Create order on backend
       const amountInPaise = selectedPlan.name === "Starter" ? 9900 : selectedPlan.name === "Prime" ? 34900 : selectedPlan.name === "Silver" ? 99900 : 89900;
 
-      const orderRes = await axios.post("http://localhost:5000/api/payment/razorpay/order", {
+      const orderRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/razorpay/order", {
         amount: amountInPaise,
         currency: "INR"
       });
@@ -790,7 +790,7 @@ export default function Dashboard() {
         order_id: orderRes.data.id,
         handler: async (response) => {
           try {
-            const verifyRes = await axios.post("http://localhost:5000/api/payment/razorpay/verify", {
+            const verifyRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/razorpay/verify", {
               ...response,
               userEmail: user.email,
               planName: selectedPlan.name,
@@ -978,7 +978,7 @@ export default function Dashboard() {
                             cancelText: "Cancel",
                             onConfirm: async () => {
                               try {
-                                const res = await axios.post("http://localhost:5000/api/user/spend-coins", { email: user.email, amount: 100, feature: "profile_boost" });
+                                const res = await axios.post("https://meetzone-backend.onrender.com/api/user/spend-coins", { email: user.email, amount: 100, feature: "profile_boost" });
                                 if (res.data.success) {
                                   const newUser = { ...user, coins: res.data.coins, boostExpiry: res.data.boostExpiry, coinActivity: res.data.coinActivity }; setUser(newUser);
                                   localStorage.setItem("user", JSON.stringify(newUser));
@@ -2119,11 +2119,11 @@ export default function Dashboard() {
                           cancelText: "Cancel",
                           onConfirm: async () => {
                             try {
-                              const res = await axios.post('http://localhost:5000/api/user/spend-coins', { email: user.email, amount: 10, feature: 'reconnect' });
+                              const res = await axios.post('https://meetzone-backend.onrender.com/api/user/spend-coins', { email: user.email, amount: 10, feature: 'reconnect' });
                               if (res.data.success) {
                                 setUser({ ...user, coins: res.data.coins });
                                 const token = localStorage.getItem('token');
-                                await axios.post('http://localhost:5000/api/friends/request', { targetId: s.id, type: 'reconnect' }, { headers: { Authorization: `Bearer ${token}` } });
+                                await axios.post('https://meetzone-backend.onrender.com/api/friends/request', { targetId: s.id, type: 'reconnect' }, { headers: { Authorization: `Bearer ${token}` } });
                                 showModal({ message: `Request sent to ${s.name}!`, type: "success" });
                               }
                             } catch (err) {

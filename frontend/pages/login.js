@@ -43,7 +43,7 @@ export default function Login() {
 
     try {
       const payload = { identifier: form.emailOrPhone, password: form.password };
-      const res = await axios.post("http://localhost:5000/api/auth/login", payload);
+      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/login", payload);
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       router.push(callbackUrl || "/");

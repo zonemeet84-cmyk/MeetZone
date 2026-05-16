@@ -47,7 +47,7 @@ export default function Friends() {
     }
     setUser(storedUser);
 
-    const newSocket = io("http://localhost:5000");
+    const newSocket = io("https://meetzone-backend.onrender.com");
     setSocket(newSocket);
 
     newSocket.on("connect", () => {
@@ -83,7 +83,7 @@ export default function Friends() {
 
   const fetchFriends = async (token) => {
     try {
-      const res = await axios.get("http://localhost:5000/api/friends/list", {
+      const res = await axios.get("https://meetzone-backend.onrender.com/api/friends/list", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFriends(res.data.friends);
@@ -97,7 +97,7 @@ export default function Friends() {
     e.preventDefault();
     const token = localStorage.getItem("token");
     try {
-      const res = await axios.get(`http://localhost:5000/api/users/search?email=${searchEmail}`, {
+      const res = await axios.get(`https://meetzone-backend.onrender.com/api/users/search?email=${searchEmail}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSearchResult(res.data);
@@ -110,7 +110,7 @@ export default function Friends() {
   const sendRequest = async () => {
     const token = localStorage.getItem("token");
     try {
-      await axios.post("http://localhost:5000/api/friends/request", { targetId: searchResult.id }, {
+      await axios.post("https://meetzone-backend.onrender.com/api/friends/request", { targetId: searchResult.id }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert("Friend request sent!");
@@ -124,7 +124,7 @@ export default function Friends() {
   const acceptRequest = async (requesterId) => {
     const token = localStorage.getItem("token");
     try {
-      await axios.post("http://localhost:5000/api/friends/accept", { requesterId }, {
+      await axios.post("https://meetzone-backend.onrender.com/api/friends/accept", { requesterId }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchFriends(token);

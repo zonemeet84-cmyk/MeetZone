@@ -61,7 +61,7 @@ export default function AdminDashboard() {
       // If token is missing, attempt to sync from session
       if (!token || token === "undefined") {
         if (sessionStatus === "authenticated" && session?.user?.email === "ds9376314@gmail.com") {
-          const syncRes = await axios.post("http://localhost:5000/api/auth/session-login", {
+          const syncRes = await axios.post("https://meetzone-backend.onrender.com/api/auth/session-login", {
             email: session.user.email,
             name: session.user.name
           });
@@ -77,13 +77,13 @@ export default function AdminDashboard() {
       
       try {
         const [statsRes, reportsRes, liveRes, usersRes, bannedRes, analyticsRes, msgsRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/admin/stats", config),
-          axios.get("http://localhost:5000/api/admin/reports", config),
-          axios.get("http://localhost:5000/api/admin/live-users", config),
-          axios.get("http://localhost:5000/api/admin/all-users", config),
-          axios.get("http://localhost:5000/api/admin/banned-users", config),
-          axios.get("http://localhost:5000/api/admin/analytics", config),
-          axios.get("http://localhost:5000/api/admin/messages", config)
+          axios.get("https://meetzone-backend.onrender.com/api/admin/stats", config),
+          axios.get("https://meetzone-backend.onrender.com/api/admin/reports", config),
+          axios.get("https://meetzone-backend.onrender.com/api/admin/live-users", config),
+          axios.get("https://meetzone-backend.onrender.com/api/admin/all-users", config),
+          axios.get("https://meetzone-backend.onrender.com/api/admin/banned-users", config),
+          axios.get("https://meetzone-backend.onrender.com/api/admin/analytics", config),
+          axios.get("https://meetzone-backend.onrender.com/api/admin/messages", config)
         ]);
 
         setStats(statsRes.data);
@@ -100,7 +100,7 @@ export default function AdminDashboard() {
           localStorage.removeItem("token");
           // Re-sync immediately once if we have a session
           if (sessionStatus === "authenticated" && session?.user?.email === "ds9376314@gmail.com") {
-             const syncRes = await axios.post("http://localhost:5000/api/auth/session-login", {
+             const syncRes = await axios.post("https://meetzone-backend.onrender.com/api/auth/session-login", {
                email: session.user.email,
                name: session.user.name
              });
@@ -119,7 +119,7 @@ export default function AdminDashboard() {
     const result = await Swal.fire({ text: `Are you sure you want to ${msg}?`, icon: "question", showCancelButton: true, confirmButtonColor: "#6366f1", cancelButtonColor: "#ef4444", background: "#0f172a", color: "#fff" }); if (!result.isConfirmed) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`http://localhost:5000/api/admin/${endpoint}`, payload, {
+      await axios.post(`https://meetzone-backend.onrender.com/api/admin/${endpoint}`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       Swal.fire({ text: `Success: ${msg}`, icon: "info", confirmButtonColor: "#6366f1", background: "#0f172a", color: "#fff" });
@@ -569,7 +569,7 @@ export default function AdminDashboard() {
                                onClick={() => {
                                  window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${m.email}&su=RE: ${m.subject}`, "_blank");
                                  const token = localStorage.getItem("token");
-                                 axios.post("http://localhost:5000/api/admin/messages/delete", { id: m.id }, {
+                                 axios.post("https://meetzone-backend.onrender.com/api/admin/messages/delete", { id: m.id }, {
                                    headers: { Authorization: `Bearer ${token}` }
                                  }).then(() => {
                                    setContactMessages(contactMessages.filter(msg => msg.id !== m.id));
