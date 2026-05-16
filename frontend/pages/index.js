@@ -877,11 +877,11 @@ export default function Dashboard() {
           {user?.premium && <span className="premium-badge">{user.planName || "PREMIUM"}</span>}
         </div>
 
-        <nav className="header-nav" style={{ display: 'flex', gap: '20px', alignItems: 'center', marginLeft: 'auto', marginRight: '20px' }}>
-          <div className="nav-link" onClick={() => router.push("/")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Home</div>
-          <div className="nav-link" onClick={() => router.push("/friends")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Friends</div>
-          <div className="nav-link" onClick={() => setShowHistoryModal(true)} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>History</div>
-          <div className="nav-link" onClick={() => document.getElementById("coins-section")?.scrollIntoView({ behavior: 'smooth' })} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Coins</div>
+        <nav className="header-nav" style={{ display: 'flex', gap: '15px', alignItems: 'center', marginLeft: '20px', marginRight: 'auto' }}>
+          <div className="nav-link" onClick={() => router.push("/")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', transition: 'all 0.3s' }}>Home</div>
+          <div className="nav-link" onClick={() => router.push("/friends")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', transition: 'all 0.3s' }}>Friends</div>
+          <div className="nav-link" onClick={() => setShowHistoryModal(true)} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', transition: 'all 0.3s' }}>History</div>
+          <div className="nav-link" onClick={() => document.getElementById("coins-section")?.scrollIntoView({ behavior: 'smooth' })} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', transition: 'all 0.3s' }}>Coins</div>
           <div className="nav-link" onClick={() => {
             if (!user) {
               showModal({
@@ -895,11 +895,11 @@ export default function Dashboard() {
             } else {
               document.getElementById("referral-section")?.scrollIntoView({ behavior: 'smooth' });
             }
-          }} style={{ cursor: 'pointer', fontWeight: '800', fontSize: '0.85rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
-             <span style={{ fontSize: '1rem' }}>🎁</span> Invite
+          }} style={{ cursor: 'pointer', fontWeight: '800', fontSize: '0.8rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+             Invite
           </div>
-          <div className="nav-link" onClick={() => document.getElementById("pricing-section")?.scrollIntoView({ behavior: 'smooth' })} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>VIP</div>
-          <div className="nav-link" onClick={() => router.push("/contact")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Contact</div>
+          <div className="nav-link" onClick={() => document.getElementById("pricing-section")?.scrollIntoView({ behavior: 'smooth' })} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', transition: 'all 0.3s' }}>VIP</div>
+          <div className="nav-link" onClick={() => router.push("/contact")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', transition: 'all 0.3s' }}>Contact</div>
         </nav>
 
         {user?.email === "ds9376314@gmail.com" && (
@@ -910,17 +910,18 @@ export default function Dashboard() {
               background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
               color: '#fff',
               border: 'none',
-              padding: '6px 14px',
-              borderRadius: '12px',
+              padding: '5px 12px',
+              borderRadius: '10px',
               fontWeight: '900',
-              fontSize: '0.8rem',
+              fontSize: '0.75rem',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '4px',
               boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)',
               marginRight: '15px',
-              transition: 'transform 0.2s'
+              transition: 'transform 0.2s',
+              whiteSpace: 'nowrap'
             }}
             onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
             onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -930,10 +931,10 @@ export default function Dashboard() {
         )}
         {authLoading ? (
           <div className="user-info">
-            <span className="loading-dots">Verifying session...</span>
+            <span className="loading-dots">Verifying...</span>
           </div>
         ) : user ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
             {/* STREAK PILL */}
             {user && (
               <div
@@ -2848,21 +2849,21 @@ export default function Dashboard() {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 1.25rem 4rem;
+          padding: 1rem 2rem;
           position: fixed;
           top: 0;
           left: 0;
           right: 0;
           z-index: 1000;
-          background: rgba(3, 7, 18, 0.7);
-          backdrop-filter: blur(20px);
-          border-bottom: 1px solid rgba(255,255,255,0.05);
+          background: rgba(3, 7, 18, 0.85);
+          backdrop-filter: blur(25px);
+          border-bottom: 1px solid rgba(255,255,255,0.08);
           transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .header-nav {
            display: flex;
-           gap: 30px;
+           gap: 18px;
            align-items: center;
         }
 
