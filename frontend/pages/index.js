@@ -30,6 +30,22 @@ export default function Dashboard() {
     age: "18-24"
   });
   const [authLoading, setAuthLoading] = useState(true);
+  const [authError, setAuthError] = useState(null);
+  const [isOnline, setIsOnline] = useState(true); // Default to true
+
+  useEffect(() => {
+    // Sync with browser's online status
+    const updateOnlineStatus = () => setIsOnline(navigator.onLine);
+    window.addEventListener("online", updateOnlineStatus);
+    window.addEventListener("offline", updateOnlineStatus);
+    setIsOnline(navigator.onLine);
+
+    return () => {
+      window.removeEventListener("online", updateOnlineStatus);
+      window.removeEventListener("offline", updateOnlineStatus);
+    };
+  }, []);
+
   const [currency, setCurrency] = useState("INR");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -855,6 +871,10 @@ export default function Dashboard() {
       <div className="header">
         <div className="brand-group">
           <h1 className="logo-text">Zone<span className="logo-highlight">Meet</span><span className="logo-dot">.</span></h1>
+          <div className={`network-status-pill ${isOnline ? 'online' : 'offline'}`}>
+            <span className="status-dot"></span>
+            {isOnline ? 'Online' : 'Offline'}
+          </div>
           {user?.premium && <span className="premium-badge">{user.planName || "PREMIUM"}</span>}
         </div>
 
@@ -3671,6 +3691,32 @@ export default function Dashboard() {
             width: 300px;
             height: 400px;
           }
+        }
+        .network-status-pill {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          padding: 6px 12px;
+          border-radius: 50px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          transition: all 0.3s;
+        }
+        .network-status-pill.online { color: #10b981; border-color: rgba(16, 185, 129, 0.2); }
+        .network-status-pill.offline { color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
+        .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: currentColor;
+          box-shadow: 0 0 10px currentColor;
+          animation: status-pulse 2s infinite;
+        }
+        @keyframes status-pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.2); }
         }
       `}</style>
       <PremiumModal

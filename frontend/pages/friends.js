@@ -12,9 +12,22 @@ export default function Friends() {
   const [searchEmail, setSearchEmail] = useState("");
   const [searchResult, setSearchResult] = useState(null);
   const [socket, setSocket] = useState(null);
+  const [isOnline, setIsOnline] = useState(true);
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
   
   const [incomingCall, setIncomingCall] = useState(null); // { fromUser, fromSocketId, roomId }
   const [activeRoom, setActiveRoom] = useState(null);
+
+  useEffect(() => {
+    const updateOnlineStatus = () => setIsOnline(navigator.onLine);
+    window.addEventListener("online", updateOnlineStatus);
+    window.addEventListener("offline", updateOnlineStatus);
+    setIsOnline(navigator.onLine);
+    return () => {
+      window.removeEventListener("online", updateOnlineStatus);
+      window.removeEventListener("offline", updateOnlineStatus);
+    };
+  }, []);
 
   // Helper to get Country Flag Image URL
   const getFlagUrl = (countryCode) => {
@@ -52,6 +65,11 @@ export default function Friends() {
 
     newSocket.on("connect", () => {
       newSocket.emit("register-user", storedUser.id);
+      setIsSocketConnected(true);
+    });
+
+    newSocket.on("disconnect", () => {
+      setIsSocketConnected(false);
     });
 
     newSocket.on("friend-status", ({ friendId, online }) => {
@@ -168,7 +186,11 @@ export default function Friends() {
         <div className="brand-group" onClick={() => router.push("/")} style={{ cursor: "pointer" }}>
           <h1>ZoneMeet</h1>
         </div>
-        <div className="user-info">
+        <div className="user-info" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div className={`status-pill ${isOnline && isSocketConnected ? 'online' : 'offline'}`}>
+            <span className="dot"></span>
+            {isOnline && isSocketConnected ? 'Connected' : !isOnline ? 'No Internet' : 'Connecting...'}
+          </div>
           <span>{user.name}</span>
         </div>
       </div>
@@ -269,6 +291,28 @@ export default function Friends() {
         </div>
 
       </main>
+    <style jsx>{`
+      .status-pill {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 4px 10px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .status-pill.online { color: #2ecc71; border-color: rgba(46, 204, 113, 0.3); }
+      .status-pill.offline { color: #e74c3c; border-color: rgba(231, 76, 60, 0.3); }
+      .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+        box-shadow: 0 0 8px currentColor;
+      }
+    `}</style>
     </div>
   );
 }
