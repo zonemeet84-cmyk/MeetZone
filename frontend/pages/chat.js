@@ -1560,7 +1560,6 @@ export default function Home() {
                   autoPlay
                   muted
                   playsInline
-                  className="mirrored"
                   style={{
                     filter: isFaceBlurred ? 'blur(25px)' : 'none',
                     display: activeAvatar !== "None" ? 'none' : 'block'
@@ -1570,7 +1569,6 @@ export default function Home() {
                   ref={canvasRef}
                   width="640"
                   height="480"
-                  className="mirrored"
                   style={{
                     position: "absolute",
                     top: 0,
@@ -1640,9 +1638,8 @@ export default function Home() {
 
 
 
-            {/* PARTNER VIDEO CARD */}
             <div className="video-card">
-              <video ref={remoteVideo} autoPlay playsInline />
+              <video ref={remoteVideo} autoPlay playsInline className="natural-view" />
 
               {/* PARTNER PREVIEW OVERLAY */}
               {showPartnerPreview && partnerInfo && (
@@ -2472,6 +2469,10 @@ export default function Home() {
 
         .video-card video.mirrored {
           transform: scaleX(-1);
+        }
+
+        .natural-view {
+          transform: scaleX(1) !important;
         }
 
         /* PARTNER PREVIEW STYLES */
