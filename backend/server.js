@@ -542,6 +542,13 @@ app.post("/api/auth/login", (req, res) => {
   const { identifier, password } = req.body; // identifier can be email or phone
   const clientIp = req.ip || req.connection.remoteAddress;
 
+  let user = users.find((u) => u.email === identifier || u.phone === identifier);
+
+  if (!user) {
+    console.log("User not found:", identifier);
+    return res.status(400).json({ message: "Account not found. Please Sign Up first to create your account." });
+  }
+
   if (bannedIps.includes(clientIp)) {
     return res.status(403).json({ message: "Your IP is banned from accessing this service." });
   }
@@ -551,17 +558,11 @@ app.post("/api/auth/login", (req, res) => {
   }
 
   console.log("Login attempt:", identifier);
-  let user = users.find((u) => u.email === identifier || u.phone === identifier);
 
   if (user && user.email === "ds9376314@gmail.com") {
     user.premium = true;
     user.isPermanentPremium = true;
     user.planName = "VIP Elite";
-  }
-
-  if (!user) {
-    console.log("User not found:", identifier);
-    return res.status(400).json({ message: "User not found" });
   }
 
   const isMatch = bcrypt.compareSync(password, user.password);
