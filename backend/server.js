@@ -1536,8 +1536,8 @@ const queueUser = (socket) => {
   if (socket.queueTimeout) clearTimeout(socket.queueTimeout);
 
   const isPremium = socket.premium || (socket.planName && socket.planName !== "Free");
-  // 3 seconds delay for free users, instant for premium
-  const delay = isPremium ? 0 : 3000;
+  // 8 seconds delay for free users, instant for premium
+  const delay = isPremium ? 0 : 8000;
 
   if (delay === 0) {
     if (!waitingUsers.includes(socket)) {

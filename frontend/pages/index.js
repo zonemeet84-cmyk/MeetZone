@@ -3906,12 +3906,14 @@ export default function Dashboard() {
         @media (max-width: 768px) {
           .header {
             padding: 15px 20px;
+            flex-wrap: wrap;
+            gap: 10px;
           }
           .nav-links {
-            display: none; /* Hide nav links on mobile for simplicity, or add hamburger */
+            display: none; 
           }
           .hero-title {
-            font-size: 2.5rem !important;
+            font-size: 2.2rem !important;
           }
           .hero-subtitle {
             font-size: 1rem !important;
@@ -3945,6 +3947,29 @@ export default function Dashboard() {
           }
           .modal-header-premium h2 {
             font-size: 2rem !important;
+          }
+          /* Fix for referral grid */
+          #referral-section > div:nth-of-type(2) {
+             grid-template-columns: 1fr !important;
+          }
+          #referral-section {
+             padding: 40px 15px !important;
+          }
+          /* Fix for mystery box confirm */
+          .premium-modal {
+             padding: 30px 15px !important;
+          }
+          /* Fix for spinner windows */
+          .slot-machine-frame {
+             padding: 15px !important;
+             border-width: 4px !important;
+          }
+          .spinner-window {
+             width: 80px !important;
+             height: 120px !important;
+          }
+          .slot-spinning {
+             font-size: 3rem !important;
           }
         }
 

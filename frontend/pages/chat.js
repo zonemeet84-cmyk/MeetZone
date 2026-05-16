@@ -3316,7 +3316,7 @@ export default function Home() {
           }
           .video-card {
             width: 100% !important;
-            height: 45vh !important;
+            height: 38vh !important;
           }
           .chat-column {
             width: 100% !important;
