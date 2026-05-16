@@ -8,9 +8,12 @@ export default function Signup() {
   const router = useRouter();
   const { data: session } = useSession();
 
-  const [form, setForm] = useState({ name: "", email: "", password: "", gender: "Male", country: "India" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", otp: "", gender: "Male", country: "India" });
   const [loading, setLoading] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
 
   useEffect(() => {
@@ -22,12 +25,39 @@ export default function Signup() {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     if (error) setError("");
+    if (successMsg) setSuccessMsg("");
+  };
+
+  const handleSendOTP = async () => {
+    if (!form.email) {
+      setError("Please enter your email first.");
+      return;
+    }
+    setOtpLoading(true);
+    setError("");
+    setSuccessMsg("");
+
+    try {
+      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/send-email-otp", { email: form.email });
+      if (res.data.success) {
+        setOtpSent(true);
+        setSuccessMsg("Verification code sent to your email!");
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to send OTP. Try again.");
+    } finally {
+      setOtpLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!termsAccepted) {
       setError("Please accept Terms & Privacy Policy.");
+      return;
+    }
+    if (!otpSent) {
+      setError("Please verify your email with OTP first.");
       return;
     }
 
@@ -69,8 +99,24 @@ export default function Signup() {
 
           <div className="input-item">
             <label>Email Address</label>
-            <input name="email" type="email" placeholder="your@email.com" value={form.email} onChange={handleChange} required />
+            <div className="email-input-group">
+              <input name="email" type="email" placeholder="your@email.com" value={form.email} onChange={handleChange} required disabled={otpSent} />
+              {!otpSent ? (
+                <button type="button" className="otp-btn" onClick={handleSendOTP} disabled={otpLoading}>
+                  {otpLoading ? "..." : "Send OTP"}
+                </button>
+              ) : (
+                <span className="verified-badge">✅ Verified</span>
+              )}
+            </div>
           </div>
+
+          {otpSent && (
+            <div className="input-item animate-in">
+              <label>Enter 6-Digit OTP</label>
+              <input name="otp" type="text" placeholder="123456" maxLength="6" value={form.otp} onChange={handleChange} required />
+            </div>
+          )}
 
           <div className="input-item">
             <label>Password</label>
@@ -88,8 +134,9 @@ export default function Signup() {
           </div>
 
           {error && <div className="error-box">{error}</div>}
+          {successMsg && <div className="success-box">{successMsg}</div>}
 
-          <button type="submit" className={`submit-btn ${!termsAccepted ? 'btn-locked' : ''}`} disabled={loading || !termsAccepted}>
+          <button type="submit" className={`submit-btn ${(!termsAccepted || !otpSent) ? 'btn-locked' : ''}`} disabled={loading || !termsAccepted || !otpSent}>
             {loading ? "Creating Account..." : "Sign Up"}
           </button>
         </form>
@@ -109,8 +156,14 @@ export default function Signup() {
         p { color: #94a3b8; margin-bottom: 2rem; font-size: 0.95rem; }
         .modern-form { text-align: left; }
         .input-item { margin-bottom: 1.25rem; }
+        .animate-in { animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .input-item label { display: block; font-size: 0.85rem; color: #cbd5e1; margin-bottom: 0.5rem; }
         .input-item input { width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 0.75rem 1rem; color: white; font-size: 1rem; }
+        .email-input-group { display: flex; gap: 10px; }
+        .otp-btn { background: #6366f1; color: white; border: none; border-radius: 12px; padding: 0 1rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: 0.3s; }
+        .otp-btn:hover { background: #4f46e5; }
+        .verified-badge { background: rgba(34, 197, 94, 0.1); color: #4ade80; padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; border: 1px solid rgba(34, 197, 94, 0.2); }
         .terms-container { margin: 1.5rem 0; padding: 1rem; background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.15); border-radius: 16px; }
         .checkbox-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.85rem; color: #94a3b8; user-select: none; }
         .checkbox-label input[type="checkbox"] { display: none; }
@@ -121,6 +174,7 @@ export default function Signup() {
         .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4); }
         .submit-btn.btn-locked { background: rgba(255,255,255,0.05) !important; color: #475569; cursor: not-allowed; }
         .error-box { background: rgba(239, 68, 68, 0.1); color: #f87171; padding: 0.75rem; border-radius: 12px; margin-bottom: 1rem; font-size: 0.85rem; }
+        .success-box { background: rgba(34, 197, 94, 0.1); color: #4ade80; padding: 0.75rem; border-radius: 12px; margin-bottom: 1rem; font-size: 0.85rem; }
         .login-footer { margin-top: 2rem; color: #64748b; font-size: 0.9rem; }
         .highlight { color: #6366f1; font-weight: 700; cursor: pointer; }
       `}</style>

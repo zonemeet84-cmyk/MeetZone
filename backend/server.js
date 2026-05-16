@@ -11,6 +11,8 @@ const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
 const admin = require("firebase-admin");
+const { Resend } = require('resend');
+const resend = new Resend('re_SmeAqtpz_LWt3ejNZ3ZqSVBG8coVvJCFd');
 
 const app = express();
 app.use(cors({ origin: true, credentials: true }));
@@ -67,6 +69,7 @@ if (fs.existsSync(serviceAccountPath)) {
 // =========================================
 
 const otpStore = {}; // Memory store for OTPs (dev mode fallback): { phone: "123456" }
+const emailOtpStore = {}; // { email: { otp: "123456", expiresAt: 123456789 } }
 
 // ========= TWILIO CONFIG =========
 // ⚠️ Step 1: Go to https://www.twilio.com and create a FREE account
@@ -361,6 +364,178 @@ app.post("/api/auth/session-login", (req, res) => {
   const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "7d" });
   user.coinActivity = coinActivity.filter(a => a.email === email).slice(-10);
   res.json({ token, user });
+});
+
+// EMAIL OTP ENDPOINT
+app.post("/api/auth/send-email-otp", async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ message: "Email is required" });
+
+  // Disposable email check
+  const fakeDomains = ["10minutemail.com", "tempmail.org", "mailinator.com", "guerrillamail.com", "yopmail.com"];
+  const domain = email.split("@")[1];
+  if (fakeDomains.includes(domain)) {
+    return res.status(400).json({ message: "Disposable emails are not allowed. Please use a real email." });
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+  emailOtpStore[email] = { otp, expiresAt };
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: 'Verification <onboarding@resend.dev>', // Update this to your domain email after verification
+      to: [email],
+      subject: 'ZoneMeet Verification Code',
+      html: `
+        <div style="font-family: sans-serif; padding: 20px; color: #333;">
+          <h2>Welcome to ZoneMeet!</h2>
+          <p>Your verification code is:</p>
+          <h1 style="color: #6366f1; font-size: 40px;">${otp}</h1>
+          <p>This code will expire in 10 minutes.</p>
+          <p>If you didn't request this, please ignore this email.</p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error("Resend Error:", error);
+      return res.status(500).json({ message: "Failed to send email" });
+    }
+
+    res.json({ success: true, message: "OTP sent to your email" });
+  } catch (err) {
+    console.error("Resend Catch Error:", err);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+});
+
+// EMAIL REGISTRATION ENDPOINT
+app.post("/api/auth/register", async (req, res) => {
+  const { name, email, password, otp, gender, country, state, age, referralCode } = req.body;
+  const clientIp = req.ip || req.connection.remoteAddress;
+
+  if (!email || !password || !otp) {
+    return res.status(400).json({ message: "Email, Password and OTP are required" });
+  }
+
+  // 1. Verify OTP
+  const stored = emailOtpStore[email];
+  if (!stored || stored.otp !== otp || Date.now() > stored.expiresAt) {
+    return res.status(400).json({ message: "Invalid or expired OTP" });
+  }
+  delete emailOtpStore[email];
+
+  // 2. Check if user already exists
+  if (users.some(u => u.email === email)) {
+    return res.status(400).json({ message: "Email already registered. Please login." });
+  }
+
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  let code;
+  do { code = generateReferralCode(name); } while (users.some(x => x.referralCode === code));
+
+  const newUser = {
+    id: "u" + Date.now(),
+    phone: "",
+    email,
+    password: hashedPassword,
+    name,
+    gender: gender || "Male",
+    country: country || "India",
+    state: state || "Delhi",
+    age: age || "18-24",
+    coins: 50,
+    premium: false,
+    friends: [],
+    friendRequests: [],
+    streak: 0,
+    lastLoginDate: "",
+    bonusClaimedToday: false,
+    recentStrangers: [],
+    boostExpiry: 0,
+    unlockedFilters: ["None", "Smooth"],
+    referralCode: code,
+    referredBy: null,
+    referralCount: 0,
+    referralCoinsEarned: 0,
+    signupIp: clientIp
+  };
+
+  users.push(newUser);
+
+  // Process referral
+  if (referralCode) {
+    const referrer = users.find(u => u.referralCode === referralCode.toUpperCase());
+    if (referrer && referrer.email !== email) {
+      const alreadyRewarded = users.some(u => u.referredBy === referralCode && u.signupIp === clientIp);
+      if (!alreadyRewarded) {
+        newUser.referredBy = referralCode;
+        referrer.coins = (referrer.coins || 0) + 100;
+        referrer.referralCount = (referrer.referralCount || 0) + 1;
+        referrer.referralCoinsEarned = (referrer.referralCoinsEarned || 0) + 100;
+        coinActivity.push({ email: referrer.email || referrer.phone, action: "Referral Reward", amount: 100, timestamp: Date.now() });
+        saveCoinActivity();
+      }
+    }
+  }
+
+  saveUsers();
+  const token = jwt.sign({ id: newUser.id }, JWT_SECRET, { expiresIn: "7d" });
+  res.status(201).json({ token, user: newUser });
+});
+
+// FORGOT PASSWORD OTP
+app.post("/api/auth/forgot-password", async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ message: "Email is required" });
+
+  const user = users.find(u => u.email === email);
+  if (!user) return res.status(404).json({ message: "No account found with this email" });
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = Date.now() + 10 * 60 * 1000;
+  emailOtpStore[email] = { otp, expiresAt };
+
+  try {
+    await resend.emails.send({
+      from: 'Recovery <onboarding@resend.dev>',
+      to: [email],
+      subject: 'ZoneMeet Password Reset',
+      html: `
+        <div style="font-family: sans-serif; padding: 20px;">
+          <h2>Reset Your Password</h2>
+          <p>Your password reset code is:</p>
+          <h1 style="color: #ef4444; font-size: 40px;">${otp}</h1>
+          <p>This code will expire in 10 minutes.</p>
+        </div>
+      `,
+    });
+    res.json({ success: true, message: "Reset code sent to your email" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to send recovery email" });
+  }
+});
+
+// RESET PASSWORD
+app.post("/api/auth/reset-password", async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  if (!email || !otp || !newPassword) return res.status(400).json({ message: "All fields are required" });
+
+  const stored = emailOtpStore[email];
+  if (!stored || stored.otp !== otp || Date.now() > stored.expiresAt) {
+    return res.status(400).json({ message: "Invalid or expired reset code" });
+  }
+  delete emailOtpStore[email];
+
+  const user = users.find(u => u.email === email);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  user.password = bcrypt.hashSync(newPassword, 10);
+  saveUsers();
+
+  res.json({ success: true, message: "Password reset successful! You can now login." });
 });
 
 app.post("/api/auth/login", (req, res) => {
