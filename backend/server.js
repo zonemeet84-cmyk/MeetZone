@@ -1636,12 +1636,12 @@ io.on("connection", (socket) => {
         let strikes = (userStrikes.get(email) || 0) + 1;
         userStrikes.set(email, strikes);
 
-        if (strikes >= 3) {
+        if (strikes >= 2) {
           console.log(`[GUARDIAN] CHAT ABUSE detected: ${email}. Banning...`);
           banUser(email, "AI Detection: Repeated use of restricted words in chat");
           return;
         } else {
-          socket.emit("warning-alert", `Warning: Your message contains restricted words. Strike ${strikes}/3. Continued abuse will lead to a permanent ban.`);
+          socket.emit("warning-alert", `Warning: Your message contains restricted words. Strike ${strikes}/2. Continued abuse will lead to a permanent ban.`);
           return; // Don't send the message
         }
       }
@@ -1738,9 +1738,9 @@ io.on("connection", (socket) => {
       let strikes = (userStrikes.get(email) || 0) + 1;
       userStrikes.set(email, strikes);
 
-      console.log(`[AI-GUARD] NSFW detected: ${email}. Strike ${strikes}/3`);
+      console.log(`[AI-GUARD] NSFW detected: ${email}. Strike ${strikes}/2`);
 
-      if (strikes >= 3) {
+      if (strikes >= 2) {
         if (!bannedEmails.includes(email)) {
           bannedEmails.push(email);
           saveBanned();
@@ -1753,7 +1753,7 @@ io.on("connection", (socket) => {
         socket.emit("banned-alert", "Your account has been permanently banned for repeated 18+ Adult Content.");
         socket.disconnect();
       } else {
-        socket.emit("warning-alert", `Warning: AI detected inappropriate content. Strike ${strikes}/3. One more violation will result in a permanent ban.`);
+        socket.emit("warning-alert", `Warning: AI detected inappropriate content. Strike ${strikes}/2. One more violation will result in a permanent ban.`);
       }
     }
   });
