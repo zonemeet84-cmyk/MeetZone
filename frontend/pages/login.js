@@ -16,14 +16,14 @@ export default function Login() {
 
   useEffect(() => {
     if (session) {
-      router.push(callbackUrl || "/");
+      router.push("/");
     } else {
       const token = localStorage.getItem("token");
       if (token && token !== "undefined") {
-        router.push(callbackUrl || "/");
+        router.push("/");
       }
     }
-  }, [session, callbackUrl, router]);
+  }, [session, router]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -46,7 +46,7 @@ export default function Login() {
       const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/login", payload);
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
-      router.push(callbackUrl || "/");
+      router.push("/");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed. Please check your credentials.");
     } finally {

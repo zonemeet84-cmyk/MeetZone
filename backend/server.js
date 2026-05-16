@@ -273,7 +273,11 @@ if (users.length === 0) {
 
 function saveUsers() {
   try { fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2)); } catch(e){}
-  if(db) db.collection("appData").updateOne({ _id: "users" }, { $set: { data: users } }, { upsert: true }).catch(console.error);
+  if(db) {
+    db.collection("appData").updateOne({ _id: "users" }, { $set: { data: users } }, { upsert: true })
+      .then(() => console.log("[DB] Users saved successfully to MongoDB"))
+      .catch(err => console.error("[DB] Error saving users:", err));
+  }
 }
 
 app.post("/api/auth/session-login", (req, res) => {
@@ -328,9 +332,15 @@ app.post("/api/auth/session-login", (req, res) => {
     }
 
     saveUsers();
-  } else if (email === "ds9376314@gmail.com") {
-    user.premium = true;
-    user.planName = "VIP Elite";
+  } else {
+    // Existing user: check for referral if not already referred
+    if (referralCode && !user.referredBy && referralCode !== user.referralCode) {
+       const referrer = users.find(u => u.referralCode === referralCode.toUpperCase());
+       if (referrer && referrer.email !== email) {
+          user.referredBy = referralCode.toUpperCase();
+          saveUsers();
+       }
+    }
   }
 
   const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "7d" });

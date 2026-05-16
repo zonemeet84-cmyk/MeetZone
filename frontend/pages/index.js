@@ -349,7 +349,11 @@ export default function Dashboard() {
       setAuthLoading(false);
     };
 
+    // Fallback: If auth takes more than 8 seconds, force hide the loader
+    const timeout = setTimeout(() => setAuthLoading(false), 8000);
+
     checkAuth();
+    return () => clearTimeout(timeout);
   }, [session]);
 
   useEffect(() => {
@@ -377,14 +381,19 @@ export default function Dashboard() {
     }
   }, [user, dailyStatus]);
 
-  // Fetch referral stats when user is loaded
+  // Redirect if logged in
   useEffect(() => {
-    const fetchReferral = async () => {
+    if (session) {
+      router.push("/");
+    } else {
       const token = localStorage.getItem("token");
-      if (user && token && !referralStats) {
-        try {
-          const res = await axios.get("https://meetzone-backend.onrender.com/api/referral/stats", {
-            headers: { Authorization: `Bearer ${token}` }
+      if (token && token !== "undefined") {
+        router.push("/");
+      }
+    }
+  }, [session]);
+
+  // Fetch referral stats when user is loaded
           });
           setReferralStats(res.data);
         } catch (err) {
@@ -690,8 +699,8 @@ export default function Dashboard() {
         setUser(newUser);
         localStorage.setItem("user", JSON.stringify(newUser));
         setShowOnboarding(false);
-        // Automatically start chat after onboarding
-        router.push("/chat");
+        // Redirect to Home instead of Chat as requested
+        router.push("/");
       }
     } catch (err) {
       showModal({ message: "Failed to update profile. Please try again.", type: "info" });
