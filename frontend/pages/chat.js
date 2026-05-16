@@ -859,10 +859,15 @@ export default function Home() {
         setStatus("Please allow camera/mic access");
       }
 
+      // 4. AI Guard: NSFW Detection (Disabled by User Request)
+      const initNSFW = async () => {
+        try {
+          /*
+          await tf.ready();
+          nsfwModel.current = await nsfwjs.load();
+          console.log("NSFW Guardian active.");
           
           const checkVideo = async () => {
-            /* 
-            // AI Video Guard Temporarily Disabled by User Request
             if (localVideo.current && localVideo.current.readyState === 4) {
               const predictions = await nsfwModel.current.classify(localVideo.current);
               const nsfw = predictions.find(p => p.className === "Porn" || p.className === "Hentai");
@@ -872,10 +877,10 @@ export default function Home() {
                 return;
               }
             }
-            */
             setTimeout(checkVideo, 3000);
           };
           checkVideo();
+          */
         } catch (err) {
           console.error("NSFW Guardian failed to load:", err);
         }
@@ -1557,7 +1562,7 @@ export default function Home() {
                   autoPlay
                   muted
                   playsInline
-                  className="natural-view"
+                  className="mirrored"
                   style={{
                     filter: isFaceBlurred ? 'blur(25px)' : 'none',
                     display: activeAvatar !== "None" ? 'none' : 'block'
@@ -1567,7 +1572,7 @@ export default function Home() {
                   ref={canvasRef}
                   width="640"
                   height="480"
-                  className="natural-view"
+                  className="mirrored"
                   style={{
                     position: "absolute",
                     top: 0,
@@ -2464,15 +2469,14 @@ export default function Home() {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          transform: none !important;
         }
 
         .video-card video.mirrored {
-          transform: none !important;
+          transform: scaleX(-1);
         }
 
         .natural-view {
-          transform: none !important;
+          transform: scaleX(1) !important;
         }
 
         /* PARTNER PREVIEW STYLES */
