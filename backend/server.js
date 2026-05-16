@@ -2300,10 +2300,18 @@ setInterval(() => {
 // =====================================
 
 async function startServer() {
+  const PORT = process.env.PORT || 5000;
+  
+  // Start listening immediately so Render/Vercel health check passes
+  server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+
   try {
+    console.log("Connecting to MongoDB Atlas...");
     await mongoClient.connect();
     db = mongoClient.db("meetzone");
-    console.log("Connected to MongoDB Atlas");
+    console.log("Connected to MongoDB Atlas Successfully");
     
     // Load data from DB into memory
     const d1 = await db.collection("appData").findOne({ _id: "users" }); if(d1 && d1.data) users = d1.data;
@@ -2315,12 +2323,9 @@ async function startServer() {
     const d7 = await db.collection("appData").findOne({ _id: "contactMessages" }); if(d7 && d7.data) contactMessages = d7.data;
     const d8 = await db.collection("appData").findOne({ _id: "systemConfig" }); if(d8 && d8.data) systemConfig = d8.data;
 
-    const PORT = process.env.PORT || 5000;
-    server.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
   } catch(e) {
-    console.error("MongoDB Error:", e);
+    console.error("CRITICAL: MongoDB Connection Failed!", e.message);
+    console.log("Server will continue running in LOCAL MODE (using local JSON files)");
   }
 }
 startServer();
