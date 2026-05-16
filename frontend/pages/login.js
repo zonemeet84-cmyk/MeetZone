@@ -48,7 +48,11 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(res.data.user));
       router.push("/");
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed. Please check your credentials.");
+      if (err.response?.status === 400 && err.response?.data?.message === "User not found") {
+        setError("Account not found. Please Sign Up first to create your account.");
+      } else {
+        setError(err.response?.data?.message || "Login failed. Please check your credentials.");
+      }
     } finally {
       setLoading(false);
     }
@@ -113,7 +117,7 @@ export default function Login() {
         </form>
 
         <div className="login-footer">
-          Don't have an account? <span className="highlight" onClick={() => signIn("google")}>Sign up with Google</span>
+          Don't have an account? <span className="highlight" onClick={() => router.push("/signup")}>Sign Up</span> or <span className="highlight" onClick={() => signIn("google")}>with Google</span>
         </div>
       </div>
 
