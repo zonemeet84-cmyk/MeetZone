@@ -801,27 +801,57 @@ export default function Home() {
 
       // 1. Auth Logic
       if (session) {
-        const stored = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {};
-        const userData = {
-          ...stored,
-          name: session.user.name,
-          email: session.user.email,
-          premium: (stored.premium || (session.user.email?.toLowerCase() === "ds9376314@gmail.com")) || false,
-          planName: (stored.planName || (session.user.email?.toLowerCase() === "ds9376314@gmail.com" ? "VIP Elite" : null)),
-          gender: stored.gender || "All",
-          country: stored.country || "All",
-          state: stored.state || "All States",
-          age: stored.age || "All Ages"
-        };
-        
-        setUser(userData);
-        if (userData.unlockedFilters) {
-          setUnlockedFilters(userData.unlockedFilters);
-        }
+        if (!token || token === "undefined") {
+          try {
+            const referralCode = localStorage.getItem("referral") || undefined;
+            const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/session-login", {
+              email: session.user.email,
+              name: session.user.name,
+              referralCode
+            });
+            if (res.data.token) {
+              localStorage.setItem("token", res.data.token);
+              localStorage.setItem("user", JSON.stringify(res.data.user));
+              localStorage.removeItem("referral");
+              let userData = res.data.user;
+              if (userData.email?.toLowerCase() === "ds9376314@gmail.com") {
+                userData.premium = true;
+                userData.planName = "VIP Elite";
+              }
+              setUser(userData);
+              if (userData.unlockedFilters) setUnlockedFilters(userData.unlockedFilters);
 
-        if (!stored.gender || stored.gender === "All" || !stored.country || stored.country === "All") {
-          router.push("/");
-          return;
+              if (!userData.gender || userData.gender === "All" || !userData.country || userData.country === "All" || userData.gender === "Other" || userData.country === "Unknown") {
+                router.push("/");
+                return;
+              }
+            }
+          } catch (e) {
+            console.error("Sync Error", e);
+          }
+        } else {
+          try {
+            const res = await axios.get("https://meetzone-backend.onrender.com/api/auth/verify", {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.data.valid) {
+              let userData = res.data.user;
+              if (userData.email?.toLowerCase() === "ds9376314@gmail.com") {
+                userData.premium = true;
+                userData.planName = "VIP Elite";
+              }
+              setUser(userData);
+              if (userData.unlockedFilters) setUnlockedFilters(userData.unlockedFilters);
+              localStorage.setItem("user", JSON.stringify(userData));
+
+              if (!userData.gender || userData.gender === "All" || !userData.country || userData.country === "All" || userData.gender === "Other" || userData.country === "Unknown") {
+                router.push("/");
+                return;
+              }
+            }
+          } catch (e) {
+            console.error("Verify Error", e);
+          }
         }
         setAuthLoading(false);
       } else if (token && token !== "undefined") {
@@ -842,8 +872,7 @@ export default function Home() {
             localStorage.setItem("user", JSON.stringify(userData));
 
             // Check for incomplete profile
-            const u = res.data.user;
-            if (!u.gender || u.gender === "All" || !u.country || u.country === "All" || u.gender === "Other" || u.country === "Unknown") {
+            if (!userData.gender || userData.gender === "All" || !userData.country || userData.country === "All" || userData.gender === "Other" || userData.country === "Unknown") {
               router.push("/");
               return;
             }
@@ -1043,6 +1072,9 @@ export default function Home() {
       socket.on("partner-disconnected", () => {
         setStatus("Partner disconnected. Searching...");
         closeConnection();
+        setFriendReqStatus(false);
+        setShowPartnerPreview(false);
+        socket.emit("next");
       });
     };
 
@@ -1310,7 +1342,7 @@ export default function Home() {
       return;
     }
     // Feature Gating: Only VIP Elite (or ds9376314@gmail.com) can use age and state filters
-    const isElite = (user?.premium && user?.planName?.toLowerCase().includes("elite")) || isOwner;
+    const isElite = (user?.premium && (user?.planName?.toLowerCase().includes("elite") || user?.planName?.toLowerCase().includes("vip"))) || isOwner;
     if ((type === "age" || type === "state" || type === "stateProv") && !isElite) {
       setShowPricingModal(true);
       return;
@@ -1427,8 +1459,21 @@ export default function Home() {
         )}
 
         <div className="header-v2">
-          <div className="brand" onClick={() => router.push("/")}>
-            <h1 className="logo-text">Zone<span className="logo-highlight">Meet</span><span className="logo-dot">.</span></h1>
+          <div className="brand" onClick={() => router.push("/")} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+            <div className="logo-icon-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg viewBox="0 0 32 32" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 8C4 5.79086 5.79086 4 8 4H20C22.2091 4 24 5.79086 24 8V11.5L29 8V24L24 20.5V24C24 26.2091 22.2091 28 20 28H8C5.79086 28 4 26.2091 4 24V8Z" fill="url(#brand-grad)" />
+                <path d="M9 11H19L11 21H19" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                <defs>
+                  <linearGradient id="brand-grad" x1="4" y1="4" x2="29" y2="28" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#2563eb" />
+                    <stop offset="0.5" stopColor="#a855f7" />
+                    <stop offset="1" stopColor="#ec4899" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <h1 className="logo-text" style={{ margin: 0 }}>Zone<span className="logo-highlight">Meet</span><span className="logo-dot">.</span></h1>
           </div>
 
           <div className="header-actions">
@@ -1538,7 +1583,7 @@ export default function Home() {
                     {/* 2. COUNTRY SELECTION */}
                     <div className="filter-section-group">
                       <label className="section-label">Preferred Country (Premium Feature)</label>
-                      <div className="select-dropdown-trigger" onClick={() => {
+                      <div className="select-dropdown-trigger" onClick={(e) => {
                         const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
                         const currentUser = user || storedUser;
                         const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
@@ -1546,7 +1591,13 @@ export default function Home() {
                           setShowPricingModal(true);
                           return;
                         }
-                        setShowCountryDrop(!showCountryDrop);
+                        const nextState = !showCountryDrop;
+                        setShowCountryDrop(nextState);
+                        if (nextState) {
+                          setTimeout(() => {
+                            e.currentTarget.closest('.filter-section-group')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }, 120);
+                        }
                       }}>
                         <span className="val-icon">
                           {tempCountry === "all" ? "🌎" : Country.getCountryByCode(tempCountry)?.flag}
@@ -1591,14 +1642,20 @@ export default function Home() {
                     {/* 3. STATE / PROVINCE SELECTION */}
                     <div className="filter-section-group">
                       <label className="section-label">State / Province (VIP Elite Premium Feature)</label>
-                      <div className="select-dropdown-trigger" onClick={() => {
+                      <div className="select-dropdown-trigger" onClick={(e) => {
                         const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
                         const currentUser = user || storedUser;
                         const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
-                        const isElite = (currentUser?.premium && currentUser?.planName?.toLowerCase().includes("elite")) || isOwner;
+                        const isElite = (currentUser?.premium && (currentUser?.planName?.toLowerCase().includes("elite") || currentUser?.planName?.toLowerCase().includes("vip"))) || isOwner;
                         if (!isElite) { setShowPricingModal(true); return; }
                         if (tempCountry === "all") { alert("Please select a country first"); return; }
-                        setShowStateDrop(!showStateDrop);
+                        const nextState = !showStateDrop;
+                        setShowStateDrop(nextState);
+                        if (nextState) {
+                          setTimeout(() => {
+                            e.currentTarget.closest('.filter-section-group')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }, 120);
+                        }
                       }}>
                         <span className="val-icon">📍</span>
                         <span className="val-text">{tempStateProv}</span>
@@ -1629,13 +1686,19 @@ export default function Home() {
                     {/* 4. AGE SELECTION */}
                     <div className="filter-section-group">
                       <label className="section-label">Age Group (VIP Elite Premium Feature)</label>
-                      <div className="select-dropdown-trigger" onClick={() => {
+                      <div className="select-dropdown-trigger" onClick={(e) => {
                         const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
                         const currentUser = user || storedUser;
                         const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
-                        const isElite = (currentUser?.premium && currentUser?.planName?.toLowerCase().includes("elite")) || isOwner;
+                        const isElite = (currentUser?.premium && (currentUser?.planName?.toLowerCase().includes("elite") || currentUser?.planName?.toLowerCase().includes("vip"))) || isOwner;
                         if (!isElite) { setShowPricingModal(true); return; }
-                        setShowAgeDrop(!showAgeDrop);
+                        const nextState = !showAgeDrop;
+                        setShowAgeDrop(nextState);
+                        if (nextState) {
+                          setTimeout(() => {
+                            e.currentTarget.closest('.filter-section-group')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }, 120);
+                        }
                       }}>
                         <span className="val-icon">🎯</span>
                         <span className="val-text">{tempAge === "all" ? "All Ages" : tempAge}</span>
@@ -1669,7 +1732,7 @@ export default function Home() {
                       const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
                       const currentUser = user || storedUser;
                       const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
-                      const isElite = (currentUser?.premium && currentUser?.planName?.toLowerCase().includes("elite")) || isOwner;
+                      const isElite = (currentUser?.premium && (currentUser?.planName?.toLowerCase().includes("elite") || currentUser?.planName?.toLowerCase().includes("vip"))) || isOwner;
 
                       // 1. Gender Selection Gating (must be premium for Male or Female)
                       if (tempGender !== "all" && !currentUser?.premium && !isOwner) {
@@ -4318,6 +4381,15 @@ export default function Home() {
           .card-controls {
             flex-wrap: wrap !important;
             justify-content: center !important;
+            bottom: 0.5rem !important;
+            left: 0.5rem !important;
+            gap: 0.35rem !important;
+          }
+          .ctrl-btn {
+            width: 28px !important;
+            height: 28px !important;
+            border-radius: 8px !important;
+            font-size: 11px !important;
           }
           .gift-bubble {
             width: 95% !important;

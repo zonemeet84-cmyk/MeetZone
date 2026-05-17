@@ -1737,8 +1737,11 @@ const queueUser = (socket) => {
   if (!socket) return;
   if (socket.queueTimeout) clearTimeout(socket.queueTimeout);
 
-  const isPremium = socket.premium || (socket.planName && socket.planName !== "Free");
-  // 5 seconds delay for free users, instant for premium
+  const isOwner = socket.email?.toLowerCase() === "ds9376314@gmail.com";
+  const plan = socket.planName?.toLowerCase() || "";
+  const isPremium = socket.premium || plan !== "" || isOwner;
+  
+  // 5 seconds delay for free users, instant (0s) for subscription users
   const delay = isPremium ? 0 : 5000;
 
   if (delay === 0) {
@@ -1803,6 +1806,7 @@ io.on("connection", (socket) => {
     socket.user = { ...profile, premium: isPremium, planName: pName };
     socket.userId = dbUser ? dbUser.id : profile.id;
     socket.name = profile.name;
+    socket.email = profile.email;
     socket.gender = profile.gender || (Math.random() > 0.5 ? "Male" : "Female");
     socket.country = profile.country || "India";
     socket.state = profile.state || "All States";
@@ -1810,7 +1814,7 @@ io.on("connection", (socket) => {
     socket.premium = isPremium;
     socket.planName = pName;
 
-    console.log(`User ${socket.id} profile set securely:`, profile.name, socket.premium ? "PREMIUM" : "FREE");
+    console.log(`User ${socket.id} profile set securely: ${profile.name} (${profile.email}), ${socket.premium ? "PREMIUM" : "FREE"}`);
 
     if (socket.userId) {
       onlineUsers.set(socket.userId, socket.id);
