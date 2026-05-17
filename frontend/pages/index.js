@@ -987,7 +987,7 @@ export default function Dashboard() {
             <span className="loading-dots">Verifying session...</span>
           </div>
         ) : user ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div className="user-dashboard-row" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             {/* STREAK PILL */}
             {user && (
               <div
@@ -3864,12 +3864,7 @@ export default function Dashboard() {
             color: white;
             transform: scale(1.05);
           }
-          @media (max-width: 768px) {
-            .bot-window {
-              width: 300px;
-              height: 400px;
-            }
-          }
+
           .network-status-pill {
             display: flex;
             align-items: center;
@@ -3914,9 +3909,19 @@ export default function Dashboard() {
 
           @media (max-width: 768px) {
             .header {
-              padding: 15px 20px;
-              flex-wrap: wrap;
-              gap: 10px;
+              padding: 15px 10px;
+              flex-direction: column !important;
+              gap: 15px;
+            }
+            .header-nav {
+              flex-wrap: wrap !important;
+              justify-content: center !important;
+              gap: 10px !important;
+            }
+            .user-dashboard-row {
+              flex-wrap: wrap !important;
+              justify-content: center !important;
+              gap: 10px !important;
             }
             .nav-links {
               display: none; 
@@ -3945,8 +3950,19 @@ export default function Dashboard() {
               width: 90% !important;
               padding: 30px 20px !important;
             }
+            .dashboard-hero {
+              padding-top: 150px !important;
+            }
+            .streak-modal-card, .leaderboard-modal {
+              width: 95% !important;
+              padding: 20px !important;
+            }
+            .streak-modal-close {
+              padding: 15px !important;
+            }
             .bot-window {
               width: calc(100vw - 40px) !important;
+              height: 400px !important;
               bottom: 80px !important;
               right: 20px !important;
             }

@@ -196,6 +196,11 @@ export default function Friends() {
         <div className="brand-group" onClick={() => router.push("/")} style={{ cursor: "pointer" }}>
           <h1>ZoneMeet</h1>
         </div>
+        
+        <button className="btn btn-secondary btn-sm" onClick={() => router.push("/")} style={{ fontWeight: 'bold' }}>
+          🏠 Go Home
+        </button>
+
         <div className="user-info" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <div className={`status-pill ${isOnline && isSocketConnected ? 'online' : 'offline'}`}>
             <span className="dot"></span>
@@ -273,7 +278,7 @@ export default function Friends() {
           
           <div className="pricing-card" style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
             <h3>Add Friend</h3>
-            <form onSubmit={handleSearch} style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+            <form className="friend-search-form" onSubmit={handleSearch} style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
               <input 
                 type="email" 
                 value={searchEmail} 
@@ -368,6 +373,12 @@ export default function Friends() {
         .payment-modal-card {
           width: 90% !important;
           padding: 30px 20px !important;
+        }
+        .friend-search-form {
+          flex-direction: column !important;
+        }
+        .friend-search-form input, .friend-search-form button {
+          width: 100% !important;
         }
       }
     `}</style>

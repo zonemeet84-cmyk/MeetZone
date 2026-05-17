@@ -237,6 +237,14 @@ export default function Login() {
         .animate-in { animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .mt-4 { margin-top: 1rem; }
+        
+        @media (max-width: 480px) {
+          .login-card {
+            padding: 2rem 1.5rem;
+            width: 95%;
+          }
+          h1 { font-size: 1.5rem; }
+        }
       `}</style>
     </div>
   );

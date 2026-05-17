@@ -3868,6 +3868,62 @@ export default function Home() {
           0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
           50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.3); }
         }
+
+        /* --- MOBILE RESPONSIVENESS FIXES --- */
+        @media (max-width: 768px) {
+          .main-layout {
+            flex-direction: column !important;
+            height: auto !important;
+            min-height: 100vh;
+            overflow-x: hidden;
+          }
+          .video-grid-v2 {
+            grid-template-columns: 1fr !important;
+            margin-bottom: 20px !important;
+            gap: 15px !important;
+          }
+          .header-v2 {
+            flex-direction: column !important;
+            gap: 10px !important;
+            padding: 10px !important;
+          }
+          .header-actions {
+            flex-wrap: wrap !important;
+            justify-content: center !important;
+          }
+          .user-profile-tag {
+            flex-direction: column !important;
+            text-align: center !important;
+            padding: 10px !important;
+          }
+          .chat-column {
+            max-width: 100% !important;
+            min-width: 100% !important;
+            height: 400px !important;
+            margin-bottom: 20px;
+          }
+          .bottom-actions {
+            flex-wrap: wrap !important;
+            justify-content: center !important;
+            padding: 10px !important;
+          }
+          .filters-row-v2 {
+            flex-wrap: wrap !important;
+            justify-content: center !important;
+          }
+          .card-controls {
+            flex-wrap: wrap !important;
+            justify-content: center !important;
+          }
+          .gift-bubble {
+            width: 95% !important;
+          }
+          .identity-popup-bubble {
+            width: 95% !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+          }
+        }
       `}</style>
       </div>
     </>

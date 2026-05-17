@@ -231,6 +231,14 @@ export default function Signup() {
         .google-btn:hover:not(:disabled) { background: #f1f5f9; transform: translateY(-1px); }
         .google-btn img { width: 18px; height: 18px; }
         .highlight { color: #6366f1; font-weight: 700; cursor: pointer; }
+        
+        @media (max-width: 480px) {
+          .login-card {
+            padding: 2rem 1.5rem;
+            width: 95%;
+          }
+          h1 { font-size: 1.5rem; }
+        }
       `}</style>
     </div>
   );
