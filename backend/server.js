@@ -2501,6 +2501,11 @@ app.get("/api/ping", (req, res) => {
   res.json({ status: "alive", timestamp: Date.now() });
 });
 
+// ========= PUBLIC ONLINE USERS COUNT =========
+app.get("/api/public/online-count", (req, res) => {
+  res.json({ success: true, onlineCount: onlineUsers.size });
+});
+
 // Self-ping every 10 minutes to stay awake on Render
 setInterval(() => {
   const url = `https://meetzone-backend.onrender.com/api/ping`;

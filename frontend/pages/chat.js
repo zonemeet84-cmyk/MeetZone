@@ -146,6 +146,11 @@ export default function Home() {
   const [country, setCountry] = useState("all");
   const [age, setAge] = useState("all");
   const [stateProv, setStateProv] = useState("All States");
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [tempGender, setTempGender] = useState("all");
+  const [tempCountry, setTempCountry] = useState("all");
+  const [tempStateProv, setTempStateProv] = useState("All States");
+  const [tempAge, setTempAge] = useState("all");
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -1467,132 +1472,195 @@ export default function Home() {
 
         <div className="main-layout">
           <div className="video-column">
-            <div className="filters-row-v2">
-              {/* CUSTOM GENDER DROPDOWN */}
-              <div className="custom-dropdown-container">
-                <label>Gender</label>
-                <div className="dropdown-trigger" onClick={() => setShowGenderDrop(!showGenderDrop)}>
-                  <span className="icon-val">{selectedGender.icon}</span>
-                  <span className="label-val">{selectedGender.name}</span>
-                  <span className="arrow-val">▼</span>
+            <div className="filters-row-v2" style={{ justifyContent: 'space-between', padding: '10px 0', alignItems: 'center' }}>
+              <button 
+                className="filter-settings-trigger-btn" 
+                onClick={() => {
+                  setTempGender(gender);
+                  setTempCountry(country);
+                  setTempStateProv(stateProv);
+                  setTempAge(age);
+                  setShowFilterModal(true);
+                }}
+              >
+                <span className="icon">⚙️</span>
+                <span className="text">Matchmaking Preferences</span>
+                <div className="active-filters-preview-badge">
+                  {gender !== 'all' || country !== 'all' || age !== 'all' || stateProv !== 'All States' ? 'Active 🎯' : 'All 🌎'}
                 </div>
-                {showGenderDrop && (
-                  <div className="dropdown-menu">
-                    {GENDERS.map(g => (
-                      <div
-                        key={g.id}
-                        className={`dropdown-item ${gender === g.id ? "active" : ""}`}
-                        onClick={() => handleFilterChange("gender", g.id)}
-                      >
-                        <span className="icon">{g.icon}</span>
-                        {g.name}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* CUSTOM COUNTRY DROPDOWN */}
-              <div className="custom-dropdown-container">
-                <label>Country</label>
-                <div className="dropdown-trigger" onClick={() => {
-                  if (!user?.premium) { setShowPricingModal(true); return; }
-                  setShowCountryDrop(!showCountryDrop);
-                }}>
-                  <span className="icon-val">
-                    {country === "all" ? "🌎" : Country.getCountryByCode(country)?.flag}
-                  </span>
-                  <span className="label-val">
-                    {country === "all" ? "Worldwide" : Country.getCountryByCode(country)?.name}
-                  </span>
-                  <span className="arrow-val">▼</span>
-                </div>
-                {showCountryDrop && (
-                  <div className="dropdown-menu">
-                    <div className="search-box">
-                      <input
-                        placeholder="Search country..."
-                        autoFocus
-                        value={countrySearch}
-                        onChange={(e) => setCountrySearch(e.target.value)}
-                      />
-                    </div>
-                    <div className="items-list">
-                      <div className={`dropdown-item ${country === "all" ? "active" : ""}`} onClick={() => handleFilterChange("country", "all")}>
-                        <span className="icon">🌎</span> Worldwide
-                      </div>
-                      {Country.getAllCountries().filter(c => c.name.toLowerCase().includes(countrySearch.toLowerCase())).map(c => (
-                        <div key={c.isoCode} className={`dropdown-item ${country === c.isoCode ? "active" : ""}`} onClick={() => handleFilterChange("country", c.isoCode)}>
-                          <span className="icon">{c.flag}</span> {c.name}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* CUSTOM STATE DROPDOWN */}
-              <div className="custom-dropdown-container">
-                <label>State / Province</label>
-                <div className="dropdown-trigger" onClick={() => {
-                  if (!user?.premium) { setShowPricingModal(true); return; }
-                  if (country === "all") { alert("Please select a country first"); return; }
-                  setShowStateDrop(!showStateDrop);
-                }}>
-                  <span className="icon-val">📍</span>
-                  <span className="label-val">{stateProv}</span>
-                  <span className="arrow-val">▼</span>
-                </div>
-                {showStateDrop && (
-                  <div className="dropdown-menu">
-                    <div className="items-list">
-                      <div className={`dropdown-item ${stateProv === "All States" ? "active" : ""}`} onClick={() => handleFilterChange("stateProv", "All States")}>
-                        All States
-                      </div>
-                      {State.getStatesOfCountry(country).map(s => (
-                        <div key={s.isoCode || s.name} className={`dropdown-item ${stateProv === s.name ? "active" : ""}`} onClick={() => handleFilterChange("stateProv", s.name)}>
-                          {s.name}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* CUSTOM AGE DROPDOWN (VIP ELITE) */}
-              <div className="custom-dropdown-container age-drop" style={{ width: "120px" }}>
-                <label>Age</label>
-                <div className="dropdown-trigger" onClick={() => {
-                  if (!user?.premium || user?.planName !== "VIP Elite") setShowPricingModal(true);
-                  else setShowAgeDrop(!showAgeDrop);
-                }}>
-                  <span className="icon-val">🎯</span>
-                  <span className="label-val">{age === "all" ? "All Ages" : age}</span>
-                  <span className="arrow-val">▼</span>
-                </div>
-                {showAgeDrop && (
-                  <div className="dropdown-menu">
-                    <div className="items-list">
-                      {AGES.map(a => (
-                        <div
-                          key={a}
-                          className={`dropdown-item ${age === a ? "active" : ""}`}
-                          onClick={() => handleFilterChange("age", a)}
-                        >
-                          {a}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+              </button>
 
               {!user?.premium && (
-                <div className="paywall-badge-v2" onClick={() => setShowPricingModal(true)}>
+                <div className="paywall-badge-v2" onClick={() => setShowPricingModal(true)} style={{ margin: 0 }}>
                   <span>✨ Unlock Filters</span>
                 </div>
               )}
             </div>
+
+            {/* PREMIUM FILTER SETTINGS MODAL */}
+            {showFilterModal && (
+              <div className="filter-modal-overlay">
+                <div className="filter-modal-card">
+                  <div className="filter-modal-header">
+                    <h2>🎯 Matchmaking Preferences</h2>
+                    <button className="close-btn" onClick={() => setShowFilterModal(false)}>×</button>
+                  </div>
+                  
+                  <div className="filter-modal-body">
+                    {/* 1. GENDER SELECTION */}
+                    <div className="filter-section-group">
+                      <label className="section-label">Preferred Gender</label>
+                      <div className="gender-options-grid">
+                        {GENDERS.map(g => (
+                          <div
+                            key={g.id}
+                            className={`gender-option-card ${tempGender === g.id ? 'active' : ''}`}
+                            onClick={() => setTempGender(g.id)}
+                          >
+                            <span className="emoji">{g.icon}</span>
+                            <span className="name">{g.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 2. COUNTRY SELECTION */}
+                    <div className="filter-section-group">
+                      <label className="section-label">Preferred Country (Premium Feature)</label>
+                      <div className="select-dropdown-trigger" onClick={() => {
+                        if (!user?.premium) { setShowPricingModal(true); return; }
+                        setShowCountryDrop(!showCountryDrop);
+                      }}>
+                        <span className="val-icon">
+                          {tempCountry === "all" ? "🌎" : Country.getCountryByCode(tempCountry)?.flag}
+                        </span>
+                        <span className="val-text">
+                          {tempCountry === "all" ? "Worldwide" : Country.getCountryByCode(tempCountry)?.name}
+                        </span>
+                        <span className="arrow">▼</span>
+                      </div>
+                      {showCountryDrop && (
+                        <div className="filter-dropdown-menu">
+                          <div className="search-box">
+                            <input
+                              placeholder="Search country..."
+                              autoFocus
+                              value={countrySearch}
+                              onChange={(e) => setCountrySearch(e.target.value)}
+                            />
+                          </div>
+                          <div className="items-list">
+                            <div className={`dropdown-item ${tempCountry === "all" ? "active" : ""}`} onClick={() => {
+                              setTempCountry("all");
+                              setTempStateProv("All States");
+                              setShowCountryDrop(false);
+                            }}>
+                              <span className="icon">🌎</span> Worldwide
+                            </div>
+                            {Country.getAllCountries().filter(c => c.name.toLowerCase().includes(countrySearch.toLowerCase())).map(c => (
+                              <div key={c.isoCode} className={`dropdown-item ${tempCountry === c.isoCode ? "active" : ""}`} onClick={() => {
+                                setTempCountry(c.isoCode);
+                                setTempStateProv("All States");
+                                setShowCountryDrop(false);
+                              }}>
+                                <span className="icon">{c.flag}</span> {c.name}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 3. STATE / PROVINCE SELECTION */}
+                    <div className="filter-section-group">
+                      <label className="section-label">State / Province (VIP Elite Premium Feature)</label>
+                      <div className="select-dropdown-trigger" onClick={() => {
+                        if (!user?.premium) { setShowPricingModal(true); return; }
+                        if (tempCountry === "all") { alert("Please select a country first"); return; }
+                        setShowStateDrop(!showStateDrop);
+                      }}>
+                        <span className="val-icon">📍</span>
+                        <span className="val-text">{tempStateProv}</span>
+                        <span className="arrow">▼</span>
+                      </div>
+                      {showStateDrop && (
+                        <div className="filter-dropdown-menu">
+                          <div className="items-list">
+                            <div className={`dropdown-item ${tempStateProv === "All States" ? "active" : ""}`} onClick={() => {
+                              setTempStateProv("All States");
+                              setShowStateDrop(false);
+                            }}>
+                              All States
+                            </div>
+                            {State.getStatesOfCountry(tempCountry).map(s => (
+                              <div key={s.isoCode || s.name} className={`dropdown-item ${tempStateProv === s.name ? "active" : ""}`} onClick={() => {
+                                setTempStateProv(s.name);
+                                setShowStateDrop(false);
+                              }}>
+                                {s.name}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 4. AGE SELECTION */}
+                    <div className="filter-section-group">
+                      <label className="section-label">Age Group (VIP Elite Premium Feature)</label>
+                      <div className="select-dropdown-trigger" onClick={() => {
+                        if (!user?.premium || user?.planName !== "VIP Elite") { setShowPricingModal(true); return; }
+                        setShowAgeDrop(!showAgeDrop);
+                      }}>
+                        <span className="val-icon">🎯</span>
+                        <span className="val-text">{tempAge === "all" ? "All Ages" : tempAge}</span>
+                        <span className="arrow">▼</span>
+                      </div>
+                      {showAgeDrop && (
+                        <div className="filter-dropdown-menu">
+                          <div className="items-list">
+                            <div className={`dropdown-item ${tempAge === "all" ? "active" : ""}`} onClick={() => {
+                              setTempAge("all");
+                              setShowAgeDrop(false);
+                            }}>
+                              All Ages
+                            </div>
+                            {AGES.filter(a => a !== "All Ages").map(a => (
+                              <div key={a} className={`dropdown-item ${tempAge === a ? "active" : ""}`} onClick={() => {
+                                setTempAge(a);
+                                setShowAgeDrop(false);
+                              }}>
+                                {a}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="filter-modal-footer">
+                    <button className="apply-btn" onClick={() => {
+                      setGender(tempGender);
+                      setCountry(tempCountry);
+                      setStateProv(tempStateProv);
+                      setAge(tempAge);
+                      
+                      socket?.emit("update-filters", {
+                        gender: tempGender,
+                        country: tempCountry,
+                        age: tempAge,
+                        state: tempStateProv
+                      });
+
+                      setShowFilterModal(false);
+                    }}>
+                      🎯 Apply Preferences
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="video-grid-v2">
               <div className={`video-card ${isFaceBlurred ? 'blurred-face' : ''}`}>
@@ -3871,6 +3939,287 @@ export default function Home() {
         @keyframes glowPulse {
           0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
           50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.3); }
+        }
+
+        /* --- MULTI-FILTER PREFERENCES BUTTON & MODAL --- */
+        .filter-settings-trigger-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 12px;
+          background: rgba(99, 102, 241, 0.1);
+          border: 1px solid rgba(99, 102, 241, 0.35);
+          border-radius: 12px;
+          padding: 8px 16px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          color: white;
+          font-weight: 700;
+          font-size: 0.9rem;
+          box-shadow: 0 4px 15px rgba(99, 102, 241, 0.05);
+        }
+        .filter-settings-trigger-btn:hover {
+          background: rgba(99, 102, 241, 0.2);
+          border-color: #6366f1;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(99, 102, 241, 0.15);
+        }
+        .filter-settings-trigger-btn .icon {
+          font-size: 1.1rem;
+          animation: spin-gear 6s linear infinite;
+        }
+        @keyframes spin-gear {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .active-filters-preview-badge {
+          background: #6366f1;
+          color: white;
+          font-size: 0.7rem;
+          font-weight: 800;
+          padding: 2px 8px;
+          border-radius: 20px;
+          letter-spacing: 0.3px;
+        }
+
+        /* Modal Overlay */
+        .filter-modal-overlay {
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(7, 10, 19, 0.85);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          z-index: 2000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          animation: modalFadeIn 0.3s ease-out;
+        }
+        @keyframes modalFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        /* Modal Card */
+        .filter-modal-card {
+          width: 90%;
+          max-width: 480px;
+          background: #0f172a;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 28px;
+          padding: 24px;
+          box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          animation: modalScaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes modalScaleUp {
+          from { transform: scale(0.9) translateY(20px); }
+          to { transform: scale(1) translateY(0); }
+        }
+
+        .filter-modal-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          padding-bottom: 15px;
+        }
+        .filter-modal-header h2 {
+          font-size: 1.25rem;
+          font-weight: 800;
+          color: white;
+          margin: 0;
+        }
+        .filter-modal-header .close-btn {
+          background: none;
+          border: none;
+          color: #94a3b8;
+          font-size: 1.75rem;
+          cursor: pointer;
+          line-height: 1;
+          transition: color 0.2s;
+        }
+        .filter-modal-header .close-btn:hover {
+          color: #ef4444;
+        }
+
+        .filter-modal-body {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          max-height: 60vh;
+          overflow-y: auto;
+          padding-right: 4px;
+        }
+        .filter-modal-body::-webkit-scrollbar {
+          width: 6px;
+        }
+        .filter-modal-body::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 4px;
+        }
+
+        .filter-section-group {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          position: relative;
+        }
+        .section-label {
+          font-size: 0.8rem;
+          font-weight: 800;
+          color: #94a3b8;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        /* Gender Options Grid */
+        .gender-options-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 10px;
+        }
+        .gender-option-card {
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 16px;
+          padding: 12px;
+          text-align: center;
+          cursor: pointer;
+          transition: all 0.25s ease;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+        }
+        .gender-option-card:hover {
+          background: rgba(255, 255, 255, 0.05);
+          border-color: rgba(99, 102, 241, 0.4);
+        }
+        .gender-option-card.active {
+          background: rgba(99, 102, 241, 0.12);
+          border-color: #6366f1;
+          box-shadow: 0 0 15px rgba(99, 102, 241, 0.25);
+        }
+        .gender-option-card .emoji {
+          font-size: 1.5rem;
+        }
+        .gender-option-card .name {
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: #e2e8f0;
+        }
+
+        /* Select Dropdowns */
+        .select-dropdown-trigger {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: rgba(15, 23, 42, 0.6);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 14px;
+          padding: 12px 16px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .select-dropdown-trigger:hover {
+          border-color: rgba(99, 102, 241, 0.4);
+          background: rgba(15, 23, 42, 0.85);
+        }
+        .select-dropdown-trigger .val-icon {
+          font-size: 1.1rem;
+          margin-right: 10px;
+        }
+        .select-dropdown-trigger .val-text {
+          flex: 1;
+          font-size: 0.9rem;
+          color: white;
+          font-weight: 600;
+        }
+        .select-dropdown-trigger .arrow {
+          font-size: 0.7rem;
+          color: #64748b;
+        }
+
+        .filter-dropdown-menu {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: #1e293b;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 16px;
+          margin-top: 6px;
+          z-index: 100;
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+          overflow: hidden;
+          animation: slideDown 0.2s ease;
+        }
+        @keyframes slideDown {
+          from { transform: translateY(-10px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        .filter-dropdown-menu .search-box {
+          padding: 10px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .filter-dropdown-menu .search-box input {
+          width: 100%;
+          background: rgba(15, 23, 42, 0.6);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+          padding: 8px 12px;
+          color: white;
+          font-size: 0.85rem;
+        }
+        .filter-dropdown-menu .items-list {
+          max-height: 200px;
+          overflow-y: auto;
+        }
+        .filter-dropdown-menu .dropdown-item {
+          padding: 10px 15px;
+          cursor: pointer;
+          font-size: 0.85rem;
+          color: #cbd5e1;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: background 0.2s;
+        }
+        .filter-dropdown-menu .dropdown-item:hover {
+          background: rgba(99, 102, 241, 0.15);
+          color: white;
+        }
+        .filter-dropdown-menu .dropdown-item.active {
+          background: #6366f1;
+          color: white;
+          font-weight: 700;
+        }
+
+        /* Footer apply button */
+        .filter-modal-footer {
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+          padding-top: 15px;
+          display: flex;
+          justify-content: flex-end;
+        }
+        .filter-modal-footer .apply-btn {
+          width: 100%;
+          background: linear-gradient(135deg, #6366f1, #a855f7);
+          border: none;
+          color: white;
+          font-weight: 800;
+          font-size: 1rem;
+          padding: 12px 24px;
+          border-radius: 16px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+        .filter-modal-footer .apply-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
         }
 
         /* --- MOBILE RESPONSIVENESS FIXES --- */

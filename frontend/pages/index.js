@@ -124,6 +124,24 @@ export default function Dashboard() {
   const [giftRecipientId, setGiftRecipientId] = useState("");
   const [incomingCall, setIncomingCall] = useState(null);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
+  const [onlineCount, setOnlineCount] = useState(5248);
+
+  useEffect(() => {
+    const fetchOnlineCount = async () => {
+      try {
+        const res = await axios.get("https://meetzone-backend.onrender.com/api/public/online-count");
+        if (res.data && typeof res.data.onlineCount === 'number') {
+          // Keep a minimum representation so the site always looks populated
+          setOnlineCount(res.data.onlineCount || 1);
+        }
+      } catch (err) {
+        console.error("Error fetching online count:", err);
+      }
+    };
+    fetchOnlineCount();
+    const interval = setInterval(fetchOnlineCount, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   // ZoneMeetBot State
   const [isBotOpen, setIsBotOpen] = useState(false);
@@ -1275,17 +1293,17 @@ export default function Dashboard() {
       </div>
 
       <main className="dashboard-hero">
-        <div className="hero-split-container">
+        <div className="hero-split-container centered-hero">
           <div className="hero-top-columns">
             <div className="hero-left-column">
-              {/* Status Badge (Untouched as requested) */}
+              {/* Status Badge (Dynamic & Centered) */}
               <div className="status-badge">
                 <div className="status-dot active"></div>
-                <span>5,248 Users Online Now</span>
+                <span>{onlineCount.toLocaleString()} Users Online Now</span>
               </div>
 
               <h1 className="hero-explore-title">
-                Meet Random People<br />
+                Meet People<br />
                 <span>Worldwide Instantly.</span>
               </h1>
 
@@ -1304,90 +1322,6 @@ export default function Dashboard() {
                 </button>
               </div>
             </div>
-
-            <div className="hero-right-column">
-              <div className="hero-interactive-graphic">
-                {/* Glowing World Map Background Image - Screen Blended for Transparent Look */}
-                <img 
-                  src="/new_hero_map_v2.jpg" 
-                  alt="World Map" 
-                  className="world-map-image-bg"
-                />
-                {/* Connections SVG Matrix */}
-                <svg className="connection-svg" viewBox="0 0 600 400">
-                  {/* Pulsing connection line arches */}
-                  <path d="M 100,100 Q 195,80 290,110" className="pulse-line line-1" />
-                  <path d="M 290,110 Q 385,90 480,120" className="pulse-line line-2" />
-                  <path d="M 100,100 Q 110,190 120,280" className="pulse-line line-3" />
-                  <path d="M 480,120 Q 470,215 460,310" className="pulse-line line-4" />
-                  <path d="M 120,280 Q 220,250 320,290" className="pulse-line line-1" />
-                  <path d="M 320,290 Q 390,280 460,310" className="pulse-line line-2" />
-                  <path d="M 290,110 Q 305,200 320,290" className="pulse-line line-3" />
-                </svg>
-
-                {/* Floating Profile 1: USA */}
-                <div className="floating-card profile-map-1">
-                  <img className="card-photo" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&h=80&q=80" alt="Alexa" />
-                  <div className="card-info">
-                    <h4>Alexa</h4>
-                    <span className="live-pill">🇺🇸 USA</span>
-                  </div>
-                </div>
-
-                {/* Floating Profile 2: UK */}
-                <div className="floating-card profile-map-2">
-                  <img className="card-photo" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&h=80&q=80" alt="Ben" />
-                  <div className="card-info">
-                    <h4>Ben</h4>
-                    <span className="live-pill">🇬🇧 UK</span>
-                  </div>
-                </div>
-
-                {/* Floating Profile 3: Japan */}
-                <div className="floating-card profile-map-3">
-                  <img className="card-photo" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&h=80&q=80" alt="Yuki" />
-                  <div className="card-info">
-                    <h4>Yuki</h4>
-                    <span className="live-pill">🇯🇵 Japan</span>
-                  </div>
-                </div>
-
-                {/* Floating Profile 4: Brazil */}
-                <div className="floating-card profile-map-4">
-                  <img className="card-photo" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=80&h=80&q=80" alt="Sofia" />
-                  <div className="card-info">
-                    <h4>Sofia</h4>
-                    <span className="live-pill">🇧🇷 Brazil</span>
-                  </div>
-                </div>
-
-                {/* Floating Profile 5: India */}
-                <div className="floating-card profile-map-5">
-                  <img className="card-photo" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=80&h=80&q=80" alt="Rahul" />
-                  <div className="card-info">
-                    <h4>Rahul</h4>
-                    <span className="live-pill">🇮🇳 India</span>
-                  </div>
-                </div>
-
-                {/* Floating Profile 6: Australia */}
-                <div className="floating-card profile-map-6">
-                  <img className="card-photo" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=80&h=80&q=80" alt="Emma" />
-                  <div className="card-info">
-                    <h4>Emma</h4>
-                    <span className="live-pill">🇦🇺 Australia</span>
-                  </div>
-                </div>
-
-                {/* Central Pulse Hub Overlay */}
-                <div className="hub-center-mini">
-                  <div className="hub-core-mini">
-                    <span className="live-signal-ripple"></span>
-                    <span className="live-signal-ripple-2"></span>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Full Width Bottom Stats Strip from Image 3 */}
@@ -1398,13 +1332,13 @@ export default function Dashboard() {
               <p className="stat-label">Global Reach</p>
               <p className="stat-desc">Connect with friendly people from over 190 countries instantly.</p>
             </div>
-            
+
             <div className="stat-premium-card">
               <h3 style={{ color: '#60a5fa' }}>10M+</h3>
               <p className="stat-label">Live Connections</p>
               <p className="stat-desc">Millions of successful video call matches made every single day.</p>
             </div>
-            
+
             <div className="stat-premium-card">
               <h3 style={{ color: '#10b981' }}>100%</h3>
               <p className="stat-label">Safe & Secure</p>
@@ -4252,12 +4186,26 @@ export default function Dashboard() {
             margin: 0 auto;
             padding: 40px 20px;
           }
+          .hero-split-container.centered-hero {
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 50vh;
+          }
           .hero-top-columns {
             display: grid;
             grid-template-columns: 1.15fr 0.85fr;
             gap: 50px;
             align-items: center;
             width: 100%;
+          }
+          .centered-hero .hero-top-columns {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 20px;
           }
           .hero-left-column {
             text-align: left;
@@ -4266,6 +4214,13 @@ export default function Dashboard() {
             align-items: flex-start;
             animation: fadeIn 0.8s ease-out;
             max-width: 580px;
+          }
+          .centered-hero .hero-left-column {
+            text-align: center;
+            align-items: center;
+            justify-content: center;
+            max-width: 800px;
+            margin: 0 auto;
           }
           .hero-interactive-graphic {
             position: relative;
@@ -4386,9 +4341,11 @@ export default function Dashboard() {
             line-height: 1.6 !important;
             color: #94a3b8 !important;
             margin-bottom: 35px !important;
-            max-width: 540px;
-            text-align: left !important;
+            max-width: 720px;
+            text-align: center !important;
             font-weight: 400;
+            margin-left: auto;
+            margin-right: auto;
           }
           .hero-interactive-graphic {
             position: relative;
