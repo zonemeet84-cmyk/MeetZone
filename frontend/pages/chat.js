@@ -1517,7 +1517,16 @@ export default function Home() {
                           <div
                             key={g.id}
                             className={`gender-option-card ${tempGender === g.id ? 'active' : ''}`}
-                            onClick={() => setTempGender(g.id)}
+                            onClick={() => {
+                              const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+                              const currentUser = user || storedUser;
+                              const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
+                              if (g.id !== "all" && !currentUser?.premium && !isOwner) {
+                                setShowPricingModal(true);
+                                return;
+                              }
+                              setTempGender(g.id);
+                            }}
                           >
                             <span className="emoji">{g.icon}</span>
                             <span className="name">{g.name}</span>
@@ -1530,7 +1539,13 @@ export default function Home() {
                     <div className="filter-section-group">
                       <label className="section-label">Preferred Country (Premium Feature)</label>
                       <div className="select-dropdown-trigger" onClick={() => {
-                        if (!user?.premium) { setShowPricingModal(true); return; }
+                        const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+                        const currentUser = user || storedUser;
+                        const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
+                        if (!currentUser?.premium && !isOwner) {
+                          setShowPricingModal(true);
+                          return;
+                        }
                         setShowCountryDrop(!showCountryDrop);
                       }}>
                         <span className="val-icon">
@@ -1577,8 +1592,10 @@ export default function Home() {
                     <div className="filter-section-group">
                       <label className="section-label">State / Province (VIP Elite Premium Feature)</label>
                       <div className="select-dropdown-trigger" onClick={() => {
-                        const isOwner = user?.email?.toLowerCase() === "ds9376314@gmail.com";
-                        const isElite = (user?.premium && user?.planName?.toLowerCase().includes("elite")) || isOwner;
+                        const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+                        const currentUser = user || storedUser;
+                        const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
+                        const isElite = (currentUser?.premium && currentUser?.planName?.toLowerCase().includes("elite")) || isOwner;
                         if (!isElite) { setShowPricingModal(true); return; }
                         if (tempCountry === "all") { alert("Please select a country first"); return; }
                         setShowStateDrop(!showStateDrop);
@@ -1613,8 +1630,10 @@ export default function Home() {
                     <div className="filter-section-group">
                       <label className="section-label">Age Group (VIP Elite Premium Feature)</label>
                       <div className="select-dropdown-trigger" onClick={() => {
-                        const isOwner = user?.email?.toLowerCase() === "ds9376314@gmail.com";
-                        const isElite = (user?.premium && user?.planName?.toLowerCase().includes("elite")) || isOwner;
+                        const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+                        const currentUser = user || storedUser;
+                        const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
+                        const isElite = (currentUser?.premium && currentUser?.planName?.toLowerCase().includes("elite")) || isOwner;
                         if (!isElite) { setShowPricingModal(true); return; }
                         setShowAgeDrop(!showAgeDrop);
                       }}>
@@ -1647,6 +1666,32 @@ export default function Home() {
 
                   <div className="filter-modal-footer">
                     <button className="apply-btn" onClick={() => {
+                      const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+                      const currentUser = user || storedUser;
+                      const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
+                      const isElite = (currentUser?.premium && currentUser?.planName?.toLowerCase().includes("elite")) || isOwner;
+
+                      // 1. Gender Selection Gating (must be premium for Male or Female)
+                      if (tempGender !== "all" && !currentUser?.premium && !isOwner) {
+                        setShowPricingModal(true);
+                        return;
+                      }
+                      // 2. Country Selection Gating (must be premium for non-Worldwide)
+                      if (tempCountry !== "all" && !currentUser?.premium && !isOwner) {
+                        setShowPricingModal(true);
+                        return;
+                      }
+                      // 3. State Selection Gating (must be VIP Elite)
+                      if (tempStateProv !== "All States" && !isElite) {
+                        setShowPricingModal(true);
+                        return;
+                      }
+                      // 4. Age Group Selection Gating (must be VIP Elite)
+                      if (tempAge !== "all" && !isElite) {
+                        setShowPricingModal(true);
+                        return;
+                      }
+
                       setGender(tempGender);
                       setCountry(tempCountry);
                       setStateProv(tempStateProv);
