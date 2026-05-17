@@ -1474,6 +1474,8 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] },
+  pingTimeout: 180000,
+  pingInterval: 60000,
 });
 
 // Helper for auth was moved up
@@ -1981,8 +1983,15 @@ io.on("connection", (socket) => {
     if (index !== -1) waitingUsers.splice(index, 1);
 
     if (socket.partner) {
-      socket.partner.emit("partner-disconnected");
-      socket.partner.partner = null;
+      const partner = socket.partner;
+      partner.emit("partner-reconnecting");
+      setTimeout(() => {
+        if (!socket.connected && partner.partner === socket) {
+          partner.emit("partner-disconnected");
+          partner.partner = null;
+          queueUser(partner);
+        }
+      }, 8000);
     }
   });
 });

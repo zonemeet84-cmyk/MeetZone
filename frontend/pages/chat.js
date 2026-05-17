@@ -1031,6 +1031,10 @@ export default function Home() {
         setMessages((prev) => [...prev, { text, sender: "partner" }]);
       });
 
+      socket.on("partner-reconnecting", () => {
+        setStatus("Partner connection unstable. Reconnecting...");
+      });
+
       socket.on("partner-disconnected", () => {
         setStatus("Partner disconnected. Searching...");
         closeConnection();
