@@ -1307,62 +1307,69 @@ export default function Dashboard() {
 
             <div className="hero-right-column">
               <div className="hero-interactive-graphic">
-                {/* World Map SVG Background */}
-                <svg className="world-map-svg" viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Glowing background circles & grids */}
-                  <circle cx="300" cy="200" r="120" stroke="rgba(168, 85, 247, 0.08)" strokeWidth="1" strokeDasharray="4 4" />
-                  <circle cx="300" cy="200" r="220" stroke="rgba(96, 165, 250, 0.05)" strokeWidth="1" strokeDasharray="6 6" />
-                  
-                  {/* North America outline */}
-                  <path d="M 80,100 Q 120,80 180,110 T 150,180 Q 110,180 80,150 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" />
-                  {/* South America outline */}
-                  <path d="M 140,200 Q 180,220 170,280 T 130,360 Q 110,320 120,240 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" />
-                  {/* Eurasia & Africa outline */}
-                  <path d="M 280,100 Q 360,60 480,90 T 520,180 Q 420,220 360,180 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" />
-                  <path d="M 300,180 Q 360,190 380,260 T 340,340 Q 300,280 290,220 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" />
-                  {/* Australia outline */}
-                  <path d="M 480,280 Q 540,290 520,340 T 460,320 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" />
-
+                {/* Connections SVG Matrix */}
+                <svg className="connection-svg" viewBox="0 0 600 400">
                   {/* Pulsing connection line arches */}
-                  <path d="M 130,120 Q 300,60 430,130" className="pulse-line line-1" />
-                  <path d="M 150,260 Q 280,200 370,270" className="pulse-line line-2" />
-                  <path d="M 130,120 Q 140,190 150,260" className="pulse-line line-3" />
-                  <path d="M 430,130 Q 440,220 490,300" className="pulse-line line-4" />
+                  <path d="M 100,100 Q 195,80 290,110" className="pulse-line line-1" />
+                  <path d="M 290,110 Q 385,90 480,120" className="pulse-line line-2" />
+                  <path d="M 100,100 Q 110,190 120,280" className="pulse-line line-3" />
+                  <path d="M 480,120 Q 470,215 460,310" className="pulse-line line-4" />
+                  <path d="M 120,280 Q 220,250 320,290" className="pulse-line line-1" />
+                  <path d="M 320,290 Q 390,280 460,310" className="pulse-line line-2" />
+                  <path d="M 290,110 Q 305,200 320,290" className="pulse-line line-3" />
                 </svg>
 
-                {/* Floating Profile 1: North America */}
+                {/* Floating Profile 1: USA */}
                 <div className="floating-card profile-map-1">
                   <img className="card-photo" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&h=80&q=80" alt="Alexa" />
                   <div className="card-info">
                     <h4>Alexa</h4>
-                    <span className="live-pill">● USA</span>
+                    <span className="live-pill">🇺🇸 USA</span>
                   </div>
                 </div>
 
-                {/* Floating Profile 2: Europe */}
+                {/* Floating Profile 2: UK */}
                 <div className="floating-card profile-map-2">
                   <img className="card-photo" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&h=80&q=80" alt="Ben" />
                   <div className="card-info">
                     <h4>Ben</h4>
-                    <span className="live-pill">● UK</span>
+                    <span className="live-pill">🇬🇧 UK</span>
                   </div>
                 </div>
 
-                {/* Floating Profile 3: South America */}
+                {/* Floating Profile 3: Japan */}
                 <div className="floating-card profile-map-3">
+                  <img className="card-photo" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&h=80&q=80" alt="Yuki" />
+                  <div className="card-info">
+                    <h4>Yuki</h4>
+                    <span className="live-pill">🇯🇵 Japan</span>
+                  </div>
+                </div>
+
+                {/* Floating Profile 4: Brazil */}
+                <div className="floating-card profile-map-4">
                   <img className="card-photo" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=80&h=80&q=80" alt="Sofia" />
                   <div className="card-info">
                     <h4>Sofia</h4>
-                    <span className="live-pill">● Brazil</span>
+                    <span className="live-pill">🇧🇷 Brazil</span>
                   </div>
                 </div>
 
-                {/* Floating Profile 4: India/Asia */}
-                <div className="floating-card profile-map-4">
-                  <img className="card-photo" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&h=80&q=80" alt="David" />
+                {/* Floating Profile 5: India */}
+                <div className="floating-card profile-map-5">
+                  <img className="card-photo" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=80&h=80&q=80" alt="Rahul" />
                   <div className="card-info">
-                    <h4>David</h4>
-                    <span className="live-pill">● India</span>
+                    <h4>Rahul</h4>
+                    <span className="live-pill">🇮🇳 India</span>
+                  </div>
+                </div>
+
+                {/* Floating Profile 6: Australia */}
+                <div className="floating-card profile-map-6">
+                  <img className="card-photo" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=80&h=80&q=80" alt="Emma" />
+                  <div className="card-info">
+                    <h4>Emma</h4>
+                    <span className="live-pill">🇦🇺 Australia</span>
                   </div>
                 </div>
 
@@ -4254,14 +4261,24 @@ export default function Dashboard() {
             animation: fadeIn 0.8s ease-out;
             max-width: 580px;
           }
-          .world-map-svg {
-            position: absolute;
-            top: 0;
-            left: 0;
+          .hero-interactive-graphic {
+            position: relative;
             width: 100%;
-            height: 100%;
-            z-index: 1;
-            opacity: 0.85;
+            max-width: 580px;
+            height: 480px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+            animation: fadeIn 1s ease-out;
+            background-image: url('/new_hero_map_v2.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 24px;
+            box-shadow: inset 0 0 80px rgba(15, 23, 42, 0.95), 0 20px 40px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
           }
           .card-photo {
             width: 44px;
@@ -4272,24 +4289,34 @@ export default function Dashboard() {
             box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
           }
           .profile-map-1 {
-            top: 60px;
-            left: 30px;
+            top: 55px;
+            left: 20px;
             animation: float-p1 5s ease-in-out infinite alternate;
           }
           .profile-map-2 {
-            top: 70px;
-            right: 40px;
+            top: 65px;
+            left: 210px;
             animation: float-p2 6s ease-in-out infinite alternate;
           }
           .profile-map-3 {
-            bottom: 90px;
-            left: 40px;
+            top: 75px;
+            right: 20px;
             animation: float-p3 7s ease-in-out infinite alternate;
           }
           .profile-map-4 {
-            bottom: 80px;
-            right: 60px;
+            bottom: 65px;
+            left: 25px;
             animation: float-p4 5.5s ease-in-out infinite alternate;
+          }
+          .profile-map-5 {
+            bottom: 75px;
+            left: 230px;
+            animation: float-p1 6.5s ease-in-out infinite alternate;
+          }
+          .profile-map-6 {
+            bottom: 55px;
+            right: 30px;
+            animation: float-p2 5s ease-in-out infinite alternate;
           }
           
           /* Mini Core matching beacon in the center of the world */
@@ -4632,24 +4659,31 @@ export default function Dashboard() {
                 font-size: 0.7rem !important;
               }
               .hero-interactive-graphic {
-                max-width: 320px !important;
-                height: 320px !important;
+                max-width: 340px !important;
+                height: 280px !important;
                 margin: 0 auto !important;
+                background-size: cover !important;
               }
               .floating-card {
-                padding: 6px 10px !important;
+                padding: 4px 8px !important;
+                border-radius: 12px !important;
               }
               .card-photo {
-                width: 30px !important;
-                height: 30px !important;
+                width: 24px !important;
+                height: 24px !important;
               }
               .card-info h4 {
-                font-size: 0.75rem !important;
+                font-size: 0.65rem !important;
               }
-              .profile-map-1 { top: 30px !important; left: 10px !important; }
-              .profile-map-2 { top: 40px !important; right: 20px !important; }
-              .profile-map-3 { bottom: 50px !important; left: 20px !important; }
-              .profile-map-4 { bottom: 40px !important; right: 30px !important; }
+              .live-pill {
+                font-size: 0.5rem !important;
+              }
+              .profile-map-1 { top: 25px !important; left: 10px !important; }
+              .profile-map-2 { display: none !important; }
+              .profile-map-3 { top: 30px !important; right: 10px !important; }
+              .profile-map-4 { bottom: 25px !important; left: 10px !important; }
+              .profile-map-5 { display: none !important; }
+              .profile-map-6 { bottom: 30px !important; right: 10px !important; }
               .country-badge {
                 padding: 4px 8px !important;
                 gap: 6px !important;
