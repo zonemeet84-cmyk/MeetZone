@@ -3953,9 +3953,58 @@ export default function Dashboard() {
             .dashboard-hero {
               padding-top: 150px !important;
             }
-            .streak-modal-card, .leaderboard-modal {
+            .payment-overlay {
+              padding: 1rem 0.5rem !important;
+            }
+            .premium-modal {
               width: 95% !important;
-              padding: 20px !important;
+              max-width: 100% !important;
+              max-height: 90vh !important;
+              overflow-y: auto !important;
+              padding: 20px 15px !important;
+              margin: auto !important;
+            }
+            .leaderboard-modal {
+              width: 95% !important;
+              max-width: 600px !important;
+              height: 80vh !important;
+              max-height: 85vh !important;
+              padding: 0 !important;
+            }
+            .bot-body {
+              padding: 0 15px 20px !important;
+            }
+            .profile-modal-card {
+              position: fixed !important;
+              top: 50% !important;
+              left: 50% !important;
+              transform: translate(-50%, -50%) !important;
+              width: 95% !important;
+              max-width: 360px !important;
+              max-height: 85vh !important;
+              overflow-y: auto !important;
+              border-radius: 28px !important;
+              right: auto !important;
+            }
+            .streak-reward-modal {
+              width: 95% !important;
+              max-width: 400px !important;
+              max-height: 90vh !important;
+              overflow-y: auto !important;
+              padding: 20px 15px !important;
+              margin: auto !important;
+            }
+            .streak-days-grid {
+              gap: 4px !important;
+            }
+            .streak-day-card {
+              padding: 6px 2px 4px !important;
+            }
+            .streak-day-label {
+              font-size: 0.65rem !important;
+            }
+            .streak-day-coins {
+              font-size: 0.75rem !important;
             }
             .streak-modal-close {
               padding: 15px !important;
@@ -3965,10 +4014,6 @@ export default function Dashboard() {
               height: 400px !important;
               bottom: 80px !important;
               right: 20px !important;
-            }
-            .premium-modal {
-              width: 95% !important;
-              padding: 20px !important;
             }
             .modal-header-premium h2 {
               font-size: 2rem !important;
