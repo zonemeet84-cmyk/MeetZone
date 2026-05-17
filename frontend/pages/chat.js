@@ -1309,8 +1309,7 @@ export default function Home() {
       return;
     }
     // Feature Gating
-    const isElite = user?.premium && (user?.planName?.toLowerCase().includes("elite") || user?.email?.toLowerCase() === "ds9376314@gmail.com");
-    if ((type === "age" || type === "state" || type === "stateProv") && !isElite) {
+    if ((type === "age" || type === "state" || type === "stateProv") && !user?.premium) {
       setShowPricingModal(true);
       return;
     }
@@ -1610,8 +1609,7 @@ export default function Home() {
                     <div className="filter-section-group">
                       <label className="section-label">Age Group (VIP Elite Premium Feature)</label>
                       <div className="select-dropdown-trigger" onClick={() => {
-                        const isElite = user?.premium && (user?.planName?.toLowerCase().includes("elite") || user?.email?.toLowerCase() === "ds9376314@gmail.com");
-                        if (!isElite) { setShowPricingModal(true); return; }
+                        if (!user?.premium) { setShowPricingModal(true); return; }
                         setShowAgeDrop(!showAgeDrop);
                       }}>
                         <span className="val-icon">🎯</span>
