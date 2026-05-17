@@ -1308,7 +1308,7 @@ export default function Dashboard() {
               </h1>
 
               <p className="hero-explore-subtitle">
-                Instantly connect with millions of verified users across the globe. Make new friends, share incredible moments, and enjoy crystal-clear video calls in a 100% secure environment. Match with friendly strangers, learn new languages, and explore vibrant cultures in real-time.
+                Connect instantly with real people from around the world through seamless random video chats. Make new friends, explore different cultures, and enjoy secure conversations anytime, anywhere. Meet interesting people, share moments, and build real connections in a fun and safe environment.
               </p>
 
               <div className="action-buttons" style={{ position: 'relative', zIndex: 20, marginTop: '30px' }}>
