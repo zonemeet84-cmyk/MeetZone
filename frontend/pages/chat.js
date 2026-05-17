@@ -1308,8 +1308,9 @@ export default function Home() {
       setShowPricingModal(true);
       return;
     }
-    // Feature Gating
-    if ((type === "age" || type === "state" || type === "stateProv") && !user?.premium) {
+    // Feature Gating: Only VIP Elite (or ds9376314@gmail.com) can use age and state filters
+    const isElite = user?.premium && (user?.planName?.toLowerCase().includes("elite") || user?.email?.toLowerCase() === "ds9376314@gmail.com");
+    if ((type === "age" || type === "state" || type === "stateProv") && !isElite) {
       setShowPricingModal(true);
       return;
     }
@@ -1575,7 +1576,8 @@ export default function Home() {
                     <div className="filter-section-group">
                       <label className="section-label">State / Province (VIP Elite Premium Feature)</label>
                       <div className="select-dropdown-trigger" onClick={() => {
-                        if (!user?.premium) { setShowPricingModal(true); return; }
+                        const isElite = user?.premium && (user?.planName?.toLowerCase().includes("elite") || user?.email?.toLowerCase() === "ds9376314@gmail.com");
+                        if (!isElite) { setShowPricingModal(true); return; }
                         if (tempCountry === "all") { alert("Please select a country first"); return; }
                         setShowStateDrop(!showStateDrop);
                       }}>
@@ -1609,7 +1611,8 @@ export default function Home() {
                     <div className="filter-section-group">
                       <label className="section-label">Age Group (VIP Elite Premium Feature)</label>
                       <div className="select-dropdown-trigger" onClick={() => {
-                        if (!user?.premium) { setShowPricingModal(true); return; }
+                        const isElite = user?.premium && (user?.planName?.toLowerCase().includes("elite") || user?.email?.toLowerCase() === "ds9376314@gmail.com");
+                        if (!isElite) { setShowPricingModal(true); return; }
                         setShowAgeDrop(!showAgeDrop);
                       }}>
                         <span className="val-icon">🎯</span>
