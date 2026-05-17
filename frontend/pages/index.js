@@ -1262,47 +1262,197 @@ export default function Dashboard() {
       </div>
 
       <main className="dashboard-hero">
-        <div className="hero-content">
-          <div className="status-badge">
-            <div className="status-dot active"></div>
-            <span>5,248 Users Online Now</span>
+        <div className="hero-split-container">
+          <div className="hero-left-column">
+            {/* Status Badge (Untouched as requested) */}
+            <div className="status-badge">
+              <div className="status-dot active"></div>
+              <span>5,248 Users Online Now</span>
+            </div>
+
+            <h1 className="hero-explore-title">
+              Explore Worldwide<br />
+              <span>190+ Countries</span>
+            </h1>
+
+            <p className="hero-explore-subtitle">
+              Connect with amazing people from different countries and cultures.
+            </p>
+
+            <div className="hero-stats-grid">
+              <div className="hero-stat-card">
+                <h3>190+</h3>
+                <p>Countries Available</p>
+              </div>
+
+              {/* Users Online Card - Untouched value as requested */}
+              <div className="hero-stat-card">
+                <h3>5,248+</h3>
+                <p>Users Online</p>
+              </div>
+
+              {/* 99.9% Safe & Secure Card (from 2nd image) */}
+              <div className="hero-stat-card safe-secure-card">
+                <div className="safe-secure-badge">
+                  <div className="shield-icon-container">
+                    <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                      <path d="m9 11 2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <div className="safe-secure-text">
+                    <h3>99.9%</h3>
+                    <p>Safe & Secure</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="action-buttons" style={{ position: 'relative', zIndex: 20, marginTop: '30px' }}>
+              <button className="btn btn-primary btn-lg btn-connect-now" onClick={startChat} disabled={startingChat}>
+                {startingChat ? "Connecting..." : "Connect Now"}
+                {!startingChat && (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '10px' }}>
+                    <path d="M23 7a2 2 0 0 0-2.45-1.45L16 7V5a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2l4.55 1.45A2 2 0 0 0 23 17V7z" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
 
-          <h2 className="hero-title">
-            Meet new people <br />
-            <span>worldwide.</span>
-          </h2>
+          <div className="hero-right-column">
+            <div className="world-map-wrapper">
+              {/* Futuristic World Map SVG with glowing paths/nodes */}
+              <svg className="world-map-svg" viewBox="0 0 1000 500" width="100%" height="100%">
+                <defs>
+                  <radialGradient id="glow-grad" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#6366f1" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+                  </radialGradient>
+                  <radialGradient id="purple-glow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#d946ef" stopOpacity="0.5" />
+                    <stop offset="100%" stopColor="#d946ef" stopOpacity="0" />
+                  </radialGradient>
+                </defs>
 
+                {/* Grid Lines */}
+                <g stroke="rgba(99, 102, 241, 0.03)" strokeWidth="0.5">
+                  {Array.from({ length: 20 }).map((_, i) => (
+                    <line key={`x-${i}`} x1={i * 50} y1="0" x2={i * 50} y2="500" />
+                  ))}
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <line key={`y-${i}`} x1="0" y1={i * 50} x2="1000" y2={i * 50} />
+                  ))}
+                </g>
 
-          <p className="hero-description">
-            The ultimate <strong>social video networking</strong> platform for <strong>live random chat</strong>.
-            Experience high-quality video chat with people from over 100+ countries.
-            Safe, fast, and completely anonymous.
-          </p>
+                {/* Glowing Background Spots */}
+                <circle cx="200" cy="200" r="150" fill="url(#glow-grad)" />
+                <circle cx="500" cy="250" r="180" fill="url(#glow-grad)" />
+                <circle cx="800" cy="300" r="150" fill="url(#purple-glow)" />
 
-          <div className="action-buttons" style={{ position: 'relative', zIndex: 20 }}>
-            <button className="btn btn-primary btn-lg" onClick={startChat} disabled={startingChat}>
-              {startingChat ? "Connecting..." : "Start Random Video Chat"}
-              {!startingChat && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>}
-            </button>
-          </div>
-        </div>
+                {/* Styled minimalist continents (represented as technical glowing hex dots) */}
+                <g fill="rgba(99, 102, 241, 0.15)">
+                  {/* North America */}
+                  <circle cx="150" cy="120" r="4" />
+                  <circle cx="180" cy="110" r="3" />
+                  <circle cx="130" cy="150" r="5" />
+                  <circle cx="160" cy="160" r="4" />
+                  <circle cx="200" cy="170" r="6" />
+                  <circle cx="220" cy="130" r="5" />
+                  <circle cx="240" cy="150" r="3" />
+                  
+                  {/* South America */}
+                  <circle cx="320" cy="320" r="5" />
+                  <circle cx="330" cy="350" r="4" />
+                  <circle cx="350" cy="380" r="6" />
+                  <circle cx="370" cy="420" r="3" />
+                  <circle cx="360" cy="300" r="5" />
 
-        <div className="features-grid">
-          <div className="feature-card">
-            <div className="icon">🌍</div>
-            <h3>Worldwide</h3>
-            <p>Connect with users globally.</p>
-          </div>
-          <div className="feature-card">
-            <div className="icon">🛡️</div>
-            <h3>Safe & Secure</h3>
-            <p>End-to-end encrypted calls.</p>
-          </div>
-          <div className="feature-card">
-            <div className="icon">⚡</div>
-            <h3>Instant</h3>
-            <p>Zero wait time for matching.</p>
+                  {/* Europe & Africa */}
+                  <circle cx="500" cy="110" r="3" />
+                  <circle cx="520" cy="130" r="4" />
+                  <circle cx="540" cy="120" r="5" />
+                  <circle cx="510" cy="200" r="6" />
+                  <circle cx="530" cy="230" r="4" />
+                  <circle cx="550" cy="260" r="5" />
+                  <circle cx="560" cy="300" r="3" />
+                  <circle cx="570" cy="340" r="4" />
+
+                  {/* Asia & India */}
+                  <circle cx="700" cy="120" r="5" />
+                  <circle cx="740" cy="140" r="6" />
+                  <circle cx="780" cy="110" r="4" />
+                  <circle cx="820" cy="150" r="5" />
+                  <circle cx="850" cy="180" r="4" />
+                  <circle cx="720" cy="220" r="5" /> {/* India area */}
+                  <circle cx="750" cy="240" r="4" />
+
+                  {/* Australia */}
+                  <circle cx="850" cy="370" r="5" />
+                  <circle cx="880" cy="360" r="4" />
+                  <circle cx="870" cy="390" r="3" />
+                </g>
+
+                {/* Connection lines between glowing hubs */}
+                <g stroke="#818cf8" strokeWidth="1.2" strokeDasharray="3,3" opacity="0.5">
+                  <path d="M 200 170 Q 300 200 360 300" fill="none" />
+                  <path d="M 200 170 Q 380 120 520 130" fill="none" />
+                  <path d="M 520 130 Q 620 180 720 220" fill="none" />
+                  <path d="M 720 220 Q 800 300 870 390" fill="none" />
+                  <path d="M 360 300 Q 600 350 870 390" fill="none" />
+                </g>
+
+                {/* Pulsing Active Hub Nodes */}
+                <g className="pulsing-hubs">
+                  <circle cx="200" cy="170" r="6" fill="#818cf8" />
+                  <circle cx="520" cy="130" r="6" fill="#c084fc" />
+                  <circle cx="720" cy="220" r="6" fill="#f472b6" />
+                  <circle cx="360" cy="300" r="6" fill="#34d399" />
+                  <circle cx="870" cy="390" r="6" fill="#fb7185" />
+                </g>
+              </svg>
+
+              {/* Floating Country Badges with Glassmorphism matching the first image */}
+              <div className="country-badge badge-usa" style={{ top: '25%', left: '33%' }}>
+                <span className="country-flag">🇺🇸</span>
+                <div className="badge-text">
+                  <span className="country-name">United States</span>
+                  <span className="online-count">1,246 online</span>
+                </div>
+              </div>
+
+              <div className="country-badge badge-uk" style={{ top: '15%', left: '60%' }}>
+                <span className="country-flag">🇬🇧</span>
+                <div className="badge-text">
+                  <span className="country-name">United Kingdom</span>
+                  <span className="online-count">856 online</span>
+                </div>
+              </div>
+
+              <div className="country-badge badge-india" style={{ top: '35%', left: '78%' }}>
+                <span className="country-flag">🇮🇳</span>
+                <div className="badge-text">
+                  <span className="country-name">India</span>
+                  <span className="online-count">2,153 online</span>
+                </div>
+              </div>
+
+              <div className="country-badge badge-brazil" style={{ top: '55%', left: '26%' }}>
+                <span className="country-flag">🇧🇷</span>
+                <div className="badge-text">
+                  <span className="country-name">Brazil</span>
+                  <span className="online-count">1,025 online</span>
+                </div>
+              </div>
+
+              <div className="country-badge badge-australia" style={{ top: '75%', left: '75%' }}>
+                <span className="country-flag">🇦🇺</span>
+                <div className="badge-text">
+                  <span className="country-name">Australia</span>
+                  <span className="online-count">789 online</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </main>
@@ -4128,9 +4278,270 @@ export default function Dashboard() {
             .coin-count {
               font-size: 0.75rem;
             }
-            /* Coin transparency section padding */
-            .glass-card {
-              padding: 20px 15px !important;
+            /* Explore Worldwide - Premium Split Hero Layout Styling */
+            .hero-split-container {
+              display: grid;
+              grid-template-columns: 1.2fr 1fr;
+              gap: 60px;
+              align-items: center;
+              max-width: 1240px;
+              width: 100%;
+              margin: 0 auto;
+              padding: 40px 20px;
+            }
+            .hero-left-column {
+              text-align: left;
+              display: flex;
+              flex-direction: column;
+              align-items: flex-start;
+              animation: fadeIn 0.8s ease-out;
+            }
+            .hero-explore-title {
+              font-size: 3.8rem;
+              font-weight: 900;
+              line-height: 1.1;
+              margin-bottom: 20px;
+              color: white;
+              letter-spacing: -0.03em;
+            }
+            .hero-explore-title span {
+              background: linear-gradient(135deg, #c084fc, #f472b6);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+            }
+            .hero-explore-subtitle {
+              font-size: 1.35rem !important; /* Larger paragraph size as requested */
+              line-height: 1.6 !important;
+              color: #94a3b8 !important;
+              margin-bottom: 35px !important;
+              max-width: 540px;
+              text-align: left !important;
+            }
+            .hero-stats-grid {
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 15px;
+              width: 100%;
+              margin-bottom: 10px;
+            }
+            .hero-stat-card {
+              background: rgba(255, 255, 255, 0.02);
+              border: 1px solid rgba(255, 255, 255, 0.06);
+              border-radius: 18px;
+              padding: 16px 20px;
+              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              height: 100%;
+            }
+            .hero-stat-card:hover {
+              background: rgba(255, 255, 255, 0.04);
+              border-color: rgba(99, 102, 241, 0.3);
+              transform: translateY(-3px);
+            }
+            .hero-stat-card h3 {
+              font-size: 1.8rem;
+              font-weight: 800;
+              color: white;
+              margin: 0 0 4px 0;
+              letter-spacing: -0.5px;
+            }
+            .hero-stat-card p {
+              font-size: 0.8rem;
+              color: #64748b;
+              margin: 0;
+              font-weight: 600;
+              line-height: 1.2;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            
+            /* Safe & Secure Custom Card from 2nd image */
+            .safe-secure-card {
+              background: rgba(251, 191, 36, 0.03);
+              border: 1px solid rgba(251, 191, 36, 0.12);
+            }
+            .safe-secure-card:hover {
+              background: rgba(251, 191, 36, 0.05);
+              border-color: rgba(251, 191, 36, 0.3);
+            }
+            .safe-secure-badge {
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              width: 100%;
+            }
+            .shield-icon-container {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: rgba(251, 191, 36, 0.08);
+              width: 44px;
+              height: 44px;
+              border-radius: 12px;
+              flex-shrink: 0;
+            }
+            .safe-secure-text {
+              display: flex;
+              flex-direction: column;
+              text-align: left;
+            }
+            .safe-secure-text h3 {
+              color: #fbbf24 !important;
+            }
+            .safe-secure-text p {
+              color: rgba(251, 191, 36, 0.8) !important;
+            }
+
+            .hero-right-column {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              position: relative;
+              width: 100%;
+              animation: fadeIn 1s ease-out;
+            }
+            .world-map-wrapper {
+              position: relative;
+              width: 100%;
+              max-width: 620px;
+              aspect-ratio: 2 / 1;
+            }
+            .world-map-svg {
+              width: 100%;
+              height: auto;
+              display: block;
+            }
+
+            /* Floating Translucent Country Badges */
+            .country-badge {
+              position: absolute;
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              background: rgba(15, 23, 42, 0.55);
+              backdrop-filter: blur(12px);
+              -webkit-backdrop-filter: blur(12px);
+              border: 1px solid rgba(255, 255, 255, 0.08);
+              padding: 8px 16px;
+              border-radius: 16px;
+              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+              z-index: 10;
+              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+              cursor: pointer;
+              animation: float-badge 6s ease-in-out infinite alternate;
+            }
+            .country-badge:hover {
+              transform: translateY(-6px) scale(1.05) !important;
+              border-color: rgba(99, 102, 241, 0.5);
+              box-shadow: 0 15px 40px rgba(99, 102, 241, 0.25);
+              background: rgba(15, 23, 42, 0.85);
+            }
+            .badge-text {
+              display: flex;
+              flex-direction: column;
+              text-align: left;
+              line-height: 1.2;
+            }
+            .country-flag {
+              font-size: 1.5rem;
+              display: flex;
+              align-items: center;
+            }
+            .country-name {
+              font-size: 0.85rem;
+              font-weight: 700;
+              color: white;
+            }
+            .online-count {
+              font-size: 0.75rem;
+              color: #10b981;
+              font-weight: 600;
+              margin-top: 1px;
+            }
+
+            @keyframes float-badge {
+              0% { transform: translateY(0px); }
+              100% { transform: translateY(-10px); }
+            }
+
+            .badge-usa { animation-delay: 0s; }
+            .badge-uk { animation-delay: 1.2s; }
+            .badge-india { animation-delay: 2.4s; }
+            .badge-brazil { animation-delay: 0.6s; }
+            .badge-australia { animation-delay: 1.8s; }
+
+            .pulsing-hubs circle {
+              animation: pulse-glow 2s infinite alternate;
+            }
+            @keyframes pulse-glow {
+              0% { r: 5px; opacity: 0.8; }
+              100% { r: 9px; opacity: 1; filter: drop-shadow(0 0 6px currentColor); }
+            }
+
+            /* Responsive tweaks for split layout */
+            @media (max-width: 1024px) {
+              .hero-split-container {
+                grid-template-columns: 1fr !important;
+                gap: 50px;
+                text-align: center;
+                padding-top: 40px;
+              }
+              .hero-left-column {
+                align-items: center;
+                text-align: center;
+              }
+              .hero-explore-subtitle {
+                text-align: center !important;
+                margin-left: auto;
+                margin-right: auto;
+              }
+            }
+
+            @media (max-width: 768px) {
+              .hero-explore-title {
+                font-size: 3rem !important;
+              }
+              .hero-explore-subtitle {
+                font-size: 1.2rem !important;
+              }
+              .hero-stats-grid {
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 10px !important;
+              }
+              .hero-stat-card {
+                padding: 10px 8px !important;
+              }
+              .hero-stat-card h3 {
+                font-size: 1.2rem !important;
+              }
+              .hero-stat-card p {
+                font-size: 0.65rem !important;
+              }
+              .shield-icon-container {
+                width: 32px !important;
+                height: 32px !important;
+                border-radius: 8px !important;
+              }
+              .shield-icon-container svg {
+                width: 20px !important;
+                height: 20px !important;
+              }
+              .country-badge {
+                padding: 4px 8px !important;
+                gap: 6px !important;
+                border-radius: 10px !important;
+              }
+              .country-flag {
+                font-size: 1.1rem !important;
+              }
+              .country-name {
+                font-size: 0.7rem !important;
+              }
+              .online-count {
+                font-size: 0.6rem !important;
+              }
             }
           }
         `}</style>
