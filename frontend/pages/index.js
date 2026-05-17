@@ -1306,11 +1306,63 @@ export default function Dashboard() {
             </div>
 
             <div className="hero-right-column">
-              <img
-                src="/global-friends.png"
-                alt="Global Video Chat Connections"
-                className="hero-preview-image"
-              />
+              <div className="hero-interactive-graphic">
+                {/* Central Match Hub */}
+                <div className="hub-center">
+                  <div className="hub-glow"></div>
+                  <div className="hub-core">
+                    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="white" strokeWidth="2.5">
+                      <path d="M23 7a2 2 0 0 0-2.45-1.45L16 7V5a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2l4.55 1.45A2 2 0 0 0 23 17V7z" />
+                    </svg>
+                  </div>
+                  <div className="hub-ring ring-1"></div>
+                  <div className="hub-ring ring-2"></div>
+                </div>
+
+                {/* Floating Profile 1 */}
+                <div className="floating-card profile-1">
+                  <div className="card-avatar">👩‍🦰</div>
+                  <div className="card-info">
+                    <h4>Alexa Reed</h4>
+                    <span className="live-pill">● LIVE</span>
+                  </div>
+                </div>
+
+                {/* Floating Profile 2 */}
+                <div className="floating-card profile-2">
+                  <div className="card-avatar">👦</div>
+                  <div className="card-info">
+                    <h4>Ben Chen</h4>
+                    <span className="live-pill">● LIVE</span>
+                  </div>
+                </div>
+
+                {/* Floating Profile 3 */}
+                <div className="floating-card profile-3">
+                  <div className="card-avatar">👩</div>
+                  <div className="card-info">
+                    <h4>Sofia Li</h4>
+                    <span className="live-pill">● LIVE</span>
+                  </div>
+                </div>
+
+                {/* Floating Profile 4 */}
+                <div className="floating-card profile-4">
+                  <div className="card-avatar">🧔</div>
+                  <div className="card-info">
+                    <h4>David Kim</h4>
+                    <span className="live-pill">● LIVE</span>
+                  </div>
+                </div>
+
+                {/* SVG Connection Lines */}
+                <svg className="connection-svg" viewBox="0 0 400 400">
+                  <path d="M 90,90 Q 200,200 200,200" className="pulse-line line-1" />
+                  <path d="M 310,90 Q 200,200 200,200" className="pulse-line line-2" />
+                  <path d="M 90,310 Q 200,200 200,200" className="pulse-line line-3" />
+                  <path d="M 310,310 Q 200,200 200,200" className="pulse-line line-4" />
+                </svg>
+              </div>
             </div>
           </div>
 
@@ -3092,7 +3144,7 @@ export default function Dashboard() {
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding-top: 180px;
+            padding-top: 110px;
             padding-bottom: 5rem;
           }
 
@@ -4187,19 +4239,191 @@ export default function Dashboard() {
             animation: fadeIn 0.8s ease-out;
             max-width: 480px;
           }
-          .hero-preview-image {
+          .hero-interactive-graphic {
+            position: relative;
             width: 100%;
-            height: auto;
-            max-width: 760px;
-            border-radius: 24px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.65), 0 0 50px rgba(168, 85, 247, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            display: block;
-            animation: float-hero-img 6s ease-in-out infinite alternate;
+            max-width: 500px;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+            animation: fadeIn 1s ease-out;
           }
-          @keyframes float-hero-img {
-            0% { transform: translateY(0px); }
-            100% { transform: translateY(-10px); }
+          
+          .hub-center {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            z-index: 10;
+          }
+          .hub-core {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 35px rgba(236, 72, 153, 0.6);
+            z-index: 2;
+            position: relative;
+            animation: pulse-core 2s infinite alternate;
+          }
+          @keyframes pulse-core {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.08); box-shadow: 0 0 50px rgba(168, 85, 247, 0.8); }
+          }
+          .hub-glow {
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 190px;
+            height: 190px;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, transparent 70%);
+            filter: blur(20px);
+            z-index: 1;
+            pointer-events: none;
+          }
+          .hub-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px dashed rgba(255,255,255,0.15);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+          }
+          .ring-1 {
+            width: 220px;
+            height: 220px;
+            animation: rotate-clockwise 30s linear infinite;
+          }
+          .ring-2 {
+            width: 360px;
+            height: 360px;
+            animation: rotate-counter 45s linear infinite;
+          }
+          @keyframes rotate-clockwise {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+          }
+          @keyframes rotate-counter {
+            from { transform: translate(-50%, -50%) rotate(360deg); }
+            to { transform: translate(-50%, -50%) rotate(0deg); }
+          }
+          
+          /* Floating Cards */
+          .floating-card {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            z-index: 5;
+            transition: all 0.3s ease;
+          }
+          .floating-card:hover {
+            transform: translateY(-8px) scale(1.05) !important;
+            border-color: rgba(168, 85, 247, 0.4);
+            box-shadow: 0 20px 45px rgba(168, 85, 247, 0.25);
+            background: rgba(30, 41, 59, 0.7);
+          }
+          .card-avatar {
+            font-size: 1.8rem;
+            width: 44px;
+            height: 44px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .card-info h4 {
+            margin: 0 0 2px 0;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: white;
+          }
+          .live-pill {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: #10b981;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+          }
+          
+          .profile-1 {
+            top: 40px;
+            left: 20px;
+            animation: float-p1 5s ease-in-out infinite alternate;
+          }
+          .profile-2 {
+            top: 50px;
+            right: 10px;
+            animation: float-p2 6s ease-in-out infinite alternate;
+          }
+          .profile-3 {
+            bottom: 60px;
+            left: 10px;
+            animation: float-p3 7s ease-in-out infinite alternate;
+          }
+          .profile-4 {
+            bottom: 50px;
+            right: 20px;
+            animation: float-p4 5.5s ease-in-out infinite alternate;
+          }
+          
+          @keyframes float-p1 {
+            0% { transform: translateY(0px) rotate(-1deg); }
+            100% { transform: translateY(-12px) rotate(1deg); }
+          }
+          @keyframes float-p2 {
+            0% { transform: translateY(0px) rotate(1deg); }
+            100% { transform: translateY(-15px) rotate(-1deg); }
+          }
+          @keyframes float-p3 {
+            0% { transform: translateY(0px) rotate(-2deg); }
+            100% { transform: translateY(-10px) rotate(1deg); }
+          }
+          @keyframes float-p4 {
+            0% { transform: translateY(0px) rotate(1deg); }
+            100% { transform: translateY(-14px) rotate(-2deg); }
+          }
+          
+          /* Connection Lines SVG */
+          .connection-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+          }
+          .pulse-line {
+            fill: none;
+            stroke-width: 2;
+            stroke-dasharray: 8 8;
+            animation: line-pulse 2s linear infinite;
+          }
+          .line-1 { stroke: rgba(168, 85, 247, 0.35); }
+          .line-2 { stroke: rgba(236, 72, 153, 0.35); }
+          .line-3 { stroke: rgba(59, 130, 246, 0.35); }
+          .line-4 { stroke: rgba(16, 185, 129, 0.35); }
+          
+          @keyframes line-pulse {
+            from { stroke-dashoffset: 50; }
+            to { stroke-dashoffset: 0; }
           }
           .hero-explore-title {
             font-size: 3.8rem;
@@ -4424,6 +4648,26 @@ export default function Dashboard() {
               .stat-premium-card p {
                 font-size: 0.7rem !important;
               }
+              .hero-interactive-graphic {
+                max-width: 320px !important;
+                height: 320px !important;
+                margin: 0 auto !important;
+              }
+              .floating-card {
+                padding: 8px 12px !important;
+              }
+              .card-avatar {
+                font-size: 1.2rem !important;
+                width: 32px !important;
+                height: 32px !important;
+              }
+              .card-info h4 {
+                font-size: 0.8rem !important;
+              }
+              .profile-1 { top: 20px !important; left: 10px !important; }
+              .profile-2 { top: 30px !important; right: 5px !important; }
+              .profile-3 { bottom: 30px !important; left: 5px !important; }
+              .profile-4 { bottom: 20px !important; right: 10px !important; }
               .country-badge {
                 padding: 4px 8px !important;
                 gap: 6px !important;
