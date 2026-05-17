@@ -4341,7 +4341,14 @@ export default function Dashboard() {
             -webkit-text-fill-color: transparent;
           }
           .hero-explore-subtitle {
-            font-size: 1.25rem !important; /* Extremely neat and standard paragraph size */
+            font-size: 1.25rem !important;
+            line-height: 1.6 !important;
+            color: #94a3b8 !important;
+            margin-bottom: 35px !important;
+            max-width: 540px;
+            text-align: left !important;
+            font-weight: 400;
+          }
           .hero-interactive-graphic {
             position: relative;
             width: 100%;
