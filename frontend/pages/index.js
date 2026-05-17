@@ -923,7 +923,7 @@ export default function Dashboard() {
   return (
     <div className="container">
       <Head>
-        <title>ZoneMeet.chat</title>
+        <title>ZoneMeet</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
       </Head>
@@ -1096,7 +1096,7 @@ export default function Dashboard() {
                                 if (res.data.success) {
                                   // Use local Date.now() to prevent server clock drift showing 11 mins
                                   const localExpiry = Date.now() + (10 * 60 * 1000);
-                                  const newUser = { ...user, coins: res.data.coins, boostExpiry: localExpiry, coinActivity: res.data.coinActivity }; 
+                                  const newUser = { ...user, coins: res.data.coins, boostExpiry: localExpiry, coinActivity: res.data.coinActivity };
                                   setUser(newUser);
                                   localStorage.setItem("user", JSON.stringify(newUser));
                                   showModal({ message: "Profile Boosted! Matching priority increased.", type: "success" });
@@ -1855,7 +1855,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="stats-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '25px', marginBottom: '25px' }}>
+          <div className="stats-row">
             <div
               className="transparency-card"
               onClick={() => buyFeature('Profile Boost', 100)}
@@ -2341,7 +2341,7 @@ export default function Dashboard() {
           </button>
         </div>
 
-        <div className="mystery-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px', maxWidth: '1100px', margin: '0 auto' }}>
+        <div className="mystery-grid">
           {[
             { type: "bronze", name: "Bronze Case", price: 50, icon: "📦", color: "#cd7f32", glow: "rgba(205, 127, 50, 0.4)", rarity: "Common" },
             { type: "silver", name: "Silver Vault", price: 150, icon: "🎁", color: "#c0c0c0", glow: "rgba(192, 192, 192, 0.4)", rarity: "Rare" },
@@ -2898,6 +2898,20 @@ export default function Dashboard() {
           .profile-more-btn span { color: #334155; font-size: 1.1rem; }
           .profile-more-btn:hover { background: rgba(255,255,255,0.02); border-radius: 10px; padding-left: 1rem; }
 
+          /* Base grid styles for stats-row and mystery-grid */
+          .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-bottom: 25px;
+          }
+          .mystery-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            max-width: 1100px;
+            margin: 0 auto;
+          }
           .pricing-header { text-align: center; margin-bottom: 3.5rem; }
           .section-title { font-size: 3.5rem; font-weight: 800; letter-spacing: -0.04em; margin-bottom: 1rem; }
           .section-title span { background: linear-gradient(135deg, #6366f1, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
