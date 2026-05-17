@@ -953,6 +953,12 @@ export default function Home() {
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
           const profile = JSON.parse(storedUser);
+
+          // Register online status so friends see this user as ONLINE from any page
+          if (profile.id) {
+            socket.emit("register-user", profile.id);
+          }
+
           if (router.query.room) {
             profile.roomId = router.query.room;
             socket.emit("join-room", router.query.room);
@@ -1136,12 +1142,14 @@ export default function Home() {
   };
 
   const closeConnection = () => {
+    // Instantly stop & clear remote video to prevent frozen frame
+    if (remoteVideo.current && remoteVideo.current.srcObject) {
+      remoteVideo.current.srcObject.getTracks().forEach(track => track.stop());
+      remoteVideo.current.srcObject = null;
+    }
     if (peerConnection.current) {
       peerConnection.current.close();
       peerConnection.current = null;
-    }
-    if (remoteVideo.current) {
-      remoteVideo.current.srcObject = null;
     }
     setPartnerId(null);
     setPartnerInfo(null);
