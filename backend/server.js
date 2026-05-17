@@ -1935,7 +1935,7 @@ io.on("connection", (socket) => {
 
   socket.on("stop-matching", () => {
     if (socket.partner) {
-      socket.partner.emit("partner-disconnected");
+      socket.partner.emit("partner-stopped");
       socket.partner.partner = null;
       queueUser(socket.partner);
     }

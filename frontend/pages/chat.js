@@ -1083,11 +1083,15 @@ export default function Home() {
         closeConnection();
         setFriendReqStatus(false);
         setShowPartnerPreview(false);
-        
-        // Wait exactly 1 second before searching next
-        setTimeout(() => {
-          socket.emit("next");
-        }, 1000);
+        socket.emit("next");
+      });
+
+      socket.on("partner-stopped", () => {
+        setStatus("Partner stopped the connection. Searching...");
+        closeConnection();
+        setFriendReqStatus(false);
+        setShowPartnerPreview(false);
+        socket.emit("next");
       });
     };
 
@@ -1482,8 +1486,9 @@ export default function Home() {
           <div className="brand" onClick={() => router.push("/")} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
             <div className="logo-icon-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg viewBox="0 0 32 32" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 8C4 5.79086 5.79086 4 8 4H20C22.2091 4 24 5.79086 24 8V11.5L29 8V24L24 20.5V24C24 26.2091 22.2091 28 20 28H8C5.79086 28 4 26.2091 4 24V8Z" fill="url(#brand-grad)" />
-                <path d="M10 11H18L10 21H18" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              <rect x="2" y="5" width="20" height="20" rx="6" fill="url(#brand-grad)" />
+              <path d="M22 11L28 7V23L22 19V11Z" fill="url(#brand-grad)" />
+              <path d="M9 11H15L9 19H15" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                 <defs>
                   <linearGradient id="brand-grad" x1="2" y1="5" x2="28" y2="25" gradientUnits="userSpaceOnUse">
                     <stop stopColor="#2563eb" />
