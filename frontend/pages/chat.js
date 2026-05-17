@@ -806,8 +806,8 @@ export default function Home() {
           ...stored,
           name: session.user.name,
           email: session.user.email,
-          premium: (stored.premium || (session.user.email === "ds9376314@gmail.com")) || false,
-          planName: (stored.planName || (session.user.email === "ds9376314@gmail.com" ? "VIP Elite" : null)),
+          premium: (stored.premium || (session.user.email?.toLowerCase() === "ds9376314@gmail.com")) || false,
+          planName: (stored.planName || (session.user.email?.toLowerCase() === "ds9376314@gmail.com" ? "VIP Elite" : null)),
           gender: stored.gender || "All",
           country: stored.country || "All",
           state: stored.state || "All States",
@@ -831,7 +831,7 @@ export default function Home() {
           });
           if (res.data.valid) {
             let userData = res.data.user;
-            if (userData.email === "ds9376314@gmail.com") {
+            if (userData.email?.toLowerCase() === "ds9376314@gmail.com") {
               userData.premium = true;
               userData.planName = "VIP Elite";
             }
@@ -1127,7 +1127,7 @@ export default function Home() {
 
     if (message.trim() && partnerId) {
       // DEDUCT 5 COINS ONLY IF NOT FRIENDS
-      if (!partnerInfo?.isFriend && user.email !== "ds9376314@gmail.com") {
+      if (!partnerInfo?.isFriend && user?.email?.toLowerCase() !== "ds9376314@gmail.com") {
         const msgToPrompt = message;
         setMessage("");
         setMessages(prev => [...prev, { 
@@ -1304,12 +1304,13 @@ export default function Home() {
   };
 
   const handleFilterChange = (type, value) => {
-    if (!user?.premium) {
+    const isOwner = user?.email?.toLowerCase() === "ds9376314@gmail.com";
+    if (!user?.premium && !isOwner) {
       setShowPricingModal(true);
       return;
     }
     // Feature Gating: Only VIP Elite (or ds9376314@gmail.com) can use age and state filters
-    const isElite = user?.premium && (user?.planName?.toLowerCase().includes("elite") || user?.email?.toLowerCase() === "ds9376314@gmail.com");
+    const isElite = (user?.premium && user?.planName?.toLowerCase().includes("elite")) || isOwner;
     if ((type === "age" || type === "state" || type === "stateProv") && !isElite) {
       setShowPricingModal(true);
       return;
@@ -1576,7 +1577,8 @@ export default function Home() {
                     <div className="filter-section-group">
                       <label className="section-label">State / Province (VIP Elite Premium Feature)</label>
                       <div className="select-dropdown-trigger" onClick={() => {
-                        const isElite = user?.premium && (user?.planName?.toLowerCase().includes("elite") || user?.email?.toLowerCase() === "ds9376314@gmail.com");
+                        const isOwner = user?.email?.toLowerCase() === "ds9376314@gmail.com";
+                        const isElite = (user?.premium && user?.planName?.toLowerCase().includes("elite")) || isOwner;
                         if (!isElite) { setShowPricingModal(true); return; }
                         if (tempCountry === "all") { alert("Please select a country first"); return; }
                         setShowStateDrop(!showStateDrop);
@@ -1611,7 +1613,8 @@ export default function Home() {
                     <div className="filter-section-group">
                       <label className="section-label">Age Group (VIP Elite Premium Feature)</label>
                       <div className="select-dropdown-trigger" onClick={() => {
-                        const isElite = user?.premium && (user?.planName?.toLowerCase().includes("elite") || user?.email?.toLowerCase() === "ds9376314@gmail.com");
+                        const isOwner = user?.email?.toLowerCase() === "ds9376314@gmail.com";
+                        const isElite = (user?.premium && user?.planName?.toLowerCase().includes("elite")) || isOwner;
                         if (!isElite) { setShowPricingModal(true); return; }
                         setShowAgeDrop(!showAgeDrop);
                       }}>
