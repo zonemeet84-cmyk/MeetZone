@@ -1397,7 +1397,8 @@ app.post("/api/user/send-gift", authenticateToken, (req, res) => {
     io.to(targetSocketId).emit("receive-sticker", { 
       stickerIcon, 
       senderName: sender.name, 
-      amount 
+      amount,
+      newTotalCoins: recipient.coins
     });
   }
 
@@ -1742,7 +1743,12 @@ const queueUser = (socket) => {
   const isPremium = socket.premium || plan !== "" || isOwner;
   
   // 5 seconds delay for free users, instant (0s) for subscription users
-  const delay = isPremium ? 0 : 5000;
+  let delay = isPremium ? 0 : 5000;
+
+  // 1 second delay if matching appearance/preferences are applied
+  if (socket.filters && (socket.filters.gender !== "all" || socket.filters.country !== "all" || socket.filters.age !== "All Ages" || socket.filters.state !== "All States")) {
+    delay = 1000;
+  }
 
   if (delay === 0) {
     if (!waitingUsers.includes(socket)) {
@@ -1908,6 +1914,12 @@ io.on("connection", (socket) => {
       candidate,
       from: socket.id,
     });
+  });
+
+  socket.on("partner-effect", ({ type, value }) => {
+    if (socket.partner) {
+      socket.partner.emit("partner-effect", { type, value });
+    }
   });
 
   socket.on("next", () => {
