@@ -955,12 +955,20 @@ export default function Dashboard() {
 
       <div className="header">
         <div className="brand-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div className="logo-icon-wrapper">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="white">
-              <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm-3 11l-3-2.25V13c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h6c.55 0 1 .45 1 1v2.25L17 7v6z"/>
+          <div className="logo-icon-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg viewBox="0 0 32 32" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 8C4 5.79086 5.79086 4 8 4H20C22.2091 4 24 5.79086 24 8V11.5L29 8V24L24 20.5V24C24 26.2091 22.2091 28 20 28H8C5.79086 28 4 26.2091 4 24V8Z" fill="url(#brand-grad)" />
+              <path d="M9 11H19L11 21H19" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              <defs>
+                <linearGradient id="brand-grad" x1="4" y1="4" x2="29" y2="28" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#2563eb" />
+                  <stop offset="0.5" stopColor="#a855f7" />
+                  <stop offset="1" stopColor="#ec4899" />
+                </linearGradient>
+              </defs>
             </svg>
           </div>
-          <h1 className="logo-text">Zone<span className="logo-highlight">Meet</span><span className="logo-dot">.</span></h1>
+          <h1 className="logo-text">Zone<span className="logo-highlight" style={{ background: 'linear-gradient(135deg, #d946ef, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Meet</span></h1>
           {user?.premium && <span className="premium-badge">{user.planName || "PREMIUM"}</span>}
         </div>
 
@@ -1268,113 +1276,145 @@ export default function Dashboard() {
 
       <main className="dashboard-hero">
         <div className="hero-split-container">
-          <div className="hero-left-column">
-            {/* Status Badge (Untouched as requested) */}
-            <div className="status-badge">
-              <div className="status-dot active"></div>
-              <span>5,248 Users Online Now</span>
-            </div>
-
-            <h1 className="hero-explore-title">
-              Explore Worldwide<br />
-              <span>190+ Countries</span>
-            </h1>
-
-            <p className="hero-explore-subtitle">
-              Connect with amazing people from different countries and cultures.
-            </p>
-
-            <div className="hero-stats-grid">
-              <div className="hero-stat-card">
-                <h3>190+</h3>
-                <p>Countries Available</p>
+          <div className="hero-top-columns">
+            <div className="hero-left-column">
+              {/* Status Badge (Untouched as requested) */}
+              <div className="status-badge">
+                <div className="status-dot active"></div>
+                <span>5,248 Users Online Now</span>
               </div>
 
-              {/* 99.9% Safe & Secure Card enriched with E2E Encrypted and AI Moderated sub-features */}
-              <div className="hero-stat-card safe-secure-card">
-                <div className="safe-secure-badge">
-                  <div className="shield-icon-container">
-                    <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                      <path d="m9 11 2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+              <h1 className="hero-explore-title">
+                Explore Worldwide<br />
+                <span>190+ Countries</span>
+              </h1>
+
+              <p className="hero-explore-subtitle">
+                Connect with amazing people from different countries and cultures. Explore new languages, share interesting moments, and make meaningful connections instantly.
+              </p>
+
+              <div className="action-buttons" style={{ position: 'relative', zIndex: 20, marginTop: '30px' }}>
+                <button className="btn btn-primary btn-lg btn-connect-now" onClick={startChat} disabled={startingChat}>
+                  {startingChat ? "Connecting..." : "Connect Now"}
+                  {!startingChat && (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '10px' }}>
+                      <path d="M23 7a2 2 0 0 0-2.45-1.45L16 7V5a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2l4.55 1.45A2 2 0 0 0 23 17V7z" />
                     </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="hero-right-column">
+              <div className="world-map-wrapper">
+                {/* Floating Country Badges with Glassmorphism matching the third image exactly */}
+                <div className="country-badge badge-canada" style={{ top: '15%', left: '35%' }}>
+                  <span className="country-flag">🇨🇦</span>
+                  <div className="badge-text">
+                    <span className="country-name">Canada</span>
+                    <span className="online-count">1,245 online</span>
                   </div>
-                  <div className="safe-secure-text">
-                    <h3>99.9%</h3>
-                    <p>Safe & Secure</p>
-                    <div className="safe-secure-subfeatures">
-                      <span>🛡️ E2E Encrypted</span>
-                      <span>🤖 AI-Moderated</span>
-                    </div>
+                </div>
+
+                <div className="country-badge badge-brazil-sa" style={{ top: '55%', left: '33%' }}>
+                  <span className="country-flag">🇧🇷</span>
+                  <div className="badge-text">
+                    <span className="country-name">Brazil</span>
+                    <span className="online-count">1,005 online</span>
+                  </div>
+                </div>
+
+                <div className="country-badge badge-uk" style={{ top: '25%', left: '63%' }}>
+                  <span className="country-flag">🇬🇧</span>
+                  <div className="badge-text">
+                    <span className="country-name">United Kingdom</span>
+                    <span className="online-count">956 online</span>
+                  </div>
+                </div>
+
+                <div className="country-badge badge-brazil-af" style={{ top: '58%', left: '64%' }}>
+                  <div className="avatar-small">
+                    <img src="/anime.png" alt="user" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                  </div>
+                  <span className="country-flag">🇧🇷</span>
+                  <div className="badge-text">
+                    <span className="country-name">Brazil</span>
+                    <span className="online-count">1,005 online</span>
+                  </div>
+                </div>
+
+                <div className="country-badge badge-india" style={{ top: '38%', left: '80%' }}>
+                  <span className="country-flag">🇮🇳</span>
+                  <div className="badge-text">
+                    <span className="country-name">India</span>
+                    <span className="online-count">2,153 online</span>
+                  </div>
+                </div>
+
+                <div className="country-badge badge-australia" style={{ top: '68%', left: '80%' }}>
+                  <span className="country-flag">🇦🇺</span>
+                  <div className="badge-text">
+                    <span className="country-name">Australia</span>
+                    <span className="online-count">789 online</span>
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div className="action-buttons" style={{ position: 'relative', zIndex: 20, marginTop: '30px' }}>
-              <button className="btn btn-primary btn-lg btn-connect-now" onClick={startChat} disabled={startingChat}>
-                {startingChat ? "Connecting..." : "Connect Now"}
-                {!startingChat && (
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '10px' }}>
-                    <path d="M23 7a2 2 0 0 0-2.45-1.45L16 7V5a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2l4.55 1.45A2 2 0 0 0 23 17V7z" />
-                  </svg>
-                )}
-              </button>
             </div>
           </div>
 
-          <div className="hero-right-column">
-            <div className="world-map-wrapper">
-              {/* Floating Country Badges with Glassmorphism matching the first & second image exactly */}
-              <div className="country-badge badge-usa" style={{ top: '18%', left: '12%' }}>
-                <span className="country-flag">🇺🇸</span>
-                <div className="badge-text">
-                  <span className="country-name">United States</span>
-                  <span className="online-count">1,246 online</span>
-                </div>
+          {/* Full Width Bottom Stats Strip from Image 3 */}
+          <div className="hero-stats-strip">
+            <div className="stat-strip-item">
+              <div className="stat-icon-container purple-theme">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="2" y1="12" x2="22" y2="12" />
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                </svg>
               </div>
-
-              <div className="country-badge badge-uk" style={{ top: '15%', left: '48%' }}>
-                <span className="country-flag">🇬🇧</span>
-                <div className="badge-text">
-                  <span className="country-name">United Kingdom</span>
-                  <span className="online-count">856 online</span>
-                </div>
+              <div className="stat-info">
+                <h3>190+</h3>
+                <p>Countries Available</p>
               </div>
+            </div>
 
-              <div className="country-badge badge-india" style={{ top: '35%', left: '70%' }}>
-                <span className="country-flag">🇮🇳</span>
-                <div className="badge-text">
-                  <span className="country-name">India</span>
-                  <span className="online-count">2,153 online</span>
-                </div>
+            <div className="stat-strip-item">
+              <div className="stat-icon-container green-theme">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
               </div>
-
-              <div className="country-badge badge-brazil-sa" style={{ top: '55%', left: '24%' }}>
-                <span className="country-flag">🇧🇷</span>
-                <div className="badge-text">
-                  <span className="country-name">Brazil</span>
-                  <span className="online-count">1,025 online</span>
-                </div>
+              <div className="stat-info">
+                <h3>5,248+</h3>
+                <p>Users Online</p>
               </div>
+            </div>
 
-              <div className="country-badge badge-brazil-af" style={{ top: '55%', left: '46%' }}>
-                <div className="avatar-small">
-                  <img src="/anime.png" alt="user" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                </div>
-                <span className="country-flag">🇧🇷</span>
-                <div className="badge-text">
-                  <span className="country-name">Brazil</span>
-                  <span className="online-count">1,025 online</span>
-                </div>
+            <div className="stat-strip-item">
+              <div className="stat-icon-container blue-theme">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
               </div>
+              <div className="stat-info">
+                <h3>2M+</h3>
+                <p>Chats Connected</p>
+              </div>
+            </div>
 
-              <div className="country-badge badge-australia" style={{ top: '72%', left: '76%' }}>
-                <span className="country-flag">🇦🇺</span>
-                <div className="badge-text">
-                  <span className="country-name">Australia</span>
-                  <span className="online-count">789 online</span>
-                </div>
+            <div className="stat-strip-item">
+              <div className="stat-icon-container yellow-theme">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  <path d="m9 11 2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <div className="stat-info">
+                <h3>99.9%</h3>
+                <p>Safe & Secure</p>
               </div>
             </div>
           </div>
@@ -4203,17 +4243,22 @@ export default function Dashboard() {
               font-size: 0.75rem;
             }
           }
-
           /* Explore Worldwide - Premium Split Hero Layout Styling */
           .hero-split-container {
-            display: grid;
-            grid-template-columns: 1.2fr 1fr;
-            gap: 60px;
-            align-items: center;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
             max-width: 1240px;
             width: 100%;
             margin: 0 auto;
             padding: 40px 20px;
+          }
+          .hero-top-columns {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 50px;
+            align-items: center;
+            width: 100%;
           }
           .hero-left-column {
             text-align: left;
@@ -4221,6 +4266,7 @@ export default function Dashboard() {
             flex-direction: column;
             align-items: flex-start;
             animation: fadeIn 0.8s ease-out;
+            max-width: 580px;
           }
           .hero-explore-title {
             font-size: 3.8rem;
@@ -4234,46 +4280,71 @@ export default function Dashboard() {
             background: linear-gradient(135deg, #c084fc, #f472b6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-          }          .hero-explore-subtitle {
-            font-size: 1.55rem !important; /* Extremely readable and bold as requested */
-            line-height: 1.5 !important;
-            color: #cbd5e1 !important; /* Slightly brighter for better contrast */
+          }
+          .hero-explore-subtitle {
+            font-size: 1.25rem !important; /* Extremely neat and standard paragraph size */
+            line-height: 1.6 !important;
+            color: #94a3b8 !important; /* Elegant gray for high-end look */
             margin-bottom: 35px !important;
-            max-width: 580px;
+            max-width: 540px;
             text-align: left !important;
-            font-weight: 500;
+            font-weight: 400;
           }
-          .hero-stats-grid {
+          
+          /* Full Width Bottom Stats Strip from Image 3 */
+          .hero-stats-strip {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
             width: 100%;
-            margin-bottom: 10px;
+            background: rgba(13, 15, 33, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 25px 30px;
+            margin-top: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
           }
-          .hero-stat-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 18px;
-            padding: 16px 20px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          .stat-strip-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+          }
+          .stat-icon-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            flex-shrink: 0;
+          }
+          .stat-icon-container.purple-theme {
+            background: rgba(99, 102, 241, 0.1);
+          }
+          .stat-icon-container.green-theme {
+            background: rgba(16, 185, 129, 0.1);
+          }
+          .stat-icon-container.blue-theme {
+            background: rgba(59, 130, 246, 0.1);
+          }
+          .stat-icon-container.yellow-theme {
+            background: rgba(251, 191, 36, 0.1);
+          }
+          .stat-info {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            height: 100%;
+            text-align: left;
           }
-          .hero-stat-card:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(99, 102, 241, 0.3);
-            transform: translateY(-3px);
-          }
-          .hero-stat-card h3 {
-            font-size: 1.8rem;
+          .stat-info h3 {
+            font-size: 1.6rem;
             font-weight: 800;
             color: white;
-            margin: 0 0 4px 0;
+            margin: 0 0 2px 0;
             letter-spacing: -0.5px;
           }
-          .hero-stat-card p {
+          .stat-info p {
             font-size: 0.8rem;
             color: #64748b;
             margin: 0;
@@ -4281,61 +4352,6 @@ export default function Dashboard() {
             line-height: 1.2;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-          }
-          
-          /* Safe & Secure Custom Card from 2nd image */
-          .safe-secure-card {
-            background: rgba(251, 191, 36, 0.03);
-            border: 1px solid rgba(251, 191, 36, 0.12);
-          }
-          .safe-secure-card:hover {
-            background: rgba(251, 191, 36, 0.05);
-            border-color: rgba(251, 191, 36, 0.3);
-          }
-          .safe-secure-badge {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            width: 100%;
-          }
-          .shield-icon-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(251, 191, 36, 0.08);
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            flex-shrink: 0;
-          }
-          .safe-secure-text {
-            display: flex;
-            flex-direction: column;
-            text-align: left;
-          }
-          .safe-secure-text h3 {
-            color: #fbbf24 !important;
-          }
-          .safe-secure-text p {
-            color: rgba(251, 191, 36, 0.8) !important;
-          }
-          .safe-secure-subfeatures {
-            display: flex;
-            gap: 8px;
-            margin-top: 6px;
-            flex-wrap: wrap;
-          }
-          .safe-secure-subfeatures span {
-            font-size: 0.68rem;
-            color: #fbbf24;
-            background: rgba(251, 191, 36, 0.08);
-            padding: 2px 8px;
-            border-radius: 8px;
-            border: 1px solid rgba(251, 191, 36, 0.15);
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
           }
 
           .hero-right-column {
@@ -4385,6 +4401,7 @@ export default function Dashboard() {
             margin-right: -4px;
             flex-shrink: 0;
           }
+
 
             /* Floating Translucent Country Badges */
             .country-badge {
@@ -4454,20 +4471,24 @@ export default function Dashboard() {
 
             /* Responsive tweaks for split layout */
             @media (max-width: 1024px) {
-              .hero-split-container {
+              .hero-top-columns {
                 grid-template-columns: 1fr !important;
                 gap: 50px;
                 text-align: center;
-                padding-top: 40px;
               }
               .hero-left-column {
                 align-items: center;
                 text-align: center;
+                max-width: 100%;
               }
               .hero-explore-subtitle {
                 text-align: center !important;
                 margin-left: auto;
                 margin-right: auto;
+              }
+              .hero-stats-strip {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 20px !important;
               }
             }
 
@@ -4476,29 +4497,12 @@ export default function Dashboard() {
                 font-size: 3rem !important;
               }
               .hero-explore-subtitle {
-                font-size: 1.2rem !important;
+                font-size: 1.1rem !important;
               }
-              .hero-stats-grid {
-                grid-template-columns: repeat(3, 1fr) !important;
-                gap: 10px !important;
-              }
-              .hero-stat-card {
-                padding: 10px 8px !important;
-              }
-              .hero-stat-card h3 {
-                font-size: 1.2rem !important;
-              }
-              .hero-stat-card p {
-                font-size: 0.65rem !important;
-              }
-              .shield-icon-container {
-                width: 32px !important;
-                height: 32px !important;
-                border-radius: 8px !important;
-              }
-              .shield-icon-container svg {
-                width: 20px !important;
-                height: 20px !important;
+              .hero-stats-strip {
+                grid-template-columns: 1fr !important;
+                gap: 15px !important;
+                padding: 20px 25px !important;
               }
               .country-badge {
                 padding: 4px 8px !important;
