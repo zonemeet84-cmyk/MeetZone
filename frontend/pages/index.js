@@ -1307,6 +1307,12 @@ export default function Dashboard() {
 
             <div className="hero-right-column">
               <div className="hero-interactive-graphic">
+                {/* Glowing World Map Background Image - Screen Blended for Transparent Look */}
+                <img 
+                  src="/new_hero_map_v2.jpg" 
+                  alt="World Map" 
+                  className="world-map-image-bg"
+                />
                 {/* Connections SVG Matrix */}
                 <svg className="connection-svg" viewBox="0 0 600 400">
                   {/* Pulsing connection line arches */}
@@ -4271,14 +4277,22 @@ export default function Dashboard() {
             justify-content: center;
             perspective: 1000px;
             animation: fadeIn 1s ease-out;
-            background-image: url('/new_hero_map_v2.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            border-radius: 24px;
-            box-shadow: inset 0 0 80px rgba(15, 23, 42, 0.95), 0 20px 40px rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            overflow: hidden;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            overflow: visible;
+          }
+          .world-map-image-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            mix-blend-mode: screen;
+            opacity: 0.65;
+            pointer-events: none;
           }
           .card-photo {
             width: 44px;
