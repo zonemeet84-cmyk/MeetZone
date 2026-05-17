@@ -2853,7 +2853,7 @@ export default function Dashboard() {
           }
 
           /* Profile Dropdown Styles */
-          .profile-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: transparent; z-index: 1000; }
+          .profile-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: center; justify-content: center; }
           .profile-modal-card { 
             position: fixed; 
             top: 85px; 
@@ -3975,16 +3975,17 @@ export default function Dashboard() {
               padding: 0 15px 20px !important;
             }
             .profile-modal-card {
-              position: fixed !important;
-              top: 50% !important;
-              left: 50% !important;
-              transform: translate(-50%, -50%) !important;
+              position: relative !important;
+              top: auto !important;
+              left: auto !important;
+              right: auto !important;
+              transform: none !important;
               width: 95% !important;
               max-width: 360px !important;
               max-height: 85vh !important;
               overflow-y: auto !important;
               border-radius: 28px !important;
-              right: auto !important;
+              margin: auto !important;
             }
             .streak-reward-modal {
               width: 95% !important;
@@ -3999,6 +4000,56 @@ export default function Dashboard() {
             }
             .streak-day-card {
               padding: 6px 2px 4px !important;
+            }
+            /* Coin Usage Transparency - horizontal scroll */
+            .stats-row {
+              display: flex !important;
+              overflow-x: auto !important;
+              scroll-snap-type: x mandatory !important;
+              -webkit-overflow-scrolling: touch !important;
+              gap: 15px !important;
+              padding-bottom: 10px !important;
+            }
+            .stats-row > * {
+              min-width: 250px !important;
+              flex-shrink: 0 !important;
+              scroll-snap-align: start !important;
+            }
+            .stats-row::-webkit-scrollbar {
+              height: 4px !important;
+            }
+            .stats-row::-webkit-scrollbar-track {
+              background: rgba(255,255,255,0.05) !important;
+              border-radius: 10px !important;
+            }
+            .stats-row::-webkit-scrollbar-thumb {
+              background: rgba(99,102,241,0.4) !important;
+              border-radius: 10px !important;
+            }
+            /* Mystery Boxes - horizontal scroll */
+            .mystery-grid {
+              display: flex !important;
+              overflow-x: auto !important;
+              scroll-snap-type: x mandatory !important;
+              -webkit-overflow-scrolling: touch !important;
+              gap: 20px !important;
+              padding-bottom: 10px !important;
+            }
+            .mystery-grid > * {
+              min-width: 260px !important;
+              flex-shrink: 0 !important;
+              scroll-snap-align: start !important;
+            }
+            .mystery-grid::-webkit-scrollbar {
+              height: 4px !important;
+            }
+            .mystery-grid::-webkit-scrollbar-track {
+              background: rgba(255,255,255,0.05) !important;
+              border-radius: 10px !important;
+            }
+            .mystery-grid::-webkit-scrollbar-thumb {
+              background: rgba(251,191,36,0.4) !important;
+              border-radius: 10px !important;
             }
             .streak-day-label {
               font-size: 0.65rem !important;
@@ -4062,6 +4113,10 @@ export default function Dashboard() {
             }
             .coin-count {
               font-size: 0.75rem;
+            }
+            /* Coin transparency section padding */
+            .glass-card {
+              padding: 20px 15px !important;
             }
           }
         `}</style>
