@@ -972,13 +972,14 @@ export default function Dashboard() {
       )}
 
       <div className="header">
-        <div className="brand-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="brand-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }} onClick={() => router.push("/")}>
           <div className="logo-icon-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg viewBox="0 0 32 32" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4 8C4 5.79086 5.79086 4 8 4H20C22.2091 4 24 5.79086 24 8V11.5L29 8V24L24 20.5V24C24 26.2091 22.2091 28 20 28H8C5.79086 28 4 26.2091 4 24V8Z" fill="url(#brand-grad)" />
-              <path d="M9 11H19L11 21H19" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              <rect x="2" y="5" width="20" height="20" rx="6" fill="url(#brand-grad)" />
+              <path d="M22 11L28 7V23L22 19V11Z" fill="url(#brand-grad)" />
+              <path d="M9 11H15L9 19H15" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
               <defs>
-                <linearGradient id="brand-grad" x1="4" y1="4" x2="29" y2="28" gradientUnits="userSpaceOnUse">
+                <linearGradient id="brand-grad" x1="2" y1="5" x2="28" y2="25" gradientUnits="userSpaceOnUse">
                   <stop stopColor="#2563eb" />
                   <stop offset="0.5" stopColor="#a855f7" />
                   <stop offset="1" stopColor="#ec4899" />
@@ -986,7 +987,10 @@ export default function Dashboard() {
               </defs>
             </svg>
           </div>
-          <h1 className="logo-text">Zone<span className="logo-highlight" style={{ background: 'linear-gradient(135deg, #d946ef, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Meet</span></h1>
+          <h1 className="logo-text" style={{ margin: 0, fontSize: '1.4rem', fontWeight: '800', display: 'flex', alignItems: 'center', letterSpacing: '-0.02em' }}>
+            <span style={{ color: '#ffffff' }}>Zone</span>
+            <span style={{ background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Meet</span>
+          </h1>
           {user?.premium && <span className="premium-badge">{user.planName || "PREMIUM"}</span>}
         </div>
 
