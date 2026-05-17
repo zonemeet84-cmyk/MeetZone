@@ -683,7 +683,11 @@ export default function Home() {
       setTimeout(() => setFriendNotification(null), 3000);
     } catch (err) {
       setFriendReqStatus(false);
-      alert(err.response?.data?.message || "Failed to send friend request.");
+      if (err.response?.data?.requiresPremium) {
+        setShowPricingModal(true);
+      } else {
+        alert(err.response?.data?.message || "Failed to send friend request.");
+      }
     }
   };
 

@@ -17,6 +17,7 @@ export default function Friends() {
   
   const [incomingCall, setIncomingCall] = useState(null); // { fromUser, fromSocketId, roomId }
   const [activeRoom, setActiveRoom] = useState(null);
+  const [showPremiumPopup, setShowPremiumPopup] = useState(false);
 
   useEffect(() => {
     const updateOnlineStatus = () => setIsOnline(navigator.onLine);
@@ -135,7 +136,11 @@ export default function Friends() {
       setSearchResult(null);
       setSearchEmail("");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to send request");
+      if (err.response?.data?.requiresPremium) {
+        setShowPremiumPopup(true);
+      } else {
+        alert(err.response?.data?.message || "Failed to send request");
+      }
     }
   };
 
@@ -147,7 +152,11 @@ export default function Friends() {
       });
       fetchFriends(token);
     } catch (err) {
-      alert("Failed to accept");
+      if (err.response?.data?.requiresPremium) {
+        setShowPremiumPopup(true);
+      } else {
+        alert(err.response?.data?.message || "Failed to accept");
+      }
     }
   };
 
@@ -204,6 +213,19 @@ export default function Friends() {
             <div style={{ display: 'flex', gap: '10px', marginTop: '20px', justifyContent: 'center' }}>
               <button className="btn btn-primary" onClick={acceptCall} style={{ backgroundColor: '#2ecc71' }}>Accept</button>
               <button className="btn btn-secondary" onClick={rejectCall} style={{ backgroundColor: '#e74c3c' }}>Decline</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPremiumPopup && (
+        <div className="payment-modal-overlay" style={{ zIndex: 9999 }}>
+          <div className="payment-modal-card">
+            <h2>Friend Limit Reached!</h2>
+            <p style={{ marginTop: '10px' }}>Free plan allows a maximum of 5 friends. Upgrade to a premium subscription to add more friends and unlock exclusive features!</p>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '20px', justifyContent: 'center' }}>
+              <button className="btn btn-primary" onClick={() => router.push("/")} style={{ backgroundColor: '#f59e0b' }}>Upgrade Now</button>
+              <button className="btn btn-secondary" onClick={() => setShowPremiumPopup(false)}>Maybe Later</button>
             </div>
           </div>
         </div>

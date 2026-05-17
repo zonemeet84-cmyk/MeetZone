@@ -1491,6 +1491,18 @@ app.post("/api/friends/request", authenticateToken, (req, res) => {
   const targetUser = users.find(u => u.id === targetId);
   if (!targetUser) return res.status(404).json({ message: "User not found" });
 
+  const isPremium = req.user.premium || (req.user.planName && req.user.planName !== "Free");
+  const isAdmin = req.user.email === "ds9376314@gmail.com";
+  if (!isPremium && !isAdmin && req.user.friends && req.user.friends.length >= 5) {
+    return res.status(403).json({ message: "Free plan allows a maximum of 5 friends. Upgrade to add more!", requiresPremium: true });
+  }
+
+  const targetIsPremium = targetUser.premium || (targetUser.planName && targetUser.planName !== "Free");
+  const targetIsAdmin = targetUser.email === "ds9376314@gmail.com";
+  if (!targetIsPremium && !targetIsAdmin && targetUser.friends && targetUser.friends.length >= 5) {
+    return res.status(400).json({ message: "This user has reached their maximum friend limit." });
+  }
+
   if (!targetUser.friendRequests) targetUser.friendRequests = [];
 
   // Check if already requested (as ID or Object)
@@ -1509,6 +1521,18 @@ app.post("/api/friends/accept", authenticateToken, (req, res) => {
   const { requesterId } = req.body;
   const requester = users.find(u => u.id === requesterId);
   if (!requester) return res.status(404).json({ message: "Requester not found" });
+
+  const isPremium = req.user.premium || (req.user.planName && req.user.planName !== "Free");
+  const isAdmin = req.user.email === "ds9376314@gmail.com";
+  if (!isPremium && !isAdmin && req.user.friends && req.user.friends.length >= 5) {
+    return res.status(403).json({ message: "Free plan allows a maximum of 5 friends. Upgrade to add more!", requiresPremium: true });
+  }
+  
+  const reqUserIsPremium = requester.premium || (requester.planName && requester.planName !== "Free");
+  const reqUserIsAdmin = requester.email === "ds9376314@gmail.com";
+  if (!reqUserIsPremium && !reqUserIsAdmin && requester.friends && requester.friends.length >= 5) {
+    return res.status(400).json({ message: "The requester has reached their maximum friend limit." });
+  }
 
   // Reconnect logic: Check if requester sent a reconnect request
   const request = (req.user.friendRequests || []).find(r => (typeof r === 'string' ? r : r.id) === requesterId);
