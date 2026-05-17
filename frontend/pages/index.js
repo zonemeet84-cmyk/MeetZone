@@ -954,7 +954,12 @@ export default function Dashboard() {
       )}
 
       <div className="header">
-        <div className="brand-group">
+        <div className="brand-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div className="logo-icon-wrapper">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="white">
+              <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm-3 11l-3-2.25V13c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h6c.55 0 1 .45 1 1v2.25L17 7v6z"/>
+            </svg>
+          </div>
           <h1 className="logo-text">Zone<span className="logo-highlight">Meet</span><span className="logo-dot">.</span></h1>
           {user?.premium && <span className="premium-badge">{user.planName || "PREMIUM"}</span>}
         </div>
@@ -1285,7 +1290,7 @@ export default function Dashboard() {
                 <p>Countries Available</p>
               </div>
 
-              {/* 99.9% Safe & Secure Card (from 2nd image, replacing bottom-left users online card) */}
+              {/* 99.9% Safe & Secure Card enriched with E2E Encrypted and AI Moderated sub-features */}
               <div className="hero-stat-card safe-secure-card">
                 <div className="safe-secure-badge">
                   <div className="shield-icon-container">
@@ -1297,6 +1302,10 @@ export default function Dashboard() {
                   <div className="safe-secure-text">
                     <h3>99.9%</h3>
                     <p>Safe & Secure</p>
+                    <div className="safe-secure-subfeatures">
+                      <span>🛡️ E2E Encrypted</span>
+                      <span>🤖 AI-Moderated</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1316,98 +1325,8 @@ export default function Dashboard() {
 
           <div className="hero-right-column">
             <div className="world-map-wrapper">
-              {/* Futuristic World Map SVG with glowing paths/nodes */}
-              <svg className="world-map-svg" viewBox="0 0 1000 500" width="100%" height="100%">
-                <defs>
-                  <radialGradient id="glow-grad" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#6366f1" stopOpacity="0.4" />
-                    <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
-                  </radialGradient>
-                  <radialGradient id="purple-glow" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#d946ef" stopOpacity="0.5" />
-                    <stop offset="100%" stopColor="#d946ef" stopOpacity="0" />
-                  </radialGradient>
-                </defs>
-
-                {/* Grid Lines */}
-                <g stroke="rgba(99, 102, 241, 0.03)" strokeWidth="0.5">
-                  {Array.from({ length: 20 }).map((_, i) => (
-                    <line key={`x-${i}`} x1={i * 50} y1="0" x2={i * 50} y2="500" />
-                  ))}
-                  {Array.from({ length: 10 }).map((_, i) => (
-                    <line key={`y-${i}`} x1="0" y1={i * 50} x2="1000" y2={i * 50} />
-                  ))}
-                </g>
-
-                {/* Glowing Background Spots */}
-                <circle cx="200" cy="200" r="150" fill="url(#glow-grad)" />
-                <circle cx="500" cy="250" r="180" fill="url(#glow-grad)" />
-                <circle cx="800" cy="300" r="150" fill="url(#purple-glow)" />
-
-                {/* Styled minimalist continents (represented as technical glowing hex dots) */}
-                <g fill="rgba(99, 102, 241, 0.15)">
-                  {/* North America */}
-                  <circle cx="150" cy="120" r="4" />
-                  <circle cx="180" cy="110" r="3" />
-                  <circle cx="130" cy="150" r="5" />
-                  <circle cx="160" cy="160" r="4" />
-                  <circle cx="200" cy="170" r="6" />
-                  <circle cx="220" cy="130" r="5" />
-                  <circle cx="240" cy="150" r="3" />
-                  
-                  {/* South America */}
-                  <circle cx="320" cy="320" r="5" />
-                  <circle cx="330" cy="350" r="4" />
-                  <circle cx="350" cy="380" r="6" />
-                  <circle cx="370" cy="420" r="3" />
-                  <circle cx="360" cy="300" r="5" />
-
-                  {/* Europe & Africa */}
-                  <circle cx="500" cy="110" r="3" />
-                  <circle cx="520" cy="130" r="4" />
-                  <circle cx="540" cy="120" r="5" />
-                  <circle cx="510" cy="200" r="6" />
-                  <circle cx="530" cy="230" r="4" />
-                  <circle cx="550" cy="260" r="5" />
-                  <circle cx="560" cy="300" r="3" />
-                  <circle cx="570" cy="340" r="4" />
-
-                  {/* Asia & India */}
-                  <circle cx="700" cy="120" r="5" />
-                  <circle cx="740" cy="140" r="6" />
-                  <circle cx="780" cy="110" r="4" />
-                  <circle cx="820" cy="150" r="5" />
-                  <circle cx="850" cy="180" r="4" />
-                  <circle cx="720" cy="220" r="5" /> {/* India area */}
-                  <circle cx="750" cy="240" r="4" />
-
-                  {/* Australia */}
-                  <circle cx="850" cy="370" r="5" />
-                  <circle cx="880" cy="360" r="4" />
-                  <circle cx="870" cy="390" r="3" />
-                </g>
-
-                {/* Connection lines between glowing hubs */}
-                <g stroke="#818cf8" strokeWidth="1.2" strokeDasharray="3,3" opacity="0.5">
-                  <path d="M 200 170 Q 300 200 360 300" fill="none" />
-                  <path d="M 200 170 Q 380 120 520 130" fill="none" />
-                  <path d="M 520 130 Q 620 180 720 220" fill="none" />
-                  <path d="M 720 220 Q 800 300 870 390" fill="none" />
-                  <path d="M 360 300 Q 600 350 870 390" fill="none" />
-                </g>
-
-                {/* Pulsing Active Hub Nodes */}
-                <g className="pulsing-hubs">
-                  <circle cx="200" cy="170" r="6" fill="#818cf8" />
-                  <circle cx="520" cy="130" r="6" fill="#c084fc" />
-                  <circle cx="720" cy="220" r="6" fill="#f472b6" />
-                  <circle cx="360" cy="300" r="6" fill="#34d399" />
-                  <circle cx="870" cy="390" r="6" fill="#fb7185" />
-                </g>
-              </svg>
-
-              {/* Floating Country Badges with Glassmorphism matching the first image */}
-              <div className="country-badge badge-usa" style={{ top: '25%', left: '33%' }}>
+              {/* Floating Country Badges with Glassmorphism matching the first & second image exactly */}
+              <div className="country-badge badge-usa" style={{ top: '18%', left: '12%' }}>
                 <span className="country-flag">🇺🇸</span>
                 <div className="badge-text">
                   <span className="country-name">United States</span>
@@ -1415,7 +1334,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="country-badge badge-uk" style={{ top: '15%', left: '60%' }}>
+              <div className="country-badge badge-uk" style={{ top: '15%', left: '48%' }}>
                 <span className="country-flag">🇬🇧</span>
                 <div className="badge-text">
                   <span className="country-name">United Kingdom</span>
@@ -1423,7 +1342,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="country-badge badge-india" style={{ top: '35%', left: '78%' }}>
+              <div className="country-badge badge-india" style={{ top: '35%', left: '70%' }}>
                 <span className="country-flag">🇮🇳</span>
                 <div className="badge-text">
                   <span className="country-name">India</span>
@@ -1431,7 +1350,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="country-badge badge-brazil" style={{ top: '55%', left: '26%' }}>
+              <div className="country-badge badge-brazil-sa" style={{ top: '55%', left: '24%' }}>
                 <span className="country-flag">🇧🇷</span>
                 <div className="badge-text">
                   <span className="country-name">Brazil</span>
@@ -1439,7 +1358,18 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="country-badge badge-australia" style={{ top: '75%', left: '75%' }}>
+              <div className="country-badge badge-brazil-af" style={{ top: '55%', left: '46%' }}>
+                <div className="avatar-small">
+                  <img src="/anime.png" alt="user" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                </div>
+                <span className="country-flag">🇧🇷</span>
+                <div className="badge-text">
+                  <span className="country-name">Brazil</span>
+                  <span className="online-count">1,025 online</span>
+                </div>
+              </div>
+
+              <div className="country-badge badge-australia" style={{ top: '72%', left: '76%' }}>
                 <span className="country-flag">🇦🇺</span>
                 <div className="badge-text">
                   <span className="country-name">Australia</span>
@@ -4304,14 +4234,14 @@ export default function Dashboard() {
             background: linear-gradient(135deg, #c084fc, #f472b6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-          }
-          .hero-explore-subtitle {
-            font-size: 1.35rem !important; /* Larger paragraph size as requested */
-            line-height: 1.6 !important;
-            color: #94a3b8 !important;
+          }          .hero-explore-subtitle {
+            font-size: 1.55rem !important; /* Extremely readable and bold as requested */
+            line-height: 1.5 !important;
+            color: #cbd5e1 !important; /* Slightly brighter for better contrast */
             margin-bottom: 35px !important;
-            max-width: 540px;
+            max-width: 580px;
             text-align: left !important;
+            font-weight: 500;
           }
           .hero-stats-grid {
             display: grid;
@@ -4320,95 +4250,141 @@ export default function Dashboard() {
             width: 100%;
             margin-bottom: 10px;
           }
-            .hero-stat-card {
-              background: rgba(255, 255, 255, 0.02);
-              border: 1px solid rgba(255, 255, 255, 0.06);
-              border-radius: 18px;
-              padding: 16px 20px;
-              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-              display: flex;
-              flex-direction: column;
-              justify-content: center;
-              height: 100%;
-            }
-            .hero-stat-card:hover {
-              background: rgba(255, 255, 255, 0.04);
-              border-color: rgba(99, 102, 241, 0.3);
-              transform: translateY(-3px);
-            }
-            .hero-stat-card h3 {
-              font-size: 1.8rem;
-              font-weight: 800;
-              color: white;
-              margin: 0 0 4px 0;
-              letter-spacing: -0.5px;
-            }
-            .hero-stat-card p {
-              font-size: 0.8rem;
-              color: #64748b;
-              margin: 0;
-              font-weight: 600;
-              line-height: 1.2;
-              text-transform: uppercase;
-              letter-spacing: 0.5px;
-            }
-            
-            /* Safe & Secure Custom Card from 2nd image */
-            .safe-secure-card {
-              background: rgba(251, 191, 36, 0.03);
-              border: 1px solid rgba(251, 191, 36, 0.12);
-            }
-            .safe-secure-card:hover {
-              background: rgba(251, 191, 36, 0.05);
-              border-color: rgba(251, 191, 36, 0.3);
-            }
-            .safe-secure-badge {
-              display: flex;
-              align-items: center;
-              gap: 12px;
-              width: 100%;
-            }
-            .shield-icon-container {
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              background: rgba(251, 191, 36, 0.08);
-              width: 44px;
-              height: 44px;
-              border-radius: 12px;
-              flex-shrink: 0;
-            }
-            .safe-secure-text {
-              display: flex;
-              flex-direction: column;
-              text-align: left;
-            }
-            .safe-secure-text h3 {
-              color: #fbbf24 !important;
-            }
-            .safe-secure-text p {
-              color: rgba(251, 191, 36, 0.8) !important;
-            }
+          .hero-stat-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 18px;
+            padding: 16px 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+          }
+          .hero-stat-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateY(-3px);
+          }
+          .hero-stat-card h3 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
+            margin: 0 0 4px 0;
+            letter-spacing: -0.5px;
+          }
+          .hero-stat-card p {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 0;
+            font-weight: 600;
+            line-height: 1.2;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          
+          /* Safe & Secure Custom Card from 2nd image */
+          .safe-secure-card {
+            background: rgba(251, 191, 36, 0.03);
+            border: 1px solid rgba(251, 191, 36, 0.12);
+          }
+          .safe-secure-card:hover {
+            background: rgba(251, 191, 36, 0.05);
+            border-color: rgba(251, 191, 36, 0.3);
+          }
+          .safe-secure-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+          }
+          .shield-icon-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(251, 191, 36, 0.08);
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            flex-shrink: 0;
+          }
+          .safe-secure-text {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+          }
+          .safe-secure-text h3 {
+            color: #fbbf24 !important;
+          }
+          .safe-secure-text p {
+            color: rgba(251, 191, 36, 0.8) !important;
+          }
+          .safe-secure-subfeatures {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+          }
+          .safe-secure-subfeatures span {
+            font-size: 0.68rem;
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.08);
+            padding: 2px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(251, 191, 36, 0.15);
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+          }
 
-            .hero-right-column {
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              position: relative;
-              width: 100%;
-              animation: fadeIn 1s ease-out;
-            }
-            .world-map-wrapper {
-              position: relative;
-              width: 100%;
-              max-width: 620px;
-              aspect-ratio: 2 / 1;
-            }
-            .world-map-svg {
-              width: 100%;
-              height: auto;
-              display: block;
-            }
+          .hero-right-column {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+            animation: fadeIn 1s ease-out;
+          }
+          .world-map-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 620px;
+            aspect-ratio: 2 / 1;
+            background-image: url('/global_connection_2_1778758015960.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+          }
+          .logo-icon-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #3b82f6, #ec4899);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+          }
+          .logo-icon-wrapper:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
+          }
+          .avatar-small {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1.5px solid #d946ef;
+            overflow: hidden;
+            display: inline-flex;
+            margin-right: -4px;
+            flex-shrink: 0;
+          }
 
             /* Floating Translucent Country Badges */
             .country-badge {
