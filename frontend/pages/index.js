@@ -1285,12 +1285,12 @@ export default function Dashboard() {
               </div>
 
               <h1 className="hero-explore-title">
-                Explore Worldwide<br />
-                <span>190+ Countries</span>
+                The Ultimate Random<br />
+                <span>Video Chat.</span>
               </h1>
 
               <p className="hero-explore-subtitle">
-                Connect with amazing people from different countries and cultures. Explore new languages, share interesting moments, and make meaningful connections instantly.
+                Instantly connect with millions of verified users across the globe. Make new friends, share incredible moments, and enjoy crystal-clear video calls in a 100% secure environment.
               </p>
 
               <div className="action-buttons" style={{ position: 'relative', zIndex: 20, marginTop: '30px' }}>
@@ -1306,116 +1306,35 @@ export default function Dashboard() {
             </div>
 
             <div className="hero-right-column">
-              <div className="world-map-wrapper">
-                {/* Floating Country Badges with Glassmorphism matching the third image exactly */}
-                <div className="country-badge badge-canada" style={{ top: '15%', left: '35%' }}>
-                  <span className="country-flag">🇨🇦</span>
-                  <div className="badge-text">
-                    <span className="country-name">Canada</span>
-                    <span className="online-count">1,245 online</span>
-                  </div>
-                </div>
-
-                <div className="country-badge badge-brazil-sa" style={{ top: '55%', left: '33%' }}>
-                  <span className="country-flag">🇧🇷</span>
-                  <div className="badge-text">
-                    <span className="country-name">Brazil</span>
-                    <span className="online-count">1,005 online</span>
-                  </div>
-                </div>
-
-                <div className="country-badge badge-uk" style={{ top: '25%', left: '63%' }}>
-                  <span className="country-flag">🇬🇧</span>
-                  <div className="badge-text">
-                    <span className="country-name">United Kingdom</span>
-                    <span className="online-count">956 online</span>
-                  </div>
-                </div>
-
-                <div className="country-badge badge-brazil-af" style={{ top: '58%', left: '64%' }}>
-                  <div className="avatar-small">
-                    <img src="/anime.png" alt="user" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                  </div>
-                  <span className="country-flag">🇧🇷</span>
-                  <div className="badge-text">
-                    <span className="country-name">Brazil</span>
-                    <span className="online-count">1,005 online</span>
-                  </div>
-                </div>
-
-                <div className="country-badge badge-india" style={{ top: '38%', left: '80%' }}>
-                  <span className="country-flag">🇮🇳</span>
-                  <div className="badge-text">
-                    <span className="country-name">India</span>
-                    <span className="online-count">2,153 online</span>
-                  </div>
-                </div>
-
-                <div className="country-badge badge-australia" style={{ top: '68%', left: '80%' }}>
-                  <span className="country-flag">🇦🇺</span>
-                  <div className="badge-text">
-                    <span className="country-name">Australia</span>
-                    <span className="online-count">789 online</span>
-                  </div>
-                </div>
-              </div>
+              <img
+                src="/global-friends.png"
+                alt="Global Video Chat Connections"
+                className="hero-preview-image"
+              />
             </div>
           </div>
 
           {/* Full Width Bottom Stats Strip from Image 3 */}
-          <div className="hero-stats-strip">
-            <div className="stat-strip-item">
-              <div className="stat-icon-container purple-theme">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="2" y1="12" x2="22" y2="12" />
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                </svg>
-              </div>
-              <div className="stat-info">
-                <h3>190+</h3>
-                <p>Countries Available</p>
-              </div>
+          {/* Enhanced Bottom Stats Strip */}
+          <div className="hero-stats-premium-strip">
+            <div className="stat-premium-card">
+              <h3 style={{ color: '#c084fc' }}>190+</h3>
+              <p>Global Reach</p>
+            </div>
+            
+            <div className="stat-premium-card">
+              <h3 style={{ color: '#60a5fa' }}>10M+</h3>
+              <p>Live Connections</p>
+            </div>
+            
+            <div className="stat-premium-card">
+              <h3 style={{ color: '#10b981' }}>100%</h3>
+              <p>Safe & Secure</p>
             </div>
 
-            <div className="stat-strip-item">
-              <div className="stat-icon-container green-theme">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-              </div>
-              <div className="stat-info">
-                <h3>5,248+</h3>
-                <p>Users Online</p>
-              </div>
-            </div>
-
-            <div className="stat-strip-item">
-              <div className="stat-icon-container blue-theme">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                </svg>
-              </div>
-              <div className="stat-info">
-                <h3>2M+</h3>
-                <p>Chats Connected</p>
-              </div>
-            </div>
-
-            <div className="stat-strip-item">
-              <div className="stat-icon-container yellow-theme">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  <path d="m9 11 2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-              <div className="stat-info">
-                <h3>99.9%</h3>
-                <p>Safe & Secure</p>
-              </div>
+            <div className="stat-premium-card">
+              <h3 style={{ color: '#f472b6' }}>AI</h3>
+              <p>Smart Guardian</p>
             </div>
           </div>
         </div>
@@ -4255,7 +4174,7 @@ export default function Dashboard() {
           }
           .hero-top-columns {
             display: grid;
-            grid-template-columns: 1.2fr 1fr;
+            grid-template-columns: 1fr 1.35fr;
             gap: 50px;
             align-items: center;
             width: 100%;
@@ -4266,7 +4185,21 @@ export default function Dashboard() {
             flex-direction: column;
             align-items: flex-start;
             animation: fadeIn 0.8s ease-out;
-            max-width: 580px;
+            max-width: 480px;
+          }
+          .hero-preview-image {
+            width: 100%;
+            height: auto;
+            max-width: 760px;
+            border-radius: 24px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.65), 0 0 50px rgba(168, 85, 247, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: block;
+            animation: float-hero-img 6s ease-in-out infinite alternate;
+          }
+          @keyframes float-hero-img {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-10px); }
           }
           .hero-explore-title {
             font-size: 3.8rem;
@@ -4292,66 +4225,45 @@ export default function Dashboard() {
           }
           
           /* Full Width Bottom Stats Strip from Image 3 */
-          .hero-stats-strip {
+          .hero-stats-premium-strip {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
+            gap: 25px;
             width: 100%;
-            background: rgba(13, 15, 33, 0.4);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin-top: 40px;
+            animation: fadeIn 1.2s ease-out;
+          }
+          .stat-premium-card {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 20px;
-            padding: 25px 30px;
-            margin-top: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            padding: 25px 20px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           }
-          .stat-strip-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+          .stat-premium-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+            background: rgba(30, 41, 59, 0.6);
           }
-          .stat-icon-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            flex-shrink: 0;
+          .stat-premium-card h3 {
+            font-size: 2.8rem;
+            font-weight: 900;
+            margin: 0 0 8px 0;
+            line-height: 1;
+            letter-spacing: -1.5px;
           }
-          .stat-icon-container.purple-theme {
-            background: rgba(99, 102, 241, 0.1);
-          }
-          .stat-icon-container.green-theme {
-            background: rgba(16, 185, 129, 0.1);
-          }
-          .stat-icon-container.blue-theme {
-            background: rgba(59, 130, 246, 0.1);
-          }
-          .stat-icon-container.yellow-theme {
-            background: rgba(251, 191, 36, 0.1);
-          }
-          .stat-info {
-            display: flex;
-            flex-direction: column;
-            text-align: left;
-          }
-          .stat-info h3 {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: white;
-            margin: 0 0 2px 0;
-            letter-spacing: -0.5px;
-          }
-          .stat-info p {
-            font-size: 0.8rem;
-            color: #64748b;
+          .stat-premium-card p {
+            font-size: 0.85rem;
+            color: #94a3b8;
             margin: 0;
-            font-weight: 600;
-            line-height: 1.2;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
           }
 
           .hero-right-column {
@@ -4486,7 +4398,7 @@ export default function Dashboard() {
                 margin-left: auto;
                 margin-right: auto;
               }
-              .hero-stats-strip {
+              .hero-stats-premium-strip {
                 grid-template-columns: repeat(2, 1fr) !important;
                 gap: 20px !important;
               }
@@ -4499,10 +4411,18 @@ export default function Dashboard() {
               .hero-explore-subtitle {
                 font-size: 1.1rem !important;
               }
-              .hero-stats-strip {
-                grid-template-columns: 1fr !important;
+              .hero-stats-premium-strip {
+                grid-template-columns: repeat(2, 1fr) !important;
                 gap: 15px !important;
-                padding: 20px 25px !important;
+              }
+              .stat-premium-card {
+                padding: 15px !important;
+              }
+              .stat-premium-card h3 {
+                font-size: 1.8rem !important;
+              }
+              .stat-premium-card p {
+                font-size: 0.7rem !important;
               }
               .country-badge {
                 padding: 4px 8px !important;
