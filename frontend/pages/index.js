@@ -1285,13 +1285,7 @@ export default function Dashboard() {
                 <p>Countries Available</p>
               </div>
 
-              {/* Users Online Card - Untouched value as requested */}
-              <div className="hero-stat-card">
-                <h3>5,248+</h3>
-                <p>Users Online</p>
-              </div>
-
-              {/* 99.9% Safe & Secure Card (from 2nd image) */}
+              {/* 99.9% Safe & Secure Card (from 2nd image, replacing bottom-left users online card) */}
               <div className="hero-stat-card safe-secure-card">
                 <div className="safe-secure-badge">
                   <div className="shield-icon-container">
@@ -4278,52 +4272,54 @@ export default function Dashboard() {
             .coin-count {
               font-size: 0.75rem;
             }
-            /* Explore Worldwide - Premium Split Hero Layout Styling */
-            .hero-split-container {
-              display: grid;
-              grid-template-columns: 1.2fr 1fr;
-              gap: 60px;
-              align-items: center;
-              max-width: 1240px;
-              width: 100%;
-              margin: 0 auto;
-              padding: 40px 20px;
-            }
-            .hero-left-column {
-              text-align: left;
-              display: flex;
-              flex-direction: column;
-              align-items: flex-start;
-              animation: fadeIn 0.8s ease-out;
-            }
-            .hero-explore-title {
-              font-size: 3.8rem;
-              font-weight: 900;
-              line-height: 1.1;
-              margin-bottom: 20px;
-              color: white;
-              letter-spacing: -0.03em;
-            }
-            .hero-explore-title span {
-              background: linear-gradient(135deg, #c084fc, #f472b6);
-              -webkit-background-clip: text;
-              -webkit-text-fill-color: transparent;
-            }
-            .hero-explore-subtitle {
-              font-size: 1.35rem !important; /* Larger paragraph size as requested */
-              line-height: 1.6 !important;
-              color: #94a3b8 !important;
-              margin-bottom: 35px !important;
-              max-width: 540px;
-              text-align: left !important;
-            }
-            .hero-stats-grid {
-              display: grid;
-              grid-template-columns: repeat(3, 1fr);
-              gap: 15px;
-              width: 100%;
-              margin-bottom: 10px;
-            }
+          }
+
+          /* Explore Worldwide - Premium Split Hero Layout Styling */
+          .hero-split-container {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 60px;
+            align-items: center;
+            max-width: 1240px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px 20px;
+          }
+          .hero-left-column {
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            animation: fadeIn 0.8s ease-out;
+          }
+          .hero-explore-title {
+            font-size: 3.8rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            color: white;
+            letter-spacing: -0.03em;
+          }
+          .hero-explore-title span {
+            background: linear-gradient(135deg, #c084fc, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+          }
+          .hero-explore-subtitle {
+            font-size: 1.35rem !important; /* Larger paragraph size as requested */
+            line-height: 1.6 !important;
+            color: #94a3b8 !important;
+            margin-bottom: 35px !important;
+            max-width: 540px;
+            text-align: left !important;
+          }
+          .hero-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 100%;
+            margin-bottom: 10px;
+          }
             .hero-stat-card {
               background: rgba(255, 255, 255, 0.02);
               border: 1px solid rgba(255, 255, 255, 0.06);
