@@ -1094,7 +1094,10 @@ export default function Dashboard() {
                               try {
                                 const res = await axios.post("https://meetzone-backend.onrender.com/api/user/spend-coins", { email: user.email, amount: 100, feature: "profile_boost" });
                                 if (res.data.success) {
-                                  const newUser = { ...user, coins: res.data.coins, boostExpiry: res.data.boostExpiry, coinActivity: res.data.coinActivity }; setUser(newUser);
+                                  // Use local Date.now() to prevent server clock drift showing 11 mins
+                                  const localExpiry = Date.now() + (10 * 60 * 1000);
+                                  const newUser = { ...user, coins: res.data.coins, boostExpiry: localExpiry, coinActivity: res.data.coinActivity }; 
+                                  setUser(newUser);
                                   localStorage.setItem("user", JSON.stringify(newUser));
                                   showModal({ message: "Profile Boosted! Matching priority increased.", type: "success" });
                                 }
