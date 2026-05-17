@@ -105,6 +105,12 @@ export default function Dashboard() {
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [showDailyModal, setShowDailyModal] = useState(false);
   const [currentTime, setCurrentTime] = useState(Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showCoinPopup, setShowCoinPopup] = useState(false);
   const [purchaseAmount, setPurchaseAmount] = useState(0);
@@ -1100,7 +1106,7 @@ export default function Dashboard() {
                         }}>
                           <span className="profile-balance-icon">⚡</span>
                           {user.boostExpiry > currentTime ?
-                            `Active (${Math.floor(Math.min(600000, user.boostExpiry - currentTime) / 60000).toString().padStart(2, '0')}:${Math.floor((Math.min(600000, user.boostExpiry - currentTime) % 60000) / 1000).toString().padStart(2, '0')})`
+                            `Active (${Math.floor(Math.max(0, user.boostExpiry - currentTime) / 60000).toString().padStart(2, '0')}:${Math.floor((Math.max(0, user.boostExpiry - currentTime) % 60000) / 1000).toString().padStart(2, '0')})`
                             : "Boost"}
                         </div>
                       </div>
