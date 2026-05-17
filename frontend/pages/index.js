@@ -1285,12 +1285,12 @@ export default function Dashboard() {
               </div>
 
               <h1 className="hero-explore-title">
-                The Ultimate Random<br />
-                <span>Video Chat.</span>
+                Meet Random People<br />
+                <span>Worldwide Instantly.</span>
               </h1>
 
               <p className="hero-explore-subtitle">
-                Instantly connect with millions of verified users across the globe. Make new friends, share incredible moments, and enjoy crystal-clear video calls in a 100% secure environment.
+                Instantly connect with millions of verified users across the globe. Make new friends, share incredible moments, and enjoy crystal-clear video calls in a 100% secure environment. Match with friendly strangers, learn new languages, and explore vibrant cultures in real-time.
               </p>
 
               <div className="action-buttons" style={{ position: 'relative', zIndex: 20, marginTop: '30px' }}>
@@ -1307,61 +1307,72 @@ export default function Dashboard() {
 
             <div className="hero-right-column">
               <div className="hero-interactive-graphic">
-                {/* Central Match Hub */}
-                <div className="hub-center">
-                  <div className="hub-glow"></div>
-                  <div className="hub-core">
-                    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="white" strokeWidth="2.5">
-                      <path d="M23 7a2 2 0 0 0-2.45-1.45L16 7V5a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2l4.55 1.45A2 2 0 0 0 23 17V7z" />
-                    </svg>
-                  </div>
-                  <div className="hub-ring ring-1"></div>
-                  <div className="hub-ring ring-2"></div>
-                </div>
+                {/* World Map SVG Background */}
+                <svg className="world-map-svg" viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* Glowing background circles & grids */}
+                  <circle cx="300" cy="200" r="120" stroke="rgba(168, 85, 247, 0.08)" strokeWidth="1" strokeDasharray="4 4" />
+                  <circle cx="300" cy="200" r="220" stroke="rgba(96, 165, 250, 0.05)" strokeWidth="1" strokeDasharray="6 6" />
+                  
+                  {/* North America outline */}
+                  <path d="M 80,100 Q 120,80 180,110 T 150,180 Q 110,180 80,150 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" />
+                  {/* South America outline */}
+                  <path d="M 140,200 Q 180,220 170,280 T 130,360 Q 110,320 120,240 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" />
+                  {/* Eurasia & Africa outline */}
+                  <path d="M 280,100 Q 360,60 480,90 T 520,180 Q 420,220 360,180 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" />
+                  <path d="M 300,180 Q 360,190 380,260 T 340,340 Q 300,280 290,220 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" />
+                  {/* Australia outline */}
+                  <path d="M 480,280 Q 540,290 520,340 T 460,320 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" />
 
-                {/* Floating Profile 1 */}
-                <div className="floating-card profile-1">
-                  <div className="card-avatar">👩‍🦰</div>
-                  <div className="card-info">
-                    <h4>Alexa Reed</h4>
-                    <span className="live-pill">● LIVE</span>
-                  </div>
-                </div>
-
-                {/* Floating Profile 2 */}
-                <div className="floating-card profile-2">
-                  <div className="card-avatar">👦</div>
-                  <div className="card-info">
-                    <h4>Ben Chen</h4>
-                    <span className="live-pill">● LIVE</span>
-                  </div>
-                </div>
-
-                {/* Floating Profile 3 */}
-                <div className="floating-card profile-3">
-                  <div className="card-avatar">👩</div>
-                  <div className="card-info">
-                    <h4>Sofia Li</h4>
-                    <span className="live-pill">● LIVE</span>
-                  </div>
-                </div>
-
-                {/* Floating Profile 4 */}
-                <div className="floating-card profile-4">
-                  <div className="card-avatar">🧔</div>
-                  <div className="card-info">
-                    <h4>David Kim</h4>
-                    <span className="live-pill">● LIVE</span>
-                  </div>
-                </div>
-
-                {/* SVG Connection Lines */}
-                <svg className="connection-svg" viewBox="0 0 400 400">
-                  <path d="M 90,90 Q 200,200 200,200" className="pulse-line line-1" />
-                  <path d="M 310,90 Q 200,200 200,200" className="pulse-line line-2" />
-                  <path d="M 90,310 Q 200,200 200,200" className="pulse-line line-3" />
-                  <path d="M 310,310 Q 200,200 200,200" className="pulse-line line-4" />
+                  {/* Pulsing connection line arches */}
+                  <path d="M 130,120 Q 300,60 430,130" className="pulse-line line-1" />
+                  <path d="M 150,260 Q 280,200 370,270" className="pulse-line line-2" />
+                  <path d="M 130,120 Q 140,190 150,260" className="pulse-line line-3" />
+                  <path d="M 430,130 Q 440,220 490,300" className="pulse-line line-4" />
                 </svg>
+
+                {/* Floating Profile 1: North America */}
+                <div className="floating-card profile-map-1">
+                  <img className="card-photo" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&h=80&q=80" alt="Alexa" />
+                  <div className="card-info">
+                    <h4>Alexa</h4>
+                    <span className="live-pill">● USA</span>
+                  </div>
+                </div>
+
+                {/* Floating Profile 2: Europe */}
+                <div className="floating-card profile-map-2">
+                  <img className="card-photo" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&h=80&q=80" alt="Ben" />
+                  <div className="card-info">
+                    <h4>Ben</h4>
+                    <span className="live-pill">● UK</span>
+                  </div>
+                </div>
+
+                {/* Floating Profile 3: South America */}
+                <div className="floating-card profile-map-3">
+                  <img className="card-photo" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=80&h=80&q=80" alt="Sofia" />
+                  <div className="card-info">
+                    <h4>Sofia</h4>
+                    <span className="live-pill">● Brazil</span>
+                  </div>
+                </div>
+
+                {/* Floating Profile 4: India/Asia */}
+                <div className="floating-card profile-map-4">
+                  <img className="card-photo" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&h=80&q=80" alt="David" />
+                  <div className="card-info">
+                    <h4>David</h4>
+                    <span className="live-pill">● India</span>
+                  </div>
+                </div>
+
+                {/* Central Pulse Hub Overlay */}
+                <div className="hub-center-mini">
+                  <div className="hub-core-mini">
+                    <span className="live-signal-ripple"></span>
+                    <span className="live-signal-ripple-2"></span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1371,22 +1382,26 @@ export default function Dashboard() {
           <div className="hero-stats-premium-strip">
             <div className="stat-premium-card">
               <h3 style={{ color: '#c084fc' }}>190+</h3>
-              <p>Global Reach</p>
+              <p className="stat-label">Global Reach</p>
+              <p className="stat-desc">Connect with friendly people from over 190 countries instantly.</p>
             </div>
             
             <div className="stat-premium-card">
               <h3 style={{ color: '#60a5fa' }}>10M+</h3>
-              <p>Live Connections</p>
+              <p className="stat-label">Live Connections</p>
+              <p className="stat-desc">Millions of successful video call matches made every single day.</p>
             </div>
             
             <div className="stat-premium-card">
               <h3 style={{ color: '#10b981' }}>100%</h3>
-              <p>Safe & Secure</p>
+              <p className="stat-label">Safe & Secure</p>
+              <p className="stat-desc">End-to-end encryption and advanced private call protection.</p>
             </div>
 
             <div className="stat-premium-card">
               <h3 style={{ color: '#f472b6' }}>AI</h3>
-              <p>Smart Guardian</p>
+              <p className="stat-label">Smart Guardian</p>
+              <p className="stat-desc">Real-time AI moderation to ensure a clean and friendly space.</p>
             </div>
           </div>
         </div>
@@ -4226,7 +4241,7 @@ export default function Dashboard() {
           }
           .hero-top-columns {
             display: grid;
-            grid-template-columns: 1fr 1.35fr;
+            grid-template-columns: 1.15fr 0.85fr;
             gap: 50px;
             align-items: center;
             width: 100%;
@@ -4237,8 +4252,96 @@ export default function Dashboard() {
             flex-direction: column;
             align-items: flex-start;
             animation: fadeIn 0.8s ease-out;
-            max-width: 480px;
+            max-width: 580px;
           }
+          .world-map-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.85;
+          }
+          .card-photo {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 2px solid #a855f7;
+            object-fit: cover;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+          }
+          .profile-map-1 {
+            top: 60px;
+            left: 30px;
+            animation: float-p1 5s ease-in-out infinite alternate;
+          }
+          .profile-map-2 {
+            top: 70px;
+            right: 40px;
+            animation: float-p2 6s ease-in-out infinite alternate;
+          }
+          .profile-map-3 {
+            bottom: 90px;
+            left: 40px;
+            animation: float-p3 7s ease-in-out infinite alternate;
+          }
+          .profile-map-4 {
+            bottom: 80px;
+            right: 60px;
+            animation: float-p4 5.5s ease-in-out infinite alternate;
+          }
+          
+          /* Mini Core matching beacon in the center of the world */
+          .hub-center-mini {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            z-index: 2;
+          }
+          .hub-core-mini {
+            width: 100%;
+            height: 100%;
+            background: #a855f7;
+            border-radius: 50%;
+            box-shadow: 0 0 20px #a855f7;
+            position: relative;
+          }
+          .live-signal-ripple, .live-signal-ripple-2 {
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            animation: signal-ripple 3s infinite linear;
+          }
+          .live-signal-ripple-2 {
+            animation-delay: 1.5s;
+          }
+          @keyframes signal-ripple {
+            0% { transform: scale(0.4); opacity: 1; }
+            100% { transform: scale(2.2); opacity: 0; }
+          }
+          .hero-explore-title {
+            font-size: 3.8rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            color: white;
+            letter-spacing: -0.03em;
+          }
+          .hero-explore-title span {
+            background: linear-gradient(135deg, #c084fc, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+          }
+          .hero-explore-subtitle {
+            font-size: 1.25rem !important; /* Extremely neat and standard paragraph size */
           .hero-interactive-graphic {
             position: relative;
             width: 100%;
@@ -4250,71 +4353,6 @@ export default function Dashboard() {
             perspective: 1000px;
             animation: fadeIn 1s ease-out;
           }
-          
-          .hub-center {
-            position: relative;
-            width: 90px;
-            height: 90px;
-            z-index: 10;
-          }
-          .hub-core {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #a855f7, #ec4899);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 35px rgba(236, 72, 153, 0.6);
-            z-index: 2;
-            position: relative;
-            animation: pulse-core 2s infinite alternate;
-          }
-          @keyframes pulse-core {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.08); box-shadow: 0 0 50px rgba(168, 85, 247, 0.8); }
-          }
-          .hub-glow {
-            position: absolute;
-            top: -50px;
-            left: -50px;
-            width: 190px;
-            height: 190px;
-            background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, transparent 70%);
-            filter: blur(20px);
-            z-index: 1;
-            pointer-events: none;
-          }
-          .hub-ring {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border: 2px dashed rgba(255,255,255,0.15);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 1;
-          }
-          .ring-1 {
-            width: 220px;
-            height: 220px;
-            animation: rotate-clockwise 30s linear infinite;
-          }
-          .ring-2 {
-            width: 360px;
-            height: 360px;
-            animation: rotate-counter 45s linear infinite;
-          }
-          @keyframes rotate-clockwise {
-            from { transform: translate(-50%, -50%) rotate(0deg); }
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-          }
-          @keyframes rotate-counter {
-            from { transform: translate(-50%, -50%) rotate(360deg); }
-            to { transform: translate(-50%, -50%) rotate(0deg); }
-          }
-          
-          /* Floating Cards */
           .floating-card {
             position: absolute;
             background: rgba(15, 23, 42, 0.55);
@@ -4336,16 +4374,6 @@ export default function Dashboard() {
             box-shadow: 0 20px 45px rgba(168, 85, 247, 0.25);
             background: rgba(30, 41, 59, 0.7);
           }
-          .card-avatar {
-            font-size: 1.8rem;
-            width: 44px;
-            height: 44px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
           .card-info h4 {
             margin: 0 0 2px 0;
             font-size: 0.95rem;
@@ -4361,46 +4389,6 @@ export default function Dashboard() {
             align-items: center;
             gap: 4px;
           }
-          
-          .profile-1 {
-            top: 40px;
-            left: 20px;
-            animation: float-p1 5s ease-in-out infinite alternate;
-          }
-          .profile-2 {
-            top: 50px;
-            right: 10px;
-            animation: float-p2 6s ease-in-out infinite alternate;
-          }
-          .profile-3 {
-            bottom: 60px;
-            left: 10px;
-            animation: float-p3 7s ease-in-out infinite alternate;
-          }
-          .profile-4 {
-            bottom: 50px;
-            right: 20px;
-            animation: float-p4 5.5s ease-in-out infinite alternate;
-          }
-          
-          @keyframes float-p1 {
-            0% { transform: translateY(0px) rotate(-1deg); }
-            100% { transform: translateY(-12px) rotate(1deg); }
-          }
-          @keyframes float-p2 {
-            0% { transform: translateY(0px) rotate(1deg); }
-            100% { transform: translateY(-15px) rotate(-1deg); }
-          }
-          @keyframes float-p3 {
-            0% { transform: translateY(0px) rotate(-2deg); }
-            100% { transform: translateY(-10px) rotate(1deg); }
-          }
-          @keyframes float-p4 {
-            0% { transform: translateY(0px) rotate(1deg); }
-            100% { transform: translateY(-14px) rotate(-2deg); }
-          }
-          
-          /* Connection Lines SVG */
           .connection-svg {
             position: absolute;
             top: 0;
@@ -4412,43 +4400,18 @@ export default function Dashboard() {
           }
           .pulse-line {
             fill: none;
-            stroke-width: 2;
-            stroke-dasharray: 8 8;
+            stroke-width: 2.5;
+            stroke-dasharray: 8 6;
             animation: line-pulse 2s linear infinite;
           }
-          .line-1 { stroke: rgba(168, 85, 247, 0.35); }
-          .line-2 { stroke: rgba(236, 72, 153, 0.35); }
-          .line-3 { stroke: rgba(59, 130, 246, 0.35); }
-          .line-4 { stroke: rgba(16, 185, 129, 0.35); }
-          
+          .line-1 { stroke: rgba(168, 85, 247, 0.4); }
+          .line-2 { stroke: rgba(236, 72, 153, 0.4); }
+          .line-3 { stroke: rgba(59, 130, 246, 0.4); }
+          .line-4 { stroke: rgba(16, 185, 129, 0.4); }
           @keyframes line-pulse {
             from { stroke-dashoffset: 50; }
             to { stroke-dashoffset: 0; }
           }
-          .hero-explore-title {
-            font-size: 3.8rem;
-            font-weight: 900;
-            line-height: 1.1;
-            margin-bottom: 20px;
-            color: white;
-            letter-spacing: -0.03em;
-          }
-          .hero-explore-title span {
-            background: linear-gradient(135deg, #c084fc, #f472b6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-          }
-          .hero-explore-subtitle {
-            font-size: 1.25rem !important; /* Extremely neat and standard paragraph size */
-            line-height: 1.6 !important;
-            color: #94a3b8 !important; /* Elegant gray for high-end look */
-            margin-bottom: 35px !important;
-            max-width: 540px;
-            text-align: left !important;
-            font-weight: 400;
-          }
-          
-          /* Full Width Bottom Stats Strip from Image 3 */
           .hero-stats-premium-strip {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -4458,36 +4421,49 @@ export default function Dashboard() {
             animation: fadeIn 1.2s ease-out;
           }
           .stat-premium-card {
-            background: rgba(15, 23, 42, 0.4);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            padding: 25px 20px;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 30px 25px;
             text-align: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
           }
           .stat-premium-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            border-color: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+            transform: translateY(-10px) scale(1.03);
+            border-color: rgba(168, 85, 247, 0.35);
+            box-shadow: 0 25px 60px rgba(168, 85, 247, 0.15);
             background: rgba(30, 41, 59, 0.6);
           }
           .stat-premium-card h3 {
-            font-size: 2.8rem;
+            font-size: 3rem;
             font-weight: 900;
-            margin: 0 0 8px 0;
+            margin: 0;
             line-height: 1;
             letter-spacing: -1.5px;
           }
-          .stat-premium-card p {
-            font-size: 0.85rem;
-            color: #94a3b8;
+          .stat-label {
+            font-size: 0.95rem;
+            color: #ffffff;
             margin: 0;
-            font-weight: 700;
+            font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1px;
+          }
+          .stat-desc {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 0;
+            font-weight: 500;
+            line-height: 1.4;
+            max-width: 220px;
           }
 
           .hero-right-column {
@@ -4654,20 +4630,19 @@ export default function Dashboard() {
                 margin: 0 auto !important;
               }
               .floating-card {
-                padding: 8px 12px !important;
+                padding: 6px 10px !important;
               }
-              .card-avatar {
-                font-size: 1.2rem !important;
-                width: 32px !important;
-                height: 32px !important;
+              .card-photo {
+                width: 30px !important;
+                height: 30px !important;
               }
               .card-info h4 {
-                font-size: 0.8rem !important;
+                font-size: 0.75rem !important;
               }
-              .profile-1 { top: 20px !important; left: 10px !important; }
-              .profile-2 { top: 30px !important; right: 5px !important; }
-              .profile-3 { bottom: 30px !important; left: 5px !important; }
-              .profile-4 { bottom: 20px !important; right: 10px !important; }
+              .profile-map-1 { top: 30px !important; left: 10px !important; }
+              .profile-map-2 { top: 40px !important; right: 20px !important; }
+              .profile-map-3 { bottom: 50px !important; left: 20px !important; }
+              .profile-map-4 { bottom: 40px !important; right: 30px !important; }
               .country-badge {
                 padding: 4px 8px !important;
                 gap: 6px !important;
