@@ -4502,6 +4502,9 @@ export default function Dashboard() {
             justify-content: center;
             width: 38px;
             height: 38px;
+            background: linear-gradient(135deg, #3b82f6, #ec4899);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
             flex-shrink: 0;
             transition: all 0.3s ease;
           }
