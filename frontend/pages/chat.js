@@ -2081,7 +2081,7 @@ export default function Home() {
               </div>
             )}
 
-            <div className="video-grid-v2">
+            <div className={`video-grid-v2 ${quizState === 'active' ? 'quiz-pip-mode' : ''}`}>
               <div className={`video-card ${isFaceBlurred ? 'blurred-face' : ''}`}>
                 <video
                   ref={localVideo}
@@ -2351,11 +2351,12 @@ export default function Home() {
                             key={i}
                             className={`quiz-opt-btn ${isSelected ? "selected" : ""} ${quizLockedOut ? "locked" : ""}`}
                             onClick={() => {
-                              if (quizSelectedOption || quizLockedOut || quizResult) return;
+                              const isQuestionResolved = quizResult && quizResult.type !== "opportunity";
+                              if (quizSelectedOption || quizLockedOut || isQuestionResolved) return;
                               setQuizSelectedOption(opt);
                               socket?.emit("quiz-submit-answer", { selectedOption: opt });
                             }}
-                            disabled={quizSelectedOption !== null || quizLockedOut || quizResult !== null}
+                            disabled={quizSelectedOption !== null || quizLockedOut || (quizResult && quizResult.type !== "opportunity")}
                           >
                             <span className="opt-letter">{["A", "B", "C", "D"][i]}</span>
                             <span className="opt-text">{opt}</span>

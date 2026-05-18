@@ -2007,3 +2007,33 @@ img, video {
   25% { transform: translateX(-6px); }
   75% { transform: translateX(6px); }
 }
+
+/* QUIZ DUEL PIP MODE */
+.quiz-pip-mode {
+  position: absolute !important;
+  top: 20px !important;
+  right: 20px !important;
+  width: 350px !important;
+  height: 220px !important;
+  z-index: 5000 !important;
+  display: flex !important;
+  gap: 10px !important;
+  background: transparent !important;
+  pointer-events: none !important;
+  border: none !important;
+}
+
+.quiz-pip-mode .video-wrapper,
+.quiz-pip-mode .video-card {
+  width: 50% !important;
+  height: 100% !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+  overflow: hidden !important;
+}
+
+.quiz-pip-mode video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
