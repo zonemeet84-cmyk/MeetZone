@@ -875,6 +875,12 @@ export default function Dashboard() {
       return;
     }
 
+    const RAZORPAY_KEY = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+    if (!RAZORPAY_KEY || RAZORPAY_KEY === "YOUR_RAZORPAY_KEY_ID") {
+      showModal({ message: "⚠️ Payment gateway is being configured. Please try again in a few minutes or contact support@zonemeet.chat", type: "info" });
+      return;
+    }
+
     try {
       setPaymentStep("processing");
 
@@ -887,11 +893,12 @@ export default function Dashboard() {
       });
 
       const options = {
-        key: "YOUR_RAZORPAY_KEY_ID", // Admin should set this in .env, but here we'll try to fetch it if possible or alert
+        key: RAZORPAY_KEY,
         amount: orderRes.data.amount,
         currency: orderRes.data.currency,
         name: "ZoneMeet Premium",
         description: `Upgrade to ${selectedPlan.name}`,
+        image: "https://zonemeet.chat/logo.png",
         order_id: orderRes.data.id,
         handler: async (response) => {
           try {
@@ -908,7 +915,7 @@ export default function Dashboard() {
               localStorage.setItem("user", JSON.stringify(updatedUser));
               setPaymentStep("success");
             } else {
-              showModal({ message: "Payment verification failed. If money was deducted, contact support.", type: "info" });
+              showModal({ message: "Payment verification failed. If money was deducted, contact support@zonemeet.chat", type: "info" });
               setPaymentStep("methods");
             }
           } catch (err) {
@@ -934,7 +941,7 @@ export default function Dashboard() {
     } catch (err) {
       console.error(err);
       setPaymentStep("methods");
-      showModal({ message: "⚠️ Error connecting to payment gateway. Admin: Ensure Razorpay Keys are set in .env", type: "info" });
+      showModal({ message: "⚠️ Could not connect to payment gateway. Please try again.", type: "info" });
     }
   };
 
