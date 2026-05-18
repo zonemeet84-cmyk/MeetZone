@@ -2784,7 +2784,7 @@ app.get("/api/public/online-count", (req, res) => {
 // Self-ping every 10 minutes to stay awake on Render
 setInterval(() => {
   const url = `https://meetzone-backend.onrender.com/api/ping`;
-  axios.get(url).catch(() => {}); // Ignore errors
+  fetch(url).catch(() => {}); // Ignore errors using native fetch
 }, 600000); 
 // =====================================
 
