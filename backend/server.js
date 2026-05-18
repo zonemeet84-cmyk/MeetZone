@@ -1431,7 +1431,7 @@ app.post("/api/contact", async (req, res) => {
 
   // --- REAL EMAIL NOTIFICATION ---
   const GMAIL_AUTH_USER = "zonemeet84@gmail.com";   // Gmail account used for SMTP authentication
-  const GMAIL_PASS      = "lebc mnmw kvjg penk";    // App Password from Google (16-char)
+  const GMAIL_PASS      = "qedv lgzt zlgr upxk";    // App Password from Google (16-char)
   const SUPPORT_EMAIL   = "support@zonemeet.chat";  // Custom domain shown to users
 
   if (GMAIL_PASS) {
