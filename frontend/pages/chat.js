@@ -160,6 +160,21 @@ export default function Home() {
   const [showCoinPopup, setShowCoinPopup] = useState(false);
   const [pendingMessage, setPendingMessage] = useState("");
 
+  // --- QUIZ DUEL / BRAIN CLASH STATE ---
+  const [quizState, setQuizState] = useState("idle"); // 'idle', 'queued', 'countdown', 'active', 'finished'
+  const [quizCountdown, setQuizCountdown] = useState(3);
+  const [quizQuestion, setQuizQuestion] = useState(null);
+  const [quizScores, setQuizScores] = useState({});
+  const [quizSelectedOption, setQuizSelectedOption] = useState(null);
+  const [quizResult, setQuizResult] = useState(null);
+  const [quizPartnerInfo, setQuizPartnerInfo] = useState(null);
+  const [quizFinalResult, setQuizFinalResult] = useState(null);
+  const [quizError, setQuizError] = useState(null);
+  const [quizTimeLeft, setQuizTimeLeft] = useState(15);
+  const [quizTimeoutState, setQuizTimeoutState] = useState(null);
+  const [quizForfeitState, setQuizForfeitState] = useState(false);
+  const [quizLockedOut, setQuizLockedOut] = useState(false);
+
   // MediaPipe Filters
   const [activeMediaPipeFilter, setActiveMediaPipeFilter] = useState("None");
   const [unlockedFilters, setUnlockedFilters] = useState(["None"]); // Basic filters unlocked by default
@@ -1133,6 +1148,139 @@ export default function Home() {
         setStatus("Partner stopped. Searching...");
         socket.emit("next");
       });
+
+      // --- QUIZ DUEL / BRAIN CLASH EVENTS ---
+      socket.on("quiz-queue-joined", () => {
+        setQuizState("queued");
+        setQuizError(null);
+      });
+
+      socket.on("quiz-queue-left", () => {
+        setQuizState("idle");
+        setQuizError(null);
+      });
+
+      socket.on("quiz-matched", async ({ partnerId, partnerInfo, roomId, initiator }) => {
+        setQuizPartnerInfo(partnerInfo);
+        setQuizState("countdown");
+        setQuizCountdown(3);
+        setQuizScores({});
+        setQuizSelectedOption(null);
+        setQuizResult(null);
+        setQuizFinalResult(null);
+        setQuizForfeitState(false);
+        setQuizLockedOut(false);
+        
+        // Match standard partner states so WebRTC works out of the box!
+        setPartnerId(partnerId);
+        setPartnerInfo({ id: partnerInfo.id, name: partnerInfo.name, country: partnerInfo.country || "IN", gender: "all" });
+
+        // Join WebRTC peer connection immediately!
+        if (initiator) {
+          setTimeout(() => {
+            createPeer(partnerId);
+          }, 500);
+        }
+      });
+
+      socket.on("quiz-countdown", (num) => {
+        setQuizCountdown(num);
+        if (num === 0) {
+          setQuizState("active");
+        }
+      });
+
+      socket.on("quiz-question", (q) => {
+        setQuizState("active");
+        setQuizQuestion(q);
+        setQuizSelectedOption(null);
+        setQuizResult(null);
+        setQuizLockedOut(false);
+        setQuizTimeLeft(15);
+      });
+
+      socket.on("quiz-answer-result", ({ playerId, selectedOption, correct, scoreGained, speedBonus, totalScores, correctAnswer, lockout, endedForBoth }) => {
+        setQuizScores(totalScores);
+        
+        if (lockout) {
+          if (playerId === socket.id) {
+            setQuizLockedOut(true);
+            setQuizResult({ text: "❌ Wrong answer! You are locked out for this question.", type: "wrong" });
+          } else {
+            setQuizResult({ text: "💡 Opponent got it wrong! Now's your chance!", type: "opportunity" });
+          }
+        } else {
+          if (correct) {
+            const isSelf = playerId === socket.id;
+            setQuizResult({
+              text: isSelf 
+                ? `✅ Correct! +${scoreGained} points! ${speedBonus ? "⚡ Speed Bonus!" : ""}`
+                : `💥 Opponent got it correct! +${scoreGained} points!`,
+              type: isSelf ? "correct" : "opponent-correct"
+            });
+          } else if (endedForBoth) {
+            setQuizResult({ text: `❌ Both got it wrong! Correct: ${correctAnswer}`, type: "wrong" });
+          }
+        }
+      });
+
+      socket.on("quiz-question-timeout", ({ correctAnswer }) => {
+        setQuizResult({ text: `⏰ Time's up! Correct answer: ${correctAnswer}`, type: "timeout" });
+      });
+
+      socket.on("quiz-finished", (result) => {
+        setQuizState("finished");
+        setQuizFinalResult(result);
+        
+        // Sync local coins balance
+        const isDraw = result.draw;
+        const isWinner = result.winnerId === (user?.id || (localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).id : ""));
+        if (isDraw) {
+          setUser(prev => {
+            const updated = { ...prev, coins: (prev.coins || 0) + 50 };
+            localStorage.setItem("user", JSON.stringify(updated));
+            return updated;
+          });
+        } else if (isWinner) {
+          setUser(prev => {
+            const updated = { ...prev, coins: (prev.coins || 0) + 100 };
+            localStorage.setItem("user", JSON.stringify(updated));
+            return updated;
+          });
+        }
+      });
+
+      socket.on("quiz-partner-disconnected", () => {
+        setQuizForfeitState(true);
+        setQuizState("finished");
+        setQuizFinalResult({
+          draw: false,
+          winnerId: (user?.id || (localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).id : "")),
+          forfeit: true,
+          message: "Opponent disconnected! You win 100 coins by forfeit!"
+        });
+        
+        setUser(prev => {
+          const updated = { ...prev, coins: (prev.coins || 0) + 100 };
+          localStorage.setItem("user", JSON.stringify(updated));
+          return updated;
+        });
+      });
+
+      socket.on("quiz-error", ({ message }) => {
+        setQuizError(message);
+        setQuizState("idle");
+        alert(message);
+      });
+
+      socket.on("coins-updated", (newCoins) => {
+        setUser(prev => {
+          if (!prev) return prev;
+          const updated = { ...prev, coins: newCoins };
+          localStorage.setItem("user", JSON.stringify(updated));
+          return updated;
+        });
+      });
     };
 
     init();
@@ -1144,6 +1292,16 @@ export default function Home() {
       if (socket) socket.disconnect();
     };
   }, [session, sessionStatus]);
+
+  useEffect(() => {
+    let timer = null;
+    if (quizState === "active" && quizTimeLeft > 0 && !quizResult) {
+      timer = setInterval(() => {
+        setQuizTimeLeft(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [quizState, quizTimeLeft, quizResult]);
 
   const createPeer = (partner) => {
     peerConnection.current = new RTCPeerConnection(servers);
@@ -1282,6 +1440,17 @@ export default function Home() {
     setShowPartnerPreview(false);
     socket.emit("stop-matching");
     setStatus("Matching Stopped. Click Next to search.");
+  };
+
+  const handleBrainClashClick = () => {
+    if (quizState === "queued") {
+      socket?.emit("leave-quiz-queue");
+    } else {
+      if (partnerId) {
+        stopMatching();
+      }
+      socket?.emit("join-quiz-queue");
+    }
   };
 
   const purchaseFilter = async (filter) => {
@@ -2021,6 +2190,178 @@ export default function Home() {
                 )}
               </div>
             </div>
+
+            {/* QUIZ DUEL / BRAIN CLASH OVERLAY */}
+            {quizState !== "idle" && (
+              <div className="quiz-duel-overlay">
+                {quizState === "queued" && (
+                  <div className="quiz-queued-view">
+                    <div className="radar-circle">
+                      <div className="radar-sweep"></div>
+                      <span className="radar-icon">🧠</span>
+                    </div>
+                    <h2>Brain Clash Matchmaking</h2>
+                    <p>Searching for an intellectual opponent...</p>
+                    <div className="entry-badge">💰 Entry Fee: 50 Coins</div>
+                    <div className="pool-badge">🏆 Winner Prize: 100 Coins</div>
+                    <button className="quiz-cancel-btn" onClick={() => socket?.emit("leave-quiz-queue")}>
+                      ❌ Cancel Challenge
+                    </button>
+                  </div>
+                )}
+
+                {quizState === "countdown" && (
+                  <div className="quiz-countdown-view">
+                    <div className="clash-players">
+                      <div className="clash-player-card">
+                        <div className="clash-player-avatar">{user?.name?.charAt(0) || "Y"}</div>
+                        <h3>{user?.name || "You"}</h3>
+                        <span>💰 {user?.coins || 0} Coins</span>
+                      </div>
+                      <div className="clash-vs">VS</div>
+                      <div className="clash-player-card">
+                        <div className="clash-player-avatar">{quizPartnerInfo?.name?.charAt(0) || "O"}</div>
+                        <h3>{quizPartnerInfo?.name || "Opponent"}</h3>
+                        <span>💰 {quizPartnerInfo?.coins || 0} Coins</span>
+                      </div>
+                    </div>
+                    <div className="countdown-number-wrapper">
+                      <span className="countdown-number">{quizCountdown === 0 ? "CLASH!" : quizCountdown}</span>
+                    </div>
+                    <p className="countdown-sub">Get ready! 10 random questions. 100 Coins prize pool.</p>
+                  </div>
+                )}
+
+                {quizState === "active" && quizQuestion && (
+                  <div className="quiz-active-view">
+                    <div className="quiz-header">
+                      <div className="quiz-player-score you">
+                        <span className="lbl">YOU</span>
+                        <span className="score">{quizScores[socket?.id] || 0} pts</span>
+                      </div>
+                      
+                      <div className="quiz-timer-ring">
+                        <svg className="timer-svg" viewBox="0 0 36 36">
+                          <path
+                            className="timer-bg"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                          <path
+                            className="timer-fill"
+                            strokeDasharray={`${(quizTimeLeft / 15) * 100}, 100`}
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                        </svg>
+                        <span className="timer-text">{quizTimeLeft}s</span>
+                      </div>
+
+                      <div className="quiz-player-score opponent">
+                        <span className="lbl">{quizPartnerInfo?.name || "OPPONENT"}</span>
+                        <span className="score">{quizScores[Object.keys(quizScores).find(id => id !== socket?.id)] || 0} pts</span>
+                      </div>
+                    </div>
+
+                    <div className="quiz-progress-bar-container">
+                      <div className="quiz-progress-fill" style={{ width: `${((quizQuestion.index + 1) / 10) * 100}%` }}></div>
+                    </div>
+
+                    <div className="quiz-card-main">
+                      <span className="quiz-category-badge">{quizQuestion.category}</span>
+                      <div className="quiz-question-index">Question {quizQuestion.index + 1} of 10</div>
+                      <h2 className="quiz-question-text">{quizQuestion.question}</h2>
+                    </div>
+
+                    {quizResult && (
+                      <div className={`quiz-result-banner ${quizResult.type}`}>
+                        {quizResult.text}
+                      </div>
+                    )}
+
+                    <div className="quiz-options-grid">
+                      {quizQuestion.options.map((opt, i) => {
+                        const isSelected = quizSelectedOption === opt;
+                        return (
+                          <button
+                            key={i}
+                            className={`quiz-opt-btn ${isSelected ? "selected" : ""} ${quizLockedOut ? "locked" : ""}`}
+                            onClick={() => {
+                              if (quizSelectedOption || quizLockedOut || quizResult) return;
+                              setQuizSelectedOption(opt);
+                              socket?.emit("quiz-submit-answer", { selectedOption: opt });
+                            }}
+                            disabled={quizSelectedOption !== null || quizLockedOut || quizResult !== null}
+                          >
+                            <span className="opt-letter">{["A", "B", "C", "D"][i]}</span>
+                            <span className="opt-text">{opt}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {quizState === "finished" && quizFinalResult && (
+                  <div className="quiz-finished-view">
+                    <span className="finished-trophy">🏆</span>
+                    {quizFinalResult.draw ? (
+                      <>
+                        <h2>It's a DRAW! 🤝</h2>
+                        <p>A legendary clash of minds! You scored {quizFinalResult.totalScores[socket?.id] || 0} points.</p>
+                        <div className="prize-credited refund">💰 50 Coins Refunded</div>
+                      </>
+                    ) : quizFinalResult.winnerId === (user?.id || (localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).id : "")) ? (
+                      <>
+                        <h2 className="victory-text">VICTORY! 🎉</h2>
+                        <p>You absolutely dominated the brain duel!</p>
+                        <div className="final-stats">
+                          <span>Your Score: {quizFinalResult.totalScores[socket?.id] || 0} pts</span>
+                          <span>Opponent: {quizFinalResult.totalScores[Object.keys(quizFinalResult.totalScores).find(id => id !== socket?.id)] || 0} pts</span>
+                        </div>
+                        <div className="prize-credited">💰 +100 Coins Credited!</div>
+                      </>
+                    ) : (
+                      <>
+                        <h2 className="defeat-text">DEFEAT 💀</h2>
+                        <p>Opponent outsmarted you this time!</p>
+                        <div className="final-stats">
+                          <span>Your Score: {quizFinalResult.totalScores[socket?.id] || 0} pts</span>
+                          <span>Opponent: {quizFinalResult.totalScores[Object.keys(quizFinalResult.totalScores).find(id => id !== socket?.id)] || 0} pts</span>
+                        </div>
+                        
+                        {quizFinalResult.dare && (
+                          <div className="dare-box">
+                            <h3>⚠️ AI Dare for the Loser! ⚠️</h3>
+                            <p className="dare-desc">You lost! You MUST perform this dare live on camera:</p>
+                            <div className="dare-text">"{quizFinalResult.dare}"</div>
+                            <button className="dare-done-btn" onClick={() => {
+                              socket?.emit("quiz-finished-dare-done");
+                              setQuizState("idle");
+                              setQuizFinalResult(null);
+                              setPartnerId(null);
+                              setPartnerInfo(null);
+                            }}>
+                              I performed the Dare! 👍
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {(!quizFinalResult.dare || quizFinalResult.draw || quizFinalResult.winnerId === (user?.id || (localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).id : ""))) && (
+                      <button className="quiz-done-btn" onClick={() => {
+                        setQuizState("idle");
+                        setQuizFinalResult(null);
+                        setPartnerId(null);
+                        setPartnerInfo(null);
+                      }}>
+                        Finish Battle
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             </div>
 
           {/* BOTTOM IDENTITY TOOLS & POPUPS */}
@@ -2142,13 +2483,20 @@ export default function Home() {
               By continuing with Camera/Mic, you agree to our <a href="/terms" target="_blank" style={{ color: '#6366f1' }}>Terms</a> and <a href="/guidelines" target="_blank" style={{ color: '#6366f1' }}>Community Guidelines</a>.
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button className="stop-btn" onClick={stopMatching}>
+              <button 
+                className={`quiz-trigger-btn ${quizState === "queued" ? "cancel" : ""}`} 
+                onClick={handleBrainClashClick}
+                disabled={quizState !== "idle" && quizState !== "queued"}
+              >
+                {quizState === "queued" ? "❌ Cancel Duel" : "🧠 Brain Clash"}
+              </button>
+              <button className="stop-btn" onClick={stopMatching} disabled={quizState !== "idle"}>
                 🛑 Stop
               </button>
               <button className="report-trigger-btn" onClick={openReport}>
                 🚨 Report
               </button>
-              <button className="next-btn" onClick={nextPartner}>
+              <button className="next-btn" onClick={nextPartner} disabled={quizState !== "idle"}>
                 Skip & Next
                 <span className="icon">→</span>
               </button>

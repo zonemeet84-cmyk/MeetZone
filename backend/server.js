@@ -1675,6 +1675,61 @@ app.get("/api/friends/list", authenticateToken, (req, res) => {
 });
 
 let waitingUsers = [];
+let waitingQuizUsers = [];
+let quizRooms = {};
+
+const QUIZ_QUESTIONS = [
+  { id: 1, category: "GK", question: "What is the capital of Japan?", options: ["Seoul", "Tokyo", "Beijing", "Bangkok"], answer: "Tokyo" },
+  { id: 2, category: "GK", question: "Which is the largest ocean on Earth?", options: ["Atlantic Ocean", "Indian Ocean", "Pacific Ocean", "Arctic Ocean"], answer: "Pacific Ocean" },
+  { id: 3, category: "Movies", question: "Who directed the movie 'Inception'?", options: ["Steven Spielberg", "Christopher Nolan", "Quentin Tarantino", "James Cameron"], answer: "Christopher Nolan" },
+  { id: 4, category: "Movies", question: "Which movie won the Oscar for Best Picture in 2020?", options: ["1917", "Joker", "Parasite", "Once Upon a Time in Hollywood"], answer: "Parasite" },
+  { id: 5, category: "Gaming", question: "What is the best-selling video game of all time?", options: ["Minecraft", "GTA V", "Tetris", "Wii Sports"], answer: "Minecraft" },
+  { id: 6, category: "Gaming", question: "In Minecraft, which block is required to build a Nether Portal?", options: ["Obsidian", "Bedrock", "Netherrack", "Glowstone"], answer: "Obsidian" },
+  { id: 7, category: "Tech", question: "Who is the co-founder of Microsoft alongside Bill Gates?", options: ["Paul Allen", "Steve Jobs", "Elon Musk", "Larry Page"], answer: "Paul Allen" },
+  { id: 8, category: "Tech", question: "Which programming language is mainly used for Android App Development?", options: ["Swift", "Kotlin", "Python", "Ruby"], answer: "Kotlin" },
+  { id: 9, category: "Anime", question: "In 'Naruto', who is the Nine-Tailed Beast sealed inside Naruto?", options: ["Kurama", "Gyuki", "Shukaku", "Matatabi"], answer: "Kurama" },
+  { id: 10, category: "Anime", question: "Which anime features a notebook that can kill people?", options: ["Attack on Titan", "Death Note", "Demon Slayer", "One Piece"], answer: "Death Note" },
+  { id: 11, category: "Memes", question: "What is the name of the green frog meme that became popular on the internet?", options: ["Kermit", "Pepe", "Dat Boi", "Slippy"], answer: "Pepe" },
+  { id: 12, category: "Memes", question: "Complete the famous meme: 'Keep Calm and...'", options: ["Carry On", "Code On", "Go Party", "Stay Home"], answer: "Carry On" },
+  { id: 13, category: "Football", question: "Which player has won the most Ballon d'Or awards?", options: ["Cristiano Ronaldo", "Lionel Messi", "Neymar Jr", "Ronaldinho"], answer: "Lionel Messi" },
+  { id: 14, category: "Football", question: "Which country won the FIFA World Cup in 2022?", options: ["France", "Argentina", "Brazil", "Croatia"], answer: "Argentina" },
+  { id: 15, category: "GK", question: "Which planet is known as the Red Planet?", options: ["Venus", "Mars", "Jupiter", "Saturn"], answer: "Mars" },
+  { id: 16, category: "Science", question: "What is the chemical symbol for Gold?", options: ["Au", "Ag", "Gd", "Go"], answer: "Au" },
+  { id: 17, category: "Science", question: "What is the powerhouse of the cell?", options: ["Nucleus", "Mitochondria", "Ribosome", "Golgi Apparatus"], answer: "Mitochondria" },
+  { id: 18, category: "Tech", question: "What does HTTP stand for?", options: ["Hypertext Transfer Protocol", "Hypertext Terminal Program", "High Transfer Tech Protocol", "Hyperlink Transfer Text Program"], answer: "Hypertext Transfer Protocol" },
+  { id: 19, category: "GK", question: "What is the largest country in the world by land area?", options: ["Canada", "China", "United States", "Russia"], answer: "Russia" },
+  { id: 20, category: "Anime", question: "What is the name of Luffy's signature straw hat crew in 'One Piece'?", options: ["Straw Hat Pirates", "Red Hair Pirates", "Heart Pirates", "Blackbeard Pirates"], answer: "Straw Hat Pirates" },
+  { id: 21, category: "Movies", question: "Which actor played Iron Man in the Marvel Cinematic Universe?", options: ["Chris Evans", "Robert Downey Jr.", "Chris Hemsworth", "Mark Ruffalo"], answer: "Robert Downey Jr." },
+  { id: 22, category: "Gaming", question: "What is the name of the main protagonist in 'The Legend of Zelda' series?", options: ["Zelda", "Link", "Ganon", "Mario"], answer: "Link" },
+  { id: 23, category: "Music", question: "Who is known as the 'King of Pop'?", options: ["Elvis Presley", "Michael Jackson", "Freddie Mercury", "Justin Bieber"], answer: "Michael Jackson" },
+  { id: 24, category: "Music", question: "Which band sang the hit song 'Bohemian Rhapsody'?", options: ["The Beatles", "Led Zeppelin", "Queen", "Pink Floyd"], answer: "Queen" },
+  { id: 25, category: "Memes", question: "In the 'Distracted Boyfriend' meme, what is the boyfriend looking at?", options: ["Another girl passing by", "A new car", "His phone", "A restaurant menu"], answer: "Another girl passing by" },
+  { id: 26, category: "GK", question: "How many bones are there in an adult human body?", options: ["106", "206", "306", "406"], answer: "206" },
+  { id: 27, category: "Tech", question: "Which tech company created the iPhone?", options: ["Samsung", "Google", "Apple", "Microsoft"], answer: "Apple" },
+  { id: 28, category: "Internet culture", question: "What does 'LOL' stand for?", options: ["Laugh Out Loud", "Lots Of Love", "League Of Legends", "Life Of Luxury"], answer: "Laugh Out Loud" },
+  { id: 29, category: "Movies", question: "Which is the highest-grossing film of all time?", options: ["Titanic", "Avengers: Endgame", "Avatar", "Star Wars: The Force Awakens"], answer: "Avatar" },
+  { id: 30, category: "Football", question: "How many players are on the field for one team in a standard football match?", options: ["9", "10", "11", "12"], answer: "11" },
+  { id: 31, category: "Anime", question: "Who is the main character in the anime 'Dragon Ball Z'?", options: ["Vegeta", "Gohan", "Goku", "Piccolo"], answer: "Goku" },
+  { id: 32, category: "Gaming", question: "Which gaming console is developed by Sony?", options: ["PlayStation", "Xbox", "Switch", "Genesis"], answer: "PlayStation" },
+  { id: 33, category: "Science", question: "What is the main gas that makes up the Earth's atmosphere?", options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"], answer: "Nitrogen" },
+  { id: 34, category: "GK", question: "Which is the tallest mountain in the world?", options: ["K2", "Mount Everest", "Mount Kilimanjaro", "Mount Fuji"], answer: "Mount Everest" },
+  { id: 35, category: "GK", question: "Which country is home to the Kangaroo?", options: ["South Africa", "Australia", "New Zealand", "Austria"], answer: "Australia" },
+  { id: 36, category: "Memes", question: "What did the 'Grumpy Cat' meme look like?", options: ["Constantly frowning", "Smiling widely", "Sleeping", "Winking"], answer: "Constantly frowning" },
+  { id: 37, category: "Music", question: "Who sang the viral song 'Gangnam Style'?", options: ["BTS", "PSY", "Blackpink", "Jay Park"], answer: "PSY" },
+  { id: 38, category: "Tech", question: "What is the most popular search engine globally?", options: ["Yahoo", "Bing", "Google", "DuckDuckGo"], answer: "Google" },
+  { id: 39, category: "Gaming", question: "What popular battle royale game features 100 players jumping from a battle bus?", options: ["PUBG", "Fortnite", "Apex Legends", "Call of Duty"], answer: "Fortnite" },
+  { id: 40, category: "Science", question: "What is the freezing point of water in Celsius?", options: ["0°C", "32°C", "100°C", "-1°C"], answer: "0°C" },
+  { id: 41, category: "GK", question: "Which country has the largest population in the world?", options: ["India", "China", "United States", "Indonesia"], answer: "India" },
+  { id: 42, category: "Movies", question: "What is the name of the fictional African country in 'Black Panther'?", options: ["Zamunda", "Wakanda", "Genovia", "Latveria"], answer: "Wakanda" },
+  { id: 43, category: "Anime", question: "In 'Demon Slayer', what is the name of Tanjiro's sister?", options: ["Nezuko", "Shinobu", "Kanao", "Mitsuri"], answer: "Nezuko" },
+  { id: 44, category: "Gaming", question: "What color is Pac-Man?", options: ["Yellow", "Red", "Blue", "Green"], answer: "Yellow" },
+  { id: 45, category: "Music", question: "Which female artist released the hit album '1989'?", options: ["Ariana Grande", "Taylor Swift", "Billie Eilish", "Rihanna"], answer: "Taylor Swift" },
+  { id: 46, category: "GK", question: "Which animal is known as the 'Ship of the Desert'?", options: ["Horse", "Camel", "Donkey", "Elephant"], answer: "Camel" },
+  { id: 47, category: "Tech", question: "What does WiFi stand for?", options: ["Wireless Fidelity", "Wire Free", "Wireless Fiber", "None of these (It's a made-up brand name)"], answer: "None of these (It's a made-up brand name)" },
+  { id: 48, category: "Internet culture", question: "What is the name of the mascot for the social media platform Twitter (now X)?", options: ["Larry the Bird", "Snoo the Alien", "Fred the Frog", "Doge"], answer: "Larry the Bird" },
+  { id: 49, category: "GK", question: "In which year did the Titanic sink?", options: ["1905", "1912", "1920", "1936"], answer: "1912" },
+  { id: 50, category: "Science", question: "How long does it take for light from the Sun to reach Earth?", options: ["8 seconds", "8 minutes", "8 hours", "8 days"], answer: "8 minutes" }
+];
 
 function matchUsers() {
   // Sort waiting users by boost status then by entry time
@@ -1775,6 +1830,196 @@ function matchUsers() {
       i++;
     }
   }
+}
+
+function matchQuizUsers() {
+  waitingQuizUsers = waitingQuizUsers.filter(s => s.connected && !s.partner);
+  if (waitingQuizUsers.length < 2) return;
+
+  const s1 = waitingQuizUsers.shift();
+  const s2 = waitingQuizUsers.shift();
+
+  const roomId = `quiz_room_${Math.random().toString(36).substr(2, 9)}`;
+  s1.join(roomId);
+  s2.join(roomId);
+
+  s1.roomId = roomId;
+  s2.roomId = roomId;
+  s1.partner = s2;
+  s2.partner = s1;
+
+  const u1 = users.find(u => u.id === s1.userId);
+  const u2 = users.find(u => u.id === s2.userId);
+
+  // Pick 10 random questions from QUIZ_QUESTIONS
+  const shuffled = [...QUIZ_QUESTIONS].sort(() => 0.5 - Math.random());
+  const selectedQuestions = shuffled.slice(0, 10);
+
+  const roomState = {
+    roomId,
+    players: [s1, s2],
+    scores: { [s1.id]: 0, [s2.id]: 0 },
+    currentQuestionIndex: 0,
+    questions: selectedQuestions,
+    questionTimer: null,
+    lockedAnswer: null,
+    answeredPlayers: {},
+    startTime: 0
+  };
+
+  quizRooms[roomId] = roomState;
+
+  const p1Info = { id: s1.userId, name: s1.name || u1?.name || "Player 1", coins: u1?.coins || 0 };
+  const p2Info = { id: s2.userId, name: s2.name || u2?.name || "Player 2", coins: u2?.coins || 0 };
+
+  s1.emit("quiz-matched", { partnerId: s2.id, partnerInfo: p2Info, roomId, initiator: true });
+  s2.emit("quiz-matched", { partnerId: s1.id, partnerInfo: p1Info, roomId, initiator: false });
+
+  // Start 3s countdown before the first question
+  let countdown = 3;
+  const interval = setInterval(() => {
+    io.to(roomId).emit("quiz-countdown", countdown);
+    countdown--;
+    if (countdown < 0) {
+      clearInterval(interval);
+      sendQuizQuestion(roomId);
+    }
+  }, 1000);
+}
+
+function sendQuizQuestion(roomId) {
+  const room = quizRooms[roomId];
+  if (!room) return;
+
+  if (room.currentQuestionIndex >= 10) {
+    endQuiz(roomId);
+    return;
+  }
+
+  const q = room.questions[room.currentQuestionIndex];
+  room.lockedAnswer = null;
+  room.answeredPlayers = {};
+  room.startTime = Date.now();
+
+  io.to(roomId).emit("quiz-question", {
+    index: room.currentQuestionIndex,
+    category: q.category,
+    question: q.question,
+    options: q.options,
+    timeLimit: 15
+  });
+
+  if (room.questionTimer) clearTimeout(room.questionTimer);
+  room.questionTimer = setTimeout(() => {
+    // Time's up! Move to next question after showing results
+    io.to(roomId).emit("quiz-question-timeout", {
+      correctAnswer: q.answer,
+      currentQuestionIndex: room.currentQuestionIndex
+    });
+    
+    setTimeout(() => {
+      room.currentQuestionIndex++;
+      sendQuizQuestion(roomId);
+    }, 3000);
+  }, 15000);
+}
+
+function endQuiz(roomId) {
+  const room = quizRooms[roomId];
+  if (!room) return;
+
+  if (room.questionTimer) clearTimeout(room.questionTimer);
+
+  const [s1, s2] = room.players;
+  const score1 = room.scores[s1.id] || 0;
+  const score2 = room.scores[s2.id] || 0;
+
+  const u1 = users.find(u => u.id === s1.userId);
+  const u2 = users.find(u => u.id === s2.userId);
+
+  let winnerId = null;
+  let loserId = null;
+  let isDraw = false;
+
+  if (score1 > score2) {
+    winnerId = s1.userId;
+    loserId = s2.userId;
+  } else if (score2 > score1) {
+    winnerId = s2.userId;
+    loserId = s1.userId;
+  } else {
+    isDraw = true;
+  }
+
+  // Punishments / Dares for loser
+  const dares = [
+    "Sing a song dramatically for 10 seconds 🎤",
+    "Dance happily for 5 seconds without music 💃",
+    "Say 'I am the ultimate champion' in a funny voice 👑",
+    "Make a hilarious, funny face and hold it for 5 seconds 😜",
+    "Recite a funny poem in 3 seconds 📜",
+    "Introduce yourself as if you are a professional wrestler 🤼"
+  ];
+  const randomDare = dares[Math.floor(Math.random() * dares.length)];
+
+  if (isDraw) {
+    // Refund both 50 coins
+    if (u1) {
+      u1.coins = (u1.coins || 0) + 50;
+      coinActivity.push({ email: u1.email, type: "earn", amount: 50, description: "Quiz Duel Draw Refund", timestamp: Date.now() });
+      s1.emit("coins-updated", u1.coins);
+    }
+    if (u2) {
+      u2.coins = (u2.coins || 0) + 50;
+      coinActivity.push({ email: u2.email, type: "earn", amount: 50, description: "Quiz Duel Draw Refund", timestamp: Date.now() });
+      s2.emit("coins-updated", u2.coins);
+    }
+    saveCoinActivity();
+    saveUsers();
+
+    io.to(roomId).emit("quiz-finished", {
+      draw: true,
+      scores: room.scores,
+      totalScores: { [s1.id]: score1, [s2.id]: score2 }
+    });
+  } else {
+    // Credit winner 100 coins
+    const winnerUser = u1?.id === winnerId ? u1 : u2;
+    const winnerSocket = s1.userId === winnerId ? s1 : s2;
+
+    if (winnerUser) {
+      winnerUser.coins = (winnerUser.coins || 0) + 100;
+      coinActivity.push({
+        email: winnerUser.email,
+        type: "earn",
+        amount: 100,
+        description: "Won Quiz Duel Match!",
+        timestamp: Date.now()
+      });
+      winnerSocket.emit("coins-updated", winnerUser.coins);
+    }
+
+    saveCoinActivity();
+    saveUsers();
+
+    io.to(roomId).emit("quiz-finished", {
+      draw: false,
+      scores: room.scores,
+      totalScores: { [s1.id]: score1, [s2.id]: score2 },
+      winnerId,
+      loserId,
+      dare: randomDare
+    });
+  }
+
+  // Clean up roomId on sockets
+  s1.roomId = null;
+  s2.roomId = null;
+  s1.partner = null;
+  s2.partner = null;
+
+  // Clean up
+  delete quizRooms[roomId];
 }
 
 const queueUser = (socket) => {
@@ -2047,6 +2292,39 @@ io.on("connection", (socket) => {
     const index = waitingUsers.indexOf(socket);
     if (index !== -1) waitingUsers.splice(index, 1);
 
+    // If they were in quiz queue, remove them and refund
+    const quizIdx = waitingQuizUsers.indexOf(socket);
+    if (quizIdx !== -1) {
+      waitingQuizUsers.splice(quizIdx, 1);
+      const u = users.find(usr => usr.id === socket.userId);
+      if (u) {
+        u.coins = (u.coins || 0) + 50;
+        coinActivity.push({ email: u.email, type: "earn", amount: 50, description: "Quiz Duel Queue Left Refund", timestamp: Date.now() });
+        saveCoinActivity();
+        saveUsers();
+        socket.emit("coins-updated", u.coins);
+      }
+    }
+
+    // If they were in an active quiz match, partner wins by forfeit
+    if (socket.roomId && quizRooms[socket.roomId]) {
+      const room = quizRooms[socket.roomId];
+      const partner = room.players.find(p => p.id !== socket.id);
+      if (partner) {
+        partner.emit("quiz-partner-disconnected");
+        const u = users.find(usr => usr.id === partner.userId);
+        if (u) {
+          u.coins = (u.coins || 0) + 100;
+          coinActivity.push({ email: u.email, type: "earn", amount: 100, description: "Quiz Duel Win (forfeit)", timestamp: Date.now() });
+          partner.emit("coins-updated", u.coins);
+          saveCoinActivity();
+          saveUsers();
+        }
+      }
+      if (room.questionTimer) clearTimeout(room.questionTimer);
+      delete quizRooms[socket.roomId];
+    }
+
     if (socket.partner) {
       const partner = socket.partner;
       partner.emit("partner-reconnecting");
@@ -2058,6 +2336,176 @@ io.on("connection", (socket) => {
         }
       }, 8000);
     }
+  });
+
+  // --- QUIZ DUEL / BRAIN CLASH EVENTS ---
+
+  socket.on("join-quiz-queue", () => {
+    if (!socket.userId) {
+      socket.emit("quiz-error", { message: "Please register or login first." });
+      return;
+    }
+    const user = users.find(u => u.id === socket.userId);
+    if (!user) {
+      socket.emit("quiz-error", { message: "User profile not found." });
+      return;
+    }
+
+    if ((user.coins || 0) < 50) {
+      socket.emit("quiz-error", { message: "Insufficient Coins! Entry fee is 50 coins." });
+      return;
+    }
+
+    // Check if already in queue
+    if (waitingQuizUsers.includes(socket)) {
+      return;
+    }
+
+    // Deduct 50 coins entry fee
+    user.coins = (user.coins || 0) - 50;
+    coinActivity.push({
+      email: user.email,
+      type: "spend",
+      amount: 50,
+      description: "Quiz Duel entry fee",
+      timestamp: Date.now()
+    });
+    saveCoinActivity();
+    saveUsers();
+
+    socket.emit("coins-updated", user.coins);
+    waitingQuizUsers.push(socket);
+    socket.emit("quiz-queue-joined");
+
+    console.log(`[Quiz Queue] User ${user.name} joined. Queue size: ${waitingQuizUsers.length}`);
+
+    // Trigger matchmaking
+    matchQuizUsers();
+  });
+
+  socket.on("leave-quiz-queue", () => {
+    const idx = waitingQuizUsers.indexOf(socket);
+    if (idx !== -1) {
+      waitingQuizUsers.splice(idx, 1);
+
+      // Refund 50 coins
+      const user = users.find(u => u.id === socket.userId);
+      if (user) {
+        user.coins = (user.coins || 0) + 50;
+        coinActivity.push({
+          email: user.email,
+          type: "earn",
+          amount: 50,
+          description: "Quiz Duel Leave refund",
+          timestamp: Date.now()
+        });
+        saveCoinActivity();
+        saveUsers();
+        socket.emit("coins-updated", user.coins);
+      }
+      socket.emit("quiz-queue-left");
+    }
+  });
+
+  socket.on("quiz-submit-answer", ({ selectedOption }) => {
+    const roomId = socket.roomId;
+    const room = quizRooms[roomId];
+    if (!room) return;
+
+    const q = room.questions[room.currentQuestionIndex];
+    if (!q) return;
+
+    // Check if player already answered this question
+    if (room.answeredPlayers[socket.id]) return;
+
+    const isCorrect = selectedOption === q.answer;
+    room.answeredPlayers[socket.id] = selectedOption;
+
+    const responseTime = (Date.now() - room.startTime) / 1000;
+    const isFirstToAnswer = (room.lockedAnswer === null);
+
+    if (isFirstToAnswer) {
+      // First player to submit locks their choice
+      room.lockedAnswer = { socketId: socket.id, selectedOption, correct: isCorrect };
+
+      if (isCorrect) {
+        // Correct answer! They win the point for this question immediately
+        const speedBonus = responseTime < 3 ? 0.5 : 0;
+        room.scores[socket.id] = (room.scores[socket.id] || 0) + 1 + speedBonus;
+
+        if (room.questionTimer) clearTimeout(room.questionTimer);
+
+        io.to(roomId).emit("quiz-answer-result", {
+          playerId: socket.id,
+          selectedOption,
+          correct: true,
+          scoreGained: 1 + speedBonus,
+          speedBonus: speedBonus > 0,
+          totalScores: room.scores,
+          correctAnswer: q.answer
+        });
+
+        // 3 seconds delay before next question
+        setTimeout(() => {
+          room.currentQuestionIndex++;
+          sendQuizQuestion(roomId);
+        }, 3000);
+      } else {
+        // Wrong answer! First player loses their turn, the other player gets a chance
+        io.to(roomId).emit("quiz-answer-result", {
+          playerId: socket.id,
+          selectedOption,
+          correct: false,
+          scoreGained: 0,
+          totalScores: room.scores,
+          lockout: true // Tell the client that this player is locked out
+        });
+      }
+    } else {
+      // Second player is answering (first player got it wrong)
+      if (isCorrect) {
+        // Correct answer!
+        room.scores[socket.id] = (room.scores[socket.id] || 0) + 1;
+
+        if (room.questionTimer) clearTimeout(room.questionTimer);
+
+        io.to(roomId).emit("quiz-answer-result", {
+          playerId: socket.id,
+          selectedOption,
+          correct: true,
+          scoreGained: 1,
+          totalScores: room.scores,
+          correctAnswer: q.answer
+        });
+
+        setTimeout(() => {
+          room.currentQuestionIndex++;
+          sendQuizQuestion(roomId);
+        }, 3000);
+      } else {
+        // Wrong answer! Both got it wrong
+        if (room.questionTimer) clearTimeout(room.questionTimer);
+
+        io.to(roomId).emit("quiz-answer-result", {
+          playerId: socket.id,
+          selectedOption,
+          correct: false,
+          scoreGained: 0,
+          totalScores: room.scores,
+          correctAnswer: q.answer,
+          endedForBoth: true
+        });
+
+        setTimeout(() => {
+          room.currentQuestionIndex++;
+          sendQuizQuestion(roomId);
+        }, 3000);
+      }
+    }
+  });
+
+  socket.on("quiz-finished-dare-done", () => {
+    socket.emit("quiz-dare-confirmed");
   });
 });
 

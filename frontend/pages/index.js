@@ -883,7 +883,7 @@ export default function Dashboard() {
 
     try {
       setPaymentStep("processing");
-      const amountInPaise = selectedPlan.name === "Starter" ? 14900 : selectedPlan.name === "Prime" ? 59900 : selectedPlan.name === "Silver" ? 159900 : selectedPlan.name === "VIP Elite" ? 99900 : parseInt(selectedPlan.price?.replace('₹','')) * 100 || 7900;
+      const amountInPaise = selectedPlan.name === "Starter" ? 14900 : selectedPlan.name === "Prime" ? 59900 : selectedPlan.name === "Silver" ? 159900 : selectedPlan.name === "VIP Elite" ? 99900 : Math.round((parseFloat(selectedPlan.price?.replace(/[₹$]/g,'')) || 79) * 100);
       const orderRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/razorpay/order", { amount: amountInPaise, currency: "INR" });
       const options = {
         key: RAZORPAY_KEY, amount: orderRes.data.amount, currency: orderRes.data.currency,
@@ -916,7 +916,7 @@ export default function Dashboard() {
     }
     try {
       setPaymentStep("processing");
-      const amountInPaise = selectedPlan.name === "Starter" ? 14900 : selectedPlan.name === "Prime" ? 59900 : selectedPlan.name === "Silver" ? 159900 : selectedPlan.name === "VIP Elite" ? 99900 : parseInt(selectedPlan.price?.replace('₹','')) * 100 || 7900;
+      const amountInPaise = selectedPlan.name === "Starter" ? 14900 : selectedPlan.name === "Prime" ? 59900 : selectedPlan.name === "Silver" ? 159900 : selectedPlan.name === "VIP Elite" ? 99900 : Math.round((parseFloat(selectedPlan.price?.replace(/[₹$]/g,'')) || 79) * 100);
       const orderRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/cashfree/create-order", { amount: amountInPaise, planName: selectedPlan.name, userEmail: user.email });
       if (!orderRes.data.paymentSessionId) throw new Error("Cashfree session failed");
       const cashfree = new window.Cashfree({ mode: process.env.NEXT_PUBLIC_CASHFREE_ENV === "production" ? "production" : "sandbox" });
@@ -935,7 +935,7 @@ export default function Dashboard() {
     }
     try {
       setPaymentStep("processing");
-      const planPriceUSD = selectedPlan.name === "Starter" ? 1.75 : selectedPlan.name === "Prime" ? 7.17 : selectedPlan.name === "Silver" ? 19.17 : selectedPlan.name === "VIP Elite" ? 11.99 : 5.00;
+      const planPriceUSD = selectedPlan.name === "Starter" ? 1.75 : selectedPlan.name === "Prime" ? 7.17 : selectedPlan.name === "Silver" ? 19.17 : selectedPlan.name === "VIP Elite" ? 11.99 : selectedPlan.name === "100 Coins" ? 0.99 : selectedPlan.name === "200 Coins" ? 1.79 : selectedPlan.name === "500 Coins" ? 3.59 : selectedPlan.name === "1300 Coins" ? 8.49 : (parseFloat(selectedPlan.price?.replace(/[₹$]/g,'')) || 5.00);
       const amountInCents = Math.round(planPriceUSD * 100);
       const orderRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/paypal/create-order", { amount: amountInCents, currency: "USD", planName: selectedPlan.name, userEmail: user.email });
       if (orderRes.data.approveUrl) {
@@ -953,7 +953,7 @@ export default function Dashboard() {
     }
     try {
       setPaymentStep("processing");
-      const planPriceUSD = selectedPlan.name === "Starter" ? 1.75 : selectedPlan.name === "Prime" ? 7.17 : selectedPlan.name === "Silver" ? 19.17 : selectedPlan.name === "VIP Elite" ? 11.99 : 5.00;
+      const planPriceUSD = selectedPlan.name === "Starter" ? 1.75 : selectedPlan.name === "Prime" ? 7.17 : selectedPlan.name === "Silver" ? 19.17 : selectedPlan.name === "VIP Elite" ? 11.99 : selectedPlan.name === "100 Coins" ? 0.99 : selectedPlan.name === "200 Coins" ? 1.79 : selectedPlan.name === "500 Coins" ? 3.59 : selectedPlan.name === "1300 Coins" ? 8.49 : (parseFloat(selectedPlan.price?.replace(/[₹$]/g,'')) || 5.00);
       const amountInCents = Math.round(planPriceUSD * 100);
       const intentRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/stripe/create-intent", { amount: amountInCents, currency: "usd", planName: selectedPlan.name, userEmail: user.email });
       const { loadStripe } = await import("@stripe/stripe-js");
@@ -1927,13 +1927,13 @@ export default function Dashboard() {
 
         <div className="pricing-grid coins-grid">
           {[
-            { name: "100 Coins", base: 100, bonus: 0,   price: 79,  icon: "🪙", color: "#94a3b8", tag: "Starter"      },
-            { name: "200 Coins", base: 200, bonus: 50,  price: 149, icon: "💰", color: "#fbbf24", tag: "⭐ Popular"   },
-            { name: "500 Coins", base: 500, bonus: 150, price: 299, icon: "💎", color: "#6366f1", tag: "🔥 Best Deal" },
-            { name: "1300 Coins",base: 1300,bonus: 300, price: 699, icon: "👑", color: "#ec4899", tag: "💎 Ultimate"  }
+            { name: "100 Coins", base: 100, bonus: 0,   price: 79,  usdPrice: 0.99, icon: "🪙", color: "#94a3b8", tag: "Starter"      },
+            { name: "200 Coins", base: 200, bonus: 50,  price: 149, usdPrice: 1.79, icon: "💰", color: "#fbbf24", tag: "⭐ Popular"   },
+            { name: "500 Coins", base: 500, bonus: 150, price: 299, usdPrice: 3.59, icon: "💎", color: "#6366f1", tag: "🔥 Best Deal" },
+            { name: "1300 Coins",base: 1300,bonus: 300, price: 699, usdPrice: 8.49, icon: "👑", color: "#ec4899", tag: "💎 Ultimate"  }
           ].map((pkg, idx) => (
             <div className="coin-square-card" key={idx} style={{ borderTop: `4px solid ${pkg.color}` }} onClick={() => {
-              setSelectedPlan({ name: pkg.name, price: `₹${pkg.price}` });
+              setSelectedPlan({ name: pkg.name, price: currency === "INR" ? `₹${pkg.price}` : `$${pkg.usdPrice}` });
               setPaymentStep("methods");
               setShowPaymentModal(true);
               setIsGifting(false);
@@ -1946,7 +1946,7 @@ export default function Dashboard() {
                 {pkg.bonus > 0 && <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#10b981', display: 'block', marginTop: '2px' }}>+{pkg.bonus} Bonus!</span>}
               </div>
               <div className="coin-card-price">
-                <span className="price-now">₹{pkg.price}</span>
+                <span className="price-now">{currency === "INR" ? `₹${pkg.price}` : `$${pkg.usdPrice}`}</span>
               </div>
             </div>
           ))}
