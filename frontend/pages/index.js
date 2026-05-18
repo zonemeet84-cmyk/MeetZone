@@ -51,34 +51,41 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    if (user && user.id) {
-      if (!socket) {
-        socket = io("https://meetzone-backend.onrender.com");
-
-        socket.on("connect", () => {
-          socket.emit("register-user", user.id);
-          setIsSocketConnected(true);
-          console.log("Global Socket Connected for Calls");
-        });
-
-        socket.on("disconnect", () => {
-          setIsSocketConnected(false);
-        });
-
-        socket.on("incoming-direct-call", (callInfo) => {
-          setIncomingCall(callInfo);
-          // Play a ringtone logic could go here
-        });
-
-        socket.on("direct-call-accepted", ({ roomId }) => {
-          router.push(`/chat?room=${roomId}`);
-        });
-
-        socket.on("direct-call-rejected", () => {
-          alert("Call was declined.");
-        });
-      }
+    if (!socket) {
+      socket = io("https://meetzone-backend.onrender.com");
     }
+
+    const handleConnect = () => {
+      setIsSocketConnected(true);
+      if (user && user.id) socket.emit("register-user", user.id);
+      console.log("Global Socket Connected");
+    };
+
+    const handleDisconnect = () => setIsSocketConnected(false);
+    const handleOnlineCount = (count) => setOnlineCount(count || 1);
+
+    const handleIncoming = (callInfo) => setIncomingCall(callInfo);
+    const handleAccepted = ({ roomId }) => router.push(`/chat?room=${roomId}`);
+    const handleRejected = () => alert("Call was declined.");
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("global-online-count", handleOnlineCount);
+    
+    socket.on("incoming-direct-call", handleIncoming);
+    socket.on("direct-call-accepted", handleAccepted);
+    socket.on("direct-call-rejected", handleRejected);
+
+    if (socket.connected) handleConnect();
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("global-online-count", handleOnlineCount);
+      socket.off("incoming-direct-call", handleIncoming);
+      socket.off("direct-call-accepted", handleAccepted);
+      socket.off("direct-call-rejected", handleRejected);
+    };
   }, [user]);
 
   const acceptCall = () => {
@@ -126,22 +133,8 @@ export default function Dashboard() {
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [onlineCount, setOnlineCount] = useState(5248);
 
-  useEffect(() => {
-    const fetchOnlineCount = async () => {
-      try {
-        const res = await axios.get("https://meetzone-backend.onrender.com/api/public/online-count");
-        if (res.data && typeof res.data.onlineCount === 'number') {
-          // Keep a minimum representation so the site always looks populated
-          setOnlineCount(res.data.onlineCount || 1);
-        }
-      } catch (err) {
-        console.error("Error fetching online count:", err);
-      }
-    };
-    fetchOnlineCount();
-    const interval = setInterval(fetchOnlineCount, 15000);
-    return () => clearInterval(interval);
-  }, []);
+  // The fetchOnlineCount REST API interval has been removed.
+  // Online count is now dynamically driven by real-time WebSocket events.
 
   // ZoneMeetBot State
   const [isBotOpen, setIsBotOpen] = useState(false);

@@ -1678,6 +1678,33 @@ let waitingUsers = [];
 let waitingQuizUsers = [];
 let quizRooms = {};
 
+// REAL-TIME CATEGORY & GLOBAL ONLINE STATS BROADCAST
+setInterval(() => {
+  if (!io) return;
+  const stats = { GK: 0, Tech: 0, Gaming: 0, Anime: 0, Movies: 0, Memes: 0, Football: 0, Science: 0 };
+  
+  waitingQuizUsers.forEach(s => {
+    if (s.quizCategory && stats[s.quizCategory] !== undefined) {
+      stats[s.quizCategory]++;
+    }
+  });
+
+  for (const roomId in quizRooms) {
+    const room = quizRooms[roomId];
+    if (room && room.questions && room.questions[0]) {
+      const cat = room.questions[0].category;
+      if (stats[cat] !== undefined) {
+        stats[cat] += Object.keys(room.scores).length || 2;
+      }
+    }
+  }
+
+  // To simulate scale for aesthetics while maintaining dynamic reality, we can add a base scaling
+  // But per user request, we display exact real online users.
+  io.emit("quiz-category-stats", stats);
+  io.emit("global-online-count", onlineUsers.size);
+}, 3000);
+
 const QUIZ_QUESTIONS = require("./quiz_questions");
 
 function matchUsers() {

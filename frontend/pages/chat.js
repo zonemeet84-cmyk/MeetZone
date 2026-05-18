@@ -161,8 +161,10 @@ export default function Home() {
   const [pendingMessage, setPendingMessage] = useState("");
 
   // --- QUIZ DUEL / BRAIN CLASH STATE ---
+  // --- QUIZ DUEL / BRAIN CLASH STATE ---
   const [quizState, setQuizState] = useState("idle"); // 'idle', 'queued', 'countdown', 'active', 'finished'
   const [showQuizRoomsModal, setShowQuizRoomsModal] = useState(false);
+  const [quizCategoryStats, setQuizCategoryStats] = useState({});
   const [quizCountdown, setQuizCountdown] = useState(3);
   const [quizQuestion, setQuizQuestion] = useState(null);
   const [quizScores, setQuizScores] = useState({});
@@ -1229,6 +1231,10 @@ export default function Home() {
         setQuizResult({ text: `⏰ Time's up! Correct answer: ${correctAnswer}`, type: "timeout" });
       });
 
+      socket.on("quiz-category-stats", (stats) => {
+        setQuizCategoryStats(stats);
+      });
+
       socket.on("quiz-finished", (result) => {
         setQuizState("finished");
         setQuizFinalResult(result);
@@ -2043,39 +2049,47 @@ export default function Home() {
                       { id: "Memes", title: "Memes & Culture", icon: "🐸", color: "#14b8a6" },
                       { id: "Football", title: "Football", icon: "⚽", color: "#3b82f6" },
                       { id: "Science", title: "Science", icon: "🔬", color: "#ec4899" }
-                    ].map(cat => (
-                      <button 
-                        key={cat.id} 
-                        style={{
-                          background: 'rgba(255,255,255,0.05)',
-                          border: `1px solid ${cat.color}`,
-                          padding: '1.2rem',
-                          borderRadius: '16px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: '10px',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                          color: '#fff',
-                          fontWeight: '700'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = `rgba(${parseInt(cat.color.slice(1,3),16)},${parseInt(cat.color.slice(3,5),16)},${parseInt(cat.color.slice(5,7),16)},0.15)`;
-                          e.currentTarget.style.transform = 'translateY(-3px)';
-                          e.currentTarget.style.boxShadow = `0 10px 20px rgba(${parseInt(cat.color.slice(1,3),16)},${parseInt(cat.color.slice(3,5),16)},${parseInt(cat.color.slice(5,7),16)},0.2)`;
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                          e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }}
-                        onClick={() => joinQuizRoom(cat.id)}
-                      >
-                        <span style={{ fontSize: '2.5rem' }}>{cat.icon}</span>
-                        <span>{cat.title}</span>
-                      </button>
-                    ))}
+                    ].map(cat => {
+                      const count = quizCategoryStats[cat.id] || 0;
+                      return (
+                        <button 
+                          key={cat.id} 
+                          style={{
+                            background: 'rgba(255,255,255,0.05)',
+                            border: `1px solid ${cat.color}`,
+                            padding: '1.2rem',
+                            borderRadius: '16px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '10px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            color: '#fff',
+                            fontWeight: '700',
+                            position: 'relative'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = `rgba(${parseInt(cat.color.slice(1,3),16)},${parseInt(cat.color.slice(3,5),16)},${parseInt(cat.color.slice(5,7),16)},0.15)`;
+                            e.currentTarget.style.transform = 'translateY(-3px)';
+                            e.currentTarget.style.boxShadow = `0 10px 20px rgba(${parseInt(cat.color.slice(1,3),16)},${parseInt(cat.color.slice(3,5),16)},${parseInt(cat.color.slice(5,7),16)},0.2)`;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = 'none';
+                          }}
+                          onClick={() => joinQuizRoom(cat.id)}
+                        >
+                          <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.5)', padding: '2px 6px', borderRadius: '12px', fontSize: '0.7rem', color: '#10b981' }}>
+                            <div style={{ width: '6px', height: '6px', background: '#10b981', borderRadius: '50%', boxShadow: '0 0 6px #10b981' }}></div>
+                            {count} Online
+                          </div>
+                          <span style={{ fontSize: '2.5rem', marginTop: '10px' }}>{cat.icon}</span>
+                          <span style={{ textAlign: 'center' }}>{cat.title}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
