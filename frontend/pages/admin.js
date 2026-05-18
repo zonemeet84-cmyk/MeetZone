@@ -149,8 +149,21 @@ export default function AdminDashboard() {
       {/* GLASS SIDEBAR */}
       <div className="sidebar-glass">
         <div className="brand">
-           <div className="brand-icon">A</div>
-           <h2>ZoneMeet <span>Admin</span></h2>
+           <div className="brand-icon" style={{ background: 'transparent', padding: 0, overflow: 'hidden' }}>
+             <svg viewBox="0 0 32 32" width="40" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
+               <rect x="2" y="5" width="20" height="22" rx="6" fill="url(#admin-brand-grad)" />
+               <path d="M22 11L28 7V25L22 21V11Z" fill="url(#admin-brand-grad)" />
+               <path d="M9 11H15L9 19H15" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+               <defs>
+                 <linearGradient id="admin-brand-grad" x1="2" y1="5" x2="28" y2="27" gradientUnits="userSpaceOnUse">
+                   <stop stopColor="#2563eb" />
+                   <stop offset="0.5" stopColor="#a855f7" />
+                   <stop offset="1" stopColor="#ec4899" />
+                 </linearGradient>
+               </defs>
+             </svg>
+           </div>
+           <h2 style={{ margin: 0 }}><span style={{ color: '#fff' }}>Zone</span><span style={{ background: 'linear-gradient(135deg,#a855f7,#ec4899)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>Meet</span> <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 400, fontSize: '0.7em' }}>Admin</span></h2>
         </div>
         
         <nav className="nav-menu">
@@ -531,6 +544,50 @@ export default function AdminDashboard() {
               </div>
            )}
 
+           {activeTab === "banned" && (
+              <div className="glass-card table-box fade-in">
+                 <div className="table-header-flex">
+                    <h3>Banned Users</h3>
+                    <div className="count-badge">{bannedUsers.length} Banned</div>
+                 </div>
+                 {bannedUsers.length === 0 ? (
+                   <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-dim)' }}>
+                     <div style={{ fontSize: '3rem', marginBottom: '15px' }}>🎉</div>
+                     <p>No banned users. Platform is clean!</p>
+                   </div>
+                 ) : (
+                   <table className="modern-table">
+                     <thead>
+                        <tr><th>#</th><th>Email</th><th>Status</th><th>Action</th></tr>
+                     </thead>
+                     <tbody>
+                        {bannedUsers.map((email, idx) => (
+                          <tr key={email}>
+                             <td style={{ color: 'var(--text-dim)', fontWeight: 700 }}>#{idx + 1}</td>
+                             <td>
+                               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                 <div style={{ width: 32, height: 32, background: 'rgba(239,68,68,0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>🚫</div>
+                                 <span style={{ fontWeight: 700, color: '#ef4444' }}>{email}</span>
+                               </div>
+                             </td>
+                             <td><span className="pill danger">BANNED</span></td>
+                             <td>
+                               <button
+                                 className="manage-btn"
+                                 style={{ background: 'rgba(16,185,129,0.1)', borderColor: 'rgba(16,185,129,0.3)', color: '#10b981' }}
+                                 onClick={() => handleAction("unban", { email }, `unban ${email}`)}
+                               >
+                                 Unban <i className="fa fa-unlock"></i>
+                               </button>
+                             </td>
+                          </tr>
+                        ))}
+                     </tbody>
+                   </table>
+                 )}
+              </div>
+           )}
+
            {activeTab === "reports" && (
              <div className="glass-card fade-in">
                 <h3>Incident Reports</h3>
@@ -567,7 +624,7 @@ export default function AdminDashboard() {
                         <div className="r-actions" style={{ marginTop: '15px' }}>
                             <button 
                                onClick={() => {
-                                 window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${m.email}&su=RE: ${m.subject}`, "_blank");
+                                  window.open(`https://mail.google.com/mail/u/0/?authuser=zonemeet84@gmail.com&view=cm&fs=1&to=${m.email}&su=RE: ${encodeURIComponent(m.subject)}&body=Hi ${encodeURIComponent(m.name)},%0A%0AThank you for contacting ZoneMeet Support.%0A%0A`, "_blank");
                                  const token = localStorage.getItem("token");
                                  axios.post("https://meetzone-backend.onrender.com/api/admin/messages/delete", { id: m.id }, {
                                    headers: { Authorization: `Bearer ${token}` }
@@ -618,10 +675,10 @@ export default function AdminDashboard() {
                    <div className="input-group slide-down">
                       <label>Assigned Plan</label>
                       <select value={editForm.planName} onChange={(e) => setEditForm({...editForm, planName: e.target.value})}>
-                         <option value="Starter">Starter (₹99)</option>
-                         <option value="Prime">Prime (₹349)</option>
-                         <option value="Silver">Silver (₹999)</option>
-                         <option value="VIP Elite">VIP Elite (₹899)</option>
+                         <option value="Starter">Starter (₹149)</option>
+                         <option value="Prime">Prime (₹599)</option>
+                         <option value="Silver">Silver (₹1599)</option>
+                         <option value="VIP Elite">VIP Elite (₹999)</option>
                       </select>
                    </div>
                  )}

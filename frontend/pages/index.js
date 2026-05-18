@@ -231,8 +231,8 @@ export default function Dashboard() {
         },
         vip: {
           keywords: ['vip', 'premium', 'elite', 'plan', 'membership', 'filter', 'gender', 'country', 'age', 'pricing', 'starter', 'prime', 'silver', 'price', 'kharch', 'subscription'],
-          en: "Our Premium Plans are designed for the best experience: \n\n✨ **Starter (₹99):** Filters + 50 Coins.\n🚀 **Prime (₹349):** ALL Filters + 150 Coins.\n💎 **Silver (₹999):** 90 Days + 500 Coins.\n👑 **VIP Elite (₹899):** Age Filter + Stealth Mode + 400 Coins. \n\nCheck the 'Pricing' section for full details!",
-          hi: "Humare VIP plans aapko best filters dete hain: \n\n✨ **Starter (₹99):** Filters + 50 Coins.\n🚀 **Prime (₹349):** Saare Filters + 150 Coins.\n💎 **Silver (₹999):** 90 Din + 500 Coins.\n👑 **VIP Elite (₹899):** Age Filter + Invisible Mode + 400 Coins. \n\n'Pricing' section mein saari details dekh sakte hain!"
+          en: "Our Premium Plans are designed for the best experience: \n\n✨ **Starter (₹149):** Filters + 50 Coins.\n🚀 **Prime (₹599):** ALL Filters + 150 Coins.\n💎 **Silver (₹1599):** 90 Days + 500 Coins.\n👑 **VIP Elite (₹999):** Age Filter + Stealth Mode + 400 Coins. \n\nCheck the 'Pricing' section for full details!",
+          hi: "Humare VIP plans aapko best filters dete hain: \n\n✨ **Starter (₹149):** Filters + 50 Coins.\n🚀 **Prime (₹599):** Saare Filters + 150 Coins.\n💎 **Silver (₹1599):** 90 Din + 500 Coins.\n👑 **VIP Elite (₹999):** Age Filter + Invisible Mode + 400 Coins. \n\n'Pricing' section mein saari details dekh sakte hain!"
         },
         mystery: {
           keywords: ['box', 'mystery', 'gift', 'dabba', 'reward', 'win', 'bronze', 'silver', 'gold', 'luck', 'chest'],
@@ -879,7 +879,7 @@ export default function Dashboard() {
       setPaymentStep("processing");
 
       // 1. Create order on backend
-      const amountInPaise = selectedPlan.name === "Starter" ? 9900 : selectedPlan.name === "Prime" ? 34900 : selectedPlan.name === "Silver" ? 99900 : 89900;
+      const amountInPaise = selectedPlan.name === "Starter" ? 14900 : selectedPlan.name === "Prime" ? 59900 : selectedPlan.name === "Silver" ? 159900 : selectedPlan.name === "VIP Elite" ? 99900 : parseInt(selectedPlan.price?.replace('₹','')) * 100 || 7900;
 
       const orderRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/razorpay/order", {
         amount: amountInPaise,
@@ -1539,16 +1539,16 @@ export default function Dashboard() {
               <div className="duration">7 Days of Starter Access</div>
             </div>
             <div className="price-tag">
-              <span className="amount">{currency === "INR" ? "₹99" : "$1.07"}</span>
+              <span className="amount">{currency === "INR" ? "₹149" : "$1.75"}</span>
             </div>
             <ul className="premium-features">
               <li><span>✓</span> Gender & Country Filters</li>
               <li><span>✓</span> Priority Matching</li>
-              <li><span>✓</span> Ad-Free Experience</li>
+              <li><span>✓</span> Unlimited Friend Requests</li>
               <li><span>★</span> 50 ZoneMeet Coins (Free)</li>
             </ul>
             <button className="premium-btn" onClick={() => {
-              setSelectedPlan({ name: "Starter", price: currency === "INR" ? "₹99" : "$1.07" });
+              setSelectedPlan({ name: "Starter", price: currency === "INR" ? "₹149" : "$1.75" });
               setShowPaymentModal(true);
               setIsGifting(false);
               setGiftRecipientId("");
@@ -1564,17 +1564,18 @@ export default function Dashboard() {
               <div className="duration">30 Days of Pro Access</div>
             </div>
             <div className="price-tag">
-              <span className="amount">{currency === "INR" ? "₹349" : "$3.82"}</span>
-              <div className="savings">Save 18%</div>
+              <span className="amount">{currency === "INR" ? "₹599" : "$7.17"}</span>
+              <div className="savings">~6% OFF</div>
             </div>
             <ul className="premium-features">
               <li><span>✓</span> All Gender & Country Filters</li>
               <li><span>✓</span> Instant Priority Matching</li>
               <li><span>✓</span> Unlimited Friend Requests</li>
               <li><span>★</span> 150 ZoneMeet Coins (Free)</li>
+              <li className="feature-coming-soon"><span>🕒</span> Ad-Free Experience <em>(Coming Soon)</em></li>
             </ul>
             <button className="premium-btn primary" onClick={() => {
-              setSelectedPlan({ name: "Prime", price: currency === "INR" ? "₹349" : "$3.82" });
+              setSelectedPlan({ name: "Prime", price: currency === "INR" ? "₹599" : "$7.17" });
               setShowPaymentModal(true);
               setIsGifting(false);
               setGiftRecipientId("");
@@ -1589,17 +1590,18 @@ export default function Dashboard() {
               <div className="duration">90 Days of Pro Access</div>
             </div>
             <div className="price-tag">
-              <span className="amount">{currency === "INR" ? "₹999" : "$10.77"}</span>
-              <div className="savings">Save 22%</div>
+              <span className="amount">{currency === "INR" ? "₹1599" : "$19.17"}</span>
+              <div className="savings">~16.5% OFF</div>
             </div>
             <ul className="premium-features">
               <li><span>✓</span> Season-Long Pro Access</li>
               <li><span>✓</span> Elite Identity Badge</li>
               <li><span>✓</span> Unlimited Interactions</li>
               <li><span>★</span> 500 ZoneMeet Coins (Free)</li>
+              <li className="feature-coming-soon"><span>🕒</span> Ad-Free Experience <em>(Coming Soon)</em></li>
             </ul>
             <button className="premium-btn" onClick={() => {
-              setSelectedPlan({ name: "Silver", price: currency === "INR" ? "₹999" : "$10.77" });
+              setSelectedPlan({ name: "Silver", price: currency === "INR" ? "₹1599" : "$19.17" });
               setShowPaymentModal(true);
               setIsGifting(false);
               setGiftRecipientId("");
@@ -1615,11 +1617,11 @@ export default function Dashboard() {
               <h2>Master the <span>ZoneMeet</span></h2>
               <p>The ultimate membership for those who want everything. Zero limits, maximum control.</p>
               <div className="elite-price-group">
-                <span className="price">{currency === "INR" ? "₹899" : "$7.17"}</span>
+                <span className="price">{currency === "INR" ? "₹999" : "$11.99"}</span>
                 <span className="duration">/ 30 Days</span>
               </div>
               <button className="elite-btn-v3" onClick={() => {
-                setSelectedPlan({ name: "VIP Elite", price: currency === "INR" ? "₹899" : "$7.17" });
+                setSelectedPlan({ name: "VIP Elite", price: currency === "INR" ? "₹999" : "$11.99" });
                 setShowPaymentModal(true);
                 setIsGifting(false);
                 setGiftRecipientId("");
@@ -1643,6 +1645,22 @@ export default function Dashboard() {
             <div className="elite-feature-item">
               <strong>👤 Invisible Mode</strong>
               <p>Browse without being seen</p>
+            </div>
+            <div className="elite-feature-item">
+              <strong>🎨 Free Filters & Avatars</strong>
+              <p>All face filters & animated avatars unlocked</p>
+            </div>
+            <div className="elite-feature-item">
+              <strong>🎤 Voice Changer</strong>
+              <p>Change your voice in real-time</p>
+            </div>
+            <div className="elite-feature-item">
+              <strong>🔒 Privacy Tools</strong>
+              <p>Blur, mask & identity protection box</p>
+            </div>
+            <div className="elite-feature-item feature-coming-soon-box">
+              <strong>📺 Ad-Free Experience</strong>
+              <p>Zero interruptions <em>(Coming Soon)</em></p>
             </div>
           </div>
         </div>
@@ -1870,10 +1888,10 @@ export default function Dashboard() {
 
         <div className="pricing-grid coins-grid">
           {[
-            { name: "100 Coins", price: 49, original: 60, icon: "🪙", color: "#94a3b8" },
-            { name: "200 Coins", price: 99, original: 150, icon: "💰", color: "#fbbf24", badge: "POP" },
-            { name: "500 Coins", price: 199, original: 360, icon: "💎", color: "#6366f1" },
-            { name: "1300 Coins", price: 499, original: 960, icon: "👑", color: "#ec4899", badge: "MAX" }
+            { name: "100 Coins", base: 100, bonus: 0,   price: 79,  icon: "🪙", color: "#94a3b8", tag: "Starter"      },
+            { name: "200 Coins", base: 200, bonus: 50,  price: 149, icon: "💰", color: "#fbbf24", tag: "⭐ Popular"   },
+            { name: "500 Coins", base: 500, bonus: 150, price: 299, icon: "💎", color: "#6366f1", tag: "🔥 Best Deal" },
+            { name: "1300 Coins",base: 1300,bonus: 300, price: 699, icon: "👑", color: "#ec4899", tag: "💎 Ultimate"  }
           ].map((pkg, idx) => (
             <div className="coin-square-card" key={idx} style={{ borderTop: `4px solid ${pkg.color}` }} onClick={() => {
               setSelectedPlan({ name: pkg.name, price: `₹${pkg.price}` });
@@ -1882,12 +1900,14 @@ export default function Dashboard() {
               setIsGifting(false);
               setGiftRecipientId("");
             }}>
-              {pkg.badge && <div className="coin-mini-badge" style={{ background: pkg.color }}>{pkg.badge}</div>}
+              {pkg.tag && <div className="coin-mini-badge" style={{ background: pkg.color }}>{pkg.tag}</div>}
               <div className="coin-card-icon">{pkg.icon}</div>
-              <div className="coin-card-name">{pkg.name}</div>
+              <div className="coin-card-name">
+                {pkg.base} Coins
+                {pkg.bonus > 0 && <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#10b981', display: 'block', marginTop: '2px' }}>+{pkg.bonus} Bonus!</span>}
+              </div>
               <div className="coin-card-price">
                 <span className="price-now">₹{pkg.price}</span>
-                <span className="price-old">₹{pkg.original}</span>
               </div>
             </div>
           ))}
@@ -3220,6 +3240,9 @@ export default function Dashboard() {
           .premium-features { list-style: none; padding: 0; margin: 0 0 2.5rem 0; width: 100%; display: flex; flex-direction: column; gap: 1rem; text-align: left; }
           .premium-features li { font-size: 0.95rem; color: #94a3b8; display: flex; align-items: center; gap: 0.75rem; }
           .premium-features li span { color: #6366f1; font-weight: 900; }
+          .feature-coming-soon { opacity: 0.45 !important; }
+          .feature-coming-soon span { color: #64748b !important; }
+          .feature-coming-soon em { font-style: italic; font-size: 0.8em; color: #64748b; }
           .premium-btn { width: 100%; padding: 1.25rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: all 0.3s; }
           .premium-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
           .premium-btn.primary { background: linear-gradient(135deg, #6366f1, #4f46e5); border: none; box-shadow: 0 15px 30px rgba(99,102,241,0.3); }
@@ -3237,11 +3260,13 @@ export default function Dashboard() {
           .elite-price-group .duration { color: #64748b; font-size: 1.2rem; }
           .elite-btn-v3 { background: linear-gradient(90deg, #f59e0b, #fbbf24); color: #000; border: none; padding: 1.25rem 2.5rem; border-radius: 20px; font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: all 0.3s; box-shadow: 0 20px 40px rgba(245,158,11,0.2); }
           .elite-btn-v3:hover { transform: translateY(-5px); box-shadow: 0 25px 50px rgba(245,158,11,0.3); }
-          .elite-features-grid { flex: 1; display: grid; grid-template-columns: 1fr; gap: 1.5rem; position: relative; z-index: 2; }
-          .elite-feature-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 24px; transition: all 0.3s; }
-          .elite-feature-item:hover { background: rgba(255,255,255,0.05); border-color: rgba(245,158,11,0.3); transform: translateX(10px); }
-          .elite-feature-item strong { display: block; color: white; font-size: 1.1rem; margin-bottom: 0.25rem; }
-          .elite-feature-item p { color: #64748b; font-size: 0.9rem; margin: 0; }
+          .elite-features-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; position: relative; z-index: 2; }
+          .elite-feature-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 1.2rem; border-radius: 20px; transition: all 0.3s; }
+          .elite-feature-item:hover { background: rgba(255,255,255,0.05); border-color: rgba(245,158,11,0.3); transform: translateX(5px); }
+          .elite-feature-item strong { display: block; color: white; font-size: 1rem; margin-bottom: 0.25rem; }
+          .elite-feature-item p { color: #64748b; font-size: 0.85rem; margin: 0; }
+          .feature-coming-soon-box { opacity: 0.4; border-style: dashed !important; }
+          .feature-coming-soon-box em { font-size: 0.75em; color: #64748b; }
 
           @keyframes glow { 0% { box-shadow: 0 0 10px #ffcc00; } 50% { box-shadow: 0 0 30px #ff9900; } 100% { box-shadow: 0 0 10px #ffcc00; } }
 

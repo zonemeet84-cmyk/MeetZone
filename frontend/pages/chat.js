@@ -658,8 +658,20 @@ export default function Home() {
         setUser(updatedUser);
         localStorage.setItem("user", JSON.stringify(updatedUser));
 
-        // Local UI feedback
-        setMessages(prev => [...prev, { sender: 'system', text: `You sent a ${sticker.icon} gift!` }]);
+        // Show gift animation on SENDER's screen too
+        setReceivedGift({ icon: sticker.icon, from: 'You', amount: sticker.price, isSender: true });
+        setTimeout(() => setReceivedGift(null), 4000);
+
+        // Emit socket gift to partner for real-time display
+        socket.emit("send-gift-to-partner", {
+          to: partnerId,
+          stickerIcon: sticker.icon,
+          senderName: user.name,
+          amount: sticker.price
+        });
+
+        // Chat message
+        setMessages(prev => [...prev, { sender: 'system', text: `You sent a ${sticker.icon} gift to ${partnerInfo.name}!` }]);
         setShowGiftPanel(false);
       }
     } catch (err) {
@@ -985,7 +997,7 @@ export default function Home() {
       });
 
       socket.on("receive-sticker", ({ stickerIcon, senderName, amount, newTotalCoins }) => {
-        setReceivedGift({ icon: stickerIcon, from: senderName, amount });
+        setReceivedGift({ icon: stickerIcon, from: senderName, amount, isSender: false });
         setMessages(prev => [...prev, { sender: 'system', text: `${senderName} sent you a ${stickerIcon} gift (+${amount} coins!)` }]);
 
         // INSTANT 1-SECOND COIN BALANCE SYNC FOR RECIPIENT
@@ -998,6 +1010,12 @@ export default function Home() {
         }
 
         // Auto clear after 4 seconds
+        setTimeout(() => setReceivedGift(null), 4000);
+      });
+
+      // Real-time socket gift display (complement to receive-sticker from backend)
+      socket.on("receive-gift-from-partner", ({ stickerIcon, senderName, amount }) => {
+        setReceivedGift(prev => prev ? prev : { icon: stickerIcon, from: senderName, amount, isSender: false });
         setTimeout(() => setReceivedGift(null), 4000);
       });
 
@@ -1085,18 +1103,34 @@ export default function Home() {
       });
 
       socket.on("partner-disconnected", () => {
-        setStatus("Partner disconnected. Searching...");
-        closeConnection();
+        // Instantly clear the partner's video feed so frozen frame doesn't linger
+        if (remoteVideo.current && remoteVideo.current.srcObject) {
+          remoteVideo.current.srcObject.getTracks().forEach(track => track.stop());
+          remoteVideo.current.srcObject = null;
+        }
+        setPartnerId(null);
+        setPartnerInfo(null);
+        setPartnerAvatar("None");
+        setPartnerIsBlurred(false);
         setFriendReqStatus(false);
         setShowPartnerPreview(false);
+        setStatus("Partner disconnected. Searching...");
         socket.emit("next");
       });
 
       socket.on("partner-stopped", () => {
-        setStatus("Partner stopped the connection. Searching...");
-        closeConnection();
+        // Instantly clear the partner's video feed
+        if (remoteVideo.current && remoteVideo.current.srcObject) {
+          remoteVideo.current.srcObject.getTracks().forEach(track => track.stop());
+          remoteVideo.current.srcObject = null;
+        }
+        setPartnerId(null);
+        setPartnerInfo(null);
+        setPartnerAvatar("None");
+        setPartnerIsBlurred(false);
         setFriendReqStatus(false);
         setShowPartnerPreview(false);
+        setStatus("Partner stopped. Searching...");
         socket.emit("next");
       });
     };
@@ -1887,11 +1921,20 @@ export default function Home() {
               {receivedGift && (
                 <div className="floating-gift-overlay">
                   <div className="floating-sticker-container">
-                    <div className="sticker-glow"></div>
+                    <div className="sticker-glow" style={{ background: receivedGift.isSender ? 'rgba(99,102,241,0.6)' : 'rgba(236,72,153,0.6)' }}></div>
                     <div className="sticker-emoji">{receivedGift.icon}</div>
                     <div className="sticker-info">
-                      <div className="sticker-sender">From {receivedGift.from}</div>
-                      <div className="sticker-amount">+{receivedGift.amount} Coins</div>
+                      {receivedGift.isSender ? (
+                        <>
+                          <div className="sticker-sender" style={{ color: '#a5b4fc' }}>🎁 Sent to {partnerInfo?.name || 'Partner'}!</div>
+                          <div className="sticker-amount" style={{ color: '#c4b5fd' }}>-{receivedGift.amount} Coins</div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="sticker-sender">From {receivedGift.from}</div>
+                          <div className="sticker-amount">+{receivedGift.amount} Coins</div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -2282,7 +2325,7 @@ export default function Home() {
                     <span className="icon">✨</span>
                     <span className="name">Starter</span>
                   </div>
-                  <div className="card-price">{currency === "INR" ? "₹99" : "$1.07"}</div>
+                  <div className="card-price">{currency === "INR" ? "₹149" : "$1.75"}</div>
                   <div className="card-dur">7 Days</div>
                 </div>
 
@@ -2293,7 +2336,7 @@ export default function Home() {
                     <span className="icon">🚀</span>
                     <span className="name">Prime</span>
                   </div>
-                  <div className="card-price">{currency === "INR" ? "₹349" : "$3.82"}</div>
+                  <div className="card-price">{currency === "INR" ? "₹599" : "$6.99"}</div>
                   <div className="card-dur">30 Days</div>
                 </div>
 
@@ -2303,7 +2346,7 @@ export default function Home() {
                     <span className="icon">💎</span>
                     <span className="name">Silver</span>
                   </div>
-                  <div className="card-price">{currency === "INR" ? "₹999" : "$10.77"}</div>
+                  <div className="card-price">{currency === "INR" ? "₹1599" : "$18.99"}</div>
                   <div className="card-dur">90 Days</div>
                 </div>
 
@@ -2314,7 +2357,7 @@ export default function Home() {
                     <span className="icon">🤴</span>
                     <span className="name">Elite</span>
                   </div>
-                  <div className="card-price">{currency === "INR" ? "₹899" : "$7.17"}</div>
+                  <div className="card-price">{currency === "INR" ? "₹999" : "$11.99"}</div>
                   <div className="card-dur">30 Days</div>
                 </div>
               </div>

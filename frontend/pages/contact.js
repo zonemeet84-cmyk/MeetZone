@@ -65,7 +65,7 @@ export default function Contact() {
             </p>
             <div className="hero-btns">
               <a href="#message-form" className="btn-primary">Write a Message</a>
-              <a href="mailto:zonemeet84@gmail.com" className="btn-outline">Quick Email</a>
+              <a href="mailto:support@zonemeet.chat" className="btn-outline">Quick Email</a>
             </div>
           </div>
           <div className="hero-visual">
@@ -80,7 +80,7 @@ export default function Contact() {
         {/* STATS SECTION */}
         <section className="stats-grid">
           <div className="stat-box">
-            <h3>99.9%</h3>
+            <h3>100%</h3>
             <p>Uptime Guaranteed</p>
           </div>
           <div className="stat-box">
@@ -170,7 +170,7 @@ export default function Contact() {
               <div className="icon-circ">✉️</div>
               <div>
                 <h5>Official Support</h5>
-                <p>zonemeet84@gmail.com</p>
+                <p>support@zonemeet.chat</p>
               </div>
             </div>
           </div>

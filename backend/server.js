@@ -1434,7 +1434,7 @@ app.post("/api/contact", async (req, res) => {
   // 1. Enable 2-Factor Authentication on your Gmail.
   // 2. Search for "App Passwords" in Google Account settings.
   // 3. Create a new app password for "Mail".
-  const GMAIL_USER = "zonemeet84@gmail.com";
+  const GMAIL_USER = "support@zonemeet.chat";
   const GMAIL_PASS = "lebc mnmw kvjg penk"; // Paste your 16-character app password here
 
   if (GMAIL_PASS && GMAIL_PASS !== "kawal@1234") {
@@ -1869,13 +1869,19 @@ io.on("connection", (socket) => {
   });
 
   socket.on("friend-request", ({ to }) => {
-    // 'to' is the partner's socket ID in chat, but we can also use userId if available
-    // Let's assume 'to' is the socket ID here for immediate feedback, 
-    // but also try to find the userId if it's a direct request.
     const targetSocketId = to;
     io.to(targetSocketId).emit("friend-request-received", {
       from: socket.userId,
       fromName: socket.name || "ZoneMeet User"
+    });
+  });
+
+  // Real-time gift relay (instant, before backend processes)
+  socket.on("send-gift-to-partner", ({ to, stickerIcon, senderName, amount }) => {
+    io.to(to).emit("receive-gift-from-partner", {
+      stickerIcon,
+      senderName: senderName || socket.name || "Partner",
+      amount
     });
   });
 
@@ -2065,14 +2071,16 @@ app.post('/api/payment/razorpay/verify', async (req, res) => {
         const isCoinPurchase = planName.includes("Coins");
 
         if (isCoinPurchase) {
-          const coinAmount = parseInt(planName.split(" ")[0]); // e.g. "100 Coins" -> 100
-          user.coins = (user.coins || 0) + coinAmount;
+          // Credit base coins + bonus coins based on package
+          let coinsToAdd = parseInt(planName.split(" ")[0]); // base coins, e.g. "200 Coins" -> 200
+          let bonusCoins = planName.includes("200") ? 50 : planName.includes("500") ? 150 : planName.includes("1300") ? 300 : 0;
+          user.coins = (user.coins || 0) + coinsToAdd + bonusCoins;
 
           transactions.push({
             id: razorpay_payment_id,
             userEmail,
             planName,
-            amount: planName.includes("100") ? 49 : planName.includes("200") ? 99 : planName.includes("500") ? 199 : 499,
+            amount: planName.includes("100") ? 79 : planName.includes("200") ? 149 : planName.includes("500") ? 299 : 699,
             timestamp: Date.now(),
             type: "coins"
           });
@@ -2083,10 +2091,10 @@ app.post('/api/payment/razorpay/verify', async (req, res) => {
           let amount = 349;
           let bundledCoins = 0;
 
-          if (planName === "Starter") { days = 7; amount = 99; bundledCoins = 50; }
-          else if (planName === "Silver") { days = 90; amount = 999; bundledCoins = 500; }
-          else if (planName === "VIP Elite") { days = 30; amount = 899; bundledCoins = 400; }
-          else if (planName === "Prime") { days = 30; amount = 349; bundledCoins = 150; }
+          if (planName === "Starter") { days = 7; amount = 149; bundledCoins = 50; }
+          else if (planName === "Silver") { days = 90; amount = 1599; bundledCoins = 500; }
+          else if (planName === "VIP Elite") { days = 30; amount = 999; bundledCoins = 400; }
+          else if (planName === "Prime") { days = 30; amount = 599; bundledCoins = 150; }
 
           user.planExpiry = Date.now() + (days * 24 * 60 * 60 * 1000);
           user.coins = (user.coins || 0) + bundledCoins;
@@ -2380,7 +2388,7 @@ app.post("/api/admin/unban", authenticateToken, (req, res) => {
 });
 
 app.post("/api/admin/ban", authenticateToken, (req, res) => {
-  if (req.user.email !== "zonemeet84@gmail.com") return res.status(403).send("Forbidden");
+  if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
   const { email } = req.body;
   if (!bannedEmails.includes(email)) {
     bannedEmails.push(email);
