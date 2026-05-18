@@ -55,8 +55,8 @@ const PAYPAL_BASE_URL = process.env.PAYPAL_MODE === "live"
   : "https://api-m.sandbox.paypal.com";
 
 async function getPayPalAccessToken() {
-  const clientId     = process.env.PAYPAL_CLIENT_ID     || "YOUR_PAYPAL_CLIENT_ID";
-  const clientSecret = process.env.PAYPAL_CLIENT_SECRET || "YOUR_PAYPAL_CLIENT_SECRET";
+  const clientId     = process.env.PAYPAL_CLIENT_ID     || "ARWUozoLQTqPCr986ok6FLujoOhNyHsWi2rncwtgfauQ6p9ZIMKXH5NIq04JcKnoMkptXREhPhIFnI4X";
+  const clientSecret = process.env.PAYPAL_CLIENT_SECRET || "ECGWkxbb8sRucyrQCZBbgEfN1QhWiGr1tez-zEemjJ3EZBvQnJAMrMZKxidCQ8swImJ4XPgXAXi8RUaU";
   const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
   const res  = await fetch(`${PAYPAL_BASE_URL}/v1/oauth2/token`, {
     method: "POST",
