@@ -55,10 +55,10 @@ const PAYPAL_BASE_URL = process.env.PAYPAL_MODE === "sandbox"
   : "https://api-m.paypal.com";
 
 async function getPayPalAccessToken() {
-  const clientId     = process.env.PAYPAL_CLIENT_ID     || "BAADK3LiSDAPcyaDLFoPOZfVDy4WYejzy03CrTUHtTy2MosbTuswwkLmad6MJBHwyxWA0ZpOOovNOEoN_o";
+  const clientId = process.env.PAYPAL_CLIENT_ID || "BAADK3LiSDAPcyaDLFoPOZfVDy4WYejzy03CrTUHtTy2MosbTuswwkLmad6MJBHwyxWA0ZpOOovNOEoN_o";
   const clientSecret = process.env.PAYPAL_CLIENT_SECRET || "ELTU7ltzU5cuo_Sx5vAcJnKWtuwEeOCDpVTzQ2XNdOjRU3GUNcK1_NiNfDXOXA9YqTyMNjNkDDTSpstT";
   const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
-  const res  = await fetch(`${PAYPAL_BASE_URL}/v1/oauth2/token`, {
+  const res = await fetch(`${PAYPAL_BASE_URL}/v1/oauth2/token`, {
     method: "POST",
     headers: { Authorization: `Basic ${auth}`, "Content-Type": "application/x-www-form-urlencoded" },
     body: "grant_type=client_credentials"
@@ -130,8 +130,8 @@ if (fs.existsSync(REPORTS_FILE)) {
 }
 
 function saveReports() {
-  try { fs.writeFileSync(REPORTS_FILE, JSON.stringify(reports, null, 2)); } catch(e){}
-  if(db) db.collection("appData").updateOne({ _id: "reports" }, { $set: { data: reports } }, { upsert: true }).catch(console.error);
+  try { fs.writeFileSync(REPORTS_FILE, JSON.stringify(reports, null, 2)); } catch (e) { }
+  if (db) db.collection("appData").updateOne({ _id: "reports" }, { $set: { data: reports } }, { upsert: true }).catch(console.error);
 }
 
 let transactions = [];
@@ -139,8 +139,8 @@ if (fs.existsSync(TRANSACTIONS_FILE)) {
   try { transactions = JSON.parse(fs.readFileSync(TRANSACTIONS_FILE, "utf-8")); } catch (err) { transactions = []; }
 }
 function saveTransactions() {
-  try { fs.writeFileSync(TRANSACTIONS_FILE, JSON.stringify(transactions, null, 2)); } catch(e){}
-  if(db) db.collection("appData").updateOne({ _id: "transactions" }, { $set: { data: transactions } }, { upsert: true }).catch(console.error);
+  try { fs.writeFileSync(TRANSACTIONS_FILE, JSON.stringify(transactions, null, 2)); } catch (e) { }
+  if (db) db.collection("appData").updateOne({ _id: "transactions" }, { $set: { data: transactions } }, { upsert: true }).catch(console.error);
 }
 
 let coinActivity = [];
@@ -148,8 +148,8 @@ if (fs.existsSync(COIN_ACTIVITY_FILE)) {
   try { coinActivity = JSON.parse(fs.readFileSync(COIN_ACTIVITY_FILE, "utf-8")); } catch (err) { coinActivity = []; }
 }
 function saveCoinActivity() {
-  try { fs.writeFileSync(COINACTIVITY_FILE, JSON.stringify(coinActivity, null, 2)); } catch(e){}
-  if(db) db.collection("appData").updateOne({ _id: "coinActivity" }, { $set: { data: coinActivity } }, { upsert: true }).catch(console.error);
+  try { fs.writeFileSync(COINACTIVITY_FILE, JSON.stringify(coinActivity, null, 2)); } catch (e) { }
+  if (db) db.collection("appData").updateOne({ _id: "coinActivity" }, { $set: { data: coinActivity } }, { upsert: true }).catch(console.error);
 }
 
 let contactMessages = [];
@@ -157,8 +157,8 @@ if (fs.existsSync(MESSAGES_FILE)) {
   try { contactMessages = JSON.parse(fs.readFileSync(MESSAGES_FILE, "utf-8")); } catch (err) { contactMessages = []; }
 }
 function saveMessages() {
-  try { fs.writeFileSync(MESSAGES_FILE, JSON.stringify(contactMessages, null, 2)); } catch(e){}
-  if(db) db.collection("appData").updateOne({ _id: "contactMessages" }, { $set: { data: contactMessages } }, { upsert: true }).catch(console.error);
+  try { fs.writeFileSync(MESSAGES_FILE, JSON.stringify(contactMessages, null, 2)); } catch (e) { }
+  if (db) db.collection("appData").updateOne({ _id: "contactMessages" }, { $set: { data: contactMessages } }, { upsert: true }).catch(console.error);
 }
 
 // Generate unique referral code from name + random suffix
@@ -278,13 +278,13 @@ if (fs.existsSync(BANNED_IPS_FILE)) {
 }
 
 function saveBanned() {
-  try { fs.writeFileSync(BANNED_FILE, JSON.stringify(bannedEmails, null, 2)); } catch(e){}
-  if(db) db.collection("appData").updateOne({ _id: "bannedEmails" }, { $set: { data: bannedEmails } }, { upsert: true }).catch(console.error);
+  try { fs.writeFileSync(BANNED_FILE, JSON.stringify(bannedEmails, null, 2)); } catch (e) { }
+  if (db) db.collection("appData").updateOne({ _id: "bannedEmails" }, { $set: { data: bannedEmails } }, { upsert: true }).catch(console.error);
 }
 
 function saveBannedIps() {
-  try { fs.writeFileSync(BANNED_IPS_FILE, JSON.stringify(bannedIps, null, 2)); } catch(e){}
-  if(db) db.collection("appData").updateOne({ _id: "bannedIps" }, { $set: { data: bannedIps } }, { upsert: true }).catch(console.error);
+  try { fs.writeFileSync(BANNED_IPS_FILE, JSON.stringify(bannedIps, null, 2)); } catch (e) { }
+  if (db) db.collection("appData").updateOne({ _id: "bannedIps" }, { $set: { data: bannedIps } }, { upsert: true }).catch(console.error);
 }
 
 // Ensure at least the test user exists
@@ -303,8 +303,8 @@ if (users.length === 0) {
 }
 
 function saveUsers() {
-  try { fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2)); } catch(e){}
-  if(db) {
+  try { fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2)); } catch (e) { }
+  if (db) {
     db.collection("appData").updateOne({ _id: "users" }, { $set: { data: users } }, { upsert: true })
       .then(() => console.log("[DB] Users saved successfully to MongoDB"))
       .catch(err => console.error("[DB] Error saving users:", err));
@@ -381,11 +381,11 @@ app.post("/api/auth/session-login", (req, res) => {
   } else {
     // Existing user: check for referral if not already referred
     if (referralCode && !user.referredBy && referralCode !== user.referralCode) {
-       const referrer = users.find(u => u.referralCode === referralCode.toUpperCase());
-       if (referrer && referrer.email !== email) {
-          user.referredBy = referralCode.toUpperCase();
-          saveUsers();
-       }
+      const referrer = users.find(u => u.referralCode === referralCode.toUpperCase());
+      if (referrer && referrer.email !== email) {
+        user.referredBy = referralCode.toUpperCase();
+        saveUsers();
+      }
     }
   }
 
@@ -1405,7 +1405,7 @@ app.post("/api/user/send-gift", authenticateToken, (req, res) => {
     timestamp: new Date().toISOString()
   };
   coinActivity.push(activity);
-  
+
   const recvActivity = {
     id: "act" + Date.now() + 1,
     email: recipient.email,
@@ -1415,26 +1415,26 @@ app.post("/api/user/send-gift", authenticateToken, (req, res) => {
     timestamp: new Date().toISOString()
   };
   coinActivity.push(recvActivity);
-  
+
   saveCoinActivity();
   saveUsers();
 
   // Send socket event to receiver
   const targetSocketId = onlineUsers.get(recipient.id);
   if (targetSocketId) {
-    io.to(targetSocketId).emit("receive-sticker", { 
-      stickerIcon, 
-      senderName: sender.name, 
+    io.to(targetSocketId).emit("receive-sticker", {
+      stickerIcon,
+      senderName: sender.name,
       amount,
       newTotalCoins: recipient.coins
     });
   }
 
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     coins: sender.coins,
     stickers: sender.stickers,
-    coinActivity: coinActivity.filter(a => a.email === sender.email).slice(-10) 
+    coinActivity: coinActivity.filter(a => a.email === sender.email).slice(-10)
   });
 });
 
@@ -1459,8 +1459,8 @@ app.post("/api/contact", async (req, res) => {
 
   // --- REAL EMAIL NOTIFICATION ---
   const GMAIL_AUTH_USER = "zonemeet84@gmail.com";   // Gmail account used for SMTP authentication
-  const GMAIL_PASS      = "qedv lgzt zlgr upxk";    // App Password from Google (16-char)
-  const SUPPORT_EMAIL   = "support@zonemeet.chat";  // Custom domain shown to users
+  const GMAIL_PASS = "qedv lgzt zlgr upxk";    // App Password from Google (16-char)
+  const SUPPORT_EMAIL = "support@zonemeet.chat";  // Custom domain shown to users
 
   if (GMAIL_PASS) {
     const transporter = nodemailer.createTransport({
@@ -1573,7 +1573,7 @@ app.post("/api/friends/accept", authenticateToken, (req, res) => {
   if (!isPremium && !isAdmin && req.user.friends && req.user.friends.length >= 5) {
     return res.status(403).json({ message: "Free plan allows a maximum of 5 friends. Upgrade to add more!", requiresPremium: true });
   }
-  
+
   const reqUserIsPremium = requester.premium || (requester.planName && requester.planName !== "Free");
   const reqUserIsAdmin = requester.email === "ds9376314@gmail.com";
   if (!reqUserIsPremium && !reqUserIsAdmin && requester.friends && requester.friends.length >= 5) {
@@ -1682,7 +1682,7 @@ let quizRooms = {};
 setInterval(() => {
   if (!io) return;
   const stats = { GK: 0, Tech: 0, Gaming: 0, Anime: 0, Movies: 0, Memes: 0, Football: 0, Science: 0 };
-  
+
   waitingQuizUsers.forEach(s => {
     if (s.quizCategory && stats[s.quizCategory] !== undefined) {
       stats[s.quizCategory]++;
@@ -1810,7 +1810,7 @@ function matchUsers() {
 
 function matchQuizUsers() {
   waitingQuizUsers = waitingQuizUsers.filter(s => s.connected && !s.partner);
-  
+
   // Group by category
   const groups = {};
   for (const s of waitingQuizUsers) {
@@ -1823,7 +1823,7 @@ function matchQuizUsers() {
     while (groups[cat].length >= 2) {
       const s1 = groups[cat].shift();
       const s2 = groups[cat].shift();
-      
+
       // Remove them from the global array
       waitingQuizUsers = waitingQuizUsers.filter(s => s !== s1 && s !== s2);
 
@@ -1850,1433 +1850,1434 @@ function matchQuizUsers() {
       const roomState = {
         roomId,
         players: [s1, s2],
-    scores: { [s1.id]: 0, [s2.id]: 0 },
-    currentQuestionIndex: 0,
-    questions: selectedQuestions,
-    questionTimer: null,
-    lockedAnswer: null,
-    answeredPlayers: {},
-    startTime: 0
-  };
+        scores: { [s1.id]: 0, [s2.id]: 0 },
+        currentQuestionIndex: 0,
+        questions: selectedQuestions,
+        questionTimer: null,
+        lockedAnswer: null,
+        answeredPlayers: {},
+        startTime: 0
+      };
 
-  quizRooms[roomId] = roomState;
+      quizRooms[roomId] = roomState;
 
-  const p1Info = { id: s1.userId, name: s1.name || u1?.name || "Player 1", coins: u1?.coins || 0 };
-  const p2Info = { id: s2.userId, name: s2.name || u2?.name || "Player 2", coins: u2?.coins || 0 };
+      const p1Info = { id: s1.userId, name: s1.name || u1?.name || "Player 1", coins: u1?.coins || 0 };
+      const p2Info = { id: s2.userId, name: s2.name || u2?.name || "Player 2", coins: u2?.coins || 0 };
 
-  s1.emit("quiz-matched", { partnerId: s2.id, partnerInfo: p2Info, roomId, initiator: true });
-  s2.emit("quiz-matched", { partnerId: s1.id, partnerInfo: p1Info, roomId, initiator: false });
+      s1.emit("quiz-matched", { partnerId: s2.id, partnerInfo: p2Info, roomId, initiator: true });
+      s2.emit("quiz-matched", { partnerId: s1.id, partnerInfo: p1Info, roomId, initiator: false });
 
-  // Start 3s countdown before the first question
-  let countdown = 3;
-  const interval = setInterval(() => {
-    io.to(roomId).emit("quiz-countdown", countdown);
-    countdown--;
-    if (countdown < 0) {
-      clearInterval(interval);
-      sendQuizQuestion(roomId);
+      // Start 3s countdown before the first question
+      let countdown = 3;
+      const interval = setInterval(() => {
+        io.to(roomId).emit("quiz-countdown", countdown);
+        countdown--;
+        if (countdown < 0) {
+          clearInterval(interval);
+          sendQuizQuestion(roomId);
+        }
+      }, 1000);
     }
-  }, 1000);
+  }
 }
 
 function sendQuizQuestion(roomId) {
-  const room = quizRooms[roomId];
-  if (!room) return;
+      const room = quizRooms[roomId];
+      if (!room) return;
 
-  if (room.currentQuestionIndex >= 10) {
-    endQuiz(roomId);
-    return;
-  }
+      if (room.currentQuestionIndex >= 10) {
+        endQuiz(roomId);
+        return;
+      }
 
-  const q = room.questions[room.currentQuestionIndex];
-  room.lockedAnswer = null;
-  room.answeredPlayers = {};
-  room.startTime = Date.now();
+      const q = room.questions[room.currentQuestionIndex];
+      room.lockedAnswer = null;
+      room.answeredPlayers = {};
+      room.startTime = Date.now();
 
-  io.to(roomId).emit("quiz-question", {
-    index: room.currentQuestionIndex,
-    category: q.category,
-    question: q.question,
-    options: q.options,
-    timeLimit: 15
-  });
-
-  if (room.questionTimer) clearTimeout(room.questionTimer);
-  room.questionTimer = setTimeout(() => {
-    // Time's up! Move to next question after showing results
-    io.to(roomId).emit("quiz-question-timeout", {
-      correctAnswer: q.answer,
-      currentQuestionIndex: room.currentQuestionIndex
-    });
-    
-    setTimeout(() => {
-      room.currentQuestionIndex++;
-      sendQuizQuestion(roomId);
-    }, 3000);
-  }, 15000);
-}
-
-function endQuiz(roomId) {
-  const room = quizRooms[roomId];
-  if (!room) return;
-
-  if (room.questionTimer) clearTimeout(room.questionTimer);
-
-  const [s1, s2] = room.players;
-  const score1 = room.scores[s1.id] || 0;
-  const score2 = room.scores[s2.id] || 0;
-
-  const u1 = users.find(u => u.id === s1.userId);
-  const u2 = users.find(u => u.id === s2.userId);
-
-  let winnerId = null;
-  let loserId = null;
-  let isDraw = false;
-
-  if (score1 > score2) {
-    winnerId = s1.userId;
-    loserId = s2.userId;
-  } else if (score2 > score1) {
-    winnerId = s2.userId;
-    loserId = s1.userId;
-  } else {
-    isDraw = true;
-  }
-
-  // Punishments / Dares for loser
-  const dares = [
-    "Sing a song dramatically for 10 seconds 🎤",
-    "Dance happily for 5 seconds without music 💃",
-    "Say 'I am the ultimate champion' in a funny voice 👑",
-    "Make a hilarious, funny face and hold it for 5 seconds 😜",
-    "Recite a funny poem in 3 seconds 📜",
-    "Introduce yourself as if you are a professional wrestler 🤼"
-  ];
-  const randomDare = dares[Math.floor(Math.random() * dares.length)];
-
-  if (isDraw) {
-    // Refund both 50 coins
-    if (u1) {
-      u1.coins = (u1.coins || 0) + 50;
-      coinActivity.push({ email: u1.email, type: "earn", amount: 50, description: "Quiz Duel Draw Refund", timestamp: Date.now() });
-      s1.emit("coins-updated", u1.coins);
-    }
-    if (u2) {
-      u2.coins = (u2.coins || 0) + 50;
-      coinActivity.push({ email: u2.email, type: "earn", amount: 50, description: "Quiz Duel Draw Refund", timestamp: Date.now() });
-      s2.emit("coins-updated", u2.coins);
-    }
-    saveCoinActivity();
-    saveUsers();
-
-    io.to(roomId).emit("quiz-finished", {
-      draw: true,
-      scores: room.scores,
-      totalScores: { [s1.id]: score1, [s2.id]: score2 }
-    });
-  } else {
-    // Credit winner 100 coins
-    const winnerUser = u1?.id === winnerId ? u1 : u2;
-    const winnerSocket = s1.userId === winnerId ? s1 : s2;
-
-    if (winnerUser) {
-      winnerUser.coins = (winnerUser.coins || 0) + 100;
-      coinActivity.push({
-        email: winnerUser.email,
-        type: "earn",
-        amount: 100,
-        description: "Won Quiz Duel Match!",
-        timestamp: Date.now()
+      io.to(roomId).emit("quiz-question", {
+        index: room.currentQuestionIndex,
+        category: q.category,
+        question: q.question,
+        options: q.options,
+        timeLimit: 15
       });
-      winnerSocket.emit("coins-updated", winnerUser.coins);
+
+      if (room.questionTimer) clearTimeout(room.questionTimer);
+      room.questionTimer = setTimeout(() => {
+        // Time's up! Move to next question after showing results
+        io.to(roomId).emit("quiz-question-timeout", {
+          correctAnswer: q.answer,
+          currentQuestionIndex: room.currentQuestionIndex
+        });
+
+        setTimeout(() => {
+          room.currentQuestionIndex++;
+          sendQuizQuestion(roomId);
+        }, 3000);
+      }, 15000);
     }
 
-    saveCoinActivity();
-    saveUsers();
+    function endQuiz(roomId) {
+      const room = quizRooms[roomId];
+      if (!room) return;
 
-    io.to(roomId).emit("quiz-finished", {
-      draw: false,
-      scores: room.scores,
-      totalScores: { [s1.id]: score1, [s2.id]: score2 },
-      winnerId,
-      loserId,
-      dare: randomDare
-    });
-  }
+      if (room.questionTimer) clearTimeout(room.questionTimer);
 
-  // Clean up roomId on sockets
-  s1.roomId = null;
-  s2.roomId = null;
-  s1.partner = null;
-  s2.partner = null;
+      const [s1, s2] = room.players;
+      const score1 = room.scores[s1.id] || 0;
+      const score2 = room.scores[s2.id] || 0;
 
-  // Clean up
-  delete quizRooms[roomId];
-}
+      const u1 = users.find(u => u.id === s1.userId);
+      const u2 = users.find(u => u.id === s2.userId);
 
-const queueUser = (socket) => {
-  if (!socket) return;
-  if (socket.queueTimeout) clearTimeout(socket.queueTimeout);
+      let winnerId = null;
+      let loserId = null;
+      let isDraw = false;
 
-  const isOwner = socket.email?.toLowerCase() === "ds9376314@gmail.com";
-  const plan = socket.planName?.toLowerCase() || "";
-  const isPremium = socket.premium || plan !== "" || isOwner;
-  
-  // 5 seconds delay for free users, instant (0s) for subscription users
-  let delay = isPremium ? 0 : 5000;
+      if (score1 > score2) {
+        winnerId = s1.userId;
+        loserId = s2.userId;
+      } else if (score2 > score1) {
+        winnerId = s2.userId;
+        loserId = s1.userId;
+      } else {
+        isDraw = true;
+      }
 
-  // 1 second delay if matching appearance/preferences are applied
-  if (socket.filters && (socket.filters.gender !== "all" || socket.filters.country !== "all" || socket.filters.age !== "All Ages" || socket.filters.state !== "All States")) {
-    delay = 1000;
-  }
+      // Punishments / Dares for loser
+      const dares = [
+        "Sing a song dramatically for 10 seconds 🎤",
+        "Dance happily for 5 seconds without music 💃",
+        "Say 'I am the ultimate champion' in a funny voice 👑",
+        "Make a hilarious, funny face and hold it for 5 seconds 😜",
+        "Recite a funny poem in 3 seconds 📜",
+        "Introduce yourself as if you are a professional wrestler 🤼"
+      ];
+      const randomDare = dares[Math.floor(Math.random() * dares.length)];
 
-  if (delay === 0) {
-    if (!waitingUsers.includes(socket)) {
-      waitingUsers.push(socket);
+      if (isDraw) {
+        // Refund both 50 coins
+        if (u1) {
+          u1.coins = (u1.coins || 0) + 50;
+          coinActivity.push({ email: u1.email, type: "earn", amount: 50, description: "Quiz Duel Draw Refund", timestamp: Date.now() });
+          s1.emit("coins-updated", u1.coins);
+        }
+        if (u2) {
+          u2.coins = (u2.coins || 0) + 50;
+          coinActivity.push({ email: u2.email, type: "earn", amount: 50, description: "Quiz Duel Draw Refund", timestamp: Date.now() });
+          s2.emit("coins-updated", u2.coins);
+        }
+        saveCoinActivity();
+        saveUsers();
+
+        io.to(roomId).emit("quiz-finished", {
+          draw: true,
+          scores: room.scores,
+          totalScores: { [s1.id]: score1, [s2.id]: score2 }
+        });
+      } else {
+        // Credit winner 100 coins
+        const winnerUser = u1?.id === winnerId ? u1 : u2;
+        const winnerSocket = s1.userId === winnerId ? s1 : s2;
+
+        if (winnerUser) {
+          winnerUser.coins = (winnerUser.coins || 0) + 100;
+          coinActivity.push({
+            email: winnerUser.email,
+            type: "earn",
+            amount: 100,
+            description: "Won Quiz Duel Match!",
+            timestamp: Date.now()
+          });
+          winnerSocket.emit("coins-updated", winnerUser.coins);
+        }
+
+        saveCoinActivity();
+        saveUsers();
+
+        io.to(roomId).emit("quiz-finished", {
+          draw: false,
+          scores: room.scores,
+          totalScores: { [s1.id]: score1, [s2.id]: score2 },
+          winnerId,
+          loserId,
+          dare: randomDare
+        });
+      }
+
+      // Clean up roomId on sockets
+      s1.roomId = null;
+      s2.roomId = null;
+      s1.partner = null;
+      s2.partner = null;
+
+      // Clean up
+      delete quizRooms[roomId];
     }
-    matchUsers();
-  } else {
-    socket.queueTimeout = setTimeout(() => {
-      if (socket.connected && !socket.partner) {
+
+    const queueUser = (socket) => {
+      if (!socket) return;
+      if (socket.queueTimeout) clearTimeout(socket.queueTimeout);
+
+      const isOwner = socket.email?.toLowerCase() === "ds9376314@gmail.com";
+      const plan = socket.planName?.toLowerCase() || "";
+      const isPremium = socket.premium || plan !== "" || isOwner;
+
+      // 5 seconds delay for free users, instant (0s) for subscription users
+      let delay = isPremium ? 0 : 5000;
+
+      // 1 second delay if matching appearance/preferences are applied
+      if (socket.filters && (socket.filters.gender !== "all" || socket.filters.country !== "all" || socket.filters.age !== "All Ages" || socket.filters.state !== "All States")) {
+        delay = 1000;
+      }
+
+      if (delay === 0) {
         if (!waitingUsers.includes(socket)) {
           waitingUsers.push(socket);
         }
         matchUsers();
-      }
-    }, delay);
-  }
-};
-
-// Global Moderation State
-const BAD_WORDS_LIST = [
-  "abuse", "fake", "sex", "scam", "nude", "porn", "pussy", "dick", "xxx", "fuck", "bitch",
-  "lund", "chod", "gand", "porn", "madarchod", "behenchod", "bhenchod", "chutiya", "loda", "lauda",
-  "kamine", "haramkhor", "bsdk", "bhonsdi", "gaand", "randi", "saala", "saali", "harami"
-];
-const userStrikes = new Map(); // email -> strike count
-
-io.on("connection", (socket) => {
-  console.log("User Connected:", socket.id);
-
-  // Initialize with default filters/info
-  socket.filters = { gender: "all", country: "all" };
-
-  socket.on("register-user", (userId) => {
-    socket.userId = userId;
-    onlineUsers.set(userId, socket.id);
-
-    // Broadcast online status to friends
-    const user = users.find(u => u.id === userId);
-    if (user && user.friends) {
-      user.friends.forEach(fId => {
-        const friendSocketId = onlineUsers.get(fId);
-        if (friendSocketId) {
-          io.to(friendSocketId).emit("friend-status", { friendId: userId, online: true });
-        }
-      });
-    }
-  });
-
-  socket.on("set-profile", (profile) => {
-    // Re-verify premium status from DB to prevent client-side manipulation
-    const dbUser = users.find(u => u.email === profile.email);
-    let isPremium = dbUser ? dbUser.premium : false;
-    let pName = dbUser ? dbUser.planName : null;
-
-    // Hardcoded admin check
-    if (profile.email === "ds9376314@gmail.com") {
-      isPremium = true;
-      pName = "VIP Elite";
-    }
-
-    socket.user = { ...profile, premium: isPremium, planName: pName };
-    socket.userId = dbUser ? dbUser.id : profile.id;
-    socket.name = profile.name;
-    socket.email = profile.email;
-    socket.gender = profile.gender || (Math.random() > 0.5 ? "Male" : "Female");
-    socket.country = profile.country || "India";
-    socket.state = profile.state || "All States";
-    socket.age = profile.age || "18-24";
-    socket.premium = isPremium;
-    socket.planName = pName;
-
-    console.log(`User ${socket.id} profile set securely: ${profile.name} (${profile.email}), ${socket.premium ? "PREMIUM" : "FREE"}`);
-
-    if (socket.userId) {
-      onlineUsers.set(socket.userId, socket.id);
-    }
-
-    if (profile.roomId) {
-      return;
-    }
-
-    queueUser(socket);
-  });
-
-  socket.on("update-filters", (filters) => {
-    socket.filters = filters;
-    console.log(`User ${socket.id} updated filters:`, filters);
-  });
-
-  socket.on("send-message", ({ text, to }) => {
-    if (socket.user) {
-      const email = socket.user.email;
-      const lowerText = text.toLowerCase();
-      const hasBadWord = BAD_WORDS_LIST.some(word => lowerText.includes(word));
-
-      /*
-      // AI Chat Guard Temporarily Disabled
-      if (hasBadWord) {
-        let strikes = (userStrikes.get(email) || 0) + 1;
-        userStrikes.set(email, strikes);
-
-        if (strikes >= 2) {
-          console.log(`[GUARDIAN] CHAT ABUSE detected: ${email}. Banning...`);
-          banUser(email, "AI Detection: Repeated use of restricted words in chat");
-          return;
-        } else {
-          socket.emit("warning-alert", `Warning: Your message contains restricted words. Strike ${strikes}/2. Continued abuse will lead to a permanent ban.`);
-          return; 
-        }
-      }
-      */
-    }
-
-    io.to(to).emit("receive-message", {
-      text,
-      senderId: socket.id,
-    });
-  });
-
-  socket.on("friend-request", ({ to }) => {
-    const targetSocketId = to;
-    io.to(targetSocketId).emit("friend-request-received", {
-      from: socket.userId,
-      fromName: socket.name || "ZoneMeet User"
-    });
-  });
-
-  // Real-time gift relay (instant, before backend processes)
-  socket.on("send-gift-to-partner", ({ to, stickerIcon, senderName, amount }) => {
-    io.to(to).emit("receive-gift-from-partner", {
-      stickerIcon,
-      senderName: senderName || socket.name || "Partner",
-      amount
-    });
-  });
-
-  // Direct Call Signaling
-  socket.on("direct-call-request", ({ toUserId, fromUser, roomId }) => {
-    const targetSocketId = onlineUsers.get(toUserId);
-    if (targetSocketId) {
-      io.to(targetSocketId).emit("incoming-direct-call", { fromUser, fromSocketId: socket.id, roomId });
-    }
-  });
-
-  socket.on("direct-call-accept", ({ toSocketId, roomId }) => {
-    io.to(toSocketId).emit("direct-call-accepted", { bySocketId: socket.id, roomId });
-  });
-
-  socket.on("direct-call-reject", ({ toSocketId }) => {
-    io.to(toSocketId).emit("direct-call-rejected");
-  });
-
-  socket.on("offer", ({ offer, to }) => {
-    io.to(to).emit("offer", {
-      offer,
-      from: socket.id,
-    });
-  });
-
-  socket.on("answer", ({ answer, to }) => {
-    io.to(to).emit("answer", {
-      answer,
-      from: socket.id,
-    });
-  });
-
-  socket.on("ice-candidate", ({ candidate, to }) => {
-    io.to(to).emit("ice-candidate", {
-      candidate,
-      from: socket.id,
-    });
-  });
-
-  socket.on("partner-effect", ({ type, value }) => {
-    if (socket.partner) {
-      socket.partner.emit("partner-effect", { type, value });
-    }
-  });
-
-  socket.on("next", () => {
-    if (socket.partner) {
-      socket.partner.emit("partner-disconnected");
-      socket.partner.partner = null;
-      queueUser(socket.partner);
-    }
-
-    socket.partner = null;
-    queueUser(socket);
-  });
-
-  socket.on("stop-matching", () => {
-    if (socket.partner) {
-      socket.partner.emit("partner-stopped");
-      socket.partner.partner = null;
-      queueUser(socket.partner);
-    }
-    socket.partner = null;
-
-    if (socket.queueTimeout) {
-      clearTimeout(socket.queueTimeout);
-      socket.queueTimeout = null;
-    }
-
-    const index = waitingUsers.indexOf(socket);
-    if (index !== -1) {
-      waitingUsers.splice(index, 1);
-    }
-  });
-
-  // NSFW Detection Ban Removed by User Request
-  socket.on("nsfw-detected", () => {
-    console.log("NSFW detected event ignored.");
-  });
-
-  socket.on("join-room", (roomId) => {
-    socket.join(roomId);
-    socket.roomId = roomId;
-
-    // Check if room has 2 users
-    const roomSockets = io.sockets.adapter.rooms.get(roomId);
-    if (roomSockets && roomSockets.size === 2) {
-      const [id1, id2] = Array.from(roomSockets);
-      const s1 = io.sockets.sockets.get(id1);
-      const s2 = io.sockets.sockets.get(id2);
-
-      s1.partner = s2;
-      s2.partner = s1;
-      const u1 = users.find(u => u.id === s1.userId);
-      const u2 = users.find(u => u.id === s2.userId);
-      const areFriends = (u1?.friends || []).includes(s2.userId) || (u2?.friends || []).includes(s1.userId);
-
-      s1.emit("matched", { partnerId: s2.id, initiator: true, partnerInfo: { id: s2.userId, name: s2.name, country: s2.country, gender: s2.gender, premium: s2.premium, planName: s2.planName, isFriend: areFriends } });
-      s2.emit("matched", { partnerId: s1.id, initiator: false, partnerInfo: { id: s1.userId, name: s1.name, country: s1.country, gender: s1.gender, premium: s1.premium, planName: s1.planName, isFriend: areFriends } });
-    }
-  });
-
-  socket.on("disconnect", () => {
-    console.log("User Disconnected:", socket.id);
-
-    if (socket.userId) {
-      onlineUsers.delete(socket.userId);
-      const user = users.find(u => u.id === socket.userId);
-      if (user && user.friends) {
-        user.friends.forEach(fId => {
-          const friendSocketId = onlineUsers.get(fId);
-          if (friendSocketId) {
-            io.to(friendSocketId).emit("friend-status", { friendId: socket.userId, online: false });
+      } else {
+        socket.queueTimeout = setTimeout(() => {
+          if (socket.connected && !socket.partner) {
+            if (!waitingUsers.includes(socket)) {
+              waitingUsers.push(socket);
+            }
+            matchUsers();
           }
-        });
+        }, delay);
       }
-    }
-
-    const index = waitingUsers.indexOf(socket);
-    if (index !== -1) waitingUsers.splice(index, 1);
-
-    // If they were in quiz queue, remove them and refund
-    const quizIdx = waitingQuizUsers.indexOf(socket);
-    if (quizIdx !== -1) {
-      waitingQuizUsers.splice(quizIdx, 1);
-      const u = users.find(usr => usr.id === socket.userId);
-      if (u) {
-        u.coins = (u.coins || 0) + 50;
-        coinActivity.push({ email: u.email, type: "earn", amount: 50, description: "Quiz Duel Queue Left Refund", timestamp: Date.now() });
-        saveCoinActivity();
-        saveUsers();
-        socket.emit("coins-updated", u.coins);
-      }
-    }
-
-    // If they were in an active quiz match, partner wins by forfeit
-    if (socket.roomId && quizRooms[socket.roomId]) {
-      const room = quizRooms[socket.roomId];
-      const partner = room.players.find(p => p.id !== socket.id);
-      if (partner) {
-        partner.emit("quiz-partner-disconnected");
-        const u = users.find(usr => usr.id === partner.userId);
-        if (u) {
-          u.coins = (u.coins || 0) + 100;
-          coinActivity.push({ email: u.email, type: "earn", amount: 100, description: "Quiz Duel Win (forfeit)", timestamp: Date.now() });
-          partner.emit("coins-updated", u.coins);
-          saveCoinActivity();
-          saveUsers();
-        }
-      }
-      if (room.questionTimer) clearTimeout(room.questionTimer);
-      delete quizRooms[socket.roomId];
-    }
-
-    if (socket.partner) {
-      const partner = socket.partner;
-      partner.emit("partner-reconnecting");
-      setTimeout(() => {
-        if (!socket.connected && partner.partner === socket) {
-          partner.emit("partner-disconnected");
-          partner.partner = null;
-          queueUser(partner);
-        }
-      }, 8000);
-    }
-  });
-
-  // --- QUIZ DUEL / BRAIN CLASH EVENTS ---
-
-  socket.on("join-quiz-queue", ({ category } = {}) => {
-    socket.quizCategory = category || "General Knowledge";
-    if (!socket.userId) {
-      socket.emit("quiz-error", { message: "Please register or login first." });
-      return;
-    }
-    const user = users.find(u => u.id === socket.userId);
-    if (!user) {
-      socket.emit("quiz-error", { message: "User profile not found." });
-      return;
-    }
-
-    if ((user.coins || 0) < 50) {
-      socket.emit("quiz-error", { message: "Insufficient Coins! Entry fee is 50 coins." });
-      return;
-    }
-
-    // Check if already in queue
-    if (waitingQuizUsers.includes(socket)) {
-      return;
-    }
-
-    // Deduct 50 coins entry fee
-    user.coins = (user.coins || 0) - 50;
-    coinActivity.push({
-      email: user.email,
-      type: "spend",
-      amount: 50,
-      description: "Quiz Duel entry fee",
-      timestamp: Date.now()
-    });
-    saveCoinActivity();
-    saveUsers();
-
-    socket.emit("coins-updated", user.coins);
-    waitingQuizUsers.push(socket);
-    socket.emit("quiz-queue-joined");
-
-    console.log(`[Quiz Queue] User ${user.name} joined Category: ${socket.quizCategory}. Total Queue size: ${waitingQuizUsers.length}`);
-
-    // Trigger matchmaking
-    matchQuizUsers();
-  });
-
-  socket.on("leave-quiz-queue", () => {
-    const idx = waitingQuizUsers.indexOf(socket);
-    if (idx !== -1) {
-      waitingQuizUsers.splice(idx, 1);
-
-      // Refund 50 coins
-      const user = users.find(u => u.id === socket.userId);
-      if (user) {
-        user.coins = (user.coins || 0) + 50;
-        coinActivity.push({
-          email: user.email,
-          type: "earn",
-          amount: 50,
-          description: "Quiz Duel Leave refund",
-          timestamp: Date.now()
-        });
-        saveCoinActivity();
-        saveUsers();
-        socket.emit("coins-updated", user.coins);
-      }
-      socket.emit("quiz-queue-left");
-    }
-  });
-
-  socket.on("quiz-submit-answer", ({ selectedOption }) => {
-    const roomId = socket.roomId;
-    const room = quizRooms[roomId];
-    if (!room) return;
-
-    const q = room.questions[room.currentQuestionIndex];
-    if (!q) return;
-
-    // Check if player already answered this question
-    if (room.answeredPlayers[socket.id]) return;
-
-    const isCorrect = selectedOption === q.answer;
-    room.answeredPlayers[socket.id] = selectedOption;
-
-    const responseTime = (Date.now() - room.startTime) / 1000;
-    const isFirstToAnswer = (room.lockedAnswer === null);
-
-    if (isFirstToAnswer) {
-      // First player to submit locks their choice
-      room.lockedAnswer = { socketId: socket.id, selectedOption, correct: isCorrect };
-
-      if (isCorrect) {
-        // Correct answer! They win the point for this question immediately
-        const speedBonus = responseTime < 3 ? 0.5 : 0;
-        room.scores[socket.id] = (room.scores[socket.id] || 0) + 1 + speedBonus;
-
-        if (room.questionTimer) clearTimeout(room.questionTimer);
-
-        io.to(roomId).emit("quiz-answer-result", {
-          playerId: socket.id,
-          selectedOption,
-          correct: true,
-          scoreGained: 1 + speedBonus,
-          speedBonus: speedBonus > 0,
-          totalScores: room.scores,
-          correctAnswer: q.answer
-        });
-
-        // 3 seconds delay before next question
-        setTimeout(() => {
-          room.currentQuestionIndex++;
-          sendQuizQuestion(roomId);
-        }, 3000);
-      } else {
-        // Wrong answer! First player loses their turn, the other player gets a chance
-        io.to(roomId).emit("quiz-answer-result", {
-          playerId: socket.id,
-          selectedOption,
-          correct: false,
-          scoreGained: 0,
-          totalScores: room.scores,
-          lockout: true // Tell the client that this player is locked out
-        });
-      }
-    } else {
-      // Second player is answering (first player got it wrong)
-      if (isCorrect) {
-        // Correct answer!
-        room.scores[socket.id] = (room.scores[socket.id] || 0) + 1;
-
-        if (room.questionTimer) clearTimeout(room.questionTimer);
-
-        io.to(roomId).emit("quiz-answer-result", {
-          playerId: socket.id,
-          selectedOption,
-          correct: true,
-          scoreGained: 1,
-          totalScores: room.scores,
-          correctAnswer: q.answer
-        });
-
-        setTimeout(() => {
-          room.currentQuestionIndex++;
-          sendQuizQuestion(roomId);
-        }, 3000);
-      } else {
-        // Wrong answer! Both got it wrong
-        if (room.questionTimer) clearTimeout(room.questionTimer);
-
-        io.to(roomId).emit("quiz-answer-result", {
-          playerId: socket.id,
-          selectedOption,
-          correct: false,
-          scoreGained: 0,
-          totalScores: room.scores,
-          correctAnswer: q.answer,
-          endedForBoth: true
-        });
-
-        setTimeout(() => {
-          room.currentQuestionIndex++;
-          sendQuizQuestion(roomId);
-        }, 3000);
-      }
-    }
-  });
-
-  socket.on("quiz-finished-dare-done", () => {
-    socket.emit("quiz-dare-confirmed");
-  });
-});
-
-// --- PAYMENT ENDPOINTS ---
-
-// 1. Create Razorpay Order
-app.post('/api/payment/razorpay/order', async (req, res) => {
-  try {
-    const { amount, currency } = req.body; // Amount in INR (e.g. 89)
-
-    const options = {
-      amount: amount * 100, // Razorpay works in paisa
-      currency: currency || "INR",
-      receipt: `receipt_${Date.now()}`,
     };
 
-    const order = await razorpay.orders.create(options);
-    res.json({ success: true, order });
-  } catch (error) {
-    console.error("Razorpay Order Error:", error);
-    res.status(500).json({ success: false, message: "Could not create order" });
-  }
-});
+    // Global Moderation State
+    const BAD_WORDS_LIST = [
+      "abuse", "fake", "sex", "scam", "nude", "porn", "pussy", "dick", "xxx", "fuck", "bitch",
+      "lund", "chod", "gand", "porn", "madarchod", "behenchod", "bhenchod", "chutiya", "loda", "lauda",
+      "kamine", "haramkhor", "bsdk", "bhonsdi", "gaand", "randi", "saala", "saali", "harami"
+    ];
+    const userStrikes = new Map(); // email -> strike count
 
-// 2. Verify Razorpay Payment
-app.post('/api/payment/razorpay/verify', async (req, res) => {
-  try {
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-      userEmail,
-      planName,
-      giftRecipientId
-    } = req.body;
+    io.on("connection", (socket) => {
+      console.log("User Connected:", socket.id);
 
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
-    const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "YOUR_KEY_SECRET")
-      .update(body.toString())
-      .digest("hex");
+      // Initialize with default filters/info
+      socket.filters = { gender: "all", country: "all" };
 
-    const isAuthentic = expectedSignature === razorpay_signature;
+      socket.on("register-user", (userId) => {
+        socket.userId = userId;
+        onlineUsers.set(userId, socket.id);
 
-    if (isAuthentic) {
-      // If it's a gift, find the recipient. Otherwise find the payer.
-      const targetUser = giftRecipientId
-        ? users.find(u => u.id === giftRecipientId || u.email === giftRecipientId)
-        : users.find(u => u.email === userEmail);
-
-      if (targetUser) {
-        const user = targetUser; // Reuse the variable name to minimize changes
-        // DETECT PRODUCT TYPE
-        const isCoinPurchase = planName.includes("Coins");
-
-        if (isCoinPurchase) {
-          // Credit base coins + bonus coins based on package
-          let coinsToAdd = parseInt(planName.split(" ")[0]); // base coins, e.g. "200 Coins" -> 200
-          let bonusCoins = planName.includes("200") ? 50 : planName.includes("500") ? 150 : planName.includes("1300") ? 300 : 0;
-          user.coins = (user.coins || 0) + coinsToAdd + bonusCoins;
-
-          transactions.push({
-            id: razorpay_payment_id,
-            userEmail,
-            planName,
-            amount: planName.includes("100") ? 79 : planName.includes("200") ? 149 : planName.includes("500") ? 299 : 699,
-            timestamp: Date.now(),
-            type: "coins"
-          });
-        } else {
-          user.premium = true;
-          user.planName = planName;
-          let days = 30;
-          let amount = 349;
-          let bundledCoins = 0;
-
-          if (planName === "Starter") { days = 7; amount = 149; bundledCoins = 50; }
-          else if (planName === "Silver") { days = 90; amount = 1599; bundledCoins = 500; }
-          else if (planName === "VIP Elite") { days = 30; amount = 999; bundledCoins = 400; }
-          else if (planName === "Prime") { days = 30; amount = 599; bundledCoins = 150; }
-
-          user.planExpiry = Date.now() + (days * 24 * 60 * 60 * 1000);
-          user.coins = (user.coins || 0) + bundledCoins;
-
-          transactions.push({
-            id: razorpay_payment_id,
-            userEmail,
-            planName,
-            amount,
-            timestamp: Date.now(),
-            type: "subscription",
-            bundledCoins
+        // Broadcast online status to friends
+        const user = users.find(u => u.id === userId);
+        if (user && user.friends) {
+          user.friends.forEach(fId => {
+            const friendSocketId = onlineUsers.get(fId);
+            if (friendSocketId) {
+              io.to(friendSocketId).emit("friend-status", { friendId: userId, online: true });
+            }
           });
         }
+      });
 
-        saveTransactions();
-        saveUsers();
-        const updatedUser = {
-          ...user,
-          coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10)
-        };
-        return res.json({ success: true, message: "Transaction completed successfully", user: updatedUser });
-      }
-      return res.status(404).json({ success: false, message: "User not found" });
-    } else {
-      return res.status(400).json({ success: false, message: "Invalid signature, payment verification failed" });
-    }
-  } catch (error) {
-    console.error("Verification Error:", error);
-    res.status(500).json({ success: false, message: "Internal server error during verification" });
-  }
-});
+      socket.on("set-profile", (profile) => {
+        // Re-verify premium status from DB to prevent client-side manipulation
+        const dbUser = users.find(u => u.email === profile.email);
+        let isPremium = dbUser ? dbUser.premium : false;
+        let pName = dbUser ? dbUser.planName : null;
 
-// --- COINS & HISTORY ENDPOINTS ---
+        // Hardcoded admin check
+        if (profile.email === "ds9376314@gmail.com") {
+          isPremium = true;
+          pName = "VIP Elite";
+        }
 
-// ========== STRIPE ROUTES ==========
+        socket.user = { ...profile, premium: isPremium, planName: pName };
+        socket.userId = dbUser ? dbUser.id : profile.id;
+        socket.name = profile.name;
+        socket.email = profile.email;
+        socket.gender = profile.gender || (Math.random() > 0.5 ? "Male" : "Female");
+        socket.country = profile.country || "India";
+        socket.state = profile.state || "All States";
+        socket.age = profile.age || "18-24";
+        socket.premium = isPremium;
+        socket.planName = pName;
 
-// Stripe - Create Payment Intent
-app.post("/api/payment/stripe/create-intent", async (req, res) => {
-  try {
-    const { amount, currency = "inr", planName, userEmail } = req.body;
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount), // already in paise/cents
-      currency,
-      metadata: { planName, userEmail }
-    });
-    res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
-  } catch (err) {
-    console.error("Stripe Intent Error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+        console.log(`User ${socket.id} profile set securely: ${profile.name} (${profile.email}), ${socket.premium ? "PREMIUM" : "FREE"}`);
 
-// Stripe - Verify & Activate Plan
-app.post("/api/payment/stripe/verify", async (req, res) => {
-  try {
-    const { paymentIntentId, userEmail, planName, giftRecipientId } = req.body;
-    const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
-    if (intent.status !== "succeeded") {
-      return res.status(400).json({ success: false, message: "Payment not completed" });
-    }
-    const user = users.find(u => u.email === (giftRecipientId || userEmail));
-    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+        if (socket.userId) {
+          onlineUsers.set(socket.userId, socket.id);
+        }
 
-    const isCoinPurchase = planName.includes("Coins");
-    if (isCoinPurchase) {
-      const coinsToAdd = parseInt(planName.split(" ")[0]);
-      const bonusCoins = planName.includes("200") ? 50 : planName.includes("500") ? 150 : planName.includes("1300") ? 300 : 0;
-      user.coins = (user.coins || 0) + coinsToAdd + bonusCoins;
-    } else {
-      let days = 7, amount = 149, bundledCoins = 0;
-      if (planName === "Starter")  { days = 7;  amount = 149;  bundledCoins = 50; }
-      else if (planName === "Prime")  { days = 30; amount = 599;  bundledCoins = 150; }
-      else if (planName === "Silver") { days = 90; amount = 1599; bundledCoins = 500; }
-      else if (planName === "VIP Elite") { days = 30; amount = 999; bundledCoins = 400; }
-      user.planExpiry = Date.now() + (days * 24 * 60 * 60 * 1000);
-      user.premium = true;
-      user.planName = planName;
-      user.coins = (user.coins || 0) + bundledCoins;
-    }
-    transactions.push({ id: paymentIntentId, userEmail, planName, gateway: "stripe", timestamp: Date.now() });
-    saveTransactions(); saveUsers();
-    const updatedUser = { ...user, coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10) };
-    res.json({ success: true, message: "Stripe payment verified", user: updatedUser });
-  } catch (err) {
-    console.error("Stripe Verify Error:", err);
-    res.status(500).json({ success: false, message: "Stripe verification failed" });
-  }
-});
+        if (profile.roomId) {
+          return;
+        }
 
-// ========== PAYPAL ROUTES ==========
+        queueUser(socket);
+      });
 
-// PayPal - Create Order
-app.post("/api/payment/paypal/create-order", async (req, res) => {
-  try {
-    const { amount, currency = "USD", planName, userEmail } = req.body;
-    const accessToken = await getPayPalAccessToken();
-    const response = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        intent: "CAPTURE",
-        purchase_units: [{
-          amount: { currency_code: currency, value: parseFloat(amount / 100).toFixed(2) },
-          description: `ZoneMeet ${planName}`,
-          custom_id: JSON.stringify({ userEmail, planName })
-        }]
-      })
-    });
-    const order = await response.json();
-    if (!order.id) throw new Error(order.message || "PayPal order creation failed");
-    const approveUrl = order.links.find(l => l.rel === "approve")?.href;
-    res.json({ orderId: order.id, approveUrl });
-  } catch (err) {
-    console.error("PayPal Create Order Error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+      socket.on("update-filters", (filters) => {
+        socket.filters = filters;
+        console.log(`User ${socket.id} updated filters:`, filters);
+      });
 
-// PayPal - Capture & Verify Order
-app.post("/api/payment/paypal/capture", async (req, res) => {
-  try {
-    const { orderId, userEmail, planName, giftRecipientId } = req.body;
-    const accessToken = await getPayPalAccessToken();
-    const response = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders/${orderId}/capture`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }
-    });
-    const capture = await response.json();
-    if (capture.status !== "COMPLETED") {
-      return res.status(400).json({ success: false, message: "PayPal payment not completed" });
-    }
-    const user = users.find(u => u.email === (giftRecipientId || userEmail));
-    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+      socket.on("send-message", ({ text, to }) => {
+        if (socket.user) {
+          const email = socket.user.email;
+          const lowerText = text.toLowerCase();
+          const hasBadWord = BAD_WORDS_LIST.some(word => lowerText.includes(word));
 
-    const isCoinPurchase = planName.includes("Coins");
-    if (isCoinPurchase) {
-      const coinsToAdd = parseInt(planName.split(" ")[0]);
-      const bonusCoins = planName.includes("200") ? 50 : planName.includes("500") ? 150 : planName.includes("1300") ? 300 : 0;
-      user.coins = (user.coins || 0) + coinsToAdd + bonusCoins;
-    } else {
-      let days = 7, bundledCoins = 0;
-      if (planName === "Starter")  { days = 7;  bundledCoins = 50; }
-      else if (planName === "Prime")  { days = 30; bundledCoins = 150; }
-      else if (planName === "Silver") { days = 90; bundledCoins = 500; }
-      else if (planName === "VIP Elite") { days = 30; bundledCoins = 400; }
-      user.planExpiry = Date.now() + (days * 24 * 60 * 60 * 1000);
-      user.premium = true;
-      user.planName = planName;
-      user.coins = (user.coins || 0) + bundledCoins;
-    }
-    transactions.push({ id: orderId, userEmail, planName, gateway: "paypal", timestamp: Date.now() });
-    saveTransactions(); saveUsers();
-    const updatedUser = { ...user, coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10) };
-    res.json({ success: true, message: "PayPal payment captured", user: updatedUser });
-  } catch (err) {
-    console.error("PayPal Capture Error:", err);
-    res.status(500).json({ success: false, message: "PayPal capture failed" });
-  }
-});
-
-// ========== CASHFREE ROUTES ==========
-
-// Cashfree - Create Order
-app.post("/api/payment/cashfree/create-order", async (req, res) => {
-  try {
-    const { amount, planName, userEmail } = req.body;
-    const orderId = `CF_${Date.now()}_${Math.random().toString(36).slice(2,8).toUpperCase()}`;
-    const response = await fetch(`${CASHFREE_BASE_URL}/orders`, {
-      method: "POST",
-      headers: {
-        "x-client-id": process.env.CASHFREE_APP_ID || "YOUR_CASHFREE_APP_ID",
-        "x-client-secret": process.env.CASHFREE_SECRET_KEY || "YOUR_CASHFREE_SECRET",
-        "x-api-version": "2023-08-01",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        order_id: orderId,
-        order_amount: (amount / 100).toFixed(2),
-        order_currency: "INR",
-        customer_details: { customer_id: userEmail.replace(/[@.]/g,"_"), customer_email: userEmail, customer_phone: "9999999999" },
-        order_meta: { return_url: `https://zonemeet.chat/payment-success?order_id={order_id}&plan=${planName}`, notify_url: `https://meetzone-backend.onrender.com/api/payment/cashfree/webhook` },
-        order_note: `ZoneMeet ${planName}`
-      })
-    });
-    const order = await response.json();
-    if (!order.payment_session_id) throw new Error(order.message || "Cashfree order failed");
-    res.json({ orderId, paymentSessionId: order.payment_session_id });
-  } catch (err) {
-    console.error("Cashfree Create Order Error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Cashfree - Verify Payment
-app.post("/api/payment/cashfree/verify", async (req, res) => {
-  try {
-    const { orderId, userEmail, planName, giftRecipientId } = req.body;
-    const response = await fetch(`${CASHFREE_BASE_URL}/orders/${orderId}`, {
-      headers: {
-        "x-client-id": process.env.CASHFREE_APP_ID || "YOUR_CASHFREE_APP_ID",
-        "x-client-secret": process.env.CASHFREE_SECRET_KEY || "YOUR_CASHFREE_SECRET",
-        "x-api-version": "2023-08-01"
-      }
-    });
-    const order = await response.json();
-    if (order.order_status !== "PAID") {
-      return res.status(400).json({ success: false, message: "Cashfree payment not completed" });
-    }
-    const user = users.find(u => u.email === (giftRecipientId || userEmail));
-    if (!user) return res.status(404).json({ success: false, message: "User not found" });
-
-    const isCoinPurchase = planName.includes("Coins");
-    if (isCoinPurchase) {
-      const coinsToAdd = parseInt(planName.split(" ")[0]);
-      const bonusCoins = planName.includes("200") ? 50 : planName.includes("500") ? 150 : planName.includes("1300") ? 300 : 0;
-      user.coins = (user.coins || 0) + coinsToAdd + bonusCoins;
-    } else {
-      let days = 7, bundledCoins = 0;
-      if (planName === "Starter")  { days = 7;  bundledCoins = 50; }
-      else if (planName === "Prime")  { days = 30; bundledCoins = 150; }
-      else if (planName === "Silver") { days = 90; bundledCoins = 500; }
-      else if (planName === "VIP Elite") { days = 30; bundledCoins = 400; }
-      user.planExpiry = Date.now() + (days * 24 * 60 * 60 * 1000);
-      user.premium = true;
-      user.planName = planName;
-      user.coins = (user.coins || 0) + bundledCoins;
-    }
-    transactions.push({ id: orderId, userEmail, planName, gateway: "cashfree", timestamp: Date.now() });
-    saveTransactions(); saveUsers();
-    const updatedUser = { ...user, coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10) };
-    res.json({ success: true, message: "Cashfree payment verified", user: updatedUser });
-  } catch (err) {
-    console.error("Cashfree Verify Error:", err);
-    res.status(500).json({ success: false, message: "Cashfree verification failed" });
-  }
-});
-
-
-
-app.post("/api/user/spend-coins", (req, res) => {
-  const { email, userId, amount, feature } = req.body;
-  const user = users.find(u => (userId && u.id === userId) || (email && u.email === email));
-  if (!user) {
-    console.log("Spend-coins error: User not found for", { email, userId });
-    return res.status(404).json({ message: "User not found" });
-  }
-
-  // Admin Immunity: ds9376314@gmail.com uses coins for free
-  if (email !== "ds9376314@gmail.com") {
-    if (user.coins < amount) {
-      return res.status(400).json({ success: false, message: "Not enough coins!" });
-    }
-    user.coins -= amount;
-    // Track monthly spend for leaderboard
-    user.monthlySpend = (user.monthlySpend || 0) + amount;
-    checkLeaderboardReset();
-  }
-
-  // LOG ACTIVITY FOR GUARDIAN & DASHBOARD
-  if (!userActivityLog.has(email)) userActivityLog.set(email, []);
-  const activityEntry = {
-    id: Date.now() + Math.random(),
-    email,
-    name: user.name,
-    feature: feature || "Generic",
-    amount: amount,
-    timestamp: Date.now()
-  };
-
-  userActivityLog.get(email).push({ t: activityEntry.timestamp, act: "spend", amt: amount });
-  coinActivity.push(activityEntry);
-  saveCoinActivity();
-
-  if (feature === "boost" || feature === "profile_boost") {
-    const expiry = Date.now() + (10 * 60 * 1000);
-    user.boostExpiry = expiry;
-    const uIndex = users.findIndex(u => u.id === user.id);
-    if (uIndex > -1) {
-      users[uIndex].boostExpiry = expiry;
-    }
-  }
-
-  // SAVE UNLOCKED FILTERS
-  if (feature && feature.startsWith("Unlock Filter: ")) {
-    const { filterId } = req.body;
-    if (!user.unlockedFilters) {
-      user.unlockedFilters = ["None", "Smooth"];
-    }
-    if (filterId && !user.unlockedFilters.includes(filterId)) {
-      user.unlockedFilters.push(filterId);
-    }
-    // Force write back to the user object just in case
-    const uIndex = users.findIndex(u => u.id === user.id);
-    if (uIndex > -1) {
-      users[uIndex].unlockedFilters = user.unlockedFilters;
-    }
-    console.log("Saving filter:", filterId, "New list:", user.unlockedFilters);
-  }
-
-  // SAVE SECRET IDENTITY MODE
-  if (feature === "secret_identity" || feature === "secret_identity_mode") {
-    const expiry = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 Days in ms
-    user.hasSecretIdentity = true;
-    user.secretIdentityExpiry = expiry;
-    const uIndex = users.findIndex(u => u.id === user.id);
-    if (uIndex > -1) {
-      users[uIndex].hasSecretIdentity = true;
-      users[uIndex].secretIdentityExpiry = expiry;
-    }
-  }
-
-  saveUsers();
-  res.json({
-    success: true,
-    coins: user.coins,
-    boostExpiry: user.boostExpiry,
-    coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10),
-    unlockedFilters: user.unlockedFilters || ["None", "Smooth"],
-    hasSecretIdentity: user.hasSecretIdentity
-  });
-});
-
-app.get("/api/user/history", (req, res) => {
-  const { email } = req.query;
-  const user = users.find(u => u.email === email);
-  if (!user) return res.status(404).json({ message: "User not found" });
-  res.json(user.recentStrangers || []);
-});
-
-// ADMIN DASHBOARD ENDPOINTS
-app.get("/api/admin/stats", authenticateToken, (req, res) => {
-  if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
-
-  res.json({
-    totalUsers: users.length,
-    premiumUsers: users.filter(u => u.premium).length,
-    liveCalls: Math.floor(onlineUsers.size / 2),
-    totalReports: reports.length,
-    onlineCount: onlineUsers.size
-  });
-});
-
-app.get("/api/admin/reports", authenticateToken, (req, res) => {
-  if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
-  res.json(reports);
-});
-
-app.get("/api/admin/messages", (req, res) => {
-  res.json(contactMessages);
-});
-
-app.post("/api/admin/messages/delete", authenticateToken, (req, res) => {
-  if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
-  const { id } = req.body;
-  contactMessages = contactMessages.filter(m => m.id !== id);
-  saveMessages();
-  res.json({ success: true, message: "Message deleted" });
-});
-
-app.get("/api/admin/live-users", authenticateToken, (req, res) => {
-  if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
-
-  const liveList = [];
-  onlineUsers.forEach((socketId, userId) => {
-    const u = users.find(usr => usr.id === userId);
-    if (u) {
-      liveList.push({ id: u.id, name: u.name, country: u.country, email: u.email });
-    }
-  });
-  res.json(liveList);
-});
-
-app.get("/api/admin/analytics", authenticateToken, (req, res) => {
-  if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
-
-  const countryCounts = {};
-  users.forEach(u => {
-    const c = u.country || "Unknown";
-    countryCounts[c] = (countryCounts[c] || 0) + 1;
-  });
-
-  // Calculate real revenue
-  const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-
-  const todayRevenue = transactions
-    .filter(t => t.timestamp >= startOfDay)
-    .reduce((sum, t) => sum + (t.amount || 0), 0);
-
-  const monthlyRevenue = transactions
-    .filter(t => t.timestamp >= startOfMonth)
-    .reduce((sum, t) => sum + (t.amount || 0), 0);
-
-  const lifetimeRevenue = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
-
-  // COIN SPECIFIC ANALYTICS
-  const totalCoinsSold = transactions.reduce((sum, t) => {
-    let coins = 0;
-    if (t.type === "coins") {
-      coins = parseInt(t.planName.split(" ")[0]) || 0;
-    } else if (t.bundledCoins) {
-      coins = t.bundledCoins;
-    }
-    return sum + coins;
-  }, 0);
-
-  const revenueFromCoins = transactions
-    .filter(t => t.type === "coins")
-    .reduce((sum, t) => sum + (t.amount || 0), 0);
-
-  // Coins Spent Today
-  let coinsSpentToday = 0;
-  userActivityLog.forEach((logs, email) => {
-    logs.forEach(l => {
-      if (l.t >= startOfDay && l.act === "spend") {
-        coinsSpentToday += (l.amt || 0);
-      }
-    });
-  });
-
-  // Top Spender
-  let topSpender = { name: "N/A", email: "N/A", count: 0 };
-  userActivityLog.forEach((logs, email) => {
-    const spendCount = logs.filter(l => l.act === "spend").length;
-    if (spendCount > topSpender.count) {
-      const u = users.find(usr => usr.email === email);
-      topSpender = { name: u ? u.name : email, email, count: spendCount };
-    }
-  });
-
-  res.json({
-    countryCounts,
-    revenue: {
-      today: todayRevenue,
-      monthly: monthlyRevenue,
-      lifetime: lifetimeRevenue,
-      premiumSales: users.filter(u => u.premium).length,
-      coinPurchases: transactions.filter(t => t.type === "coins").length,
-      history: transactions.slice(-20).reverse()
-    },
-    coins: {
-      totalSold: totalCoinsSold,
-      spentToday: coinsSpentToday,
-      revenue: revenueFromCoins,
-      topSpender,
-      recentActivity: coinActivity.slice(-50).reverse() // Last 50 spend events
-    }
-  });
-});
-
-app.post("/api/admin/update-user-premium", authenticateToken, (req, res) => {
-  if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
-  const { email, premium, planName, planExpiry, isVIP } = req.body;
-
-  const user = users.find(u => u.email === email);
-  if (!user) return res.status(404).json({ message: "User not found" });
-
-  user.premium = premium;
-  if (planName === "Free") {
-    user.premium = false;
-    user.planName = null;
-    user.planExpiry = null;
-  } else {
-    user.planName = planName || (premium ? "Prime" : null);
-    user.planExpiry = planExpiry || (premium ? Date.now() + (30 * 24 * 60 * 60 * 1000) : null);
-  }
-  user.isVIP = isVIP || false;
-
-  saveUsers();
-  res.json({ success: true, message: "User updated successfully" });
-});
-
-app.get("/api/admin/all-users", authenticateToken, (req, res) => {
-  if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
-  res.json(users);
-});
-
-app.get("/api/admin/banned-users", authenticateToken, (req, res) => {
-  if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
-  res.json(bannedEmails);
-});
-
-app.post("/api/admin/unban", authenticateToken, (req, res) => {
-  if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
-  const { email } = req.body;
-  const index = bannedEmails.indexOf(email);
-  if (index > -1) {
-    bannedEmails.splice(index, 1);
-    saveBanned();
-    res.json({ success: true, message: "User unbanned" });
-  } else {
-    res.json({ success: false, message: "Not found in banned list" });
-  }
-});
-
-app.post("/api/admin/ban", authenticateToken, (req, res) => {
-  if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
-  const { email } = req.body;
-  if (!bannedEmails.includes(email)) {
-    bannedEmails.push(email);
-    saveBanned();
-    res.json({ success: true, message: "User banned" });
-  } else {
-    res.json({ success: false, message: "Already banned" });
-  }
-});
-
-
-// ========= LEADERBOARD LOGIC =========
-const SYSTEM_CONFIG_FILE = path.join(__dirname, "system_config.json");
-let systemConfig = { lastResetMonth: new Date().getMonth(), lastResetYear: new Date().getFullYear() };
-if (fs.existsSync(SYSTEM_CONFIG_FILE)) {
-  try { systemConfig = JSON.parse(fs.readFileSync(SYSTEM_CONFIG_FILE, "utf-8")); } catch (e) {}
-}
-
-function saveSystemConfig() {
-  try { fs.writeFileSync(SYSTEM_CONFIG_FILE, JSON.stringify(systemConfig, null, 2)); } catch(e){}
-  if(db) db.collection("appData").updateOne({ _id: "systemConfig" }, { $set: { data: systemConfig } }, { upsert: true }).catch(console.error);
-}
-
-function checkLeaderboardReset() {
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
-  if (currentMonth !== systemConfig.lastResetMonth || currentYear !== systemConfig.lastResetYear) {
-    console.log("🏆 Monthly Leaderboard Reset Triggered!");
+          /*
+          // AI Chat Guard Temporarily Disabled
+          if (hasBadWord) {
+            let strikes = (userStrikes.get(email) || 0) + 1;
+            userStrikes.set(email, strikes);
     
-    // 1. Award Prizes to Global Top 3
-    const globalTop = [...users]
-      .filter(u => u.email !== "ds9376314@gmail.com") // Exclude admin
-      .sort((a, b) => (b.monthlySpend || 0) - (a.monthlySpend || 0))
-      .slice(0, 3);
+            if (strikes >= 2) {
+              console.log(`[GUARDIAN] CHAT ABUSE detected: ${email}. Banning...`);
+              banUser(email, "AI Detection: Repeated use of restricted words in chat");
+              return;
+            } else {
+              socket.emit("warning-alert", `Warning: Your message contains restricted words. Strike ${strikes}/2. Continued abuse will lead to a permanent ban.`);
+              return; 
+            }
+          }
+          */
+        }
 
-    const prizes = [1000, 500, 200];
-    globalTop.forEach((u, i) => {
-      if ((u.monthlySpend || 0) > 0) {
-        u.coins += prizes[i];
+        io.to(to).emit("receive-message", {
+          text,
+          senderId: socket.id,
+        });
+      });
+
+      socket.on("friend-request", ({ to }) => {
+        const targetSocketId = to;
+        io.to(targetSocketId).emit("friend-request-received", {
+          from: socket.userId,
+          fromName: socket.name || "ZoneMeet User"
+        });
+      });
+
+      // Real-time gift relay (instant, before backend processes)
+      socket.on("send-gift-to-partner", ({ to, stickerIcon, senderName, amount }) => {
+        io.to(to).emit("receive-gift-from-partner", {
+          stickerIcon,
+          senderName: senderName || socket.name || "Partner",
+          amount
+        });
+      });
+
+      // Direct Call Signaling
+      socket.on("direct-call-request", ({ toUserId, fromUser, roomId }) => {
+        const targetSocketId = onlineUsers.get(toUserId);
+        if (targetSocketId) {
+          io.to(targetSocketId).emit("incoming-direct-call", { fromUser, fromSocketId: socket.id, roomId });
+        }
+      });
+
+      socket.on("direct-call-accept", ({ toSocketId, roomId }) => {
+        io.to(toSocketId).emit("direct-call-accepted", { bySocketId: socket.id, roomId });
+      });
+
+      socket.on("direct-call-reject", ({ toSocketId }) => {
+        io.to(toSocketId).emit("direct-call-rejected");
+      });
+
+      socket.on("offer", ({ offer, to }) => {
+        io.to(to).emit("offer", {
+          offer,
+          from: socket.id,
+        });
+      });
+
+      socket.on("answer", ({ answer, to }) => {
+        io.to(to).emit("answer", {
+          answer,
+          from: socket.id,
+        });
+      });
+
+      socket.on("ice-candidate", ({ candidate, to }) => {
+        io.to(to).emit("ice-candidate", {
+          candidate,
+          from: socket.id,
+        });
+      });
+
+      socket.on("partner-effect", ({ type, value }) => {
+        if (socket.partner) {
+          socket.partner.emit("partner-effect", { type, value });
+        }
+      });
+
+      socket.on("next", () => {
+        if (socket.partner) {
+          socket.partner.emit("partner-disconnected");
+          socket.partner.partner = null;
+          queueUser(socket.partner);
+        }
+
+        socket.partner = null;
+        queueUser(socket);
+      });
+
+      socket.on("stop-matching", () => {
+        if (socket.partner) {
+          socket.partner.emit("partner-stopped");
+          socket.partner.partner = null;
+          queueUser(socket.partner);
+        }
+        socket.partner = null;
+
+        if (socket.queueTimeout) {
+          clearTimeout(socket.queueTimeout);
+          socket.queueTimeout = null;
+        }
+
+        const index = waitingUsers.indexOf(socket);
+        if (index !== -1) {
+          waitingUsers.splice(index, 1);
+        }
+      });
+
+      // NSFW Detection Ban Removed by User Request
+      socket.on("nsfw-detected", () => {
+        console.log("NSFW detected event ignored.");
+      });
+
+      socket.on("join-room", (roomId) => {
+        socket.join(roomId);
+        socket.roomId = roomId;
+
+        // Check if room has 2 users
+        const roomSockets = io.sockets.adapter.rooms.get(roomId);
+        if (roomSockets && roomSockets.size === 2) {
+          const [id1, id2] = Array.from(roomSockets);
+          const s1 = io.sockets.sockets.get(id1);
+          const s2 = io.sockets.sockets.get(id2);
+
+          s1.partner = s2;
+          s2.partner = s1;
+          const u1 = users.find(u => u.id === s1.userId);
+          const u2 = users.find(u => u.id === s2.userId);
+          const areFriends = (u1?.friends || []).includes(s2.userId) || (u2?.friends || []).includes(s1.userId);
+
+          s1.emit("matched", { partnerId: s2.id, initiator: true, partnerInfo: { id: s2.userId, name: s2.name, country: s2.country, gender: s2.gender, premium: s2.premium, planName: s2.planName, isFriend: areFriends } });
+          s2.emit("matched", { partnerId: s1.id, initiator: false, partnerInfo: { id: s1.userId, name: s1.name, country: s1.country, gender: s1.gender, premium: s1.premium, planName: s1.planName, isFriend: areFriends } });
+        }
+      });
+
+      socket.on("disconnect", () => {
+        console.log("User Disconnected:", socket.id);
+
+        if (socket.userId) {
+          onlineUsers.delete(socket.userId);
+          const user = users.find(u => u.id === socket.userId);
+          if (user && user.friends) {
+            user.friends.forEach(fId => {
+              const friendSocketId = onlineUsers.get(fId);
+              if (friendSocketId) {
+                io.to(friendSocketId).emit("friend-status", { friendId: socket.userId, online: false });
+              }
+            });
+          }
+        }
+
+        const index = waitingUsers.indexOf(socket);
+        if (index !== -1) waitingUsers.splice(index, 1);
+
+        // If they were in quiz queue, remove them and refund
+        const quizIdx = waitingQuizUsers.indexOf(socket);
+        if (quizIdx !== -1) {
+          waitingQuizUsers.splice(quizIdx, 1);
+          const u = users.find(usr => usr.id === socket.userId);
+          if (u) {
+            u.coins = (u.coins || 0) + 50;
+            coinActivity.push({ email: u.email, type: "earn", amount: 50, description: "Quiz Duel Queue Left Refund", timestamp: Date.now() });
+            saveCoinActivity();
+            saveUsers();
+            socket.emit("coins-updated", u.coins);
+          }
+        }
+
+        // If they were in an active quiz match, partner wins by forfeit
+        if (socket.roomId && quizRooms[socket.roomId]) {
+          const room = quizRooms[socket.roomId];
+          const partner = room.players.find(p => p.id !== socket.id);
+          if (partner) {
+            partner.emit("quiz-partner-disconnected");
+            const u = users.find(usr => usr.id === partner.userId);
+            if (u) {
+              u.coins = (u.coins || 0) + 100;
+              coinActivity.push({ email: u.email, type: "earn", amount: 100, description: "Quiz Duel Win (forfeit)", timestamp: Date.now() });
+              partner.emit("coins-updated", u.coins);
+              saveCoinActivity();
+              saveUsers();
+            }
+          }
+          if (room.questionTimer) clearTimeout(room.questionTimer);
+          delete quizRooms[socket.roomId];
+        }
+
+        if (socket.partner) {
+          const partner = socket.partner;
+          partner.emit("partner-reconnecting");
+          setTimeout(() => {
+            if (!socket.connected && partner.partner === socket) {
+              partner.emit("partner-disconnected");
+              partner.partner = null;
+              queueUser(partner);
+            }
+          }, 8000);
+        }
+      });
+
+      // --- QUIZ DUEL / BRAIN CLASH EVENTS ---
+
+      socket.on("join-quiz-queue", ({ category } = {}) => {
+        socket.quizCategory = category || "General Knowledge";
+        if (!socket.userId) {
+          socket.emit("quiz-error", { message: "Please register or login first." });
+          return;
+        }
+        const user = users.find(u => u.id === socket.userId);
+        if (!user) {
+          socket.emit("quiz-error", { message: "User profile not found." });
+          return;
+        }
+
+        if ((user.coins || 0) < 50) {
+          socket.emit("quiz-error", { message: "Insufficient Coins! Entry fee is 50 coins." });
+          return;
+        }
+
+        // Check if already in queue
+        if (waitingQuizUsers.includes(socket)) {
+          return;
+        }
+
+        // Deduct 50 coins entry fee
+        user.coins = (user.coins || 0) - 50;
         coinActivity.push({
-          id: "prize-" + Date.now() + "-" + i,
-          email: u.email,
-          name: u.name,
-          type: "earn",
-          amount: prizes[i],
-          feature: `Leaderboard Rank #${i + 1} Monthly Prize`,
+          email: user.email,
+          type: "spend",
+          amount: 50,
+          description: "Quiz Duel entry fee",
           timestamp: Date.now()
         });
+        saveCoinActivity();
+        saveUsers();
+
+        socket.emit("coins-updated", user.coins);
+        waitingQuizUsers.push(socket);
+        socket.emit("quiz-queue-joined");
+
+        console.log(`[Quiz Queue] User ${user.name} joined Category: ${socket.quizCategory}. Total Queue size: ${waitingQuizUsers.length}`);
+
+        // Trigger matchmaking
+        matchQuizUsers();
+      });
+
+      socket.on("leave-quiz-queue", () => {
+        const idx = waitingQuizUsers.indexOf(socket);
+        if (idx !== -1) {
+          waitingQuizUsers.splice(idx, 1);
+
+          // Refund 50 coins
+          const user = users.find(u => u.id === socket.userId);
+          if (user) {
+            user.coins = (user.coins || 0) + 50;
+            coinActivity.push({
+              email: user.email,
+              type: "earn",
+              amount: 50,
+              description: "Quiz Duel Leave refund",
+              timestamp: Date.now()
+            });
+            saveCoinActivity();
+            saveUsers();
+            socket.emit("coins-updated", user.coins);
+          }
+          socket.emit("quiz-queue-left");
+        }
+      });
+
+      socket.on("quiz-submit-answer", ({ selectedOption }) => {
+        const roomId = socket.roomId;
+        const room = quizRooms[roomId];
+        if (!room) return;
+
+        const q = room.questions[room.currentQuestionIndex];
+        if (!q) return;
+
+        // Check if player already answered this question
+        if (room.answeredPlayers[socket.id]) return;
+
+        const isCorrect = selectedOption === q.answer;
+        room.answeredPlayers[socket.id] = selectedOption;
+
+        const responseTime = (Date.now() - room.startTime) / 1000;
+        const isFirstToAnswer = (room.lockedAnswer === null);
+
+        if (isFirstToAnswer) {
+          // First player to submit locks their choice
+          room.lockedAnswer = { socketId: socket.id, selectedOption, correct: isCorrect };
+
+          if (isCorrect) {
+            // Correct answer! They win the point for this question immediately
+            const speedBonus = responseTime < 3 ? 0.5 : 0;
+            room.scores[socket.id] = (room.scores[socket.id] || 0) + 1 + speedBonus;
+
+            if (room.questionTimer) clearTimeout(room.questionTimer);
+
+            io.to(roomId).emit("quiz-answer-result", {
+              playerId: socket.id,
+              selectedOption,
+              correct: true,
+              scoreGained: 1 + speedBonus,
+              speedBonus: speedBonus > 0,
+              totalScores: room.scores,
+              correctAnswer: q.answer
+            });
+
+            // 3 seconds delay before next question
+            setTimeout(() => {
+              room.currentQuestionIndex++;
+              sendQuizQuestion(roomId);
+            }, 3000);
+          } else {
+            // Wrong answer! First player loses their turn, the other player gets a chance
+            io.to(roomId).emit("quiz-answer-result", {
+              playerId: socket.id,
+              selectedOption,
+              correct: false,
+              scoreGained: 0,
+              totalScores: room.scores,
+              lockout: true // Tell the client that this player is locked out
+            });
+          }
+        } else {
+          // Second player is answering (first player got it wrong)
+          if (isCorrect) {
+            // Correct answer!
+            room.scores[socket.id] = (room.scores[socket.id] || 0) + 1;
+
+            if (room.questionTimer) clearTimeout(room.questionTimer);
+
+            io.to(roomId).emit("quiz-answer-result", {
+              playerId: socket.id,
+              selectedOption,
+              correct: true,
+              scoreGained: 1,
+              totalScores: room.scores,
+              correctAnswer: q.answer
+            });
+
+            setTimeout(() => {
+              room.currentQuestionIndex++;
+              sendQuizQuestion(roomId);
+            }, 3000);
+          } else {
+            // Wrong answer! Both got it wrong
+            if (room.questionTimer) clearTimeout(room.questionTimer);
+
+            io.to(roomId).emit("quiz-answer-result", {
+              playerId: socket.id,
+              selectedOption,
+              correct: false,
+              scoreGained: 0,
+              totalScores: room.scores,
+              correctAnswer: q.answer,
+              endedForBoth: true
+            });
+
+            setTimeout(() => {
+              room.currentQuestionIndex++;
+              sendQuizQuestion(roomId);
+            }, 3000);
+          }
+        }
+      });
+
+      socket.on("quiz-finished-dare-done", () => {
+        socket.emit("quiz-dare-confirmed");
+      });
+    });
+
+    // --- PAYMENT ENDPOINTS ---
+
+    // 1. Create Razorpay Order
+    app.post('/api/payment/razorpay/order', async (req, res) => {
+      try {
+        const { amount, currency } = req.body; // Amount in INR (e.g. 89)
+
+        const options = {
+          amount: amount * 100, // Razorpay works in paisa
+          currency: currency || "INR",
+          receipt: `receipt_${Date.now()}`,
+        };
+
+        const order = await razorpay.orders.create(options);
+        res.json({ success: true, order });
+      } catch (error) {
+        console.error("Razorpay Order Error:", error);
+        res.status(500).json({ success: false, message: "Could not create order" });
       }
     });
 
-    // 2. Reset All Users' monthlySpend
-    users.forEach(u => u.monthlySpend = 0);
-    
-    // 3. Update Config
-    systemConfig.lastResetMonth = currentMonth;
-    systemConfig.lastResetYear = currentYear;
-    
-    saveSystemConfig();
-    saveCoinActivity();
-    saveUsers();
-  }
-}
+    // 2. Verify Razorpay Payment
+    app.post('/api/payment/razorpay/verify', async (req, res) => {
+      try {
+        const {
+          razorpay_order_id,
+          razorpay_payment_id,
+          razorpay_signature,
+          userEmail,
+          planName,
+          giftRecipientId
+        } = req.body;
 
-app.get("/api/user/leaderboard", (req, res) => {
-  console.log("Leaderboard request received", req.query);
-  checkLeaderboardReset();
-  
-  if (users.length < 1000) {
-    return res.json({
-      success: true,
-      comingSoon: true,
-      currentCount: users.length,
-      targetCount: 1000
+        const body = razorpay_order_id + "|" + razorpay_payment_id;
+        const expectedSignature = crypto
+          .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "YOUR_KEY_SECRET")
+          .update(body.toString())
+          .digest("hex");
+
+        const isAuthentic = expectedSignature === razorpay_signature;
+
+        if (isAuthentic) {
+          // If it's a gift, find the recipient. Otherwise find the payer.
+          const targetUser = giftRecipientId
+            ? users.find(u => u.id === giftRecipientId || u.email === giftRecipientId)
+            : users.find(u => u.email === userEmail);
+
+          if (targetUser) {
+            const user = targetUser; // Reuse the variable name to minimize changes
+            // DETECT PRODUCT TYPE
+            const isCoinPurchase = planName.includes("Coins");
+
+            if (isCoinPurchase) {
+              // Credit base coins + bonus coins based on package
+              let coinsToAdd = parseInt(planName.split(" ")[0]); // base coins, e.g. "200 Coins" -> 200
+              let bonusCoins = planName.includes("200") ? 50 : planName.includes("500") ? 150 : planName.includes("1300") ? 300 : 0;
+              user.coins = (user.coins || 0) + coinsToAdd + bonusCoins;
+
+              transactions.push({
+                id: razorpay_payment_id,
+                userEmail,
+                planName,
+                amount: planName.includes("100") ? 79 : planName.includes("200") ? 149 : planName.includes("500") ? 299 : 699,
+                timestamp: Date.now(),
+                type: "coins"
+              });
+            } else {
+              user.premium = true;
+              user.planName = planName;
+              let days = 30;
+              let amount = 349;
+              let bundledCoins = 0;
+
+              if (planName === "Starter") { days = 7; amount = 149; bundledCoins = 50; }
+              else if (planName === "Silver") { days = 90; amount = 1599; bundledCoins = 500; }
+              else if (planName === "VIP Elite") { days = 30; amount = 999; bundledCoins = 400; }
+              else if (planName === "Prime") { days = 30; amount = 599; bundledCoins = 150; }
+
+              user.planExpiry = Date.now() + (days * 24 * 60 * 60 * 1000);
+              user.coins = (user.coins || 0) + bundledCoins;
+
+              transactions.push({
+                id: razorpay_payment_id,
+                userEmail,
+                planName,
+                amount,
+                timestamp: Date.now(),
+                type: "subscription",
+                bundledCoins
+              });
+            }
+
+            saveTransactions();
+            saveUsers();
+            const updatedUser = {
+              ...user,
+              coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10)
+            };
+            return res.json({ success: true, message: "Transaction completed successfully", user: updatedUser });
+          }
+          return res.status(404).json({ success: false, message: "User not found" });
+        } else {
+          return res.status(400).json({ success: false, message: "Invalid signature, payment verification failed" });
+        }
+      } catch (error) {
+        console.error("Verification Error:", error);
+        res.status(500).json({ success: false, message: "Internal server error during verification" });
+      }
     });
-  }
 
-  const { filter } = req.query; // 'india' or 'all'
-  
-  let leaderboardUsers = [...users].filter(u => u.email !== "ds9376314@gmail.com");
-  
-  if (filter === 'india') {
-    leaderboardUsers = leaderboardUsers.filter(u => u.country === 'India');
-  }
-  
-  const sorted = leaderboardUsers
-    .sort((a, b) => (b.monthlySpend || 0) - (a.monthlySpend || 0))
-    .slice(0, 10)
-    .map((u, i) => ({
-      rank: i + 1,
-      name: u.name,
-      country: u.country,
-      monthlySpend: u.monthlySpend || 0,
-      isMe: u.email === req.query.email // For highlighting
-    }));
-    
-  res.json({
-    success: true,
-    leaderboard: sorted,
-    month: new Date().toLocaleString('default', { month: 'long' })
-  });
-});
+    // --- COINS & HISTORY ENDPOINTS ---
 
-// ========= TWILIO TURN SERVER CREDENTIALS =========
-app.get("/api/turn-credentials", (req, res) => {
-  if (!twilioClient) {
-    // Fallback to Google STUN only if Twilio not configured
-    return res.json({
-      iceServers: [
-        { urls: "stun:stun.l.google.com:19302" },
-        { urls: "stun:stun1.l.google.com:19302" }
-      ]
+    // ========== STRIPE ROUTES ==========
+
+    // Stripe - Create Payment Intent
+    app.post("/api/payment/stripe/create-intent", async (req, res) => {
+      try {
+        const { amount, currency = "inr", planName, userEmail } = req.body;
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: Math.round(amount), // already in paise/cents
+          currency,
+          metadata: { planName, userEmail }
+        });
+        res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
+      } catch (err) {
+        console.error("Stripe Intent Error:", err);
+        res.status(500).json({ error: err.message });
+      }
     });
-  }
-  // Generate temporary Twilio TURN credentials (valid for 1 hour)
-  twilioClient.tokens.create().then(token => {
-    res.json({ iceServers: token.iceServers });
-  }).catch(err => {
-    console.error("Twilio TURN error:", err);
-    res.json({
-      iceServers: [
-        { urls: "stun:stun.l.google.com:19302" },
-        { urls: "stun:stun1.l.google.com:19302" }
-      ]
+
+    // Stripe - Verify & Activate Plan
+    app.post("/api/payment/stripe/verify", async (req, res) => {
+      try {
+        const { paymentIntentId, userEmail, planName, giftRecipientId } = req.body;
+        const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        if (intent.status !== "succeeded") {
+          return res.status(400).json({ success: false, message: "Payment not completed" });
+        }
+        const user = users.find(u => u.email === (giftRecipientId || userEmail));
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+        const isCoinPurchase = planName.includes("Coins");
+        if (isCoinPurchase) {
+          const coinsToAdd = parseInt(planName.split(" ")[0]);
+          const bonusCoins = planName.includes("200") ? 50 : planName.includes("500") ? 150 : planName.includes("1300") ? 300 : 0;
+          user.coins = (user.coins || 0) + coinsToAdd + bonusCoins;
+        } else {
+          let days = 7, amount = 149, bundledCoins = 0;
+          if (planName === "Starter") { days = 7; amount = 149; bundledCoins = 50; }
+          else if (planName === "Prime") { days = 30; amount = 599; bundledCoins = 150; }
+          else if (planName === "Silver") { days = 90; amount = 1599; bundledCoins = 500; }
+          else if (planName === "VIP Elite") { days = 30; amount = 999; bundledCoins = 400; }
+          user.planExpiry = Date.now() + (days * 24 * 60 * 60 * 1000);
+          user.premium = true;
+          user.planName = planName;
+          user.coins = (user.coins || 0) + bundledCoins;
+        }
+        transactions.push({ id: paymentIntentId, userEmail, planName, gateway: "stripe", timestamp: Date.now() });
+        saveTransactions(); saveUsers();
+        const updatedUser = { ...user, coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10) };
+        res.json({ success: true, message: "Stripe payment verified", user: updatedUser });
+      } catch (err) {
+        console.error("Stripe Verify Error:", err);
+        res.status(500).json({ success: false, message: "Stripe verification failed" });
+      }
     });
-  });
-});
-// ==================================================
 
-// ========= KEEP ALIVE LOGIC =========
-app.get("/api/ping", (req, res) => {
-  res.json({ status: "alive", timestamp: Date.now() });
-});
+    // ========== PAYPAL ROUTES ==========
 
-// ========= PUBLIC ONLINE USERS COUNT =========
-app.get("/api/public/online-count", (req, res) => {
-  res.json({ success: true, onlineCount: onlineUsers.size });
-});
+    // PayPal - Create Order
+    app.post("/api/payment/paypal/create-order", async (req, res) => {
+      try {
+        const { amount, currency = "USD", planName, userEmail } = req.body;
+        const accessToken = await getPayPalAccessToken();
+        const response = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            intent: "CAPTURE",
+            purchase_units: [{
+              amount: { currency_code: currency, value: parseFloat(amount / 100).toFixed(2) },
+              description: `ZoneMeet ${planName}`,
+              custom_id: JSON.stringify({ userEmail, planName })
+            }]
+          })
+        });
+        const order = await response.json();
+        if (!order.id) throw new Error(order.message || "PayPal order creation failed");
+        const approveUrl = order.links.find(l => l.rel === "approve")?.href;
+        res.json({ orderId: order.id, approveUrl });
+      } catch (err) {
+        console.error("PayPal Create Order Error:", err);
+        res.status(500).json({ error: err.message });
+      }
+    });
 
-// Self-ping every 10 minutes to stay awake on Render
-setInterval(() => {
-  const url = `https://meetzone-backend.onrender.com/api/ping`;
-  fetch(url).catch(() => {}); // Ignore errors using native fetch
-}, 600000); 
-// =====================================
+    // PayPal - Capture & Verify Order
+    app.post("/api/payment/paypal/capture", async (req, res) => {
+      try {
+        const { orderId, userEmail, planName, giftRecipientId } = req.body;
+        const accessToken = await getPayPalAccessToken();
+        const response = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders/${orderId}/capture`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }
+        });
+        const capture = await response.json();
+        if (capture.status !== "COMPLETED") {
+          return res.status(400).json({ success: false, message: "PayPal payment not completed" });
+        }
+        const user = users.find(u => u.email === (giftRecipientId || userEmail));
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-async function startServer() {
-  const PORT = process.env.PORT || 5000;
-  
-  try {
-    console.log("Connecting to MongoDB Atlas...");
-    await mongoClient.connect();
-    db = mongoClient.db("meetzone");
-    console.log("Connected to MongoDB Atlas Successfully");
-    
-    // Load data from DB into memory
-    const d1 = await db.collection("appData").findOne({ _id: "users" }); 
-    if(d1 && d1.data) {
-      // Merge with any local users that might have registered during downtime if possible, 
-      // but usually DB is source of truth.
-      users = d1.data;
-      console.log(`[DB] Loaded ${users.length} users from MongoDB`);
+        const isCoinPurchase = planName.includes("Coins");
+        if (isCoinPurchase) {
+          const coinsToAdd = parseInt(planName.split(" ")[0]);
+          const bonusCoins = planName.includes("200") ? 50 : planName.includes("500") ? 150 : planName.includes("1300") ? 300 : 0;
+          user.coins = (user.coins || 0) + coinsToAdd + bonusCoins;
+        } else {
+          let days = 7, bundledCoins = 0;
+          if (planName === "Starter") { days = 7; bundledCoins = 50; }
+          else if (planName === "Prime") { days = 30; bundledCoins = 150; }
+          else if (planName === "Silver") { days = 90; bundledCoins = 500; }
+          else if (planName === "VIP Elite") { days = 30; bundledCoins = 400; }
+          user.planExpiry = Date.now() + (days * 24 * 60 * 60 * 1000);
+          user.premium = true;
+          user.planName = planName;
+          user.coins = (user.coins || 0) + bundledCoins;
+        }
+        transactions.push({ id: orderId, userEmail, planName, gateway: "paypal", timestamp: Date.now() });
+        saveTransactions(); saveUsers();
+        const updatedUser = { ...user, coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10) };
+        res.json({ success: true, message: "PayPal payment captured", user: updatedUser });
+      } catch (err) {
+        console.error("PayPal Capture Error:", err);
+        res.status(500).json({ success: false, message: "PayPal capture failed" });
+      }
+    });
+
+    // ========== CASHFREE ROUTES ==========
+
+    // Cashfree - Create Order
+    app.post("/api/payment/cashfree/create-order", async (req, res) => {
+      try {
+        const { amount, planName, userEmail } = req.body;
+        const orderId = `CF_${Date.now()}_${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+        const response = await fetch(`${CASHFREE_BASE_URL}/orders`, {
+          method: "POST",
+          headers: {
+            "x-client-id": process.env.CASHFREE_APP_ID || "YOUR_CASHFREE_APP_ID",
+            "x-client-secret": process.env.CASHFREE_SECRET_KEY || "YOUR_CASHFREE_SECRET",
+            "x-api-version": "2023-08-01",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            order_id: orderId,
+            order_amount: (amount / 100).toFixed(2),
+            order_currency: "INR",
+            customer_details: { customer_id: userEmail.replace(/[@.]/g, "_"), customer_email: userEmail, customer_phone: "9999999999" },
+            order_meta: { return_url: `https://zonemeet.chat/payment-success?order_id={order_id}&plan=${planName}`, notify_url: `https://meetzone-backend.onrender.com/api/payment/cashfree/webhook` },
+            order_note: `ZoneMeet ${planName}`
+          })
+        });
+        const order = await response.json();
+        if (!order.payment_session_id) throw new Error(order.message || "Cashfree order failed");
+        res.json({ orderId, paymentSessionId: order.payment_session_id });
+      } catch (err) {
+        console.error("Cashfree Create Order Error:", err);
+        res.status(500).json({ error: err.message });
+      }
+    });
+
+    // Cashfree - Verify Payment
+    app.post("/api/payment/cashfree/verify", async (req, res) => {
+      try {
+        const { orderId, userEmail, planName, giftRecipientId } = req.body;
+        const response = await fetch(`${CASHFREE_BASE_URL}/orders/${orderId}`, {
+          headers: {
+            "x-client-id": process.env.CASHFREE_APP_ID || "YOUR_CASHFREE_APP_ID",
+            "x-client-secret": process.env.CASHFREE_SECRET_KEY || "YOUR_CASHFREE_SECRET",
+            "x-api-version": "2023-08-01"
+          }
+        });
+        const order = await response.json();
+        if (order.order_status !== "PAID") {
+          return res.status(400).json({ success: false, message: "Cashfree payment not completed" });
+        }
+        const user = users.find(u => u.email === (giftRecipientId || userEmail));
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+        const isCoinPurchase = planName.includes("Coins");
+        if (isCoinPurchase) {
+          const coinsToAdd = parseInt(planName.split(" ")[0]);
+          const bonusCoins = planName.includes("200") ? 50 : planName.includes("500") ? 150 : planName.includes("1300") ? 300 : 0;
+          user.coins = (user.coins || 0) + coinsToAdd + bonusCoins;
+        } else {
+          let days = 7, bundledCoins = 0;
+          if (planName === "Starter") { days = 7; bundledCoins = 50; }
+          else if (planName === "Prime") { days = 30; bundledCoins = 150; }
+          else if (planName === "Silver") { days = 90; bundledCoins = 500; }
+          else if (planName === "VIP Elite") { days = 30; bundledCoins = 400; }
+          user.planExpiry = Date.now() + (days * 24 * 60 * 60 * 1000);
+          user.premium = true;
+          user.planName = planName;
+          user.coins = (user.coins || 0) + bundledCoins;
+        }
+        transactions.push({ id: orderId, userEmail, planName, gateway: "cashfree", timestamp: Date.now() });
+        saveTransactions(); saveUsers();
+        const updatedUser = { ...user, coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10) };
+        res.json({ success: true, message: "Cashfree payment verified", user: updatedUser });
+      } catch (err) {
+        console.error("Cashfree Verify Error:", err);
+        res.status(500).json({ success: false, message: "Cashfree verification failed" });
+      }
+    });
+
+
+
+    app.post("/api/user/spend-coins", (req, res) => {
+      const { email, userId, amount, feature } = req.body;
+      const user = users.find(u => (userId && u.id === userId) || (email && u.email === email));
+      if (!user) {
+        console.log("Spend-coins error: User not found for", { email, userId });
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Admin Immunity: ds9376314@gmail.com uses coins for free
+      if (email !== "ds9376314@gmail.com") {
+        if (user.coins < amount) {
+          return res.status(400).json({ success: false, message: "Not enough coins!" });
+        }
+        user.coins -= amount;
+        // Track monthly spend for leaderboard
+        user.monthlySpend = (user.monthlySpend || 0) + amount;
+        checkLeaderboardReset();
+      }
+
+      // LOG ACTIVITY FOR GUARDIAN & DASHBOARD
+      if (!userActivityLog.has(email)) userActivityLog.set(email, []);
+      const activityEntry = {
+        id: Date.now() + Math.random(),
+        email,
+        name: user.name,
+        feature: feature || "Generic",
+        amount: amount,
+        timestamp: Date.now()
+      };
+
+      userActivityLog.get(email).push({ t: activityEntry.timestamp, act: "spend", amt: amount });
+      coinActivity.push(activityEntry);
+      saveCoinActivity();
+
+      if (feature === "boost" || feature === "profile_boost") {
+        const expiry = Date.now() + (10 * 60 * 1000);
+        user.boostExpiry = expiry;
+        const uIndex = users.findIndex(u => u.id === user.id);
+        if (uIndex > -1) {
+          users[uIndex].boostExpiry = expiry;
+        }
+      }
+
+      // SAVE UNLOCKED FILTERS
+      if (feature && feature.startsWith("Unlock Filter: ")) {
+        const { filterId } = req.body;
+        if (!user.unlockedFilters) {
+          user.unlockedFilters = ["None", "Smooth"];
+        }
+        if (filterId && !user.unlockedFilters.includes(filterId)) {
+          user.unlockedFilters.push(filterId);
+        }
+        // Force write back to the user object just in case
+        const uIndex = users.findIndex(u => u.id === user.id);
+        if (uIndex > -1) {
+          users[uIndex].unlockedFilters = user.unlockedFilters;
+        }
+        console.log("Saving filter:", filterId, "New list:", user.unlockedFilters);
+      }
+
+      // SAVE SECRET IDENTITY MODE
+      if (feature === "secret_identity" || feature === "secret_identity_mode") {
+        const expiry = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 Days in ms
+        user.hasSecretIdentity = true;
+        user.secretIdentityExpiry = expiry;
+        const uIndex = users.findIndex(u => u.id === user.id);
+        if (uIndex > -1) {
+          users[uIndex].hasSecretIdentity = true;
+          users[uIndex].secretIdentityExpiry = expiry;
+        }
+      }
+
+      saveUsers();
+      res.json({
+        success: true,
+        coins: user.coins,
+        boostExpiry: user.boostExpiry,
+        coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10),
+        unlockedFilters: user.unlockedFilters || ["None", "Smooth"],
+        hasSecretIdentity: user.hasSecretIdentity
+      });
+    });
+
+    app.get("/api/user/history", (req, res) => {
+      const { email } = req.query;
+      const user = users.find(u => u.email === email);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      res.json(user.recentStrangers || []);
+    });
+
+    // ADMIN DASHBOARD ENDPOINTS
+    app.get("/api/admin/stats", authenticateToken, (req, res) => {
+      if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
+
+      res.json({
+        totalUsers: users.length,
+        premiumUsers: users.filter(u => u.premium).length,
+        liveCalls: Math.floor(onlineUsers.size / 2),
+        totalReports: reports.length,
+        onlineCount: onlineUsers.size
+      });
+    });
+
+    app.get("/api/admin/reports", authenticateToken, (req, res) => {
+      if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
+      res.json(reports);
+    });
+
+    app.get("/api/admin/messages", (req, res) => {
+      res.json(contactMessages);
+    });
+
+    app.post("/api/admin/messages/delete", authenticateToken, (req, res) => {
+      if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
+      const { id } = req.body;
+      contactMessages = contactMessages.filter(m => m.id !== id);
+      saveMessages();
+      res.json({ success: true, message: "Message deleted" });
+    });
+
+    app.get("/api/admin/live-users", authenticateToken, (req, res) => {
+      if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
+
+      const liveList = [];
+      onlineUsers.forEach((socketId, userId) => {
+        const u = users.find(usr => usr.id === userId);
+        if (u) {
+          liveList.push({ id: u.id, name: u.name, country: u.country, email: u.email });
+        }
+      });
+      res.json(liveList);
+    });
+
+    app.get("/api/admin/analytics", authenticateToken, (req, res) => {
+      if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
+
+      const countryCounts = {};
+      users.forEach(u => {
+        const c = u.country || "Unknown";
+        countryCounts[c] = (countryCounts[c] || 0) + 1;
+      });
+
+      // Calculate real revenue
+      const now = new Date();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+
+      const todayRevenue = transactions
+        .filter(t => t.timestamp >= startOfDay)
+        .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+      const monthlyRevenue = transactions
+        .filter(t => t.timestamp >= startOfMonth)
+        .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+      const lifetimeRevenue = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+
+      // COIN SPECIFIC ANALYTICS
+      const totalCoinsSold = transactions.reduce((sum, t) => {
+        let coins = 0;
+        if (t.type === "coins") {
+          coins = parseInt(t.planName.split(" ")[0]) || 0;
+        } else if (t.bundledCoins) {
+          coins = t.bundledCoins;
+        }
+        return sum + coins;
+      }, 0);
+
+      const revenueFromCoins = transactions
+        .filter(t => t.type === "coins")
+        .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+      // Coins Spent Today
+      let coinsSpentToday = 0;
+      userActivityLog.forEach((logs, email) => {
+        logs.forEach(l => {
+          if (l.t >= startOfDay && l.act === "spend") {
+            coinsSpentToday += (l.amt || 0);
+          }
+        });
+      });
+
+      // Top Spender
+      let topSpender = { name: "N/A", email: "N/A", count: 0 };
+      userActivityLog.forEach((logs, email) => {
+        const spendCount = logs.filter(l => l.act === "spend").length;
+        if (spendCount > topSpender.count) {
+          const u = users.find(usr => usr.email === email);
+          topSpender = { name: u ? u.name : email, email, count: spendCount };
+        }
+      });
+
+      res.json({
+        countryCounts,
+        revenue: {
+          today: todayRevenue,
+          monthly: monthlyRevenue,
+          lifetime: lifetimeRevenue,
+          premiumSales: users.filter(u => u.premium).length,
+          coinPurchases: transactions.filter(t => t.type === "coins").length,
+          history: transactions.slice(-20).reverse()
+        },
+        coins: {
+          totalSold: totalCoinsSold,
+          spentToday: coinsSpentToday,
+          revenue: revenueFromCoins,
+          topSpender,
+          recentActivity: coinActivity.slice(-50).reverse() // Last 50 spend events
+        }
+      });
+    });
+
+    app.post("/api/admin/update-user-premium", authenticateToken, (req, res) => {
+      if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
+      const { email, premium, planName, planExpiry, isVIP } = req.body;
+
+      const user = users.find(u => u.email === email);
+      if (!user) return res.status(404).json({ message: "User not found" });
+
+      user.premium = premium;
+      if (planName === "Free") {
+        user.premium = false;
+        user.planName = null;
+        user.planExpiry = null;
+      } else {
+        user.planName = planName || (premium ? "Prime" : null);
+        user.planExpiry = planExpiry || (premium ? Date.now() + (30 * 24 * 60 * 60 * 1000) : null);
+      }
+      user.isVIP = isVIP || false;
+
+      saveUsers();
+      res.json({ success: true, message: "User updated successfully" });
+    });
+
+    app.get("/api/admin/all-users", authenticateToken, (req, res) => {
+      if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
+      res.json(users);
+    });
+
+    app.get("/api/admin/banned-users", authenticateToken, (req, res) => {
+      if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
+      res.json(bannedEmails);
+    });
+
+    app.post("/api/admin/unban", authenticateToken, (req, res) => {
+      if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
+      const { email } = req.body;
+      const index = bannedEmails.indexOf(email);
+      if (index > -1) {
+        bannedEmails.splice(index, 1);
+        saveBanned();
+        res.json({ success: true, message: "User unbanned" });
+      } else {
+        res.json({ success: false, message: "Not found in banned list" });
+      }
+    });
+
+    app.post("/api/admin/ban", authenticateToken, (req, res) => {
+      if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
+      const { email } = req.body;
+      if (!bannedEmails.includes(email)) {
+        bannedEmails.push(email);
+        saveBanned();
+        res.json({ success: true, message: "User banned" });
+      } else {
+        res.json({ success: false, message: "Already banned" });
+      }
+    });
+
+
+    // ========= LEADERBOARD LOGIC =========
+    const SYSTEM_CONFIG_FILE = path.join(__dirname, "system_config.json");
+    let systemConfig = { lastResetMonth: new Date().getMonth(), lastResetYear: new Date().getFullYear() };
+    if (fs.existsSync(SYSTEM_CONFIG_FILE)) {
+      try { systemConfig = JSON.parse(fs.readFileSync(SYSTEM_CONFIG_FILE, "utf-8")); } catch (e) { }
     }
-    
-    const d2 = await db.collection("appData").findOne({ _id: "bannedEmails" }); if(d2 && d2.data) bannedEmails = d2.data;
-    const d3 = await db.collection("appData").findOne({ _id: "bannedIps" }); if(d3 && d3.data) bannedIps = d3.data;
 
-    // --- TEMPORARY BAN CLEAR ---
-    bannedEmails = [];
-    bannedIps = [];
-    saveBanned();
-    saveBannedIps();
-    console.log("All bans have been cleared.");
-    // ---------------------------
+    function saveSystemConfig() {
+      try { fs.writeFileSync(SYSTEM_CONFIG_FILE, JSON.stringify(systemConfig, null, 2)); } catch (e) { }
+      if (db) db.collection("appData").updateOne({ _id: "systemConfig" }, { $set: { data: systemConfig } }, { upsert: true }).catch(console.error);
+    }
 
-    const d4 = await db.collection("appData").findOne({ _id: "transactions" }); if(d4 && d4.data) transactions = d4.data;
-    const d5 = await db.collection("appData").findOne({ _id: "coinActivity" }); if(d5 && d5.data) coinActivity = d5.data;
-    const d6 = await db.collection("appData").findOne({ _id: "reports" }); if(d6 && d6.data) reports = d6.data;
-    const d7 = await db.collection("appData").findOne({ _id: "contactMessages" }); if(d7 && d7.data) contactMessages = d7.data;
-    const d8 = await db.collection("appData").findOne({ _id: "systemConfig" }); if(d8 && d8.data) systemConfig = d8.data;
+    function checkLeaderboardReset() {
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
 
-    // IMPORTANT: Normalize after loading from DB
-    normalizeUsers(users);
+      if (currentMonth !== systemConfig.lastResetMonth || currentYear !== systemConfig.lastResetYear) {
+        console.log("🏆 Monthly Leaderboard Reset Triggered!");
 
-  } catch(e) {
-    console.error("CRITICAL: MongoDB Connection Failed!", e.message);
-    console.log("Server will continue running in LOCAL MODE (using local JSON files)");
-    normalizeUsers(users); // Still normalize local users
-  }
+        // 1. Award Prizes to Global Top 3
+        const globalTop = [...users]
+          .filter(u => u.email !== "ds9376314@gmail.com") // Exclude admin
+          .sort((a, b) => (b.monthlySpend || 0) - (a.monthlySpend || 0))
+          .slice(0, 3);
 
-  // Start listening AFTER data is loaded to prevent race conditions
-  server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}
-startServer();
+        const prizes = [1000, 500, 200];
+        globalTop.forEach((u, i) => {
+          if ((u.monthlySpend || 0) > 0) {
+            u.coins += prizes[i];
+            coinActivity.push({
+              id: "prize-" + Date.now() + "-" + i,
+              email: u.email,
+              name: u.name,
+              type: "earn",
+              amount: prizes[i],
+              feature: `Leaderboard Rank #${i + 1} Monthly Prize`,
+              timestamp: Date.now()
+            });
+          }
+        });
 
+        // 2. Reset All Users' monthlySpend
+        users.forEach(u => u.monthlySpend = 0);
+
+        // 3. Update Config
+        systemConfig.lastResetMonth = currentMonth;
+        systemConfig.lastResetYear = currentYear;
+
+        saveSystemConfig();
+        saveCoinActivity();
+        saveUsers();
+      }
+    }
+
+    app.get("/api/user/leaderboard", (req, res) => {
+      console.log("Leaderboard request received", req.query);
+      checkLeaderboardReset();
+
+      if (users.length < 1000) {
+        return res.json({
+          success: true,
+          comingSoon: true,
+          currentCount: users.length,
+          targetCount: 1000
+        });
+      }
+
+      const { filter } = req.query; // 'india' or 'all'
+
+      let leaderboardUsers = [...users].filter(u => u.email !== "ds9376314@gmail.com");
+
+      if (filter === 'india') {
+        leaderboardUsers = leaderboardUsers.filter(u => u.country === 'India');
+      }
+
+      const sorted = leaderboardUsers
+        .sort((a, b) => (b.monthlySpend || 0) - (a.monthlySpend || 0))
+        .slice(0, 10)
+        .map((u, i) => ({
+          rank: i + 1,
+          name: u.name,
+          country: u.country,
+          monthlySpend: u.monthlySpend || 0,
+          isMe: u.email === req.query.email // For highlighting
+        }));
+
+      res.json({
+        success: true,
+        leaderboard: sorted,
+        month: new Date().toLocaleString('default', { month: 'long' })
+      });
+    });
+
+    // ========= TWILIO TURN SERVER CREDENTIALS =========
+    app.get("/api/turn-credentials", (req, res) => {
+      if (!twilioClient) {
+        // Fallback to Google STUN only if Twilio not configured
+        return res.json({
+          iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun1.l.google.com:19302" }
+          ]
+        });
+      }
+      // Generate temporary Twilio TURN credentials (valid for 1 hour)
+      twilioClient.tokens.create().then(token => {
+        res.json({ iceServers: token.iceServers });
+      }).catch(err => {
+        console.error("Twilio TURN error:", err);
+        res.json({
+          iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun1.l.google.com:19302" }
+          ]
+        });
+      });
+    });
+    // ==================================================
+
+    // ========= KEEP ALIVE LOGIC =========
+    app.get("/api/ping", (req, res) => {
+      res.json({ status: "alive", timestamp: Date.now() });
+    });
+
+    // ========= PUBLIC ONLINE USERS COUNT =========
+    app.get("/api/public/online-count", (req, res) => {
+      res.json({ success: true, onlineCount: onlineUsers.size });
+    });
+
+    // Self-ping every 10 minutes to stay awake on Render
+    setInterval(() => {
+      const url = `https://meetzone-backend.onrender.com/api/ping`;
+      fetch(url).catch(() => { }); // Ignore errors using native fetch
+    }, 600000);
+    // =====================================
+
+    async function startServer() {
+      const PORT = process.env.PORT || 5000;
+
+      try {
+        console.log("Connecting to MongoDB Atlas...");
+        await mongoClient.connect();
+        db = mongoClient.db("meetzone");
+        console.log("Connected to MongoDB Atlas Successfully");
+
+        // Load data from DB into memory
+        const d1 = await db.collection("appData").findOne({ _id: "users" });
+        if (d1 && d1.data) {
+          // Merge with any local users that might have registered during downtime if possible, 
+          // but usually DB is source of truth.
+          users = d1.data;
+          console.log(`[DB] Loaded ${users.length} users from MongoDB`);
+        }
+
+        const d2 = await db.collection("appData").findOne({ _id: "bannedEmails" }); if (d2 && d2.data) bannedEmails = d2.data;
+        const d3 = await db.collection("appData").findOne({ _id: "bannedIps" }); if (d3 && d3.data) bannedIps = d3.data;
+
+        // --- TEMPORARY BAN CLEAR ---
+        bannedEmails = [];
+        bannedIps = [];
+        saveBanned();
+        saveBannedIps();
+        console.log("All bans have been cleared.");
+        // ---------------------------
+
+        const d4 = await db.collection("appData").findOne({ _id: "transactions" }); if (d4 && d4.data) transactions = d4.data;
+        const d5 = await db.collection("appData").findOne({ _id: "coinActivity" }); if (d5 && d5.data) coinActivity = d5.data;
+        const d6 = await db.collection("appData").findOne({ _id: "reports" }); if (d6 && d6.data) reports = d6.data;
+        const d7 = await db.collection("appData").findOne({ _id: "contactMessages" }); if (d7 && d7.data) contactMessages = d7.data;
+        const d8 = await db.collection("appData").findOne({ _id: "systemConfig" }); if (d8 && d8.data) systemConfig = d8.data;
+
+        // IMPORTANT: Normalize after loading from DB
+        normalizeUsers(users);
+
+      } catch (e) {
+        console.error("CRITICAL: MongoDB Connection Failed!", e.message);
+        console.log("Server will continue running in LOCAL MODE (using local JSON files)");
+        normalizeUsers(users); // Still normalize local users
+      }
+
+      // Start listening AFTER data is loaded to prevent race conditions
+      server.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+      });
+    }
+    startServer();
