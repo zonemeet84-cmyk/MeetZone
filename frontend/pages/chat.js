@@ -2270,6 +2270,7 @@ export default function Home() {
                 )}
               </div>
             </div>
+          </div>
 
             {/* QUIZ DUEL / BRAIN CLASH OVERLAY */}
             {quizState !== "idle" && (
@@ -2442,8 +2443,6 @@ export default function Home() {
                 )}
               </div>
             )}
-
-            </div>
 
           {/* BOTTOM IDENTITY TOOLS & POPUPS */}
           <div className="identity-container">
