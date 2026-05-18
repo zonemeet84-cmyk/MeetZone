@@ -1430,39 +1430,54 @@ app.post("/api/contact", async (req, res) => {
   saveMessages();
 
   // --- REAL EMAIL NOTIFICATION ---
-  // ⚠️ TODO: Setup your Gmail App Password to enable real email sending
-  // 1. Enable 2-Factor Authentication on your Gmail.
-  // 2. Search for "App Passwords" in Google Account settings.
-  // 3. Create a new app password for "Mail".
-  const GMAIL_USER = "support@zonemeet.chat";
-  const GMAIL_PASS = "lebc mnmw kvjg penk"; // Paste your 16-character app password here
+  const GMAIL_AUTH_USER = "zonemeet84@gmail.com";   // Gmail account used for SMTP authentication
+  const GMAIL_PASS      = "lebc mnmw kvjg penk";    // App Password from Google (16-char)
+  const SUPPORT_EMAIL   = "support@zonemeet.chat";  // Custom domain shown to users
 
-  if (GMAIL_PASS && GMAIL_PASS !== "kawal@1234") {
+  if (GMAIL_PASS) {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: GMAIL_USER,
+        user: GMAIL_AUTH_USER,  // ← must be the actual Gmail account
         pass: GMAIL_PASS
       }
     });
 
     const mailOptions = {
-      from: `ZoneMeet Support <${GMAIL_USER}>`,
-      to: GMAIL_USER, // Sending to yourself (admin)
-      replyTo: email, // So you can reply directly to the user
-      subject: `New Support Message: ${subject || "General Inquiry"}`,
-      text: `You have received a new support message from ZoneMeet platform.\n\nName: ${name}\nEmail: ${email}\nSubject: ${subject}\n\nMessage:\n${message}`
+      from: `ZoneMeet Support <${SUPPORT_EMAIL}>`,  // Shown as sender to users
+      to: GMAIL_AUTH_USER,                           // Delivered to zonemeet84@gmail.com
+      replyTo: email,                                // Replying goes to the user
+      subject: `📩 New Support Message: ${subject || "General Inquiry"}`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f172a;color:#f1f5f9;padding:30px;border-radius:16px;">
+          <h2 style="color:#6366f1;margin-bottom:5px;">📬 New Support Message</h2>
+          <p style="color:#94a3b8;font-size:13px;margin-bottom:25px;">From ZoneMeet Contact Form</p>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="padding:10px 0;color:#94a3b8;width:100px;">Name</td><td style="padding:10px 0;color:#fff;font-weight:bold;">${name}</td></tr>
+            <tr><td style="padding:10px 0;color:#94a3b8;">Email</td><td style="padding:10px 0;color:#6366f1;">${email}</td></tr>
+            <tr><td style="padding:10px 0;color:#94a3b8;">Subject</td><td style="padding:10px 0;color:#fff;">${subject || "General Inquiry"}</td></tr>
+          </table>
+          <div style="background:#1e293b;padding:20px;border-radius:12px;margin-top:20px;border-left:4px solid #6366f1;">
+            <p style="color:#94a3b8;font-size:12px;margin:0 0 10px;">Message:</p>
+            <p style="color:#f1f5f9;margin:0;line-height:1.6;">${message}</p>
+          </div>
+          <div style="margin-top:25px;text-align:center;">
+            <a href="mailto:${email}?subject=RE: ${subject || 'General Inquiry'}" style="background:#6366f1;color:white;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:bold;display:inline-block;">↩ Reply to ${name}</a>
+          </div>
+          <p style="color:#475569;font-size:11px;text-align:center;margin-top:20px;">ZoneMeet Admin Panel • support@zonemeet.chat</p>
+        </div>
+      `
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
-        console.error("Error sending email:", error);
+        console.error("Email send error:", error.message);
       } else {
-        console.log("Email sent: " + info.response);
+        console.log("✅ Contact email sent:", info.response);
       }
     });
   } else {
-    console.log("[DEV MODE] Real email skipped. Set GMAIL_PASS in server.js to enable.");
+    console.log("[DEV MODE] Email skipped. Set GMAIL_PASS to enable.");
   }
 
   // Keep the 3s delay as requested for UX
