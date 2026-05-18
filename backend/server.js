@@ -36,6 +36,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
+const Stripe = require("stripe");
 
 const onlineUsers = new Map(); // userId -> socket.id
 
@@ -44,6 +45,33 @@ const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID || "YOUR_KEY_ID",
   key_secret: process.env.RAZORPAY_KEY_SECRET || "YOUR_KEY_SECRET",
 });
+
+// STRIPE INITIALIZATION
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY || "YOUR_STRIPE_SECRET_KEY");
+
+// PAYPAL CONFIG
+const PAYPAL_BASE_URL = process.env.PAYPAL_MODE === "live"
+  ? "https://api-m.paypal.com"
+  : "https://api-m.sandbox.paypal.com";
+
+async function getPayPalAccessToken() {
+  const clientId     = process.env.PAYPAL_CLIENT_ID     || "YOUR_PAYPAL_CLIENT_ID";
+  const clientSecret = process.env.PAYPAL_CLIENT_SECRET || "YOUR_PAYPAL_CLIENT_SECRET";
+  const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+  const res  = await fetch(`${PAYPAL_BASE_URL}/v1/oauth2/token`, {
+    method: "POST",
+    headers: { Authorization: `Basic ${auth}`, "Content-Type": "application/x-www-form-urlencoded" },
+    body: "grant_type=client_credentials"
+  });
+  const data = await res.json();
+  return data.access_token;
+}
+
+// CASHFREE CONFIG
+const CASHFREE_BASE_URL = process.env.CASHFREE_ENV === "production"
+  ? "https://api.cashfree.com/pg"
+  : "https://sandbox.cashfree.com/pg";
+
 
 const JWT_SECRET = "zonemeet_secret_key_123";
 
@@ -2144,6 +2172,214 @@ app.post('/api/payment/razorpay/verify', async (req, res) => {
 });
 
 // --- COINS & HISTORY ENDPOINTS ---
+
+// ========== STRIPE ROUTES ==========
+
+// Stripe - Create Payment Intent
+app.post("/api/payment/stripe/create-intent", async (req, res) => {
+  try {
+    const { amount, currency = "inr", planName, userEmail } = req.body;
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(amount), // already in paise/cents
+      currency,
+      metadata: { planName, userEmail }
+    });
+    res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
+  } catch (err) {
+    console.error("Stripe Intent Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Stripe - Verify & Activate Plan
+app.post("/api/payment/stripe/verify", async (req, res) => {
+  try {
+    const { paymentIntentId, userEmail, planName, giftRecipientId } = req.body;
+    const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    if (intent.status !== "succeeded") {
+      return res.status(400).json({ success: false, message: "Payment not completed" });
+    }
+    const user = users.find(u => u.email === (giftRecipientId || userEmail));
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    const isCoinPurchase = planName.includes("Coins");
+    if (isCoinPurchase) {
+      const coinsToAdd = parseInt(planName.split(" ")[0]);
+      const bonusCoins = planName.includes("200") ? 50 : planName.includes("500") ? 150 : planName.includes("1300") ? 300 : 0;
+      user.coins = (user.coins || 0) + coinsToAdd + bonusCoins;
+    } else {
+      let days = 7, amount = 149, bundledCoins = 0;
+      if (planName === "Starter")  { days = 7;  amount = 149;  bundledCoins = 50; }
+      else if (planName === "Prime")  { days = 30; amount = 599;  bundledCoins = 150; }
+      else if (planName === "Silver") { days = 90; amount = 1599; bundledCoins = 500; }
+      else if (planName === "VIP Elite") { days = 30; amount = 999; bundledCoins = 400; }
+      user.planExpiry = Date.now() + (days * 24 * 60 * 60 * 1000);
+      user.premium = true;
+      user.planName = planName;
+      user.coins = (user.coins || 0) + bundledCoins;
+    }
+    transactions.push({ id: paymentIntentId, userEmail, planName, gateway: "stripe", timestamp: Date.now() });
+    saveTransactions(); saveUsers();
+    const updatedUser = { ...user, coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10) };
+    res.json({ success: true, message: "Stripe payment verified", user: updatedUser });
+  } catch (err) {
+    console.error("Stripe Verify Error:", err);
+    res.status(500).json({ success: false, message: "Stripe verification failed" });
+  }
+});
+
+// ========== PAYPAL ROUTES ==========
+
+// PayPal - Create Order
+app.post("/api/payment/paypal/create-order", async (req, res) => {
+  try {
+    const { amount, currency = "USD", planName, userEmail } = req.body;
+    const accessToken = await getPayPalAccessToken();
+    const response = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        intent: "CAPTURE",
+        purchase_units: [{
+          amount: { currency_code: currency, value: parseFloat(amount / 100).toFixed(2) },
+          description: `ZoneMeet ${planName}`,
+          custom_id: JSON.stringify({ userEmail, planName })
+        }]
+      })
+    });
+    const order = await response.json();
+    if (!order.id) throw new Error(order.message || "PayPal order creation failed");
+    const approveUrl = order.links.find(l => l.rel === "approve")?.href;
+    res.json({ orderId: order.id, approveUrl });
+  } catch (err) {
+    console.error("PayPal Create Order Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PayPal - Capture & Verify Order
+app.post("/api/payment/paypal/capture", async (req, res) => {
+  try {
+    const { orderId, userEmail, planName, giftRecipientId } = req.body;
+    const accessToken = await getPayPalAccessToken();
+    const response = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders/${orderId}/capture`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }
+    });
+    const capture = await response.json();
+    if (capture.status !== "COMPLETED") {
+      return res.status(400).json({ success: false, message: "PayPal payment not completed" });
+    }
+    const user = users.find(u => u.email === (giftRecipientId || userEmail));
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    const isCoinPurchase = planName.includes("Coins");
+    if (isCoinPurchase) {
+      const coinsToAdd = parseInt(planName.split(" ")[0]);
+      const bonusCoins = planName.includes("200") ? 50 : planName.includes("500") ? 150 : planName.includes("1300") ? 300 : 0;
+      user.coins = (user.coins || 0) + coinsToAdd + bonusCoins;
+    } else {
+      let days = 7, bundledCoins = 0;
+      if (planName === "Starter")  { days = 7;  bundledCoins = 50; }
+      else if (planName === "Prime")  { days = 30; bundledCoins = 150; }
+      else if (planName === "Silver") { days = 90; bundledCoins = 500; }
+      else if (planName === "VIP Elite") { days = 30; bundledCoins = 400; }
+      user.planExpiry = Date.now() + (days * 24 * 60 * 60 * 1000);
+      user.premium = true;
+      user.planName = planName;
+      user.coins = (user.coins || 0) + bundledCoins;
+    }
+    transactions.push({ id: orderId, userEmail, planName, gateway: "paypal", timestamp: Date.now() });
+    saveTransactions(); saveUsers();
+    const updatedUser = { ...user, coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10) };
+    res.json({ success: true, message: "PayPal payment captured", user: updatedUser });
+  } catch (err) {
+    console.error("PayPal Capture Error:", err);
+    res.status(500).json({ success: false, message: "PayPal capture failed" });
+  }
+});
+
+// ========== CASHFREE ROUTES ==========
+
+// Cashfree - Create Order
+app.post("/api/payment/cashfree/create-order", async (req, res) => {
+  try {
+    const { amount, planName, userEmail } = req.body;
+    const orderId = `CF_${Date.now()}_${Math.random().toString(36).slice(2,8).toUpperCase()}`;
+    const response = await fetch(`${CASHFREE_BASE_URL}/orders`, {
+      method: "POST",
+      headers: {
+        "x-client-id": process.env.CASHFREE_APP_ID || "YOUR_CASHFREE_APP_ID",
+        "x-client-secret": process.env.CASHFREE_SECRET_KEY || "YOUR_CASHFREE_SECRET",
+        "x-api-version": "2023-08-01",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        order_id: orderId,
+        order_amount: (amount / 100).toFixed(2),
+        order_currency: "INR",
+        customer_details: { customer_id: userEmail.replace(/[@.]/g,"_"), customer_email: userEmail, customer_phone: "9999999999" },
+        order_meta: { return_url: `https://zonemeet.chat/payment-success?order_id={order_id}&plan=${planName}`, notify_url: `https://meetzone-backend.onrender.com/api/payment/cashfree/webhook` },
+        order_note: `ZoneMeet ${planName}`
+      })
+    });
+    const order = await response.json();
+    if (!order.payment_session_id) throw new Error(order.message || "Cashfree order failed");
+    res.json({ orderId, paymentSessionId: order.payment_session_id });
+  } catch (err) {
+    console.error("Cashfree Create Order Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Cashfree - Verify Payment
+app.post("/api/payment/cashfree/verify", async (req, res) => {
+  try {
+    const { orderId, userEmail, planName, giftRecipientId } = req.body;
+    const response = await fetch(`${CASHFREE_BASE_URL}/orders/${orderId}`, {
+      headers: {
+        "x-client-id": process.env.CASHFREE_APP_ID || "YOUR_CASHFREE_APP_ID",
+        "x-client-secret": process.env.CASHFREE_SECRET_KEY || "YOUR_CASHFREE_SECRET",
+        "x-api-version": "2023-08-01"
+      }
+    });
+    const order = await response.json();
+    if (order.order_status !== "PAID") {
+      return res.status(400).json({ success: false, message: "Cashfree payment not completed" });
+    }
+    const user = users.find(u => u.email === (giftRecipientId || userEmail));
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    const isCoinPurchase = planName.includes("Coins");
+    if (isCoinPurchase) {
+      const coinsToAdd = parseInt(planName.split(" ")[0]);
+      const bonusCoins = planName.includes("200") ? 50 : planName.includes("500") ? 150 : planName.includes("1300") ? 300 : 0;
+      user.coins = (user.coins || 0) + coinsToAdd + bonusCoins;
+    } else {
+      let days = 7, bundledCoins = 0;
+      if (planName === "Starter")  { days = 7;  bundledCoins = 50; }
+      else if (planName === "Prime")  { days = 30; bundledCoins = 150; }
+      else if (planName === "Silver") { days = 90; bundledCoins = 500; }
+      else if (planName === "VIP Elite") { days = 30; bundledCoins = 400; }
+      user.planExpiry = Date.now() + (days * 24 * 60 * 60 * 1000);
+      user.premium = true;
+      user.planName = planName;
+      user.coins = (user.coins || 0) + bundledCoins;
+    }
+    transactions.push({ id: orderId, userEmail, planName, gateway: "cashfree", timestamp: Date.now() });
+    saveTransactions(); saveUsers();
+    const updatedUser = { ...user, coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10) };
+    res.json({ success: true, message: "Cashfree payment verified", user: updatedUser });
+  } catch (err) {
+    console.error("Cashfree Verify Error:", err);
+    res.status(500).json({ success: false, message: "Cashfree verification failed" });
+  }
+});
+
+
 
 app.post("/api/user/spend-coins", (req, res) => {
   const { email, userId, amount, feature } = req.body;

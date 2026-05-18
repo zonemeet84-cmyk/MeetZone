@@ -876,74 +876,105 @@ export default function Dashboard() {
     }
 
     const RAZORPAY_KEY = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-    if (!RAZORPAY_KEY || RAZORPAY_KEY === "YOUR_RAZORPAY_KEY_ID") {
+    if (!RAZORPAY_KEY || RAZORPAY_KEY === "YOUR_RAZORPAY_LIVE_KEY_ID") {
       showModal({ message: "⚠️ Payment gateway is being configured. Please try again in a few minutes or contact support@zonemeet.chat", type: "info" });
       return;
     }
 
     try {
       setPaymentStep("processing");
-
-      // 1. Create order on backend
       const amountInPaise = selectedPlan.name === "Starter" ? 14900 : selectedPlan.name === "Prime" ? 59900 : selectedPlan.name === "Silver" ? 159900 : selectedPlan.name === "VIP Elite" ? 99900 : parseInt(selectedPlan.price?.replace('₹','')) * 100 || 7900;
-
-      const orderRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/razorpay/order", {
-        amount: amountInPaise,
-        currency: "INR"
-      });
-
+      const orderRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/razorpay/order", { amount: amountInPaise, currency: "INR" });
       const options = {
-        key: RAZORPAY_KEY,
-        amount: orderRes.data.amount,
-        currency: orderRes.data.currency,
-        name: "ZoneMeet Premium",
-        description: `Upgrade to ${selectedPlan.name}`,
-        image: "https://zonemeet.chat/logo.png",
-        order_id: orderRes.data.id,
+        key: RAZORPAY_KEY, amount: orderRes.data.amount, currency: orderRes.data.currency,
+        name: "ZoneMeet Premium", description: `Upgrade to ${selectedPlan.name}`,
+        image: "https://zonemeet.chat/logo.png", order_id: orderRes.data.id,
         handler: async (response) => {
           try {
-            const verifyRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/razorpay/verify", {
-              ...response,
-              userEmail: user.email,
-              planName: selectedPlan.name,
-              giftRecipientId: isGifting ? giftRecipientId : null
-            });
-
+            const verifyRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/razorpay/verify", { ...response, userEmail: user.email, planName: selectedPlan.name, giftRecipientId: isGifting ? giftRecipientId : null });
             if (verifyRes.data.success) {
               const updatedUser = { ...user, ...verifyRes.data.user };
-              setUser(updatedUser);
-              localStorage.setItem("user", JSON.stringify(updatedUser));
+              setUser(updatedUser); localStorage.setItem("user", JSON.stringify(updatedUser));
               setPaymentStep("success");
-            } else {
-              showModal({ message: "Payment verification failed. If money was deducted, contact support@zonemeet.chat", type: "info" });
-              setPaymentStep("methods");
-            }
-          } catch (err) {
-            console.error(err);
-            showModal({ message: "Payment verification failed. Please try again later.", type: "error" });
-            setPaymentStep("methods");
-          }
+            } else { showModal({ message: "Payment verification failed. Contact support@zonemeet.chat", type: "info" }); setPaymentStep("methods"); }
+          } catch (err) { console.error(err); showModal({ message: "Verification failed. Try again.", type: "error" }); setPaymentStep("methods"); }
         },
-        prefill: {
-          name: user.name,
-          email: user.email
-        },
-        theme: {
-          color: "#6366f1"
-        },
-        modal: {
-          ondismiss: () => setPaymentStep("methods")
-        }
+        prefill: { name: user.name, email: user.email },
+        theme: { color: "#6366f1" },
+        modal: { ondismiss: () => setPaymentStep("methods") }
       };
-
       const rzp = new window.Razorpay(options);
       rzp.open();
-    } catch (err) {
-      console.error(err);
-      setPaymentStep("methods");
-      showModal({ message: "⚠️ Could not connect to payment gateway. Please try again.", type: "info" });
-    }
+    } catch (err) { console.error(err); setPaymentStep("methods"); showModal({ message: "⚠️ Could not connect to payment gateway. Please try again.", type: "info" }); }
   };
+
+  const handleCashfreePayment = async () => {
+    if (!user) { showModal({ message: "Please login first", type: "info" }); return; }
+    const CF_APP_ID = process.env.NEXT_PUBLIC_CASHFREE_APP_ID;
+    if (!CF_APP_ID || CF_APP_ID === "YOUR_CASHFREE_APP_ID") {
+      showModal({ message: "⚠️ Cashfree gateway coming soon! Use Razorpay for now.", type: "info" }); return;
+    }
+    try {
+      setPaymentStep("processing");
+      const amountInPaise = selectedPlan.name === "Starter" ? 14900 : selectedPlan.name === "Prime" ? 59900 : selectedPlan.name === "Silver" ? 159900 : selectedPlan.name === "VIP Elite" ? 99900 : parseInt(selectedPlan.price?.replace('₹','')) * 100 || 7900;
+      const orderRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/cashfree/create-order", { amount: amountInPaise, planName: selectedPlan.name, userEmail: user.email });
+      if (!orderRes.data.paymentSessionId) throw new Error("Cashfree session failed");
+      const cashfree = new window.Cashfree({ mode: process.env.NEXT_PUBLIC_CASHFREE_ENV === "production" ? "production" : "sandbox" });
+      cashfree.checkout({
+        paymentSessionId: orderRes.data.paymentSessionId,
+        returnUrl: `https://zonemeet.chat/?cf_order=${orderRes.data.orderId}&plan=${selectedPlan.name}&email=${user.email}`,
+      });
+    } catch (err) { console.error(err); setPaymentStep("methods"); showModal({ message: "Cashfree error. Try another method.", type: "error" }); }
+  };
+
+  const handlePaypalPayment = async () => {
+    if (!user) { showModal({ message: "Please login first", type: "info" }); return; }
+    const PP_CLIENT = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+    if (!PP_CLIENT || PP_CLIENT === "YOUR_PAYPAL_CLIENT_ID") {
+      showModal({ message: "⚠️ PayPal gateway coming soon! Use Razorpay or Stripe for now.", type: "info" }); return;
+    }
+    try {
+      setPaymentStep("processing");
+      const planPriceUSD = selectedPlan.name === "Starter" ? 1.75 : selectedPlan.name === "Prime" ? 7.17 : selectedPlan.name === "Silver" ? 19.17 : selectedPlan.name === "VIP Elite" ? 11.99 : 5.00;
+      const amountInCents = Math.round(planPriceUSD * 100);
+      const orderRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/paypal/create-order", { amount: amountInCents, currency: "USD", planName: selectedPlan.name, userEmail: user.email });
+      if (orderRes.data.approveUrl) {
+        localStorage.setItem("paypal_pending", JSON.stringify({ planName: selectedPlan.name, userEmail: user.email, orderId: orderRes.data.orderId, giftRecipientId: isGifting ? giftRecipientId : null }));
+        window.location.href = orderRes.data.approveUrl;
+      } else throw new Error("No PayPal approval URL");
+    } catch (err) { console.error(err); setPaymentStep("methods"); showModal({ message: "PayPal error. Try another method.", type: "error" }); }
+  };
+
+  const handleStripePayment = async () => {
+    if (!user) { showModal({ message: "Please login first", type: "info" }); return; }
+    const STRIPE_PUB = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+    if (!STRIPE_PUB || STRIPE_PUB === "YOUR_STRIPE_PUBLISHABLE_KEY") {
+      showModal({ message: "⚠️ Stripe gateway coming soon! Use Razorpay for now.", type: "info" }); return;
+    }
+    try {
+      setPaymentStep("processing");
+      const planPriceUSD = selectedPlan.name === "Starter" ? 1.75 : selectedPlan.name === "Prime" ? 7.17 : selectedPlan.name === "Silver" ? 19.17 : selectedPlan.name === "VIP Elite" ? 11.99 : 5.00;
+      const amountInCents = Math.round(planPriceUSD * 100);
+      const intentRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/stripe/create-intent", { amount: amountInCents, currency: "usd", planName: selectedPlan.name, userEmail: user.email });
+      const { loadStripe } = await import("@stripe/stripe-js");
+      const stripeObj = await loadStripe(STRIPE_PUB);
+      const result = await stripeObj.confirmCardPayment(intentRes.data.clientSecret, {
+        payment_method: { card: { token: "tok_visa" }, billing_details: { name: user.name, email: user.email } }
+      });
+      if (result.error) throw new Error(result.error.message);
+      const verifyRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/stripe/verify", { paymentIntentId: intentRes.data.paymentIntentId, userEmail: user.email, planName: selectedPlan.name, giftRecipientId: isGifting ? giftRecipientId : null });
+      if (verifyRes.data.success) {
+        const updatedUser = { ...user, ...verifyRes.data.user };
+        setUser(updatedUser); localStorage.setItem("user", JSON.stringify(updatedUser));
+        setPaymentStep("success");
+      } else { showModal({ message: "Stripe verification failed.", type: "info" }); setPaymentStep("methods"); }
+    } catch (err) { console.error(err); setPaymentStep("methods"); showModal({ message: `Stripe error: ${err.message}`, type: "error" }); }
+  };
+
+
+
+
+
 
   return (
     <div className="container">
@@ -951,6 +982,7 @@ export default function Dashboard() {
         <title>ZoneMeet</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+        <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
       </Head>
 
       <div className="bg-gradient" />
@@ -2031,47 +2063,45 @@ export default function Dashboard() {
                   <div className="methods-list-premium">
                     {currency === "INR" ? (
                       <>
+                        <div className="gateway-section-label">🇮🇳 Indian Payment Methods</div>
                         <button className="pay-method-item" onClick={() => handleRazorpayPayment()}>
                           <div className="pay-icon-box">📱</div>
-                          <div className="pay-details">
-                            <strong>UPI Payment</strong>
-                            <span>GPay, PhonePe, Paytm</span>
-                          </div>
+                          <div className="pay-details"><strong>UPI Payment</strong><span>GPay, PhonePe, Paytm via Razorpay</span></div>
+                          <div className="pay-badge">Razorpay</div>
                           <div className="pay-arrow">›</div>
                         </button>
                         <button className="pay-method-item" onClick={() => handleRazorpayPayment()}>
                           <div className="pay-icon-box">💳</div>
-                          <div className="pay-details">
-                            <strong>Card Payment</strong>
-                            <span>Debit & Credit Cards</span>
-                          </div>
+                          <div className="pay-details"><strong>Debit / Credit Card</strong><span>All Indian & International Cards</span></div>
+                          <div className="pay-badge">Razorpay</div>
                           <div className="pay-arrow">›</div>
                         </button>
                         <button className="pay-method-item" onClick={() => handleRazorpayPayment()}>
                           <div className="pay-icon-box">🏦</div>
-                          <div className="pay-details">
-                            <strong>Net Banking</strong>
-                            <span>All Indian Banks</span>
-                          </div>
+                          <div className="pay-details"><strong>Net Banking</strong><span>All Major Indian Banks</span></div>
+                          <div className="pay-badge">Razorpay</div>
+                          <div className="pay-arrow">›</div>
+                        </button>
+                        <button className="pay-method-item" onClick={() => handleCashfreePayment()}>
+                          <div className="pay-icon-box">⚡</div>
+                          <div className="pay-details"><strong>Cashfree Pay</strong><span>UPI, Cards, Wallets — 1.75% fee</span></div>
+                          <div className="pay-badge" style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981' }}>Cashfree</div>
                           <div className="pay-arrow">›</div>
                         </button>
                       </>
                     ) : (
                       <>
-                        <button className="pay-method-item paypal" onClick={() => showModal({ message: "PayPal integration coming soon!", type: "info" })}>
+                        <div className="gateway-section-label">🌍 International Payment Methods</div>
+                        <button className="pay-method-item" onClick={() => handlePaypalPayment()}>
                           <div className="pay-icon-box">🅿️</div>
-                          <div className="pay-details">
-                            <strong>PayPal</strong>
-                            <span>Express International Checkout</span>
-                          </div>
+                          <div className="pay-details"><strong>PayPal</strong><span>Pay with PayPal balance or card</span></div>
+                          <div className="pay-badge" style={{ background: 'rgba(0,112,192,0.15)', color: '#0070c0' }}>PayPal</div>
                           <div className="pay-arrow">›</div>
                         </button>
-                        <button className="pay-method-item" onClick={() => handleRazorpayPayment()}>
+                        <button className="pay-method-item" onClick={() => handleStripePayment()}>
                           <div className="pay-icon-box">💳</div>
-                          <div className="pay-details">
-                            <strong>Stripe / Card</strong>
-                            <span>International Credit/Debit</span>
-                          </div>
+                          <div className="pay-details"><strong>Stripe / Card</strong><span>Visa, Mastercard, AMEX worldwide</span></div>
+                          <div className="pay-badge" style={{ background: 'rgba(99,91,255,0.15)', color: '#635bff' }}>Stripe</div>
                           <div className="pay-arrow">›</div>
                         </button>
                       </>
@@ -3346,6 +3376,8 @@ export default function Dashboard() {
           .pay-details strong { display: block; color: white; font-size: 1.1rem; }
           .pay-details span { color: #64748b; font-size: 0.85rem; }
           .pay-arrow { color: #475569; font-size: 1.5rem; }
+          .pay-badge { background: rgba(99,102,241,0.12); color: #a5b4fc; font-size: 0.7rem; font-weight: 800; padding: 4px 10px; border-radius: 20px; white-space: nowrap; border: 1px solid rgba(99,102,241,0.2); }
+          .gateway-section-label { font-size: 0.72rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; padding: 5px 5px 0; }
           .status-container { text-align: center; padding: 2rem 0; }
           .premium-loader { width: 60px; height: 60px; border: 4px solid rgba(99,102,241,0.1); border-top-color: #6366f1; border-radius: 50%; animation: premiumSpin 1s linear infinite; margin: 0 auto 2rem; }
           @keyframes premiumSpin { to { transform: rotate(360deg); } }
