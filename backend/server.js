@@ -1834,30 +1834,46 @@ function matchUsers() {
 
 function matchQuizUsers() {
   waitingQuizUsers = waitingQuizUsers.filter(s => s.connected && !s.partner);
-  if (waitingQuizUsers.length < 2) return;
+  
+  // Group by category
+  const groups = {};
+  for (const s of waitingQuizUsers) {
+    const cat = s.quizCategory || "General Knowledge";
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(s);
+  }
 
-  const s1 = waitingQuizUsers.shift();
-  const s2 = waitingQuizUsers.shift();
+  for (const cat in groups) {
+    while (groups[cat].length >= 2) {
+      const s1 = groups[cat].shift();
+      const s2 = groups[cat].shift();
+      
+      // Remove them from the global array
+      waitingQuizUsers = waitingQuizUsers.filter(s => s !== s1 && s !== s2);
 
-  const roomId = `quiz_room_${Math.random().toString(36).substr(2, 9)}`;
-  s1.join(roomId);
-  s2.join(roomId);
+      const roomId = `quiz_room_${Math.random().toString(36).substr(2, 9)}`;
+      s1.join(roomId);
+      s2.join(roomId);
 
-  s1.roomId = roomId;
-  s2.roomId = roomId;
-  s1.partner = s2;
-  s2.partner = s1;
+      s1.roomId = roomId;
+      s2.roomId = roomId;
+      s1.partner = s2;
+      s2.partner = s1;
 
-  const u1 = users.find(u => u.id === s1.userId);
-  const u2 = users.find(u => u.id === s2.userId);
+      const u1 = users.find(u => u.id === s1.userId);
+      const u2 = users.find(u => u.id === s2.userId);
 
-  // Pick 10 random questions from QUIZ_QUESTIONS
-  const shuffled = [...QUIZ_QUESTIONS].sort(() => 0.5 - Math.random());
-  const selectedQuestions = shuffled.slice(0, 10);
+      // Pick 10 random questions matching the category!
+      let filteredQs = QUIZ_QUESTIONS.filter(q => q.category.toLowerCase().includes(cat.toLowerCase()));
+      if (filteredQs.length < 10) {
+        filteredQs = QUIZ_QUESTIONS; // Fallback if not enough questions in category
+      }
+      const shuffled = [...filteredQs].sort(() => 0.5 - Math.random());
+      const selectedQuestions = shuffled.slice(0, 10);
 
-  const roomState = {
-    roomId,
-    players: [s1, s2],
+      const roomState = {
+        roomId,
+        players: [s1, s2],
     scores: { [s1.id]: 0, [s2.id]: 0 },
     currentQuestionIndex: 0,
     questions: selectedQuestions,
@@ -2340,7 +2356,8 @@ io.on("connection", (socket) => {
 
   // --- QUIZ DUEL / BRAIN CLASH EVENTS ---
 
-  socket.on("join-quiz-queue", () => {
+  socket.on("join-quiz-queue", ({ category } = {}) => {
+    socket.quizCategory = category || "General Knowledge";
     if (!socket.userId) {
       socket.emit("quiz-error", { message: "Please register or login first." });
       return;
@@ -2377,7 +2394,7 @@ io.on("connection", (socket) => {
     waitingQuizUsers.push(socket);
     socket.emit("quiz-queue-joined");
 
-    console.log(`[Quiz Queue] User ${user.name} joined. Queue size: ${waitingQuizUsers.length}`);
+    console.log(`[Quiz Queue] User ${user.name} joined Category: ${socket.quizCategory}. Total Queue size: ${waitingQuizUsers.length}`);
 
     // Trigger matchmaking
     matchQuizUsers();

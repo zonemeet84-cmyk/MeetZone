@@ -162,6 +162,7 @@ export default function Home() {
 
   // --- QUIZ DUEL / BRAIN CLASH STATE ---
   const [quizState, setQuizState] = useState("idle"); // 'idle', 'queued', 'countdown', 'active', 'finished'
+  const [showQuizRoomsModal, setShowQuizRoomsModal] = useState(false);
   const [quizCountdown, setQuizCountdown] = useState(3);
   const [quizQuestion, setQuizQuestion] = useState(null);
   const [quizScores, setQuizScores] = useState({});
@@ -1446,11 +1447,16 @@ export default function Home() {
     if (quizState === "queued") {
       socket?.emit("leave-quiz-queue");
     } else {
-      if (partnerId) {
-        stopMatching();
-      }
-      socket?.emit("join-quiz-queue");
+      setShowQuizRoomsModal(true);
     }
+  };
+
+  const joinQuizRoom = (category) => {
+    if (partnerId) {
+      stopMatching();
+    }
+    socket?.emit("join-quiz-queue", { category });
+    setShowQuizRoomsModal(false);
   };
 
   const purchaseFilter = async (filter) => {
@@ -2015,6 +2021,66 @@ export default function Home() {
               </div>
             )}
 
+            {/* QUIZ ROOMS MODAL */}
+            {showQuizRoomsModal && (
+              <div className="filter-modal-overlay" onClick={() => setShowQuizRoomsModal(false)}>
+                <div className="filter-modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+                  <div className="filter-modal-header">
+                    <h2>🧠 Choose a Quiz Arena</h2>
+                    <button className="close-btn" onClick={() => setShowQuizRoomsModal(false)}>×</button>
+                  </div>
+                  <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: '1.5rem', textAlign: 'center' }}>
+                    Entry Fee: 50 Coins. Winner Takes: 100 Coins. 10 Questions, 15 seconds each!
+                  </p>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', padding: '10px' }}>
+                    {[
+                      { id: "GK", title: "General Knowledge", icon: "🌍", color: "#6366f1" },
+                      { id: "Tech", title: "Tech & Coding", icon: "💻", color: "#10b981" },
+                      { id: "Gaming", title: "Gaming", icon: "🎮", color: "#f59e0b" },
+                      { id: "Anime", title: "Anime & Manga", icon: "⚔️", color: "#ef4444" },
+                      { id: "Movies", title: "Movies & Cinema", icon: "🎬", color: "#8b5cf6" },
+                      { id: "Memes", title: "Memes & Culture", icon: "🐸", color: "#14b8a6" },
+                      { id: "Football", title: "Football", icon: "⚽", color: "#3b82f6" },
+                      { id: "Science", title: "Science", icon: "🔬", color: "#ec4899" }
+                    ].map(cat => (
+                      <button 
+                        key={cat.id} 
+                        style={{
+                          background: 'rgba(255,255,255,0.05)',
+                          border: `1px solid ${cat.color}`,
+                          padding: '1.2rem',
+                          borderRadius: '16px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '10px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          color: '#fff',
+                          fontWeight: '700'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = `rgba(${parseInt(cat.color.slice(1,3),16)},${parseInt(cat.color.slice(3,5),16)},${parseInt(cat.color.slice(5,7),16)},0.15)`;
+                          e.currentTarget.style.transform = 'translateY(-3px)';
+                          e.currentTarget.style.boxShadow = `0 10px 20px rgba(${parseInt(cat.color.slice(1,3),16)},${parseInt(cat.color.slice(3,5),16)},${parseInt(cat.color.slice(5,7),16)},0.2)`;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
+                        onClick={() => joinQuizRoom(cat.id)}
+                      >
+                        <span style={{ fontSize: '2.5rem' }}>{cat.icon}</span>
+                        <span>{cat.title}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="video-grid-v2">
               <div className={`video-card ${isFaceBlurred ? 'blurred-face' : ''}`}>
                 <video
@@ -2488,7 +2554,7 @@ export default function Home() {
                 onClick={handleBrainClashClick}
                 disabled={quizState !== "idle" && quizState !== "queued"}
               >
-                {quizState === "queued" ? "❌ Cancel Duel" : "🧠 Brain Clash"}
+                {quizState === "queued" ? "❌ Cancel Duel" : "🚪 Quiz Rooms"}
               </button>
               <button className="stop-btn" onClick={stopMatching} disabled={quizState !== "idle"}>
                 🛑 Stop

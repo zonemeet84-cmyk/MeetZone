@@ -1925,6 +1925,24 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* CURRENCY TOGGLE FOR COINS */}
+        <div className="currency-selector" style={{ marginTop: '20px', marginBottom: '20px' }}>
+          <div className="currency-pill">
+            <button
+              className={currency === "INR" ? "active" : ""}
+              onClick={() => setCurrency("INR")}
+            >
+              INR (₹)
+            </button>
+            <button
+              className={currency === "USD" ? "active" : ""}
+              onClick={() => setCurrency("USD")}
+            >
+              USD ($)
+            </button>
+          </div>
+        </div>
+
         <div className="pricing-grid coins-grid">
           {[
             { name: "100 Coins", base: 100, bonus: 0,   price: 79,  usdPrice: 0.99, icon: "🪙", color: "#94a3b8", tag: "Starter"      },
