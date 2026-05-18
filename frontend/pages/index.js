@@ -981,12 +981,12 @@ export default function Dashboard() {
       <div className="header">
         <div className="brand-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }} onClick={() => router.push("/")}>
           <div className="logo-icon-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <svg viewBox="0 0 32 32" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="2" y="5" width="20" height="20" rx="6" fill="url(#brand-grad)" />
-              <path d="M22 11L28 7V23L22 19V11Z" fill="url(#brand-grad)" />
-              <path d="M9 11H15L9 19H15" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+            <svg viewBox="0 0 32 32" width="40" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="5" width="20" height="22" rx="6" fill="url(#brand-grad)" />
+              <path d="M22 11L28 7V25L22 21V11Z" fill="url(#brand-grad)" />
+              <path d="M9 11H15L9 19H15" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               <defs>
-                <linearGradient id="brand-grad" x1="2" y1="5" x2="28" y2="25" gradientUnits="userSpaceOnUse">
+                <linearGradient id="brand-grad" x1="2" y1="5" x2="28" y2="27" gradientUnits="userSpaceOnUse">
                   <stop stopColor="#2563eb" />
                   <stop offset="0.5" stopColor="#a855f7" />
                   <stop offset="1" stopColor="#ec4899" />
@@ -994,7 +994,7 @@ export default function Dashboard() {
               </defs>
             </svg>
           </div>
-          <h1 className="logo-text" style={{ margin: 0, fontSize: '1.4rem', fontWeight: '800', display: 'flex', alignItems: 'center', letterSpacing: '-0.02em' }}>
+          <h1 className="logo-text" style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900', display: 'flex', alignItems: 'center', letterSpacing: '-0.03em' }}>
             <span style={{ color: '#ffffff' }}>Zone</span>
             <span style={{ background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Meet</span>
           </h1>
