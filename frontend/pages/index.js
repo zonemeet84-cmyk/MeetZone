@@ -343,21 +343,21 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     // Wake up the backend immediately
     axios.get("https://meetzone-backend.onrender.com/api/ping").catch(() => { });
 
     const checkAuth = async () => {
       // 0. IMMEDIATE CACHE LOAD (Fast UI)
-      const stored = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+      const stored = sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")) : null;
       if (stored && stored.email) {
         console.log("Found stored user, displaying immediately");
         setUser(stored);
         setAuthLoading(false);
       }
 
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       if (session) {
         if (!token || token === "undefined") {
@@ -369,8 +369,8 @@ export default function Dashboard() {
               referralCode
             });
             if (res.data.token) {
-              localStorage.setItem("token", res.data.token);
-              localStorage.setItem("user", JSON.stringify(res.data.user));
+              sessionStorage.setItem("token", res.data.token);
+              sessionStorage.setItem("user", JSON.stringify(res.data.user));
               localStorage.removeItem("referral");
               setUser(res.data.user);
             }
@@ -389,10 +389,14 @@ export default function Dashboard() {
                 userData.planName = "VIP Elite";
               }
               setUser(userData);
-              localStorage.setItem("user", JSON.stringify(userData));
+              sessionStorage.setItem("user", JSON.stringify(userData));
             }
           } catch (e) {
             console.error("Verify Error", e);
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("user");
+            setUser(null);
+            router.push("/login");
           }
         }
       } else if (token && token !== "undefined") {
@@ -407,10 +411,14 @@ export default function Dashboard() {
               userData.planName = "VIP Elite";
             }
             setUser(userData);
-            localStorage.setItem("user", JSON.stringify(userData));
+            sessionStorage.setItem("user", JSON.stringify(userData));
           }
         } catch (err) {
           console.error("Verify Error", err);
+          sessionStorage.removeItem("token");
+          sessionStorage.removeItem("user");
+          setUser(null);
+          router.push("/login");
         }
       }
 
@@ -452,7 +460,7 @@ export default function Dashboard() {
             if (res.data.coins !== user.coins || res.data.streak !== user.streak || res.data.coinActivity) {
               const updated = { ...user, coins: res.data.coins, streak: res.data.streak, coinActivity: res.data.coinActivity || user.coinActivity };
               setUser(updated);
-              localStorage.setItem("user", JSON.stringify(updated));
+              sessionStorage.setItem("user", JSON.stringify(updated));
             }
           }
         })
@@ -464,7 +472,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (authLoading) return; // Wait for verification
 
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (!session && (!token || token === "undefined")) {
       // router.push("/login"); // Optional: Redirect to login if not authenticated
     }
@@ -473,7 +481,7 @@ export default function Dashboard() {
   // Fetch referral stats when user is loaded
   useEffect(() => {
     const fetchReferral = async () => {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       if (user && token && !referralStats) {
         try {
           const res = await axios.get("https://meetzone-backend.onrender.com/api/referral/stats", {
@@ -499,7 +507,7 @@ export default function Dashboard() {
       if (res.data.success) {
         const updated = { ...user, coins: res.data.coins, streak: res.data.streak, bonusClaimedToday: true };
         setUser(updated);
-        localStorage.setItem("user", JSON.stringify(updated));
+        sessionStorage.setItem("user", JSON.stringify(updated));
         setDailyStatus({ ...dailyStatus, canCollect: false });
         setShowStreakModal(false);
         // Show a toast-style success
@@ -569,7 +577,7 @@ export default function Dashboard() {
             };
 
             setUser(updatedUser);
-            localStorage.setItem("user", JSON.stringify(updatedUser));
+            sessionStorage.setItem("user", JSON.stringify(updatedUser));
 
             // Success feedback
             showModal({
@@ -603,7 +611,7 @@ export default function Dashboard() {
     if (!redeemCode.trim()) return showModal({ message: "Please enter a code.", type: "warning" });
 
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const res = await axios.post("https://meetzone-backend.onrender.com/api/referral/redeem", {
         referralCode: redeemCode
       }, {
@@ -613,7 +621,7 @@ export default function Dashboard() {
       if (res.data.success) {
         const updatedUser = { ...user, coins: res.data.user.coins, referredBy: res.data.user.referredBy, coinActivity: res.data.user.coinActivity };
         setUser(updatedUser);
-        localStorage.setItem("user", JSON.stringify(updatedUser));
+        sessionStorage.setItem("user", JSON.stringify(updatedUser));
         setRedeemCode("");
         // Notify other tabs
         window.dispatchEvent(new Event("storage"));
@@ -676,7 +684,7 @@ export default function Dashboard() {
         setShowSpinner(false);
         if (res.data.success) {
           setUser(res.data.user);
-          localStorage.setItem("user", JSON.stringify(res.data.user));
+          sessionStorage.setItem("user", JSON.stringify(res.data.user));
           const isLoss = res.data.prize === "Better luck next time!";
           setRevealPrize({ name: res.data.prize, type: type, isLoss: isLoss });
         }
@@ -696,7 +704,7 @@ export default function Dashboard() {
       if (res.data.success) {
         const updated = { ...user, coins: res.data.coins, streak: res.data.streak, coinActivity: res.data.coinActivity };
         setUser(updated);
-        localStorage.setItem("user", JSON.stringify(updated));
+        sessionStorage.setItem("user", JSON.stringify(updated));
         setDailyStatus({ ...dailyStatus, status: "streak_saved", streak: res.data.streak, canCollect: true });
         setShowStreakModal(false);
         showModal({ message: `✅ Streak Restored! 50 coins deducted. You're back on a ${res.data.streak}-day streak.`, type: "success" });
@@ -714,7 +722,7 @@ export default function Dashboard() {
 
   const handleOnboardSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
     const selectedCountry = Country.getAllCountries().find(c => c.isoCode === onboardForm.countryCode);
     const selectedState = State.getStatesOfCountry(onboardForm.countryCode).find(s => s.isoCode === onboardForm.stateCode);
 
@@ -740,7 +748,7 @@ export default function Dashboard() {
       if (res.data.success) {
         const newUser = { ...user, ...updatedData };
         setUser(newUser);
-        localStorage.setItem("user", JSON.stringify(newUser));
+        sessionStorage.setItem("user", JSON.stringify(newUser));
         setShowOnboarding(false);
         // Redirect to Home instead of Chat as requested
         router.push("/");
@@ -770,8 +778,8 @@ export default function Dashboard() {
   };
 
   const logout = async () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
     setUser(null);
     if (session) {
       await signOut({ redirect: false });
@@ -786,7 +794,7 @@ export default function Dashboard() {
     setStartingChat(true);
     console.log("Start Chat Triggered");
 
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (!token && !session) {
       console.log("No auth found, redirecting...");
       router.push("/login?callbackUrl=/chat");
@@ -795,7 +803,7 @@ export default function Dashboard() {
     }
 
     // Always prefer the freshest state if available
-    const storedUser = user || (localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null);
+    const storedUser = user || (sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")) : null);
     if (!storedUser || (!storedUser.onboardingCompleted && (!storedUser.gender || storedUser.gender === "Other" || !storedUser.country || storedUser.country === "Unknown" || storedUser.gender === "All"))) {
       console.log("Incomplete profile, showing onboarding");
       setShowOnboarding(true);
@@ -842,7 +850,7 @@ export default function Dashboard() {
             const verifyRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/razorpay/verify", { ...response, userEmail: user.email, planName: selectedPlan.name, giftRecipientId: isGifting ? giftRecipientId : null });
             if (verifyRes.data.success) {
               const updatedUser = { ...user, ...verifyRes.data.user };
-              setUser(updatedUser); localStorage.setItem("user", JSON.stringify(updatedUser));
+              setUser(updatedUser); sessionStorage.setItem("user", JSON.stringify(updatedUser));
               setPaymentStep("success");
             } else { showModal({ message: "Payment verification failed. Contact support@zonemeet.chat", type: "info" }); setPaymentStep("methods"); }
           } catch (err) { console.error(err); showModal({ message: "Verification failed. Try again.", type: "error" }); setPaymentStep("methods"); }
@@ -887,7 +895,7 @@ export default function Dashboard() {
       const amountInCents = Math.round(planPriceUSD * 100);
       const orderRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/paypal/create-order", { amount: amountInCents, currency: "USD", planName: selectedPlan.name, userEmail: user.email });
       if (orderRes.data.approveUrl) {
-        localStorage.setItem("paypal_pending", JSON.stringify({ planName: selectedPlan.name, userEmail: user.email, orderId: orderRes.data.orderId, giftRecipientId: isGifting ? giftRecipientId : null }));
+        sessionStorage.setItem("paypal_pending", JSON.stringify({ planName: selectedPlan.name, userEmail: user.email, orderId: orderRes.data.orderId, giftRecipientId: isGifting ? giftRecipientId : null }));
         window.location.href = orderRes.data.approveUrl;
       } else throw new Error("No PayPal approval URL");
     } catch (err) { console.error(err); setPaymentStep("methods"); showModal({ message: "PayPal error. Try another method.", type: "error" }); }
@@ -913,7 +921,7 @@ export default function Dashboard() {
       const verifyRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/stripe/verify", { paymentIntentId: intentRes.data.paymentIntentId, userEmail: user.email, planName: selectedPlan.name, giftRecipientId: isGifting ? giftRecipientId : null });
       if (verifyRes.data.success) {
         const updatedUser = { ...user, ...verifyRes.data.user };
-        setUser(updatedUser); localStorage.setItem("user", JSON.stringify(updatedUser));
+        setUser(updatedUser); sessionStorage.setItem("user", JSON.stringify(updatedUser));
         setPaymentStep("success");
       } else { showModal({ message: "Stripe verification failed.", type: "info" }); setPaymentStep("methods"); }
     } catch (err) { console.error(err); setPaymentStep("methods"); showModal({ message: `Stripe error: ${err.message}`, type: "error" }); }
@@ -1120,7 +1128,7 @@ export default function Dashboard() {
                                   const localExpiry = Date.now() + (10 * 60 * 1000);
                                   const newUser = { ...user, coins: res.data.coins, boostExpiry: localExpiry, coinActivity: res.data.coinActivity };
                                   setUser(newUser);
-                                  localStorage.setItem("user", JSON.stringify(newUser));
+                                  sessionStorage.setItem("user", JSON.stringify(newUser));
                                   showModal({ message: "Profile Boosted! Matching priority increased.", type: "success" });
                                 }
                               } catch (err) {
@@ -2060,7 +2068,7 @@ export default function Dashboard() {
                   <button className="btn-start-pro" onClick={() => {
                     const updatedUser = { ...user, premium: true, planName: selectedPlan.name };
                     setUser(updatedUser);
-                    localStorage.setItem("user", JSON.stringify(updatedUser));
+                    sessionStorage.setItem("user", JSON.stringify(updatedUser));
                     setShowPaymentModal(false);
                     setPaymentStep("methods");
                   }}>Start Using Pro</button>

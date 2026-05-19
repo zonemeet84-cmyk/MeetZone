@@ -621,7 +621,7 @@ export default function Home() {
         screenshot = canvas.toDataURL("image/jpeg", 0.5); // Compressed JPEG
       }
 
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       await axios.post("https://meetzone-backend.onrender.com/api/report", {
         targetId: targetId,
         reason: selectedReason,
@@ -660,7 +660,7 @@ export default function Home() {
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const res = await axios.post("https://meetzone-backend.onrender.com/api/user/send-gift", {
         recipientId: partnerInfo.id,
         stickerId: sticker.id,
@@ -674,7 +674,7 @@ export default function Home() {
         // Update local user state
         const updatedUser = { ...user, coins: res.data.coins, stickers: res.data.stickers, coinActivity: res.data.coinActivity };
         setUser(updatedUser);
-        localStorage.setItem("user", JSON.stringify(updatedUser));
+        sessionStorage.setItem("user", JSON.stringify(updatedUser));
 
         // Show gift animation on SENDER's screen too
         setReceivedGift({ icon: sticker.icon, from: 'You', amount: sticker.price, isSender: true });
@@ -706,7 +706,7 @@ export default function Home() {
 
     setFriendReqStatus(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       await axios.post("https://meetzone-backend.onrender.com/api/friends/request", { targetId: partnerInfo.id }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -816,7 +816,7 @@ export default function Home() {
 
     const init = async () => {
       // 0. QUICK PROFILE LOAD FROM CACHE
-      const savedUser = localStorage.getItem("user");
+      const savedUser = sessionStorage.getItem("user");
       if (savedUser) {
         try {
           const u = JSON.parse(savedUser);
@@ -827,7 +827,7 @@ export default function Home() {
         } catch(e) {}
       }
 
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       // 1. Auth Logic
       if (session) {
@@ -840,8 +840,8 @@ export default function Home() {
               referralCode
             });
             if (res.data.token) {
-              localStorage.setItem("token", res.data.token);
-              localStorage.setItem("user", JSON.stringify(res.data.user));
+              sessionStorage.setItem("token", res.data.token);
+              sessionStorage.setItem("user", JSON.stringify(res.data.user));
               localStorage.removeItem("referral");
               let userData = res.data.user;
               if (userData.email?.toLowerCase() === "ds9376314@gmail.com") {
@@ -872,7 +872,7 @@ export default function Home() {
               }
               setUser(userData);
               if (userData.unlockedFilters) setUnlockedFilters(userData.unlockedFilters);
-              localStorage.setItem("user", JSON.stringify(userData));
+              sessionStorage.setItem("user", JSON.stringify(userData));
 
               if (!userData.gender || userData.gender === "All" || !userData.country || userData.country === "All" || userData.gender === "Other" || userData.country === "Unknown") {
                 router.push("/");
@@ -899,7 +899,7 @@ export default function Home() {
             if (userData.unlockedFilters) {
               setUnlockedFilters(userData.unlockedFilters);
             }
-            localStorage.setItem("user", JSON.stringify(userData));
+            sessionStorage.setItem("user", JSON.stringify(userData));
 
             // Check for incomplete profile
             if (!userData.gender || userData.gender === "All" || !userData.country || userData.country === "All" || userData.gender === "Other" || userData.country === "Unknown") {
@@ -908,22 +908,15 @@ export default function Home() {
             }
           } else {
             setAuthError("Session invalid. Please login again.");
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("user");
             router.push("/login");
           }
         } catch (err) {
-          const savedUser = localStorage.getItem("user");
-          if (savedUser) {
-            const u = JSON.parse(savedUser);
-            setUser(u);
-            if (u.unlockedFilters) {
-              setUnlockedFilters(u.unlockedFilters);
-            }
-            setAuthLoading(false);
-          } else {
-            setAuthError("Connection error.");
-          }
+          sessionStorage.removeItem("token");
+          sessionStorage.removeItem("user");
+          setUser(null);
+          router.push("/login");
         } finally {
           setAuthLoading(false);
         }
@@ -980,7 +973,7 @@ export default function Home() {
 
       socket.on("connect", () => {
         setStatus("Waiting for a partner...");
-        const storedUser = localStorage.getItem("user");
+        const storedUser = sessionStorage.getItem("user");
         if (storedUser) {
           const profile = JSON.parse(storedUser);
 
@@ -1009,8 +1002,8 @@ export default function Home() {
 
       socket.on("banned-alert", (msg) => {
         alert(msg);
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
         window.location.href = "/login";
       });
 
@@ -1022,7 +1015,7 @@ export default function Home() {
         if (newTotalCoins !== undefined) {
           setUser(prev => {
             const updated = { ...prev, coins: newTotalCoins };
-            localStorage.setItem("user", JSON.stringify(updated));
+            sessionStorage.setItem("user", JSON.stringify(updated));
             return updated;
           });
         }
@@ -1241,17 +1234,17 @@ export default function Home() {
         
         // Sync local coins balance
         const isDraw = result.draw;
-        const isWinner = result.winnerId === (user?.id || (localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).id : ""));
+        const isWinner = result.winnerId === (user?.id || (sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")).id : ""));
         if (isDraw) {
           setUser(prev => {
             const updated = { ...prev, coins: (prev.coins || 0) + 50 };
-            localStorage.setItem("user", JSON.stringify(updated));
+            sessionStorage.setItem("user", JSON.stringify(updated));
             return updated;
           });
         } else if (isWinner) {
           setUser(prev => {
             const updated = { ...prev, coins: (prev.coins || 0) + 100 };
-            localStorage.setItem("user", JSON.stringify(updated));
+            sessionStorage.setItem("user", JSON.stringify(updated));
             return updated;
           });
         }
@@ -1262,14 +1255,14 @@ export default function Home() {
         setQuizState("finished");
         setQuizFinalResult({
           draw: false,
-          winnerId: (user?.id || (localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).id : "")),
+          winnerId: (user?.id || (sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")).id : "")),
           forfeit: true,
           message: "Opponent disconnected! You win 100 coins by forfeit!"
         });
         
         setUser(prev => {
           const updated = { ...prev, coins: (prev.coins || 0) + 100 };
-          localStorage.setItem("user", JSON.stringify(updated));
+          sessionStorage.setItem("user", JSON.stringify(updated));
           return updated;
         });
       });
@@ -1284,7 +1277,7 @@ export default function Home() {
         setUser(prev => {
           if (!prev) return prev;
           const updated = { ...prev, coins: newCoins };
-          localStorage.setItem("user", JSON.stringify(updated));
+          sessionStorage.setItem("user", JSON.stringify(updated));
           return updated;
         });
       });
@@ -1405,7 +1398,7 @@ export default function Home() {
     if (!pendingText) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const res = await axios.post("https://meetzone-backend.onrender.com/api/user/spend-coins", {
         email: user.email,
         amount: 5,
@@ -1425,7 +1418,7 @@ export default function Home() {
         // Update local coins
         const updatedUser = { ...user, coins: res.data.coins };
         setUser(updatedUser);
-        localStorage.setItem("user", JSON.stringify(updatedUser));
+        sessionStorage.setItem("user", JSON.stringify(updatedUser));
       }
     } catch (err) {
       alert(err.response?.data?.message || "Not enough coins to send message!");
@@ -1492,7 +1485,7 @@ export default function Home() {
           setActiveMediaPipeFilter(filter.id);
           const updatedUser = { ...user, coins: res.data.coins, unlockedFilters: updatedFilters };
           setUser(updatedUser);
-          localStorage.setItem("user", JSON.stringify(updatedUser));
+          sessionStorage.setItem("user", JSON.stringify(updatedUser));
           alert(`${filter.name} unlocked!`);
         }
       } catch (err) {
@@ -1814,7 +1807,7 @@ export default function Home() {
                             key={g.id}
                             className={`gender-option-card ${tempGender === g.id ? 'active' : ''}`}
                             onClick={() => {
-                              const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+                              const storedUser = typeof window !== "undefined" && sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")) : null;
                               const currentUser = user || storedUser;
                               const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
                               if (g.id !== "all" && !currentUser?.premium && !isOwner) {
@@ -1835,7 +1828,7 @@ export default function Home() {
                     <div className="filter-section-group">
                       <label className="section-label">Preferred Country (Premium Feature)</label>
                       <div className="select-dropdown-trigger" onClick={(e) => {
-                        const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+                        const storedUser = typeof window !== "undefined" && sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")) : null;
                         const currentUser = user || storedUser;
                         const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
                         if (!currentUser?.premium && !isOwner) {
@@ -1894,7 +1887,7 @@ export default function Home() {
                     <div className="filter-section-group">
                       <label className="section-label">State / Province (VIP Elite Premium Feature)</label>
                       <div className="select-dropdown-trigger" onClick={(e) => {
-                        const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+                        const storedUser = typeof window !== "undefined" && sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")) : null;
                         const currentUser = user || storedUser;
                         const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
                         const isElite = (currentUser?.premium && (currentUser?.planName?.toLowerCase().includes("elite") || currentUser?.planName?.toLowerCase().includes("vip"))) || isOwner;
@@ -1938,7 +1931,7 @@ export default function Home() {
                     <div className="filter-section-group">
                       <label className="section-label">Age Group (VIP Elite Premium Feature)</label>
                       <div className="select-dropdown-trigger" onClick={(e) => {
-                        const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+                        const storedUser = typeof window !== "undefined" && sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")) : null;
                         const currentUser = user || storedUser;
                         const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
                         const isElite = (currentUser?.premium && (currentUser?.planName?.toLowerCase().includes("elite") || currentUser?.planName?.toLowerCase().includes("vip"))) || isOwner;
@@ -1980,7 +1973,7 @@ export default function Home() {
 
                   <div className="filter-modal-footer">
                     <button className="apply-btn" onClick={() => {
-                      const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+                      const storedUser = typeof window !== "undefined" && sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")) : null;
                       const currentUser = user || storedUser;
                       const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
                       const isElite = (currentUser?.premium && (currentUser?.planName?.toLowerCase().includes("elite") || currentUser?.planName?.toLowerCase().includes("vip"))) || isOwner;
@@ -2391,7 +2384,7 @@ export default function Home() {
                         <p>A legendary clash of minds! You scored {quizFinalResult.totalScores[socket?.id] || 0} points.</p>
                         <div className="prize-credited refund">💰 50 Coins Refunded</div>
                       </>
-                    ) : quizFinalResult.winnerId === (user?.id || (localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).id : "")) ? (
+                    ) : quizFinalResult.winnerId === (user?.id || (sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")).id : "")) ? (
                       <>
                         <h2 className="victory-text">VICTORY! 🎉</h2>
                         <p>You absolutely dominated the brain duel!</p>
@@ -2429,7 +2422,7 @@ export default function Home() {
                       </>
                     )}
 
-                    {(!quizFinalResult.dare || quizFinalResult.draw || quizFinalResult.winnerId === (user?.id || (localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).id : ""))) && (
+                    {(!quizFinalResult.dare || quizFinalResult.draw || quizFinalResult.winnerId === (user?.id || (sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")).id : ""))) && (
                       <button className="quiz-done-btn" onClick={() => {
                         setQuizState("idle");
                         setQuizFinalResult(null);
@@ -2709,7 +2702,7 @@ export default function Home() {
                   <button className="btn-start-pro" onClick={() => {
                     const updatedUser = { ...user, premium: true, planName: selectedPlan.name };
                     setUser(updatedUser);
-                    localStorage.setItem("user", JSON.stringify(updatedUser));
+                    sessionStorage.setItem("user", JSON.stringify(updatedUser));
                     setShowPaymentModal(false);
                     setPaymentStep("methods");
                   }}>Start Using Pro</button>

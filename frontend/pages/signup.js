@@ -113,8 +113,8 @@ export default function Signup() {
 
       if (res.data.token) {
         localStorage.removeItem("referral");
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("user", JSON.stringify(res.data.user));
+        sessionStorage.setItem("token", res.data.token);
+        sessionStorage.setItem("user", JSON.stringify(res.data.user));
         router.push("/");
       }
     } catch (err) {

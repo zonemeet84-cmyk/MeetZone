@@ -26,7 +26,7 @@ export default function Login() {
   const [forgotSuccess, setForgotSuccess] = useState("");
 
   useEffect(() => {
-    if (localStorage.getItem("token")) {
+    if (sessionStorage.getItem("token")) {
       router.push("/");
     }
   }, [router]);
@@ -46,8 +46,8 @@ export default function Login() {
         password,
         captchaToken: captcha
       });
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      sessionStorage.setItem("token", res.data.token);
+      sessionStorage.setItem("user", JSON.stringify(res.data.user));
       router.push("/");
     } catch (err) {
       if (recaptchaRef.current) recaptchaRef.current.reset();
@@ -121,8 +121,8 @@ export default function Login() {
 
       if (res.data.token) {
         localStorage.removeItem("referral");
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("user", JSON.stringify(res.data.user));
+        sessionStorage.setItem("token", res.data.token);
+        sessionStorage.setItem("user", JSON.stringify(res.data.user));
         router.push("/");
       }
     } catch (err) {
