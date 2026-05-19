@@ -1405,8 +1405,8 @@ img, video {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(10, 15, 30, 0.45);
-  backdrop-filter: none;
+  background: rgba(10, 15, 30, 0.95);
+  backdrop-filter: blur(12px);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -1414,14 +1414,6 @@ img, video {
   color: #ffffff;
   font-family: 'Outfit', 'Inter', sans-serif;
   animation: fadeIn 0.4s ease-out;
-  pointer-events: none;
-}
-
-.quiz-queued-view,
-.quiz-countdown-view,
-.quiz-active-view,
-.quiz-finished-view {
-  pointer-events: auto;
 }
 
 /* Matchmaking Queue / Radar View */
@@ -2027,7 +2019,7 @@ img, video {
   display: flex !important;
   gap: 10px !important;
   background: transparent !important;
-  pointer-events: auto !important;
+  pointer-events: none !important;
   border: none !important;
 }
 

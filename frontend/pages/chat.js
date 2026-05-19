@@ -178,6 +178,8 @@ export default function Home() {
   const [quizForfeitState, setQuizForfeitState] = useState(false);
   const [quizLockedOut, setQuizLockedOut] = useState(false);
   const [dareChoiceStep, setDareChoiceStep] = useState("none"); // 'none', 'loser-deciding', 'winner-deciding', 'waiting-loser', 'waiting-winner'
+  const [partnerMicOn, setPartnerMicOn] = useState(true);
+  const [partnerCameraOn, setPartnerCameraOn] = useState(true);
 
   // MediaPipe Filters
   const [activeMediaPipeFilter, setActiveMediaPipeFilter] = useState("None");
@@ -1126,6 +1128,8 @@ export default function Home() {
         setPartnerIsBlurred(false);
         setFriendReqStatus(false);
         setShowPartnerPreview(false);
+        setPartnerMicOn(true);
+        setPartnerCameraOn(true);
         setStatus("Partner disconnected. Searching...");
         socket.emit("next");
       });
@@ -1142,6 +1146,8 @@ export default function Home() {
         setPartnerIsBlurred(false);
         setFriendReqStatus(false);
         setShowPartnerPreview(false);
+        setPartnerMicOn(true);
+        setPartnerCameraOn(true);
         setStatus("Partner stopped. Searching...");
         socket.emit("next");
       });
@@ -1301,6 +1307,14 @@ export default function Home() {
         setDareChoiceStep("none");
         nextPartner();
       });
+
+      socket.on("partner-mic-state", ({ enabled }) => {
+        setPartnerMicOn(enabled);
+      });
+
+      socket.on("partner-camera-state", ({ enabled }) => {
+        setPartnerCameraOn(enabled);
+      });
     };
 
     init();
@@ -1365,6 +1379,8 @@ export default function Home() {
     }
     setPartnerId(null);
     setPartnerInfo(null);
+    setPartnerMicOn(true);
+    setPartnerCameraOn(true);
   };
 
   const acceptCall = () => {
@@ -1521,6 +1537,9 @@ export default function Home() {
       if (audioTrack) {
         audioTrack.enabled = !audioTrack.enabled;
         setIsMicOn(audioTrack.enabled);
+        if (socket) {
+          socket.emit("mic-state-change", { enabled: audioTrack.enabled });
+        }
       }
     }
   };
@@ -1591,6 +1610,9 @@ export default function Home() {
       if (videoTrack) {
         videoTrack.enabled = !videoTrack.enabled;
         setIsCameraOn(videoTrack.enabled);
+        if (socket) {
+          socket.emit("camera-state-change", { enabled: videoTrack.enabled });
+        }
       }
     }
   };
@@ -2108,7 +2130,7 @@ export default function Home() {
               </div>
             )}
 
-            <div className={`video-grid-v2 ${quizState !== 'idle' ? 'quiz-pip-mode' : ''}`}>
+            <div className={`video-grid-v2 ${quizState === 'active' ? 'quiz-pip-mode' : ''}`}>
               <div className={`video-card ${isFaceBlurred ? 'blurred-face' : ''}`}>
                 <video
                   ref={localVideo}
@@ -2207,6 +2229,29 @@ export default function Home() {
             <div className="video-card">
               <video ref={remoteVideo} autoPlay playsInline className={`natural-view ${partnerIsBlurred ? 'blurred-face' : ''}`} style={{ filter: partnerIsBlurred ? 'blur(25px)' : 'none' }} />
 
+              {/* PARTNER CAMERA OFF PLACEHOLDER */}
+              {partnerId && !partnerCameraOn && (
+                <div className="partner-camera-off-overlay" style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  background: '#0f172a',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 10,
+                  gap: '15px',
+                  borderRadius: '12px'
+                }}>
+                  <div className="camera-off-icon" style={{ fontSize: '3rem', animation: 'pulse 2s infinite' }}>🚫</div>
+                  <h3 style={{ margin: 0, color: '#f8fafc', fontWeight: 600, fontSize: '1.1rem' }}>Partner's Camera is Off</h3>
+                  <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.85rem' }}>They have temporarily paused their video feed</p>
+                </div>
+              )}
+
               {/* SEARCHING OVERLAY */}
               {!partnerId && !showPartnerPreview && (
                 <div className="searching-overlay-v2">
@@ -2269,6 +2314,21 @@ export default function Home() {
                     {partnerInfo.premium && partnerInfo.planName && (
                       <span className={partnerInfo.planName === "VIP Elite" ? "vip-crown-tag" : "pro-badge-v2"} style={{ margin: 0, padding: '0.15rem 0.6rem', fontSize: '0.65rem' }}>
                         {partnerInfo.planName === "VIP Elite" ? "👑 VIP ELITE" : `🛡️ ${partnerInfo.planName}`}
+                      </span>
+                    )}
+                    {!partnerMicOn && (
+                      <span className="mute-highlight" style={{
+                        background: 'rgba(239, 68, 68, 0.15)',
+                        color: '#ef4444',
+                        padding: '0.15rem 0.6rem',
+                        borderRadius: '10px',
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '3px'
+                      }}>
+                        🔇 MUTED
                       </span>
                     )}
                   </div>

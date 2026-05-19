@@ -2180,6 +2180,18 @@ function endQuiz(roomId) {
         }
       });
 
+      socket.on("mic-state-change", ({ enabled }) => {
+        if (socket.partner) {
+          socket.partner.emit("partner-mic-state", { enabled });
+        }
+      });
+
+      socket.on("camera-state-change", ({ enabled }) => {
+        if (socket.partner) {
+          socket.partner.emit("partner-camera-state", { enabled });
+        }
+      });
+
       socket.on("next", () => {
         if (socket.partner) {
           socket.partner.emit("partner-disconnected");
