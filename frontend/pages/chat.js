@@ -5047,13 +5047,13 @@ export default function Home() {
           }
           .header-v2 {
             position: absolute !important;
-            top: env(safe-area-inset-top, 10px) !important;
+            top: env(safe-area-inset-top, 6px) !important;
             left: 0 !important;
             width: 100% !important;
             z-index: 1000 !important;
             background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent) !important;
             border: none !important;
-            padding: 10px 15px !important;
+            padding: 8px 12px !important;
             display: flex !important;
             flex-direction: row !important;
             justify-content: space-between !important;
@@ -5061,17 +5061,23 @@ export default function Home() {
             box-sizing: border-box !important;
           }
           .header-v2 .brand {
-            transform: scale(0.9) !important;
+            transform: scale(0.8) !important;
             transform-origin: left center !important;
           }
           .header-v2 .user-profile-tag {
             display: none !important;
           }
           .header-v2 .btn-home {
-            padding: 6px 12px !important;
-            font-size: 0.8rem !important;
+            padding: 4px 8px !important;
+            font-size: 0.72rem !important;
             background: rgba(255, 255, 255, 0.1) !important;
             border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 8px !important;
+          }
+          .header-coins-pill {
+            padding: 4px 8px !important;
+            font-size: 0.72rem !important;
+            height: 24px !important;
           }
           .main-layout {
             position: absolute !important;
@@ -5124,14 +5130,14 @@ export default function Home() {
           /* Floating small user self-video bubble */
           .video-grid-v2 > .video-card:first-child {
             position: absolute !important;
-            width: 90px !important;
-            height: 135px !important;
-            bottom: 180px !important;
-            right: 15px !important;
+            width: 75px !important;
+            height: 110px !important;
+            bottom: 110px !important;
+            right: 12px !important;
             z-index: 100 !important;
-            border-radius: 14px !important;
-            border: 2px solid #ffffff !important;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6) !important;
+            border-radius: 12px !important;
+            border: 1.5px solid #ffffff !important;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6) !important;
             overflow: hidden !important;
             background: #0f172a !important;
             margin: 0 !important;
@@ -5148,21 +5154,21 @@ export default function Home() {
           .video-grid-v2 > .video-card:first-child .card-controls {
             display: flex !important;
             position: absolute !important;
-            bottom: 6px !important;
+            bottom: 4px !important;
             left: 50% !important;
             transform: translateX(-50%) !important;
-            background: rgba(0, 0, 0, 0.7) !important;
-            border-radius: 20px !important;
-            padding: 4px 8px !important;
-            gap: 6px !important;
+            background: rgba(0, 0, 0, 0.75) !important;
+            border-radius: 15px !important;
+            padding: 3px 6px !important;
+            gap: 4px !important;
             z-index: 110 !important;
             width: auto !important;
           }
           .video-grid-v2 > .video-card:first-child .ctrl-btn {
-            width: 24px !important;
-            height: 24px !important;
+            width: 18px !important;
+            height: 18px !important;
             border-radius: 50% !important;
-            font-size: 9px !important;
+            font-size: 8px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
@@ -5177,14 +5183,14 @@ export default function Home() {
           /* Stranger Top Floating Label */
           .video-grid-v2 > .video-card:nth-child(2) .card-label {
             position: absolute !important;
-            top: 75px !important;
-            left: 15px !important;
+            top: 55px !important;
+            left: 12px !important;
             background: rgba(15, 23, 42, 0.6) !important;
-            backdrop-filter: blur(10px) !important;
-            -webkit-backdrop-filter: blur(10px) !important;
-            padding: 6px 12px !important;
-            border-radius: 20px !important;
-            font-size: 0.75rem !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+            padding: 4px 8px !important;
+            border-radius: 14px !important;
+            font-size: 0.68rem !important;
             font-weight: 700 !important;
             color: #fff !important;
             z-index: 10 !important;
@@ -5197,22 +5203,22 @@ export default function Home() {
           .video-grid-v2 > .video-card:nth-child(2) .card-controls {
             display: flex !important;
             position: absolute !important;
-            top: 75px !important;
-            right: 15px !important;
+            top: 55px !important;
+            right: 12px !important;
             background: rgba(15, 23, 42, 0.6) !important;
-            backdrop-filter: blur(10px) !important;
-            -webkit-backdrop-filter: blur(10px) !important;
-            border-radius: 24px !important;
-            padding: 6px 12px !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+            border-radius: 20px !important;
+            padding: 4px 8px !important;
             z-index: 10 !important;
             width: auto !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
           }
           .video-grid-v2 > .video-card:nth-child(2) .ctrl-btn {
-            width: 32px !important;
-            height: 32px !important;
+            width: 26px !important;
+            height: 26px !important;
             border-radius: 50% !important;
-            font-size: 13px !important;
+            font-size: 11px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
@@ -5220,47 +5226,51 @@ export default function Home() {
             border: none !important;
             color: #fff !important;
           }
-          /* Preferences Button Floating Row */
+          /* Preferences Button Floating Row - Super Small! */
           .filters-row-v2 {
             position: absolute !important;
-            top: 125px !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
+            top: 90px !important;
+            left: 12px !important;
+            transform: none !important;
             width: auto !important;
             z-index: 50 !important;
             display: flex !important;
-            gap: 10px !important;
+            gap: 6px !important;
             background: transparent !important;
             padding: 0 !important;
           }
           .filter-settings-trigger-btn {
-            background: rgba(15, 23, 42, 0.65) !important;
-            backdrop-filter: blur(10px) !important;
-            -webkit-backdrop-filter: blur(10px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            background: rgba(15, 23, 42, 0.7) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
             color: #fff !important;
-            border-radius: 20px !important;
-            padding: 5px 12px !important;
-            font-size: 0.72rem !important;
-            font-weight: 700 !important;
+            border-radius: 12px !important;
+            padding: 4px 8px !important;
+            font-size: 0.65rem !important;
+            font-weight: 700;
+            height: 24px !important;
+            display: flex !important;
+            align-items: center !important;
           }
           .paywall-badge-v2 {
-            background: rgba(245, 158, 11, 0.85) !important;
+            background: rgba(245, 158, 11, 0.9) !important;
             color: #000 !important;
-            border-radius: 20px !important;
-            padding: 5px 12px !important;
-            font-size: 0.72rem !important;
+            border-radius: 12px !important;
+            padding: 4px 8px !important;
+            font-size: 0.65rem !important;
             font-weight: 800 !important;
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
+            height: 24px !important;
+            display: flex !important;
+            align-items: center !important;
           }
-          /* Live Stream Overlay Chat Box style */
+          /* Micro Floating Live Chat - Tucked completely into the bottom-left corner */
           .chat-column {
             position: absolute !important;
-            bottom: 180px !important;
-            left: 15px !important;
-            width: 250px !important;
-            max-width: 60% !important;
-            height: 160px !important;
+            bottom: 110px !important;
+            left: 12px !important;
+            width: 140px !important;
+            height: 120px !important;
             background: transparent !important;
             border: none !important;
             z-index: 80 !important;
@@ -5285,17 +5295,15 @@ export default function Home() {
             overflow-y: auto !important;
             display: flex !important;
             flex-direction: column !important;
-            gap: 6px !important;
+            gap: 4px !important;
             mask-image: linear-gradient(to top, black 85%, transparent 100%) !important;
             -webkit-mask-image: linear-gradient(to top, black 85%, transparent 100%) !important;
           }
           .msg-row {
-            background: rgba(0, 0, 0, 0.45) !important;
-            backdrop-filter: blur(5px) !important;
-            -webkit-backdrop-filter: blur(5px) !important;
-            border-radius: 12px !important;
-            padding: 5px 10px !important;
-            font-size: 0.72rem !important;
+            background: rgba(0, 0, 0, 0.5) !important;
+            border-radius: 8px !important;
+            padding: 4px 8px !important;
+            font-size: 0.68rem !important;
             color: #fff !important;
             width: max-content !important;
             max-width: 100% !important;
@@ -5303,29 +5311,31 @@ export default function Home() {
             border: 1px solid rgba(255, 255, 255, 0.05) !important;
           }
           .chat-box-input {
-            background: rgba(0, 0, 0, 0.5) !important;
-            border: 1px solid rgba(255, 255, 255, 0.12) !important;
-            border-radius: 18px !important;
-            padding: 4px 8px !important;
-            margin-top: 5px !important;
+            background: rgba(0, 0, 0, 0.55) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 12px !important;
+            padding: 2px 6px !important;
+            margin-top: 4px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
           }
           .chat-box-input input {
-            font-size: 0.72rem !important;
+            font-size: 0.65rem !important;
             color: #fff !important;
           }
           .chat-box-input button {
-            width: 26px !important;
-            height: 26px !important;
+            width: 22px !important;
+            height: 22px !important;
             border-radius: 50% !important;
-            font-size: 0.7rem !important;
+            font-size: 0.6rem !important;
           }
-          /* Identity container floating just above bottom controls */
+          /* Micro Identity Tools container floating just above bottom controls */
           .identity-container {
             position: absolute !important;
-            bottom: 75px !important;
+            bottom: 54px !important;
             left: 50% !important;
             transform: translateX(-50%) !important;
-            width: 90% !important;
+            width: 95% !important;
             z-index: 200 !important;
             background: transparent !important;
           }
@@ -5333,67 +5343,67 @@ export default function Home() {
             display: flex !important;
             justify-content: center !important;
             align-items: center !important;
-            gap: 6px !important;
-            background: rgba(15, 23, 42, 0.6) !important;
-            backdrop-filter: blur(10px) !important;
-            -webkit-backdrop-filter: blur(10px) !important;
-            padding: 5px 10px !important;
-            border-radius: 30px !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            gap: 4px !important;
+            background: rgba(0, 0, 0, 0.45) !important;
+            backdrop-filter: blur(6px) !important;
+            -webkit-backdrop-filter: blur(6px) !important;
+            padding: 3px 6px !important;
+            border-radius: 20px !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
             margin: 0 auto !important;
             width: max-content !important;
             max-width: 100% !important;
           }
           .bottom-mini-bar .tool-btn {
-            padding: 5px 10px !important;
-            font-size: 0.7rem !important;
-            border-radius: 20px !important;
-            background: rgba(255, 255, 255, 0.05) !important;
+            padding: 3px 6px !important;
+            font-size: 0.62rem !important;
+            border-radius: 12px !important;
+            background: rgba(255, 255, 255, 0.04) !important;
             color: #fff !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border: none !important;
+            height: 22px !important;
           }
           .bottom-mini-bar .tool-btn.active {
             background: #6366f1 !important;
-            border-color: #6366f1 !important;
           }
           .identity-popup-bubble {
             position: absolute !important;
-            bottom: 45px !important;
+            bottom: 35px !important;
             left: 50% !important;
             transform: translateX(-50%) !important;
-            width: 290px !important;
-            max-width: calc(100vw - 30px) !important;
+            width: 270px !important;
+            max-width: calc(100vw - 20px) !important;
             z-index: 300 !important;
             background: #1e293b !important;
-            border: 1px solid rgba(255, 255, 255, 0.12) !important;
-            border-radius: 20px !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
-            padding: 12px !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+            padding: 10px !important;
             box-sizing: border-box !important;
           }
           .gift-bubble {
-            width: 290px !important;
+            width: 270px !important;
           }
-          /* Premium rounded bottom floating control bar */
+          /* Micro-sized rounded bottom actions (Extremely Small and Focused!) */
           .bottom-actions {
             position: absolute !important;
-            bottom: env(safe-area-inset-bottom, 12px) !important;
+            bottom: env(safe-area-inset-bottom, 8px) !important;
             left: 50% !important;
             transform: translateX(-50%) !important;
-            width: 92% !important;
+            width: 94% !important;
             z-index: 1000 !important;
-            background: rgba(15, 23, 42, 0.6) !important;
-            backdrop-filter: blur(15px) !important;
-            -webkit-backdrop-filter: blur(15px) !important;
-            padding: 8px 12px !important;
-            border-radius: 40px !important;
-            border: 1px solid rgba(15, 23, 42, 0.15) !important;
-            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5) !important;
+            background: rgba(0, 0, 0, 0.45) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            padding: 5px 10px !important;
+            border-radius: 30px !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
             display: flex !important;
             flex-direction: row !important;
             align-items: center !important;
             justify-content: space-between !important;
-            gap: 8px !important;
+            gap: 6px !important;
             box-sizing: border-box !important;
           }
           .bottom-actions > div:first-child,
@@ -5403,21 +5413,21 @@ export default function Home() {
           .bottom-actions > div:nth-child(3) {
             display: flex !important;
             width: 100% !important;
-            gap: 8px !important;
+            gap: 6px !important;
             margin: 0 !important;
             padding: 0 !important;
           }
           .bottom-actions > div:nth-child(3) button {
             flex: 1 !important;
-            height: 44px !important;
-            border-radius: 22px !important;
-            font-size: 0.72rem !important;
-            font-weight: 800 !important;
-            padding: 0 4px !important;
+            height: 32px !important;
+            border-radius: 16px !important;
+            font-size: 0.65rem !important;
+            font-weight: 700 !important;
+            padding: 0 !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 4px !important;
+            gap: 2px !important;
             margin: 0 !important;
             border: none !important;
             transition: all 0.2s ease !important;
@@ -5427,14 +5437,14 @@ export default function Home() {
             color: white !important;
           }
           .bottom-actions .stop-btn {
-            background: rgba(239, 68, 68, 0.2) !important;
+            background: rgba(239, 68, 68, 0.15) !important;
             color: #ef4444 !important;
-            border: 1px solid rgba(239, 68, 68, 0.4) !important;
+            border: 1px solid rgba(239, 68, 68, 0.3) !important;
           }
           .bottom-actions .report-trigger-btn {
-            background: rgba(255, 255, 255, 0.08) !important;
+            background: rgba(255, 255, 255, 0.05) !important;
             color: #fff !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
           }
           .bottom-actions .next-btn {
             background: #6366f1 !important;
