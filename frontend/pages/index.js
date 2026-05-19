@@ -1941,7 +1941,7 @@ export default function Dashboard() {
                 <span style={{ fontSize: '1.2rem' }}>🎭</span>
               </div>
               <h3 style={{ fontSize: '1.5rem', margin: '15px 0' }}>500 Coins <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>/ 7 Days</span></h3>
-              <p style={{ fontSize: '0.8rem', color: '#94a3b8', lineHeight: '1.5' }}>Voice Change, Hide ID, Animated Avatars, Blurred Face & Animated Masks. The ultimate ninja mode.</p>
+              <p style={{ fontSize: '0.8rem', color: '#94a3b8', lineHeight: '1.5' }}>Voice Change, Animated Avatars, Blurred Face & Animated Masks. The ultimate ninja mode.</p>
               <div className="buy-badge" style={{ background: 'rgba(236, 72, 153, 0.1)', color: '#ec4899' }}>Click to Purchase</div>
             </div>
 
