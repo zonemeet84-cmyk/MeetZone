@@ -987,22 +987,6 @@ export default function Dashboard() {
             <span style={{ background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Meet</span>
           </h1>
           {user?.premium && <span className="premium-badge">{user.planName || "PREMIUM"}</span>}
-          <div style={{
-            background: 'rgba(239, 68, 68, 0.15)',
-            border: '1px solid rgba(239, 68, 68, 0.4)',
-            borderRadius: '50px',
-            padding: '6px 14px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            fontSize: '0.8rem',
-            fontWeight: '900',
-            color: '#f87171',
-            boxShadow: '0 0 10px rgba(239, 68, 68, 0.2)'
-          }}>
-            <span>🔞</span>
-            <span style={{ letterSpacing: '0.05em' }}>18+ ONLY</span>
-          </div>
         </div>
 
         <nav className="header-nav">
@@ -1302,31 +1286,6 @@ export default function Dashboard() {
               <p className="hero-explore-subtitle">
                 Connect instantly with professionals, language learners, and like-minded peers worldwide through our interest-based communication rooms. Build your professional network, exchange languages, collaborate on ideas, and participate in secure global communities anytime, anywhere.
               </p>
-
-              <div style={{
-                background: 'rgba(239, 68, 68, 0.08)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-                borderRadius: '20px',
-                padding: '20px 25px',
-                marginTop: '25px',
-                marginBottom: '20px',
-                textAlign: 'left',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '15px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-                maxWidth: '650px'
-              }}>
-                <span style={{ fontSize: '2.5rem', flexShrink: 0 }}>🔞</span>
-                <div>
-                  <h4 style={{ color: '#f87171', margin: '0 0 5px 0', fontSize: '1.1rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Mandatory 18+ Age Compliance Notice
-                  </h4>
-                  <p style={{ color: '#cbd5e1', margin: 0, fontSize: '0.9rem', lineHeight: '1.4' }}>
-                    ZoneMeet is strictly for users of age <strong>18 years and above</strong>. By connecting, you certify that you are at least 18 years old. Minors are strictly prohibited.
-                  </p>
-                </div>
-              </div>
 
               <div className="action-buttons" style={{ position: 'relative', zIndex: 20, marginTop: '30px' }}>
                 <button className="btn btn-primary btn-lg btn-connect-now" onClick={startChat} disabled={startingChat}>
