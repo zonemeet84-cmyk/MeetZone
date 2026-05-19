@@ -1842,6 +1842,22 @@ export default function Home() {
               <span style={{ color: '#ffffff' }}>Zone</span>
               <span style={{ background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Meet</span>
             </h1>
+            <div style={{
+              background: 'rgba(239, 68, 68, 0.15)',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
+              borderRadius: '50px',
+              padding: '4px 10px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              fontSize: '0.75rem',
+              fontWeight: '900',
+              color: '#f87171',
+              boxShadow: '0 0 10px rgba(239, 68, 68, 0.2)'
+            }}>
+              <span>🔞</span>
+              <span style={{ letterSpacing: '0.05em' }}>18+ ONLY</span>
+            </div>
           </div>
 
           <div className="header-actions">

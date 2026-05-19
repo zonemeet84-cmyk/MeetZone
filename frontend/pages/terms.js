@@ -18,9 +18,12 @@ export default function Terms() {
         <h1>Terms & Conditions</h1>
         <div className="last-updated">Last Updated: May 2026</div>
 
-        <h2>1. Acceptance of Terms</h2>
+        <h2>1. Acceptance of Terms & Age Eligibility</h2>
+        <p style={{ color: '#f87171', fontWeight: '800', borderLeft: '4px solid #ef4444', paddingLeft: '15px', background: 'rgba(239, 68, 68, 0.05)', padding: '12px 15px', borderRadius: '8px' }}>
+          🔞 MANDATORY AGE REQUIREMENT: You must be at least 18 years of age or older to access or use the ZoneMeet platform ("Service"). By using the Service, you warrant and represent that you are at least 18 years of age and possess the legal capacity to enter into this agreement. If you are under 18, you are strictly prohibited from accessing or using the Service.
+        </p>
         <p>
-          By accessing or using the ZoneMeet platform ("Service"), you agree to be bound by these Terms and Conditions. If you do not agree to these terms, you may not use the Service. You must be at least 18 years old to use ZoneMeet.
+          By accessing or using the Service, you agree to be fully bound by these Terms and Conditions. If you do not agree to these terms, you may not use the Service.
         </p>
 
         <h2>2. User Conduct</h2>

@@ -149,6 +149,21 @@ export default function Login() {
           <p>Login to your account to continue</p>
         </div>
 
+        <div style={{
+          background: 'rgba(239, 68, 68, 0.08)',
+          border: '1px solid rgba(239, 68, 68, 0.25)',
+          borderRadius: '16px',
+          padding: '12px 16px',
+          marginBottom: '20px',
+          fontSize: '0.85rem',
+          lineHeight: '1.45',
+          color: '#f87171',
+          fontWeight: '700',
+          textAlign: 'center'
+        }}>
+          ⚠️ 18+ AGE RESTRICTION: ZoneMeet is strictly for users aged 18 and older. By logging in, you certify that you are at least 18 years of age.
+        </div>
+
         {!showForgot ? (
           <form onSubmit={handleSubmit} className="modern-form">
             <div className="input-item">

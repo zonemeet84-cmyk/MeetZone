@@ -56,6 +56,13 @@ export default function Privacy() {
         <p>
           We take reasonable measures to help protect information about you from loss, theft, misuse, unauthorized access, disclosure, alteration, and destruction. Our platform uses 256-bit encryption for all sensitive data transfers.
         </p>
+
+        <h2 style={{ color: '#f87171' }}>7. Children's Privacy & Age Policy</h2>
+        <div style={{ borderLeft: '4px solid #ef4444', paddingLeft: '15px', background: 'rgba(239, 68, 68, 0.05)', padding: '12px 15px', borderRadius: '8px', marginBottom: '1.5rem' }}>
+          <p style={{ color: '#f87171', fontWeight: '800', margin: 0 }}>
+            🔞 MINORS RESTRICTION (UNDER 18 YEARS): ZoneMeet is strictly intended for individuals who are 18 years of age or older. We do not knowingly collect, solicit, or process personal data from anyone under the age of 18. If we become aware that we have inadvertently collected personal data from a child under 18, we will take immediate steps to permanently delete that information from our servers and ban the associated account/IP.
+          </p>
+        </div>
       </div>
 
       <style jsx>{`
