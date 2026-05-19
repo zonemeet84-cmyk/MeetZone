@@ -5,6 +5,9 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import axios from "axios";
 
+// Enable withCredentials globally for cookie security
+axios.defaults.withCredentials = true;
+
 export default function AdminDashboard() {
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
@@ -28,31 +31,76 @@ export default function AdminDashboard() {
   const [editingUser, setEditingUser] = useState(null);
   const [editForm, setEditForm] = useState({ premium: false, planName: "Free", isVIP: false });
 
+  // Admin Secure Credentials and Verification States
+  const [isVerified, setIsVerified] = useState(false);
+  const [authForm, setAuthForm] = useState({ email: "ds9376314@gmail.com", password: "", otp: "", secretRouteKey: "" });
+  const [authLoading, setAuthLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
+
   useEffect(() => {
     if (sessionStatus === "loading") return;
 
-    // Google Session check
+    // Check if already verified in this browser session
+    if (sessionStorage.getItem("adminVerified") === "true") {
+      setIsVerified(true);
+      fetchData();
+      const interval = setInterval(fetchData, 15000); 
+      return () => clearInterval(interval);
+    }
+
+    // Google Session check to auto-populate email
+    let emailVal = "ds9376314@gmail.com";
     const isGoogleAdmin = session && session.user.email === "ds9376314@gmail.com";
-
-    // Token-based login check (email+password)
-    const token = localStorage.getItem("token");
-    const localUser = localStorage.getItem("user");
-    let isLocalAdmin = false;
-    if (token && localUser) {
-      try {
-        const parsed = JSON.parse(localUser);
-        if (parsed.email === "ds9376314@gmail.com") isLocalAdmin = true;
-      } catch (e) {}
+    if (isGoogleAdmin) {
+      emailVal = session.user.email;
+    } else {
+      const localUser = localStorage.getItem("user");
+      if (localUser) {
+        try {
+          const parsed = JSON.parse(localUser);
+          if (parsed.email) emailVal = parsed.email;
+        } catch (e) {}
+      }
     }
-
-    if (!isGoogleAdmin && !isLocalAdmin) {
-      router.push("/");
-      return;
-    }
-    fetchData();
-    const interval = setInterval(fetchData, 15000); 
-    return () => clearInterval(interval);
+    setAuthForm(prev => ({ ...prev, email: emailVal }));
+    setLoading(false); // Stop general loading so they can see the Verification screen
   }, [session, sessionStatus]);
+
+  const handleSend2FA = async () => {
+    setOtpLoading(true);
+    setAuthError("");
+    try {
+      await axios.post("https://meetzone-backend.onrender.com/api/admin/send-2fa", { email: authForm.email });
+      setOtpSent(true);
+      Swal.fire({ text: "2FA Verification Code sent to your email!", icon: "success", background: "#0f172a", color: "#fff", confirmButtonColor: "#6366f1" });
+    } catch (err) {
+      setAuthError(err.response?.data?.message || "Failed to send 2FA Code");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyLogin = async (e) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError("");
+    try {
+      const res = await axios.post("https://meetzone-backend.onrender.com/api/admin/verify-login", authForm);
+      if (res.data.success) {
+        localStorage.setItem("token", res.data.token); // Store token
+        sessionStorage.setItem("adminVerified", "true");
+        setIsVerified(true);
+        setLoading(true);
+        fetchData();
+      }
+    } catch (err) {
+      setAuthError(err.response?.data?.message || "Verification failed");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -129,6 +177,98 @@ export default function AdminDashboard() {
       Swal.fire({ text: "Action failed", icon: "info", confirmButtonColor: "#6366f1", background: "#0f172a", color: "#fff" });
     }
   };
+
+  if (!isVerified) {
+    return (
+      <div className="login-container-sec">
+        <Head>
+          <title>ZoneMeet Admin | Secure Verification</title>
+          <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&display=swap" rel="stylesheet" />
+        </Head>
+        <div className="bg-gradient" />
+        
+        <div className="login-card">
+          <div className="login-header">
+            <div className="zonemeet-logo">🛡️</div>
+            <h1>Neural Admin Core</h1>
+            <p>Verification Required to Sync Command Link</p>
+          </div>
+
+          <form onSubmit={handleVerifyLogin} className="modern-form">
+            <div className="input-item">
+              <label>Admin Email</label>
+              <input type="email" value={authForm.email} disabled />
+            </div>
+
+            <div className="input-item">
+              <label>Secret Access Key</label>
+              <input 
+                type="password" 
+                placeholder="Enter Secret Key" 
+                value={authForm.secretRouteKey} 
+                onChange={(e) => setAuthForm({...authForm, secretRouteKey: e.target.value})} 
+                required 
+              />
+            </div>
+
+            <div className="input-item">
+              <label>Access Password</label>
+              <input 
+                type="password" 
+                placeholder="Enter Password" 
+                value={authForm.password} 
+                onChange={(e) => setAuthForm({...authForm, password: e.target.value})} 
+                required 
+              />
+            </div>
+
+            <div className="input-item">
+              <label>2FA Authentication Code</label>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input 
+                  type="text" 
+                  placeholder="6-Digit Code" 
+                  value={authForm.otp} 
+                  onChange={(e) => setAuthForm({...authForm, otp: e.target.value})} 
+                  required 
+                  maxLength={6}
+                />
+                <button type="button" className="otp-btn" onClick={handleSend2FA} disabled={otpLoading}>
+                  {otpLoading ? "..." : otpSent ? "Resend" : "Send Code"}
+                </button>
+              </div>
+            </div>
+
+            {authError && <div className="error-box">{authError}</div>}
+
+            <button type="submit" className="submit-btn" disabled={authLoading}>
+              {authLoading ? "Decrypting Protocol..." : "Establish Secure Link"}
+            </button>
+          </form>
+        </div>
+
+        <style jsx>{`
+          .login-container-sec { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #030712; padding: 20px; position: relative; overflow: hidden; font-family: 'Outfit', sans-serif; }
+          .bg-gradient { position: absolute; width: 200%; height: 200%; background: radial-gradient(circle at center, rgba(99, 102, 241, 0.15) 0%, transparent 50%); animation: rotate 30s linear infinite; }
+          @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+          .login-card { width: 100%; max-width: 420px; background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 32px; padding: 3rem; z-index: 1; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; }
+          .zonemeet-logo { font-size: 3rem; margin-bottom: 1rem; filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.5)); }
+          h1 { font-size: 2rem; color: white; margin-bottom: 0.5rem; font-weight: 900; letter-spacing: -1px; }
+          p { color: #94a3b8; margin-bottom: 2rem; font-size: 0.95rem; }
+          .modern-form { text-align: left; }
+          .input-item { margin-bottom: 1.25rem; }
+          .input-item label { display: block; font-size: 0.85rem; color: #cbd5e1; margin-bottom: 0.5rem; font-weight: 600; }
+          .input-item input { width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 0.75rem 1rem; color: white; font-size: 1rem; outline: none; transition: 0.3s; }
+          .input-item input:focus { border-color: #6366f1; box-shadow: 0 0 10px rgba(99, 102, 241, 0.2); }
+          .otp-btn { background: #6366f1; color: white; border: none; border-radius: 12px; padding: 0 1.5rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: 0.3s; }
+          .otp-btn:hover { background: #4f46e5; }
+          .submit-btn { width: 100%; background: linear-gradient(135deg, #6366f1, #ec4899); color: white; border: none; padding: 1rem; border-radius: 16px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 1rem; transition: all 0.3s; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3); }
+          .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4); }
+          .error-box { background: rgba(239, 68, 68, 0.1); color: #f87171; padding: 0.75rem; border-radius: 12px; margin-bottom: 1rem; font-size: 0.85rem; border: 1px solid rgba(239, 68, 68, 0.2); text-align: center; }
+        `}</style>
+      </div>
+    );
+  }
 
   if (loading) return (
     <div className="loading-container">

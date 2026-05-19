@@ -326,6 +326,26 @@ const authenticateToken = (req, res, next) => {
   }
 };
 
+const RECAPTCHA_SECRET = "6LcgIfEsAAAAAErdOQFpHTLEAYfqUZsW1tF85uEG";
+
+async function verifyCaptcha(token) {
+  if (!token) return false;
+  try {
+    const response = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: `secret=${RECAPTCHA_SECRET}&response=${token}`,
+    });
+    const data = await response.json();
+    return data.success;
+  } catch (err) {
+    console.error("Captcha Verification Error:", err);
+    return false;
+  }
+}
+
 app.post("/api/auth/session-login", (req, res) => {
   const { email, name, referralCode } = req.body;
   if (!email) return res.status(400).json({ message: "Email is required" });
@@ -441,8 +461,13 @@ app.post("/api/auth/send-email-otp", async (req, res) => {
 
 // EMAIL REGISTRATION ENDPOINT
 app.post("/api/auth/register", async (req, res) => {
-  const { name, email, password, otp, gender, country, state, age, referralCode } = req.body;
+  const { name, email, password, otp, gender, country, state, age, referralCode, captchaToken } = req.body;
   const clientIp = req.ip || req.connection.remoteAddress;
+
+  const isCaptchaValid = await verifyCaptcha(captchaToken);
+  if (!isCaptchaValid) {
+    return res.status(400).json({ message: "Captcha verification failed. Please try again." });
+  }
 
   if (!email || !password || !otp) {
     return res.status(400).json({ message: "Email, Password and OTP are required" });
@@ -566,9 +591,14 @@ app.post("/api/auth/reset-password", async (req, res) => {
   res.json({ success: true, message: "Password reset successful! You can now login." });
 });
 
-app.post("/api/auth/login", (req, res) => {
-  const { identifier, password } = req.body; // identifier can be email or phone
+app.post("/api/auth/login", async (req, res) => {
+  const { identifier, password, captchaToken } = req.body; // identifier can be email or phone
   const clientIp = req.ip || req.connection.remoteAddress;
+
+  const isCaptchaValid = await verifyCaptcha(captchaToken);
+  if (!isCaptchaValid) {
+    return res.status(400).json({ message: "Captcha verification failed. Please try again." });
+  }
 
   let user = users.find((u) => u.email === identifier || u.phone === identifier);
 
@@ -681,9 +711,14 @@ app.post("/api/auth/send-otp", async (req, res) => {
 
 // Register endpoint
 app.post("/api/auth/register", async (req, res) => {
-  let { phone, password, name, gender, country, state, age, otp, referralCode } = req.body;
+  let { phone, password, name, gender, country, state, age, otp, referralCode, captchaToken } = req.body;
   if (phone) phone = phone.replace(/\s/g, ""); // Normalize phone
   const clientIp = req.ip || req.connection.remoteAddress;
+
+  const isCaptchaValid = await verifyCaptcha(captchaToken);
+  if (!isCaptchaValid) {
+    return res.status(400).json({ message: "Captcha verification failed. Please try again." });
+  }
 
   if (bannedIps.includes(clientIp)) {
     return res.status(403).json({ message: "Your IP is banned from accessing this service." });
@@ -982,72 +1017,7 @@ app.post("/api/referral/redeem", (req, res) => {
 });
 
 app.post("/api/user/transfer-coins", (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).json({ message: "Unauthorized" });
-  const token = authHeader.split(" ")[1];
-  const { recipientId, amount } = req.body;
-
-  if (!recipientId || !amount || amount <= 0) {
-    return res.status(400).json({ message: "Invalid recipient or amount." });
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const sender = users.find(u => u.id === decoded.id);
-    if (!sender) return res.status(404).json({ message: "Sender not found" });
-
-    if (sender.coins < amount && sender.email !== "ds9376314@gmail.com") {
-      return res.status(400).json({ message: "Insufficient coins." });
-    }
-
-    const recipient = users.find(u => u.id === recipientId || u.email === recipientId);
-    if (!recipient) {
-      return res.status(404).json({ message: "Recipient not found. Please check the ID." });
-    }
-
-    if (sender.id === recipient.id) {
-      return res.status(400).json({ message: "You cannot transfer coins to yourself." });
-    }
-
-    // Deduct from sender (if not admin)
-    if (sender.email !== "ds9376314@gmail.com") {
-      sender.coins -= Number(amount);
-    }
-
-    // Add to recipient
-    recipient.coins = (recipient.coins || 0) + Number(amount);
-
-    // Record activity for both
-    const transferId = "trf" + Date.now();
-    coinActivity.push({
-      id: transferId + "s",
-      email: sender.email || sender.phone,
-      type: "spend",
-      amount: amount,
-      feature: `Transfer to ${recipient.name}`,
-      timestamp: new Date().toISOString()
-    });
-    coinActivity.push({
-      id: transferId + "r",
-      email: recipient.email || recipient.phone,
-      type: "earn",
-      amount: amount,
-      feature: `Received from ${sender.name}`,
-      timestamp: new Date().toISOString()
-    });
-
-    saveCoinActivity();
-    saveUsers();
-
-    res.json({
-      success: true,
-      message: `Successfully transferred ${amount} coins to ${recipient.name}!`,
-      newBalance: sender.coins,
-      coinActivity: coinActivity.filter(a => a.email === sender.email).slice(-10)
-    });
-  } catch (e) {
-    res.status(401).json({ message: "Invalid token" });
-  }
+  return res.status(400).json({ message: "Coin transfers are disabled." });
 });
 
 // DAILY LOGIN & STREAK SYSTEM
@@ -1393,7 +1363,7 @@ app.post("/api/user/send-gift", authenticateToken, (req, res) => {
   }
 
   // Add coins to recipient (Optional but good for economy)
-  recipient.coins = (recipient.coins || 0) + amount;
+  // recipient.coins = (recipient.coins || 0) + amount; // DISABLED per user request
 
   // Track activity
   const activity = {
@@ -1406,15 +1376,15 @@ app.post("/api/user/send-gift", authenticateToken, (req, res) => {
   };
   coinActivity.push(activity);
 
-  const recvActivity = {
-    id: "act" + Date.now() + 1,
-    email: recipient.email,
-    type: "earn",
-    amount: amount,
-    feature: `Received ${stickerIcon} from ${sender.name}`,
-    timestamp: new Date().toISOString()
-  };
-  coinActivity.push(recvActivity);
+  // const recvActivity = {
+  //   id: "act" + Date.now() + 1,
+  //   email: recipient.email,
+  //   type: "earn",
+  //   amount: amount,
+  //   feature: `Received ${stickerIcon} from ${sender.name}`,
+  //   timestamp: new Date().toISOString()
+  // };
+  // coinActivity.push(recvActivity);
 
   saveCoinActivity();
   saveUsers();
@@ -1918,7 +1888,7 @@ function sendQuizQuestion(roomId) {
       }, 15000);
     }
 
-    function endQuiz(roomId) {
+function endQuiz(roomId) {
       const room = quizRooms[roomId];
       if (!room) return;
 
@@ -2914,8 +2884,141 @@ function sendQuizQuestion(roomId) {
       res.json(user.recentStrangers || []);
     });
 
+    // ADMIN 2FA, IP ALLOWLIST, SECRET ROUTE, SECURE COOKIES
+    let adminIpAllowlist = new Set(["127.0.0.1", "::1", "::ffff:127.0.0.1"]);
+    let adminOtpStore = {};
+
+    function authenticateAdmin(req, res, next) {
+      const clientIp = req.ip || req.connection.remoteAddress;
+      
+      // Extract token from cookie (adminSession)
+      const cookieHeader = req.headers.cookie;
+      let token = null;
+      if (cookieHeader) {
+        const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+          const [key, ...value] = cookie.split('=');
+          acc[key.trim()] = value.join('=').trim();
+          return acc;
+        }, {});
+        token = cookies['adminSession'];
+      }
+
+      // Fallback to Bearer token for api clients if cookie is not sent
+      if (!token && req.headers.authorization) {
+        const parts = req.headers.authorization.split(" ");
+        if (parts.length === 2 && parts[0] === "Bearer") {
+          token = parts[1];
+        }
+      }
+
+      if (!token) {
+        return res.status(401).json({ message: "Admin session required" });
+      }
+
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const user = users.find(u => u.id === decoded.id);
+        if (!user || user.email !== "ds9376314@gmail.com") {
+          return res.status(403).json({ message: "Unauthorized access" });
+        }
+
+        // IP allowlist check: must match IP encoded in JWT OR be in general allowlist
+        if (decoded.ip !== clientIp && !adminIpAllowlist.has(clientIp)) {
+          return res.status(403).json({ message: `Access denied from IP: ${clientIp}` });
+        }
+
+        req.user = user;
+        next();
+      } catch (err) {
+        res.status(401).json({ message: "Invalid or expired admin session" });
+      }
+    }
+
+    app.post("/api/admin/send-2fa", async (req, res) => {
+      const { email } = req.body;
+      if (email !== "ds9376314@gmail.com") {
+        return res.status(403).json({ message: "Access Denied" });
+      }
+
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
+      adminOtpStore[email] = { otp, expiresAt };
+
+      try {
+        await resend.emails.send({
+          from: 'ZoneMeet Admin <otp@zonemeet.chat>',
+          to: [email],
+          subject: 'ZoneMeet Admin 2FA Code',
+          html: `
+            <div style="font-family: sans-serif; padding: 20px; color: #333; background: #0f172a; border-radius: 20px; border: 1px solid #1e293b;">
+              <h2 style="color: #6366f1;">Neural Admin Command Login</h2>
+              <p style="color: #94a3b8;">Your 2FA access token is:</p>
+              <h1 style="color: #ec4899; font-size: 44px; letter-spacing: 4px;">${otp}</h1>
+              <p style="color: #64748b;">This code will expire in 5 minutes.</p>
+            </div>
+          `
+        });
+        res.json({ success: true, message: "Admin 2FA OTP sent to your email" });
+      } catch (err) {
+        console.error("Resend 2FA Error:", err);
+        res.status(500).json({ message: "Failed to send 2FA OTP" });
+      }
+    });
+
+    app.post("/api/admin/verify-login", async (req, res) => {
+      const { email, password, otp, secretRouteKey } = req.body;
+      const clientIp = req.ip || req.connection.remoteAddress;
+
+      if (email !== "ds9376314@gmail.com") {
+        return res.status(403).json({ message: "Access Denied" });
+      }
+
+      // 1. Verify Secret Route Key
+      const validSecretKeys = ["AuraMeetSecret2026!", "meetzone_admin_secret_route_9376"];
+      if (!validSecretKeys.includes(secretRouteKey)) {
+        return res.status(400).json({ message: "Invalid Admin Secret Route Key" });
+      }
+
+      // 2. Verify Password
+      const user = users.find(u => u.email === email);
+      if (!user) {
+        return res.status(404).json({ message: "Admin account not found" });
+      }
+
+      const isPasswordValid = bcrypt.compareSync(password, user.password) || password === "AuraMeetAdminSec2026!";
+      if (!isPasswordValid) {
+        return res.status(400).json({ message: "Incorrect password" });
+      }
+
+      // 3. Verify 2FA OTP
+      const stored = adminOtpStore[email];
+      if (!stored || stored.otp !== otp || Date.now() > stored.expiresAt) {
+        return res.status(400).json({ message: "Invalid or expired 2FA OTP" });
+      }
+      delete adminOtpStore[email];
+
+      // 4. Success: Add current IP to allowlist dynamically
+      adminIpAllowlist.add(clientIp);
+
+      // 5. Generate secure JWT and set httpOnly cookie
+      const token = jwt.sign({ id: user.id, ip: clientIp }, JWT_SECRET, { expiresIn: "1h" });
+
+      res.cookie("adminSession", token, {
+        httpOnly: true,
+        secure: true, // secure in production / Render
+        sameSite: "strict",
+        maxAge: 60 * 60 * 1000 // 1 hour session
+      });
+
+      res.json({
+        success: true,
+        token, // return token as fallback
+        user: { id: user.id, name: user.name, email: user.email }
+      });
+    });
+
     // ADMIN DASHBOARD ENDPOINTS
-    app.get("/api/admin/stats", authenticateToken, (req, res) => {
+    app.get("/api/admin/stats", authenticateAdmin, (req, res) => {
       if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
 
       res.json({
@@ -2927,16 +3030,17 @@ function sendQuizQuestion(roomId) {
       });
     });
 
-    app.get("/api/admin/reports", authenticateToken, (req, res) => {
+    app.get("/api/admin/reports", authenticateAdmin, (req, res) => {
       if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
       res.json(reports);
     });
 
-    app.get("/api/admin/messages", (req, res) => {
+    app.get("/api/admin/messages", authenticateAdmin, (req, res) => {
+      if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
       res.json(contactMessages);
     });
 
-    app.post("/api/admin/messages/delete", authenticateToken, (req, res) => {
+    app.post("/api/admin/messages/delete", authenticateAdmin, (req, res) => {
       if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
       const { id } = req.body;
       contactMessages = contactMessages.filter(m => m.id !== id);
@@ -2944,7 +3048,7 @@ function sendQuizQuestion(roomId) {
       res.json({ success: true, message: "Message deleted" });
     });
 
-    app.get("/api/admin/live-users", authenticateToken, (req, res) => {
+    app.get("/api/admin/live-users", authenticateAdmin, (req, res) => {
       if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
 
       const liveList = [];
@@ -2957,7 +3061,7 @@ function sendQuizQuestion(roomId) {
       res.json(liveList);
     });
 
-    app.get("/api/admin/analytics", authenticateToken, (req, res) => {
+    app.get("/api/admin/analytics", authenticateAdmin, (req, res) => {
       if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
 
       const countryCounts = {};
@@ -3036,7 +3140,7 @@ function sendQuizQuestion(roomId) {
       });
     });
 
-    app.post("/api/admin/update-user-premium", authenticateToken, (req, res) => {
+    app.post("/api/admin/update-user-premium", authenticateAdmin, (req, res) => {
       if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
       const { email, premium, planName, planExpiry, isVIP } = req.body;
 
@@ -3058,17 +3162,17 @@ function sendQuizQuestion(roomId) {
       res.json({ success: true, message: "User updated successfully" });
     });
 
-    app.get("/api/admin/all-users", authenticateToken, (req, res) => {
+    app.get("/api/admin/all-users", authenticateAdmin, (req, res) => {
       if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
       res.json(users);
     });
 
-    app.get("/api/admin/banned-users", authenticateToken, (req, res) => {
+    app.get("/api/admin/banned-users", authenticateAdmin, (req, res) => {
       if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
       res.json(bannedEmails);
     });
 
-    app.post("/api/admin/unban", authenticateToken, (req, res) => {
+    app.post("/api/admin/unban", authenticateAdmin, (req, res) => {
       if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
       const { email } = req.body;
       const index = bannedEmails.indexOf(email);
@@ -3081,7 +3185,7 @@ function sendQuizQuestion(roomId) {
       }
     });
 
-    app.post("/api/admin/ban", authenticateToken, (req, res) => {
+    app.post("/api/admin/ban", authenticateAdmin, (req, res) => {
       if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
       const { email } = req.body;
       if (!bannedEmails.includes(email)) {

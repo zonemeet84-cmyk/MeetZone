@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { auth, googleProvider } from "../firebaseConfig";
 import { signInWithPopup } from "firebase/auth";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function Login() {
   const router = useRouter();
@@ -11,6 +12,8 @@ export default function Login() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [captcha, setCaptcha] = useState(null);
+  const recaptchaRef = useRef();
 
   // Forgot Password State
   const [showForgot, setShowForgot] = useState(false);
@@ -30,6 +33,10 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!captcha) {
+      setError("Please complete the captcha verification.");
+      return;
+    }
     setLoading(true);
     setError("");
 
@@ -37,11 +44,14 @@ export default function Login() {
       const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/login", {
         identifier,
         password,
+        captchaToken: captcha
       });
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       router.push("/");
     } catch (err) {
+      if (recaptchaRef.current) recaptchaRef.current.reset();
+      setCaptcha(null);
       if (err.response?.status === 400 && err.response?.data?.message === "User not found") {
         setError("Account not found. Please Sign Up first to create your account.");
       } else {
@@ -153,9 +163,18 @@ export default function Login() {
               <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
 
+            <div className="input-item" style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.25rem' }}>
+              <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey="6LcgIfEsAAAAAEc88PHbR5c4Cop_YvXAoO9I3paD"
+                onChange={(token) => setCaptcha(token)}
+                theme="dark"
+              />
+            </div>
+
             {error && <div className="error-box">{error}</div>}
 
-            <button type="submit" className="submit-btn" disabled={loading}>
+            <button type="submit" className={`submit-btn ${!captcha ? 'btn-locked' : ''}`} disabled={loading || !captcha}>
               {loading ? "Logging in..." : "Login"}
             </button>
           </form>

@@ -125,8 +125,6 @@ export default function Dashboard() {
   const [referralStats, setReferralStats] = useState(null);
   const [referralCopied, setReferralCopied] = useState(false);
   const [redeemCode, setRedeemCode] = useState("");
-  const [transferRecipientId, setTransferRecipientId] = useState("");
-  const [transferAmount, setTransferAmount] = useState("");
   const [isGifting, setIsGifting] = useState(false);
   const [giftRecipientId, setGiftRecipientId] = useState("");
   const [incomingCall, setIncomingCall] = useState(null);
@@ -632,49 +630,6 @@ export default function Dashboard() {
       });
     }
   };
-  const handleTransferCoins = async () => {
-    if (!transferRecipientId.trim() || !transferAmount || Number(transferAmount) <= 0) {
-      return showModal({ message: "Please enter a valid Recipient ID and amount.", type: "warning" });
-    }
-
-    showModal({
-      title: "Confirm Transfer",
-      message: `Send ${transferAmount} coins to User ID ${transferRecipientId}? This cannot be undone.`,
-      type: "question",
-      confirmText: "Send Coins",
-      cancelText: "Cancel",
-      onConfirm: async () => {
-        try {
-          const token = localStorage.getItem("token");
-          const res = await axios.post("https://meetzone-backend.onrender.com/api/user/transfer-coins", {
-            recipientId: transferRecipientId,
-            amount: Number(transferAmount)
-          }, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-
-          if (res.data.success) {
-            const updatedUser = { ...user, coins: res.data.newBalance, coinActivity: res.data.coinActivity };
-            setUser(updatedUser);
-            localStorage.setItem("user", JSON.stringify(updatedUser));
-            setTransferRecipientId("");
-            setTransferAmount("");
-            showModal({
-              title: "Transfer Success!",
-              message: res.data.message,
-              type: "success"
-            });
-          }
-        } catch (err) {
-          showModal({
-            message: err.response?.data?.message || "Server Error: Please restart your backend.",
-            type: "error"
-          });
-        }
-      }
-    });
-  };
-
   const [showBoxInfo, setShowBoxInfo] = useState(false);
   const [revealPrize, setRevealPrize] = useState(null);
   const [showSpinner, setShowSpinner] = useState(false);
@@ -1205,35 +1160,6 @@ export default function Dashboard() {
                             </div>
                           </div>
                         )}
-
-                        {/* Transfer Coins */}
-                        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '12px', borderRadius: '16px' }}>
-                          <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '8px' }}>💸 Transfer to Friend</div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                              <input
-                                type="text"
-                                placeholder="ID"
-                                value={transferRecipientId}
-                                onChange={(e) => setTransferRecipientId(e.target.value)}
-                                style={{ flex: 1.5, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px 12px', color: '#fff', fontSize: '0.8rem', outline: 'none', minWidth: 0 }}
-                              />
-                              <input
-                                type="number"
-                                placeholder="Amt"
-                                value={transferAmount}
-                                onChange={(e) => setTransferAmount(e.target.value)}
-                                style={{ flex: 1, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px 12px', color: '#fff', fontSize: '0.8rem', outline: 'none', minWidth: 0 }}
-                              />
-                            </div>
-                            <button
-                              onClick={handleTransferCoins}
-                              style={{ width: '100%', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#fff', border: 'none', padding: '8px', borderRadius: '10px', fontWeight: 800, fontSize: '0.75rem', cursor: 'pointer' }}
-                            >
-                              Send Coins Now
-                            </button>
-                          </div>
-                        </div>
 
                         {/* Transactions */}
                         <div>

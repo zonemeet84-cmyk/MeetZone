@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { auth, googleProvider } from "../firebaseConfig";
 import { signInWithPopup } from "firebase/auth";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function Signup() {
   const router = useRouter();
@@ -15,6 +16,8 @@ export default function Signup() {
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [captcha, setCaptcha] = useState(null);
+  const recaptchaRef = useRef();
 
   useEffect(() => {
     if (localStorage.getItem("token")) {
@@ -60,16 +63,25 @@ export default function Signup() {
       setError("Please verify your email with OTP first.");
       return;
     }
+    if (!captcha) {
+      setError("Please complete the captcha verification.");
+      return;
+    }
 
     setLoading(true);
     setError("");
 
     try {
-      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/register", form);
+      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/register", {
+        ...form,
+        captchaToken: captcha
+      });
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       router.push("/");
     } catch (err) {
+      if (recaptchaRef.current) recaptchaRef.current.reset();
+      setCaptcha(null);
       setError(err.response?.data?.message || "Registration failed.");
     } finally {
       setLoading(false);
@@ -170,10 +182,19 @@ export default function Signup() {
             </label>
           </div>
 
+          <div className="input-item" style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.25rem' }}>
+            <ReCAPTCHA
+              ref={recaptchaRef}
+              sitekey="6LcgIfEsAAAAAEc88PHbR5c4Cop_YvXAoO9I3paD"
+              onChange={(token) => setCaptcha(token)}
+              theme="dark"
+            />
+          </div>
+
           {error && <div className="error-box">{error}</div>}
           {successMsg && <div className="success-box">{successMsg}</div>}
 
-          <button type="submit" className={`submit-btn ${(!termsAccepted || !otpSent) ? 'btn-locked' : ''}`} disabled={loading || !termsAccepted || !otpSent}>
+          <button type="submit" className={`submit-btn ${(!termsAccepted || !otpSent || !captcha) ? 'btn-locked' : ''}`} disabled={loading || !termsAccepted || !otpSent || !captcha}>
             {loading ? "Creating Account..." : "Sign Up"}
           </button>
         </form>
