@@ -244,12 +244,10 @@ export default function Home() {
     loadModel();
   }, []);
 
-    // ROBUST MANUAL FACE TRACKING WITH HYBRID DUAL-ENGINE
+    // ROBUST MANUAL FACE TRACKING WITH MEDIA-PIPE FACEMESH DIRECTLY
     useEffect(() => {
       let faceMesh = null;
       let animationFrameId = null;
-      let jeelizActive = false;
-      let hiddenCanvas = null;
 
       const detectFace = async () => {
         if (localVideo.current && faceMeshRef.current) {
@@ -294,101 +292,12 @@ export default function Home() {
         }
       };
 
-      const initJeeliz = () => {
-        if (typeof window === "undefined" || !window.JEELIZFACEFILTER) {
-          setTimeout(initJeeliz, 500);
-          return;
-        }
-
-        try {
-          hiddenCanvas = document.createElement("canvas");
-          hiddenCanvas.width = 320;
-          hiddenCanvas.height = 240;
-          hiddenCanvas.style.display = "none";
-          document.body.appendChild(hiddenCanvas);
-
-          window.JEELIZFACEFILTER.init({
-            canvas: hiddenCanvas,
-            NNCPath: "https://cdn.jsdelivr.net/npm/jeelizfacefilter/dist/",
-            videoSettings: {
-              videoElement: localVideo.current
-            },
-            callbackReady: (errCode, spec) => {
-              if (errCode) {
-                console.warn("JEELIZ init error, falling back to MediaPipe:", errCode);
-                if (hiddenCanvas && hiddenCanvas.parentNode) {
-                  hiddenCanvas.parentNode.removeChild(hiddenCanvas);
-                }
-                initMediaPipe();
-                return;
-              }
-              console.log("JEELIZ FaceFilter WebGL GPU active.");
-              jeelizActive = true;
-            },
-            callbackTrack: (detectState) => {
-              if (!jeelizActive) return;
-              isFaceDetectedRef.current = detectState.detected > 0.60;
-              const filter = activeFilterRef.current;
-              if (filter === "None") {
-                const cvs = canvasRef.current;
-                if (cvs) {
-                  const ctx = cvs.getContext("2d");
-                  ctx.clearRect(0, 0, cvs.width, cvs.height);
-                }
-                return;
-              }
-
-              if (detectState.detected > 0.60) {
-                const cvs = canvasRef.current;
-                if (!cvs) return;
-                const w = cvs.width;
-                const h = cvs.height;
-                const centerX = (detectState.x * 0.5 + 0.5) * w;
-                const centerY = (-detectState.y * 0.5 + 0.5) * h;
-                const faceWidth = detectState.s * w;
-
-                // Mock MediaPipe landmarks for backward compatibility with 2D drawings
-                const mockLandmarks = [];
-                mockLandmarks[33] = { x: (centerX - faceWidth * 0.3) / w, y: centerY / h }; // leftEye
-                mockLandmarks[263] = { x: (centerX + faceWidth * 0.3) / w, y: centerY / h }; // rightEye
-                mockLandmarks[10] = { x: centerX / w, y: (centerY - faceWidth * 0.5) / h }; // forehead
-                mockLandmarks[152] = { x: centerX / w, y: (centerY + faceWidth * 0.5) / h }; // chin
-
-                onResults({
-                  multiFaceLandmarks: [mockLandmarks]
-                });
-              } else {
-                const cvs = canvasRef.current;
-                if (cvs) {
-                  const ctx = cvs.getContext("2d");
-                  ctx.clearRect(0, 0, cvs.width, cvs.height);
-                }
-              }
-            }
-          });
-        } catch (err) {
-          console.warn("JEELIZ setup failed, fallback to MediaPipe:", err);
-          if (hiddenCanvas && hiddenCanvas.parentNode) {
-            hiddenCanvas.parentNode.removeChild(hiddenCanvas);
-          }
-          initMediaPipe();
-        }
-      };
-
-      // Try GPU-accelerated Jeeliz FaceFilter first!
-      setTimeout(initJeeliz, 1000);
+      // Try initializing MediaPipe FaceMesh directly for stable performance
+      setTimeout(initMediaPipe, 1000);
 
       return () => {
         if (faceMesh) faceMesh.close();
         if (animationFrameId) cancelAnimationFrame(animationFrameId);
-        if (typeof window !== "undefined" && window.JEELIZFACEFILTER) {
-          try {
-            window.JEELIZFACEFILTER.destroy();
-          } catch(e){}
-        }
-        if (hiddenCanvas && hiddenCanvas.parentNode) {
-          hiddenCanvas.parentNode.removeChild(hiddenCanvas);
-        }
       };
     }, []);
 
@@ -531,23 +440,31 @@ export default function Home() {
   };
 
   const applyGlowEffect = (ctx, w, h) => {
+    ctx.save();
     ctx.globalAlpha = 0.3;
     const gradient = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
     gradient.addColorStop(0, "rgba(255, 255, 255, 0.4)");
     gradient.addColorStop(1, "transparent");
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, w, h);
+    ctx.restore();
   };
 
   const applyWhiteningEffect = (ctx, w, h) => {
+    ctx.save();
     ctx.globalAlpha = 0.15;
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, w, h);
+    ctx.restore();
   };
 
   const applySmoothingEffect = (ctx, w, h) => {
-    ctx.filter = "blur(4px) contrast(1.1)";
-    ctx.drawImage(ctx.canvas, 0, 0);
+    if (localVideo.current) {
+      ctx.save();
+      ctx.filter = "blur(1px) brightness(1.02) contrast(1.02)";
+      ctx.drawImage(localVideo.current, 0, 0, w, h);
+      ctx.restore();
+    }
   };
 
   const drawLoveFrame = (ctx, w, h) => {
@@ -3633,7 +3550,8 @@ export default function Home() {
           object-fit: cover;
         }
 
-        .video-card video.mirrored {
+        .video-card video.mirrored,
+        .video-card canvas.mirrored {
           transform: scaleX(-1);
         }
 
