@@ -200,7 +200,6 @@ export default function Home() {
 
   // MediaPipe Filters
   const [activeMediaPipeFilter, setActiveMediaPipeFilter] = useState("None");
-  const [pendingMediaPipeFilter, setPendingMediaPipeFilter] = useState("None");
   const [unlockedFilters, setUnlockedFilters] = useState(["None"]); // Basic filters unlocked by default
   const [showGiftPanel, setShowGiftPanel] = useState(false);
   const [receivedGift, setReceivedGift] = useState(null);
@@ -766,35 +765,7 @@ export default function Home() {
   }, [isFaceBlurred, activeAvatar, partnerId, socket]);
 
 
-  // Pending States for "Apply" logic
-  const [pendingMask, setPendingMask] = useState("None");
-  const [pendingAvatar, setPendingAvatar] = useState("None");
-  const [pendingVoice, setPendingVoice] = useState("Normal");
-  const [pendingBlur, setPendingBlur] = useState(false);
-
-  const handleApplyEffect = () => {
-    if (activeIdentityMenu === 'filters') {
-      setActiveMediaPipeFilter(pendingMediaPipeFilter);
-    } else if (activeIdentityMenu === 'avatars') {
-      setActiveAvatar(pendingAvatar);
-    } else if (activeIdentityMenu === 'voice') {
-      applyVoiceFilter(pendingVoice);
-    } else if (activeIdentityMenu === 'privacy') {
-      setIsFaceBlurred(pendingBlur);
-    }
-  };
-
-  useEffect(() => {
-    if (activeIdentityMenu === 'filters') {
-      setPendingMediaPipeFilter(activeMediaPipeFilter);
-    } else if (activeIdentityMenu === 'avatars') {
-      setPendingAvatar(activeAvatar);
-    } else if (activeIdentityMenu === 'voice') {
-      setPendingVoice(activeVoice);
-    } else if (activeIdentityMenu === 'privacy') {
-      setPendingBlur(isFaceBlurred);
-    }
-  }, [activeIdentityMenu]);
+  // Effects apply directly on click now
 
   // Audio processing refs
   const audioCtx = useRef(null);
@@ -2776,8 +2747,8 @@ export default function Home() {
                               {FILTERS_DATA.filter(f => f.category === cat).map(f => (
                                 <div
                                   key={f.id}
-                                  className={`mini-option ${pendingMediaPipeFilter === f.id ? 'selected' : ''}`}
-                                  onClick={() => setPendingMediaPipeFilter(f.id)}
+                                  className={`mini-option ${activeMediaPipeFilter === f.id ? 'selected' : ''}`}
+                                  onClick={() => setActiveMediaPipeFilter(f.id)}
                                 >
                                   <span className="filter-icon">{f.icon}</span>
                                   <div className="filter-info">
@@ -2794,8 +2765,8 @@ export default function Home() {
                     {activeIdentityMenu === 'avatars' && ['None', 'Robot', 'Anime', 'Girl', 'Ninja', 'Hero', 'Cat', 'Cyber'].map(a => (
                       <div
                         key={a}
-                        className={`mini-option ${pendingAvatar === a ? 'selected' : ''}`}
-                        onClick={() => setPendingAvatar(a)}
+                        className={`mini-option ${activeAvatar === a ? 'selected' : ''}`}
+                        onClick={() => setActiveAvatar(a)}
                       >
                         <span className="filter-icon">{a === 'None' ? '🚫' : '👤'}</span>
                         <div className="filter-info">
@@ -2807,8 +2778,8 @@ export default function Home() {
                     {activeIdentityMenu === 'voice' && ['Normal', 'Robot', 'Deep', 'Chipmunk', 'Alien', 'Echo'].map(v => (
                       <div
                         key={v}
-                        className={`mini-option ${pendingVoice === v ? 'selected' : ''}`}
-                        onClick={() => setPendingVoice(v)}
+                        className={`mini-option ${activeVoice === v ? 'selected' : ''}`}
+                        onClick={() => applyVoiceFilter(v)}
                       >
                         <span className="filter-icon">{v === 'Normal' ? '⏺️' : '🎙️'}</span>
                         <div className="filter-info">
@@ -2819,32 +2790,17 @@ export default function Home() {
 
                     {activeIdentityMenu === 'privacy' && (
                       <div
-                        className={`mini-option ${pendingBlur ? 'selected' : ''}`}
-                        onClick={() => setPendingBlur(!pendingBlur)}
+                        className={`mini-option ${isFaceBlurred ? 'selected' : ''}`}
+                        onClick={() => setIsFaceBlurred(!isFaceBlurred)}
                         style={{ width: '100%', flex: '1 1 100%' }}
                       >
                         <span className="filter-icon">🌫️</span>
                         <div className="filter-info">
-                          <span className="filter-name">{pendingBlur ? '✅ Blur Enabled' : '🌫️ Blur Disabled'}</span>
+                          <span className="filter-name">{isFaceBlurred ? '✅ Blur Enabled' : '🌫️ Blur Disabled'}</span>
                         </div>
                       </div>
                     )}
                   </div>
-
-                  {/* Sleek Apply Button */}
-                  {((activeIdentityMenu === 'filters' && pendingMediaPipeFilter !== activeMediaPipeFilter) ||
-                    (activeIdentityMenu === 'avatars' && pendingAvatar !== activeAvatar) ||
-                    (activeIdentityMenu === 'voice' && pendingVoice !== activeVoice) ||
-                    (activeIdentityMenu === 'privacy' && pendingBlur !== isFaceBlurred)) && (
-                    <div style={{ padding: '8px 4px 4px 4px', borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: '10px', display: 'flex', justifyContent: 'center', width: '100%' }}>
-                      <button
-                        onClick={handleApplyEffect}
-                        className="apply-effect-btn"
-                      >
-                        Apply Selection
-                      </button>
-                    </div>
-                  )}
                 </div>
               )}
 
