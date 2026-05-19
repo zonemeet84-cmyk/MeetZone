@@ -200,6 +200,9 @@ export default function Home() {
 
   // MediaPipe Filters
   const [activeMediaPipeFilter, setActiveMediaPipeFilter] = useState("None");
+  const [selectedTempFilter, setSelectedTempFilter] = useState("None");
+  const [selectedTempAvatar, setSelectedTempAvatar] = useState("None");
+  const [selectedTempVoice, setSelectedTempVoice] = useState("Normal");
   const [unlockedFilters, setUnlockedFilters] = useState(["None"]); // Basic filters unlocked by default
   const [showGiftPanel, setShowGiftPanel] = useState(false);
   const [receivedGift, setReceivedGift] = useState(null);
@@ -223,6 +226,8 @@ export default function Home() {
     { id: "Anime", name: "Anime", icon: "🎎", cost: 200, category: "Premium" },
     { id: "Neon", name: "Neon Mask", icon: "⚡", cost: 180, category: "Premium" },
     { id: "Crown", name: "Gold Crown", icon: "👑", cost: 100, category: "Premium" },
+    { id: "Sharp", name: "Sharper Webcam", icon: "📷", cost: 150, category: "Premium" },
+    { id: "LowLight", name: "AI Night Enhance", icon: "🌙", cost: 150, category: "Premium" },
     // Couple
     { id: "Angel", name: "Angel Halo", icon: "😇", cost: 80, category: "Couple" },
     { id: "Ghost", name: "Ghost Overlay", icon: "👻", cost: 80, category: "Couple" }
@@ -830,6 +835,10 @@ export default function Home() {
         filters.push('brightness(1.12) contrast(1.08) saturate(1.15)');
       } else if (activeMediaPipeFilter === "Makeup") {
         filters.push('hue-rotate(348deg) saturate(1.2) brightness(1.06)');
+      } else if (activeMediaPipeFilter === "Sharp") {
+        filters.push('contrast(1.15) brightness(1.02) saturate(1.04)');
+      } else if (activeMediaPipeFilter === "LowLight") {
+        filters.push('brightness(1.28) contrast(0.92) saturate(1.12)');
       }
     }
     return filters.length > 0 ? filters.join(' ') : 'none';
@@ -850,12 +859,33 @@ export default function Home() {
         filters.push('brightness(1.12) contrast(1.08) saturate(1.15)');
       } else if (partnerFilter === "Makeup") {
         filters.push('hue-rotate(348deg) saturate(1.2) brightness(1.06)');
+      } else if (partnerFilter === "Sharp") {
+        filters.push('contrast(1.15) brightness(1.02) saturate(1.04)');
+      } else if (partnerFilter === "LowLight") {
+        filters.push('brightness(1.28) contrast(0.92) saturate(1.12)');
       }
     }
     return filters.length > 0 ? filters.join(' ') : 'none';
   };
 
   const applyFilterAndMask = (filterId) => {
+    // Premium Gating: If not premium, block and open pricing modal
+    if (filterId !== "None") {
+      const selectedFilterObj = FILTERS_DATA.find(f => f.id === filterId);
+      const isPremiumFilter = selectedFilterObj && (
+        selectedFilterObj.category === "Premium" ||
+        selectedFilterObj.category === "Beauty" ||
+        selectedFilterObj.category === "Couple" ||
+        ["Devil", "Cat"].includes(filterId)
+      );
+
+      if (isPremiumFilter && !user?.premium) {
+        setShowPricingModal(true);
+        alert("This premium filter/beautify effect requires a Premium Subscription! Upgrade now to unlock HD quality, better masks, and AI beautify.");
+        return;
+      }
+    }
+
     setActiveMediaPipeFilter(filterId);
     
     // Map MediaPipe filter IDs to CSS fallback mask IDs
@@ -880,6 +910,29 @@ export default function Home() {
     } else {
       setActiveMask("None");
     }
+  };
+
+  // Sync temporary selection states with active values when menu opens
+  useEffect(() => {
+    if (activeIdentityMenu === 'filters') {
+      setSelectedTempFilter(activeMediaPipeFilter);
+    } else if (activeIdentityMenu === 'avatars') {
+      setSelectedTempAvatar(activeAvatar);
+    } else if (activeIdentityMenu === 'voice') {
+      setSelectedTempVoice(activeVoice);
+    }
+  }, [activeIdentityMenu, activeMediaPipeFilter, activeAvatar, activeVoice]);
+
+  // Handle two-stage Apply click
+  const handleApplyIdentityChanges = () => {
+    if (activeIdentityMenu === 'filters') {
+      applyFilterAndMask(selectedTempFilter);
+    } else if (activeIdentityMenu === 'avatars') {
+      setActiveAvatar(selectedTempAvatar);
+    } else if (activeIdentityMenu === 'voice') {
+      applyVoiceFilter(selectedTempVoice);
+    }
+    setActiveIdentityMenu(null); // Close the popup bubble after applying
   };
 
   // Audio processing refs
@@ -927,15 +980,22 @@ export default function Home() {
     let streamInstance;
 
     const init = async () => {
+      let isPremiumUser = false;
+
       // 0. QUICK PROFILE LOAD FROM CACHE
       const savedUser = sessionStorage.getItem("user");
       if (savedUser) {
         try {
           const u = JSON.parse(savedUser);
+          if (u.email?.toLowerCase() === "ds9376314@gmail.com") {
+            u.premium = true;
+            u.planName = "VIP Elite";
+          }
+          if (u.premium) isPremiumUser = true;
           setUser(u);
           if (u.unlockedFilters) setUnlockedFilters(u.unlockedFilters);
           setAuthLoading(false); // Stop loading immediately if we have a profile
-          console.log("Profile loaded from cache instantly");
+          console.log("Profile loaded from cache instantly, premium status:", isPremiumUser);
         } catch(e) {}
       }
 
@@ -960,6 +1020,7 @@ export default function Home() {
                 userData.premium = true;
                 userData.planName = "VIP Elite";
               }
+              if (userData.premium) isPremiumUser = true;
               setUser(userData);
               if (userData.unlockedFilters) setUnlockedFilters(userData.unlockedFilters);
 
@@ -982,6 +1043,7 @@ export default function Home() {
                 userData.premium = true;
                 userData.planName = "VIP Elite";
               }
+              if (userData.premium) isPremiumUser = true;
               setUser(userData);
               if (userData.unlockedFilters) setUnlockedFilters(userData.unlockedFilters);
               sessionStorage.setItem("user", JSON.stringify(userData));
@@ -1007,6 +1069,7 @@ export default function Home() {
               userData.premium = true;
               userData.planName = "VIP Elite";
             }
+            if (userData.premium) isPremiumUser = true;
             setUser(userData);
             if (userData.unlockedFilters) {
               setUnlockedFilters(userData.unlockedFilters);
@@ -1040,16 +1103,38 @@ export default function Home() {
 
       // 2. Camera Logic
       try {
+        const videoConstraints = isPremiumUser ? {
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 },
+          frameRate: { ideal: 30, max: 30 }
+        } : {
+          width: { ideal: 640, max: 960 },
+          height: { ideal: 480, max: 540 },
+          frameRate: { ideal: 20, max: 20 }
+        };
+
+        console.log("Negotiated camera constraints loaded based on plan:", isPremiumUser, videoConstraints);
         streamInstance = await navigator.mediaDevices.getUserMedia({
-          video: true,
+          video: videoConstraints,
           audio: true,
         });
         if (localVideo.current) {
           localVideo.current.srcObject = streamInstance;
         }
       } catch (err) {
-        console.error("Error accessing media devices.", err);
-        setStatus("Please allow camera/mic access");
+        console.warn("Error accessing media devices with ideal constraints, trying standard fallback.", err);
+        try {
+          streamInstance = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true,
+          });
+          if (localVideo.current) {
+            localVideo.current.srcObject = streamInstance;
+          }
+        } catch (fbErr) {
+          console.error("Camera access failed completely.", fbErr);
+          setStatus("Please allow camera/mic access");
+        }
       }
 
       // 4. AI Guard: Multi-Layer Hybrid NSFW Detection (NSFWJS Client-Side + Hive AI Backend-Side Verification)
@@ -1561,6 +1646,39 @@ export default function Home() {
         });
       }
     };
+
+    // Dynamic Bitrate Adjustment (Smart Bitrate Negotiation)
+    const localPremium = user?.premium || false;
+    const partnerPremium = partnerInfo?.premium || false;
+    // Both Premium = 2 Mbps (high quality). Either is Free = 600 kbps (mixed/conserved)
+    const targetBitrateBps = (localPremium && partnerPremium) ? 2000000 : 600000;
+
+    setTimeout(() => {
+      if (peerConnection.current) {
+        const senders = peerConnection.current.getSenders();
+        const videoSender = senders.find(s => s.track && s.track.kind === "video");
+        if (videoSender) {
+          try {
+            const parameters = videoSender.getParameters();
+            if (!parameters.encodings) {
+              parameters.encodings = [{}];
+            }
+            if (parameters.encodings.length > 0) {
+              parameters.encodings[0].maxBitrate = targetBitrateBps;
+              videoSender.setParameters(parameters)
+                .then(() => {
+                  console.log(`[Smart Bitrate] Configured outbound video encoding bitrate to ${targetBitrateBps / 1000} kbps. (Local premium: ${localPremium}, Partner premium: ${partnerPremium})`);
+                })
+                .catch(err => {
+                  console.error("[Smart Bitrate] Failed to set RTCRtpSender parameters:", err);
+                });
+            }
+          } catch (e) {
+            console.error("[Smart Bitrate] Failed to get RTCRtpSender parameters:", e);
+          }
+        }
+      }
+    }, 1500);
   };
 
   const closeConnection = () => {
@@ -2881,8 +2999,8 @@ export default function Home() {
                               {FILTERS_DATA.filter(f => f.category === cat).map(f => (
                                 <div
                                   key={f.id}
-                                  className={`mini-option ${activeMediaPipeFilter === f.id ? 'selected' : ''}`}
-                                  onClick={() => applyFilterAndMask(f.id)}
+                                  className={`mini-option ${selectedTempFilter === f.id ? 'selected' : ''}`}
+                                  onClick={() => setSelectedTempFilter(f.id)}
                                 >
                                   <span className="filter-icon">{f.icon}</span>
                                   <div className="filter-info">
@@ -2899,8 +3017,8 @@ export default function Home() {
                     {activeIdentityMenu === 'avatars' && ['None', 'Robot', 'Anime', 'Girl', 'Ninja', 'Hero', 'Cat', 'Cyber'].map(a => (
                       <div
                         key={a}
-                        className={`mini-option ${activeAvatar === a ? 'selected' : ''}`}
-                        onClick={() => setActiveAvatar(a)}
+                        className={`mini-option ${selectedTempAvatar === a ? 'selected' : ''}`}
+                        onClick={() => setSelectedTempAvatar(a)}
                       >
                         <span className="filter-icon">{a === 'None' ? '🚫' : '👤'}</span>
                         <div className="filter-info">
@@ -2912,8 +3030,8 @@ export default function Home() {
                     {activeIdentityMenu === 'voice' && ['Normal', 'Robot', 'Deep', 'Chipmunk', 'Alien', 'Echo'].map(v => (
                       <div
                         key={v}
-                        className={`mini-option ${activeVoice === v ? 'selected' : ''}`}
-                        onClick={() => applyVoiceFilter(v)}
+                        className={`mini-option ${selectedTempVoice === v ? 'selected' : ''}`}
+                        onClick={() => setSelectedTempVoice(v)}
                       >
                         <span className="filter-icon">{v === 'Normal' ? '⏺️' : '🎙️'}</span>
                         <div className="filter-info">
@@ -2935,6 +3053,14 @@ export default function Home() {
                       </div>
                     )}
                   </div>
+                  
+                  {activeIdentityMenu !== 'privacy' && (
+                    <div style={{ marginTop: '10px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px', width: '100%' }}>
+                      <button className="apply-effect-btn" onClick={handleApplyIdentityChanges}>
+                        Apply Selection
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -4731,12 +4857,13 @@ export default function Home() {
         .identity-popup-bubble {
           position: absolute;
           bottom: 75px;
-          background: #111827;
-          padding: 8px;
-          border-radius: 14px;
-          border: 1px solid #334155;
+          background: rgba(15, 23, 42, 0.95);
+          backdrop-filter: blur(12px);
+          padding: 10px;
+          border-radius: 16px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
           z-index: 1000;
-          width: 280px;
+          width: 260px;
           max-width: 90vw;
           left: 50%;
           transform: translateX(-50%);
@@ -4752,7 +4879,7 @@ export default function Home() {
           height: 0; 
           border-left: 8px solid transparent;
           border-right: 8px solid transparent;
-          border-top: 8px solid #111827;
+          border-top: 8px solid rgba(15, 23, 42, 0.95);
         }
         @keyframes popIn { from { opacity: 0; transform: scale(0.9) translateY(10px) translateX(-50%); } to { opacity: 1; transform: scale(1) translateY(0) translateX(-50%); } }
 
@@ -5809,11 +5936,12 @@ export default function Home() {
             bottom: 35px !important;
             left: 50% !important;
             transform: translateX(-50%) !important;
-            width: 270px !important;
+            width: 250px !important;
             max-width: calc(100vw - 20px) !important;
             z-index: 300 !important;
-            background: #1e293b !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            background: rgba(15, 23, 42, 0.95) !important;
+            backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
             border-radius: 16px !important;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
             padding: 10px !important;
