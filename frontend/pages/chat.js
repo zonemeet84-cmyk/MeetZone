@@ -160,6 +160,21 @@ export default function Home() {
   const [showCoinPopup, setShowCoinPopup] = useState(false);
   const [pendingMessage, setPendingMessage] = useState("");
 
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [historyList, setHistoryList] = useState([]);
+
+  const fetchHistory = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const res = await axios.get("https://meetzone-backend.onrender.com/api/user/history", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setHistoryList(res.data.history || []);
+    } catch (err) {
+      console.error("Error fetching history:", err);
+    }
+  };
+
   // --- QUIZ DUEL / BRAIN CLASH STATE ---
   // --- QUIZ DUEL / BRAIN CLASH STATE ---
   const [quizState, setQuizState] = useState("idle"); // 'idle', 'queued', 'countdown', 'active', 'finished'
@@ -1353,7 +1368,7 @@ export default function Home() {
         setTimeout(() => {
           setShowPartnerPreview(false);
           setStatus("Connected");
-        }, 1500);
+        }, 200);
       }
     };
 
@@ -1795,6 +1810,11 @@ export default function Home() {
                 )
               )}
             </div>
+
+            <button className="btn-home" onClick={() => { fetchHistory(); setShowHistoryModal(true); }} style={{ marginRight: '6px' }}>
+              <span className="icon">🕒</span>
+              <span className="text">History</span>
+            </button>
 
             <button className="btn-home" onClick={() => router.push("/")}>
               <span className="icon">🏠</span>
@@ -2906,6 +2926,65 @@ export default function Home() {
                 <span className="lock-icon">🔒</span>
                 End-to-end 256-bit encrypted
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* HISTORY MODAL */}
+      {showHistoryModal && (
+        <div className="payment-overlay" style={{ zIndex: 11000 }} onClick={() => setShowHistoryModal(false)}>
+          <div className="premium-modal" style={{ maxWidth: '440px', padding: 0, textAlign: 'left' }} onClick={e => e.stopPropagation()}>
+            <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: 800, fontSize: '1rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>🕒 Recent Connections</span>
+              <button onClick={() => setShowHistoryModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer', lineHeight: 1 }}>×</button>
+            </div>
+            <div style={{ maxHeight: '65vh', overflowY: 'auto', padding: '1rem', scrollbarWidth: 'none' }}>
+              {(!user?.recentStrangers || user.recentStrangers.length === 0) ? (
+                <div style={{ padding: '3rem', textAlign: 'center', color: '#475569' }}>
+                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🫥</div>
+                  <p style={{ fontWeight: 600 }}>No recent connections yet.</p>
+                  <p style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Start a chat to see your history here.</p>
+                </div>
+              ) : (
+                user.recentStrangers.map((s, idx) => (
+                  <div key={idx} className="history-item" style={{ padding: '12px 10px', borderBottom: idx === user.recentStrangers.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '12px', transition: 'background 0.2s' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div className="history-avatar" style={{ width: '40px', height: '40px', background: 'linear-gradient(135deg, #6366f1, #a855f7)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 800, color: 'white', flexShrink: 0 }}>
+                        {s.name ? s.name.charAt(0).toUpperCase() : '?'}
+                      </div>
+                      <div>
+                        <div className="history-name" style={{ fontSize: '0.95rem', fontWeight: 700, color: 'white' }}>{s.name}</div>
+                        <div className="history-info" style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
+                          {s.country} • {new Date(s.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      className="history-reconnect-btn"
+                      onClick={async () => {
+                        const confirmed = window.confirm(`Reconnect with ${s.name}? (10 Coins)`);
+                        if (confirmed) {
+                          try {
+                            const token = sessionStorage.getItem('token');
+                            const res = await axios.post('https://meetzone-backend.onrender.com/api/user/spend-coins', { email: user.email, amount: 10, feature: 'reconnect' });
+                            if (res.data.success) {
+                              setUser({ ...user, coins: res.data.coins });
+                              await axios.post('https://meetzone-backend.onrender.com/api/friends/request', { targetId: s.id, type: 'reconnect' }, { headers: { Authorization: `Bearer ${token}` } });
+                              alert(`Request sent to ${s.name}!`);
+                            }
+                          } catch (err) {
+                            alert(err.response?.data?.message || 'Failed to reconnect');
+                          }
+                        }
+                      }}
+                      style={{ background: 'linear-gradient(135deg, #6366f1, #a855f7)', border: 'none', color: 'white', padding: '7px 14px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                    >
+                      Reconnect
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -5132,7 +5211,7 @@ export default function Home() {
             position: absolute !important;
             width: 75px !important;
             height: 110px !important;
-            bottom: 110px !important;
+            top: 130px !important;
             right: 12px !important;
             z-index: 100 !important;
             border-radius: 12px !important;
@@ -5517,6 +5596,93 @@ export default function Home() {
           }
           .bottom-actions button:active {
             transform: scale(0.93) !important;
+          }
+
+          /* Payment Modal and Pricing Responsiveness */
+          .payment-overlay {
+            padding: 1rem 0.5rem !important;
+          }
+          .premium-modal {
+            width: 95% !important;
+            max-width: 330px !important;
+            max-height: 90vh !important;
+            overflow-y: auto !important;
+            padding: 20px 15px !important;
+            margin: auto !important;
+            border-radius: 24px !important;
+          }
+          .premium-modal.pricing-wide {
+            max-width: 330px !important;
+          }
+          .modal-header-premium {
+            padding: 2rem 1rem 1rem !important;
+          }
+          .total-amount {
+            font-size: 2.2rem !important;
+          }
+          .modal-body-premium {
+            padding: 0 1rem 1.5rem !important;
+          }
+          .pricing-grid-premium {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+            margin: 1rem 0 !important;
+          }
+          .premium-card-mini {
+            padding: 12px !important;
+            border-radius: 16px !important;
+          }
+          .card-price {
+            font-size: 1.25rem !important;
+          }
+          .methods-list-premium {
+            gap: 8px !important;
+          }
+          .pay-method-item {
+            padding: 10px !important;
+            border-radius: 16px !important;
+            gap: 10px !important;
+          }
+          .pay-icon-box {
+            width: 44px !important;
+            height: 44px !important;
+            border-radius: 12px !important;
+            font-size: 1.25rem !important;
+          }
+          .pay-details strong {
+            font-size: 0.9rem !important;
+          }
+          .pay-details span {
+            font-size: 0.75rem !important;
+          }
+          .pay-arrow {
+            font-size: 1.1rem !important;
+          }
+          .status-container {
+            padding: 1rem 0 !important;
+          }
+
+          /* History modal item responsiveness */
+          .history-item {
+            padding: 8px 6px !important;
+            gap: 8px !important;
+          }
+          .history-avatar {
+            width: 32px !important;
+            height: 32px !important;
+            font-size: 0.85rem !important;
+          }
+          .history-name {
+            font-size: 0.8rem !important;
+          }
+          .history-info {
+            font-size: 0.65rem !important;
+            margin-top: 1px !important;
+          }
+          .history-reconnect-btn {
+            padding: 4px 8px !important;
+            font-size: 0.65rem !important;
+            border-radius: 6px !important;
           }
         }
       `}</style>

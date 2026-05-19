@@ -2280,19 +2280,20 @@ export default function Dashboard() {
                 </div>
               ) : (
                 user.recentStrangers.map((s, idx) => (
-                  <div key={idx} style={{ padding: '12px 10px', borderBottom: idx === user.recentStrangers.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '12px', transition: 'background 0.2s' }}>
+                  <div key={idx} className="history-item" style={{ padding: '12px 10px', borderBottom: idx === user.recentStrangers.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '12px', transition: 'background 0.2s' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ width: '40px', height: '40px', background: 'linear-gradient(135deg, #6366f1, #a855f7)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 800, color: 'white', flexShrink: 0 }}>
+                      <div className="history-avatar" style={{ width: '40px', height: '40px', background: 'linear-gradient(135deg, #6366f1, #a855f7)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 800, color: 'white', flexShrink: 0 }}>
                         {s.name ? s.name.charAt(0).toUpperCase() : '?'}
                       </div>
                       <div>
-                        <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'white' }}>{s.name}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
+                        <div className="history-name" style={{ fontSize: '0.95rem', fontWeight: 700, color: 'white' }}>{s.name}</div>
+                        <div className="history-info" style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
                           {s.country} • {new Date(s.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </div>
                     </div>
                     <button
+                      className="history-reconnect-btn"
                       onClick={async () => {
                         showModal({
                           message: `Reconnect with ${s.name}? (10 Coins)`,
@@ -4389,39 +4390,58 @@ export default function Dashboard() {
               gap: 8px !important;
             }
             .profile-user-card {
-              padding: 8px !important;
-              gap: 8px !important;
-              border-radius: 10px !important;
+              display: flex !important;
+              flex-direction: column !important;
               align-items: center !important;
+              text-align: center !important;
+              padding: 8px !important;
+              gap: 6px !important;
+              border-radius: 10px !important;
             }
             .profile-avatar-large {
               width: 38px !important;
               height: 38px !important;
               font-size: 1.15rem !important;
+              margin-bottom: 4px !important;
+            }
+            .profile-user-info {
+              display: flex !important;
+              flex-direction: column !important;
+              align-items: center !important;
+              justify-content: center !important;
+              text-align: center !important;
+              width: 100% !important;
             }
             .profile-user-name {
               font-size: 0.85rem !important;
-              max-width: 110px !important;
+              max-width: 200px !important;
               overflow: hidden !important;
               text-overflow: ellipsis !important;
               white-space: nowrap !important;
               word-break: break-all !important;
+              display: flex !important;
+              justify-content: center !important;
+              align-items: center !important;
             }
             .profile-user-id {
               font-size: 0.7rem !important;
-              max-width: 115px !important;
+              max-width: 200px !important;
               overflow: hidden !important;
               text-overflow: ellipsis !important;
               white-space: nowrap !important;
               word-break: break-all !important;
+              display: flex !important;
+              justify-content: center !important;
+              align-items: center !important;
             }
             .profile-edit-btn {
               position: static !important;
-              margin-left: auto !important;
-              padding: 3px 6px !important;
-              font-size: 0.65rem !important;
+              margin: 4px auto 0 !important;
+              padding: 2px 6px !important;
+              font-size: 0.6rem !important;
               border-radius: 8px !important;
               height: auto !important;
+              width: fit-content !important;
             }
             .profile-premium-banner {
               padding: 8px !important;
@@ -4434,8 +4454,8 @@ export default function Dashboard() {
               font-size: 0.65rem !important;
             }
             .profile-premium-btn {
-              padding: 4px 8px !important;
-              font-size: 0.75rem !important;
+              padding: 3px 6px !important;
+              font-size: 0.65rem !important;
               border-radius: 8px !important;
               height: auto !important;
             }
@@ -4493,8 +4513,8 @@ export default function Dashboard() {
               height: auto !important;
             }
             .profile-referral-btn {
-              padding: 0 10px !important;
-              font-size: 0.7rem !important;
+              padding: 3px 6px !important;
+              font-size: 0.65rem !important;
               border-radius: 6px !important;
               height: auto !important;
             }
@@ -4525,6 +4545,55 @@ export default function Dashboard() {
             }
             .slot-spinning {
               font-size: 3rem !important;
+            }
+
+            /* Profile Edit / Onboarding Modal responsiveness */
+            .premium-modal .modal-header h2 {
+              font-size: 1.25rem !important;
+            }
+            .premium-modal .modal-header p {
+              font-size: 0.75rem !important;
+            }
+            .premium-modal form {
+              gap: 0.8rem !important;
+              margin-top: 1rem !important;
+            }
+            .premium-modal .styled-select {
+              padding: 0.5rem !important;
+              font-size: 0.8rem !important;
+              border-radius: 8px !important;
+            }
+            .premium-modal label {
+              font-size: 0.75rem !important;
+              margin-bottom: 0.25rem !important;
+            }
+            .premium-modal .btn-lg {
+              padding: 0.6rem !important;
+              font-size: 0.85rem !important;
+              border-radius: 12px !important;
+            }
+
+            /* History modal item responsiveness */
+            .history-item {
+              padding: 8px 6px !important;
+              gap: 8px !important;
+            }
+            .history-avatar {
+              width: 32px !important;
+              height: 32px !important;
+              font-size: 0.85rem !important;
+            }
+            .history-name {
+              font-size: 0.8rem !important;
+            }
+            .history-info {
+              font-size: 0.65rem !important;
+              margin-top: 1px !important;
+            }
+            .history-reconnect-btn {
+              padding: 4px 8px !important;
+              font-size: 0.65rem !important;
+              border-radius: 6px !important;
             }
           }
 
