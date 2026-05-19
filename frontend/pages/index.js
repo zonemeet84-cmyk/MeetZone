@@ -4362,6 +4362,117 @@ export default function Dashboard() {
               padding: 10px 18px !important;
               height: auto !important;
             }
+            /* Profile Dropdown Modal Card Responsive Fixes */
+            .profile-modal-card {
+              max-width: 320px !important;
+              padding: 15px 10px !important;
+              border-radius: 20px !important;
+              max-height: 85vh !important;
+              overflow-y: auto !important;
+            }
+            .profile-modal-body {
+              padding: 10px !important;
+              gap: 12px !important;
+            }
+            .profile-user-card {
+              padding: 10px !important;
+              gap: 10px !important;
+              border-radius: 12px !important;
+              align-items: center !important;
+            }
+            .profile-avatar-large {
+              width: 45px !important;
+              height: 45px !important;
+              font-size: 1.3rem !important;
+            }
+            .profile-user-name {
+              font-size: 0.95rem !important;
+              max-width: 140px !important;
+              overflow: hidden !important;
+              text-overflow: ellipsis !important;
+              white-space: nowrap !important;
+              word-break: break-all !important;
+            }
+            .profile-user-id {
+              font-size: 0.75rem !important;
+              max-width: 145px !important;
+              overflow: hidden !important;
+              text-overflow: ellipsis !important;
+              white-space: nowrap !important;
+              word-break: break-all !important;
+            }
+            .profile-edit-btn {
+              position: static !important;
+              margin-left: auto !important;
+              padding: 6px 10px !important;
+              font-size: 0.75rem !important;
+              border-radius: 12px !important;
+              height: auto !important;
+            }
+            .profile-premium-banner {
+              padding: 10px !important;
+              border-radius: 12px !important;
+            }
+            .profile-premium-title {
+              font-size: 0.9rem !important;
+            }
+            .profile-premium-sub {
+              font-size: 0.7rem !important;
+            }
+            .profile-premium-btn {
+              padding: 6px 12px !important;
+              font-size: 0.8rem !important;
+              border-radius: 12px !important;
+              height: auto !important;
+            }
+            .profile-balances {
+              padding: 10px !important;
+              border-radius: 12px !important;
+              gap: 5px !important;
+            }
+            .profile-balance-item {
+              font-size: 0.85rem !important;
+              gap: 4px !important;
+            }
+            .profile-balance-icon {
+              font-size: 1.1rem !important;
+            }
+            .profile-balance-divider {
+              height: 20px !important;
+            }
+            .profile-details-list {
+              padding: 4px 0 !important;
+              border-radius: 12px !important;
+            }
+            .profile-detail-item {
+              padding: 6px 10px !important;
+              font-size: 0.8rem !important;
+            }
+            .profile-more-btn {
+              padding: 8px 10px !important;
+              font-size: 0.85rem !important;
+              border-radius: 10px !important;
+            }
+            /* Coins box inside profile card */
+            .profile-modal-card div[style*="background: 'rgba(255,255,255,0.02)'"] {
+              padding: 10px !important;
+              gap: 10px !important;
+              border-radius: 16px !important;
+              margin-bottom: 1rem !important;
+            }
+            .profile-modal-card input,
+            .profile-modal-card select {
+              padding: 8px 12px !important;
+              font-size: 0.8rem !important;
+              border-radius: 8px !important;
+              height: auto !important;
+            }
+            .profile-modal-card button {
+              padding: 8px 12px !important;
+              font-size: 0.8rem !important;
+              border-radius: 8px !important;
+              height: auto !important;
+            }
             /* Fix for mystery box confirm */
             .premium-modal {
               padding: 30px 15px !important;
