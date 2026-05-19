@@ -941,7 +941,7 @@ export default function Dashboard() {
   return (
     <div className="container">
       <Head>
-        <title>ZoneMeet</title>
+        <title>ZoneMeet | Global Communication & Professional Networking Platform</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
       </Head>
@@ -1307,12 +1307,12 @@ export default function Dashboard() {
               </div>
 
               <h1 className="hero-explore-title">
-                Meet People<br />
-                <span>Worldwide Instantly.</span>
+                Global Communication<br />
+                <span>& Networking Platform.</span>
               </h1>
 
               <p className="hero-explore-subtitle">
-                Connect instantly with real people from around the world through seamless random video chats. Make new friends, explore different cultures, and enjoy secure conversations anytime, anywhere. Meet interesting people, share moments, and build real connections in a fun and safe environment.
+                Connect instantly with professionals, language learners, and like-minded peers worldwide through our interest-based communication rooms. Build your professional network, exchange languages, collaborate on ideas, and participate in secure global communities anytime, anywhere.
               </p>
 
               <div className="action-buttons" style={{ position: 'relative', zIndex: 20, marginTop: '30px' }}>
@@ -1366,9 +1366,9 @@ export default function Dashboard() {
               Redefining Human <span>Connection</span>
             </h2>
             <p style={{ color: '#94a3b8', fontSize: '1.2rem', lineHeight: '1.6', marginBottom: '30px' }}>
-              ZoneMeet isn't just another video chat app; it's a global stage where strangers become friends in an instant.
-              Our platform combines cutting-edge real-time technology with a focus on safety and serendipity.
-              Whether you're looking for a deep conversation or a quick laugh, ZoneMeet connects you with the right person, at the right time.
+              ZoneMeet is a modern global communication platform designed for professional networking and meaningful language exchanges.
+              Our interest-based community rooms combine cutting-edge real-time technology with absolute security and collaboration.
+              Whether you are expanding your global circle, learning a new language, or building your professional career, we connect you with the right peers instantly.
             </p>
             <div className="experience-stats" style={{ display: 'flex', gap: '40px' }}>
               <div>
@@ -1435,7 +1435,7 @@ export default function Dashboard() {
           <div className="friends-text">
             <h2 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '20px', letterSpacing: '-1px' }}>Build your <span>Global Circle.</span></h2>
             <p style={{ color: '#94a3b8', fontSize: '1.2rem', lineHeight: '1.6', marginBottom: '30px' }}>
-              Why stop at one conversation? Add interesting people to your <strong>Friends List</strong> and see when they are online. Direct call your friends anytime for <strong>FREE</strong>. Your global social network starts here.
+              Why stop at one conversation? Add interesting connections to your <strong>Professional Network</strong> and see when they are online. Direct call your peers anytime for <strong>FREE</strong>. Your global professional community starts here.
             </p>
             <div style={{ display: 'flex', gap: '20px' }}>
               <div style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', flex: 1 }}>
@@ -1466,7 +1466,7 @@ export default function Dashboard() {
             <div className="support-tag">🛡️ ZERO TOLERANCE PLATFORM</div>
             <h2>Your Safety is our <br /><span>Top Priority.</span></h2>
             <p>
-              Experience the web's safest random chat. Our <strong>AI Guardian</strong> technology works 24/7 to monitor streams and block inappropriate behavior instantly. Need help? Our human support team is just a click away.
+              Experience a premium, secure global communication network. Our <strong>AI Guardian</strong> technology works 24/7 to monitor streams, protect user privacy, and maintain high professional standards. Need help? Our human support team is just a click away.
             </p>
             <div className="support-features" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
               <div className="s-feat">
@@ -1653,7 +1653,7 @@ export default function Dashboard() {
       <div className="pricing-section" id="coins-section" style={{ marginTop: '100px' }}>
         <div className="pricing-header">
           <h2 className="section-title">ZoneMeet <span>Coins</span> Store</h2>
-          <p className="section-subtitle">Get coins to boost your profile or reconnect with strangers.</p>
+          <p className="section-subtitle">Get coins to boost your profile or reconnect with community peers.</p>
         </div>
 
         {/* LEADERBOARD FULL-SCREEN OVERLAY */}
@@ -2855,7 +2855,7 @@ export default function Dashboard() {
                       if (!referralStats?.referralCode) return;
                       const link = `${window.location.origin}/?ref=${referralStats.referralCode}`;
                       if (navigator.share) {
-                        navigator.share({ title: 'Join ZoneMeet!', text: 'Join me on ZoneMeet — random video chat with real people!', url: link });
+                        navigator.share({ title: 'Join ZoneMeet!', text: 'Join me on ZoneMeet — the premier global communication and professional networking platform!', url: link });
                       } else {
                         navigator.clipboard.writeText(link);
                         showModal({ message: 'Invite link copied! Share it with friends.', type: 'success' });

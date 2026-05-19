@@ -44,7 +44,7 @@ export default function Guidelines() {
         <h2>📸 Privacy Protection</h2>
         <ul>
           <li><strong>No Screenshots/Recording:</strong> Taking screenshots or recording video streams without the explicit consent of the other person is a violation of their privacy and our terms. Our system employs screenshot-blocking technology, but bypassing this is a banable offense.</li>
-          <li><strong>Do Not Share Personal Info:</strong> For your own safety, avoid sharing sensitive personal information (address, phone number, financial details) with strangers.</li>
+          <li><strong>Do Not Share Personal Info:</strong> For your own safety, avoid sharing sensitive personal information (address, phone number, financial details) with other users.</li>
         </ul>
 
         <h2>🚨 Reporting Violations</h2>
