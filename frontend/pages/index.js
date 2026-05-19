@@ -4682,6 +4682,64 @@ export default function Dashboard() {
               .online-count {
                 font-size: 0.6rem !important;
               }
+              /* Pricing Container */
+              .pricing-container {
+                grid-template-columns: 1fr !important;
+                gap: 20px !important;
+                padding: 0 10px !important;
+              }
+              .premium-card {
+                padding: 25px 20px !important;
+                border-radius: 24px !important;
+              }
+              .premium-card .amount {
+                font-size: 2.2rem !important;
+              }
+              /* VIP Elite Banner */
+              .elite-hero-banner {
+                flex-direction: column !important;
+                padding: 20px !important;
+                gap: 20px !important;
+                border-radius: 24px !important;
+              }
+              .elite-features-grid {
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+              }
+              .elite-feature-item {
+                padding: 12px !important;
+                border-radius: 12px !important;
+              }
+              /* Coins Grid */
+              .coins-grid {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 12px !important;
+              }
+              .coin-square-card {
+                padding: 15px 10px !important;
+                border-radius: 16px !important;
+                aspect-ratio: auto !important;
+                height: auto !important;
+              }
+              .coin-card-icon {
+                font-size: 2rem !important;
+                margin-bottom: 0.5rem !important;
+              }
+              .coin-card-name {
+                font-size: 0.85rem !important;
+              }
+              .price-now {
+                font-size: 1.1rem !important;
+              }
+              .price-old {
+                font-size: 0.75rem !important;
+              }
+              .coin-mini-badge {
+                font-size: 0.55rem !important;
+                padding: 2px 6px !important;
+                top: 8px !important;
+                right: 8px !important;
+              }
             }
           }
         `}</style>

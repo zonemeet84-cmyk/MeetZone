@@ -1798,7 +1798,7 @@ export default function Home() {
 
             <button className="btn-home" onClick={() => router.push("/")}>
               <span className="icon">🏠</span>
-              <span className="text">Go Home</span>
+              <span className="text">Home</span>
             </button>
           </div>
         </div>
@@ -1817,7 +1817,7 @@ export default function Home() {
                 }}
               >
                 <span className="icon">⚙️</span>
-                <span className="text">Matchmaking Preferences</span>
+                <span className="text">Preferences</span>
                 <div className="active-filters-preview-badge">
                   {gender !== 'all' || country !== 'all' || age !== 'all' || stateProv !== 'All States' ? 'Active 🎯' : 'All 🌎'}
                 </div>
@@ -1825,7 +1825,7 @@ export default function Home() {
 
               {!user?.premium && (
                 <div className="paywall-badge-v2" onClick={() => setShowPricingModal(true)} style={{ margin: 0 }}>
-                  <span>✨ Unlock Filters</span>
+                  <span>✨ Unlock</span>
                 </div>
               )}
             </div>
@@ -5214,27 +5214,17 @@ export default function Home() {
             width: auto !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
           }
-          .video-grid-v2 > .video-card:nth-child(2) .ctrl-btn {
-            width: 26px !important;
-            height: 26px !important;
-            border-radius: 50% !important;
-            font-size: 11px !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            background: rgba(255, 255, 255, 0.15) !important;
-            border: none !important;
-            color: #fff !important;
-          }
-          /* Preferences Button Floating Row - Super Small! */
+             /* Preferences Button Floating Row - Super Small! */
           .filters-row-v2 {
             position: absolute !important;
             top: 90px !important;
             left: 12px !important;
+            right: 12px !important;
             transform: none !important;
             width: auto !important;
             z-index: 50 !important;
             display: flex !important;
+            flex-wrap: wrap !important;
             gap: 6px !important;
             background: transparent !important;
             padding: 0 !important;
@@ -5248,10 +5238,16 @@ export default function Home() {
             border-radius: 12px !important;
             padding: 4px 8px !important;
             font-size: 0.65rem !important;
-            font-weight: 700;
+            font-weight: 700 !important;
             height: 24px !important;
             display: flex !important;
             align-items: center !important;
+            width: auto !important;
+          }
+          .active-filters-preview-badge {
+            font-size: 0.55rem !important;
+            padding: 1px 4px !important;
+            margin-left: 4px !important;
           }
           .paywall-badge-v2 {
             background: rgba(245, 158, 11, 0.9) !important;
@@ -5263,6 +5259,75 @@ export default function Home() {
             height: 24px !important;
             display: flex !important;
             align-items: center !important;
+            width: auto !important;
+          }
+          /* Filter Modal Responsiveness */
+          .filter-modal-card {
+            width: 95% !important;
+            max-width: 330px !important;
+            padding: 15px !important;
+            border-radius: 20px !important;
+            gap: 10px !important;
+          }
+          .filter-modal-header h2 {
+            font-size: 1.1rem !important;
+          }
+          .filter-modal-header .close-btn {
+            font-size: 1.5rem !important;
+          }
+          .filter-modal-body {
+            gap: 12px !important;
+          }
+          .filter-section-group {
+            margin-bottom: 8px !important;
+          }
+          .section-label {
+            font-size: 0.7rem !important;
+            margin-bottom: 4px !important;
+          }
+          .gender-options-grid {
+            gap: 6px !important;
+          }
+          .gender-option-card {
+            padding: 8px !important;
+            border-radius: 10px !important;
+            flex: 1 !important;
+            width: auto !important;
+          }
+          .gender-option-card .emoji {
+            font-size: 1.1rem !important;
+          }
+          .gender-option-card .name {
+            font-size: 0.65rem !important;
+          }
+          .select-dropdown-trigger {
+            padding: 8px 12px !important;
+            border-radius: 10px !important;
+            height: auto !important;
+            width: 100% !important;
+          }
+          .select-dropdown-trigger .val-icon {
+            font-size: 0.9rem !important;
+          }
+          .select-dropdown-trigger .val-text {
+            font-size: 0.75rem !important;
+          }
+          .filter-dropdown-menu {
+            max-height: 150px !important;
+          }
+          .filter-dropdown-menu .dropdown-item {
+            padding: 6px 10px !important;
+            font-size: 0.75rem !important;
+          }
+          .filter-modal-footer {
+            padding-top: 8px !important;
+          }
+          .filter-modal-footer .apply-btn {
+            padding: 10px !important;
+            font-size: 0.85rem !important;
+            border-radius: 10px !important;
+            width: 100% !important;
+            height: auto !important;
           }
           /* Micro Floating Live Chat - Tucked completely into the bottom-left corner */
           .chat-column {

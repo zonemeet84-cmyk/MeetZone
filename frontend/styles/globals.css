@@ -1340,7 +1340,7 @@ img, video {
   }
   
   /* Buttons & Inputs */
-  button:not(.nav-link):not(.profile-modal-close):not(.ctrl-btn):not(.quiz-opt-btn):not(.quiz-add-friend-btn):not(.sticker-cat-btn):not(.gift-send-btn):not(.close-btn):not(.quiz-done-btn):not(.dare-done-btn) {
+  button:not(.nav-link):not(.profile-modal-close):not(.ctrl-btn):not(.quiz-opt-btn):not(.quiz-add-friend-btn):not(.sticker-cat-btn):not(.gift-send-btn):not(.close-btn):not(.quiz-done-btn):not(.dare-done-btn):not(.filter-settings-trigger-btn):not(.btn-home):not(.apply-btn):not(.next-btn):not(.stop-btn):not(.report-trigger-btn):not(.quiz-trigger-btn):not(.reason-btn):not(.tool-btn) {
     width: 100% !important;
     padding: 12px 20px !important;
     font-size: 16px !important;
