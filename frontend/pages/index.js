@@ -4075,55 +4075,80 @@ export default function Dashboard() {
             .streak-day-card {
               padding: 6px 2px 4px !important;
             }
-            /* Coin Usage Transparency - horizontal scroll */
+            /* Coin Usage Transparency - stacked grid */
             .stats-row {
-              display: flex !important;
-              overflow-x: auto !important;
-              scroll-snap-type: x mandatory !important;
-              -webkit-overflow-scrolling: touch !important;
+              display: grid !important;
+              grid-template-columns: 1fr !important;
               gap: 15px !important;
-              padding-bottom: 10px !important;
+              overflow-x: visible !important;
             }
             .stats-row > * {
-              min-width: 250px !important;
-              flex-shrink: 0 !important;
-              scroll-snap-align: start !important;
+              min-width: 100% !important;
+              width: 100% !important;
+              flex-shrink: 1 !important;
             }
-            .stats-row::-webkit-scrollbar {
-              height: 4px !important;
+            .transparency-card {
+              padding: 15px !important;
+              border-radius: 16px !important;
             }
-            .stats-row::-webkit-scrollbar-track {
-              background: rgba(255,255,255,0.05) !important;
-              border-radius: 10px !important;
+            .transparency-card h3 {
+              font-size: 1.2rem !important;
+              margin: 10px 0 !important;
             }
-            .stats-row::-webkit-scrollbar-thumb {
-              background: rgba(99,102,241,0.4) !important;
-              border-radius: 10px !important;
+            .transparency-card p {
+              font-size: 0.75rem !important;
+              line-height: 1.4 !important;
             }
-            /* Mystery Boxes - horizontal scroll */
+            .glass-card {
+              padding: 20px 15px !important;
+              border-radius: 20px !important;
+            }
+            .glass-card > div[style*="display: 'flex'"] {
+              flex-direction: column !important;
+              align-items: flex-start !important;
+              gap: 15px !important;
+              margin-bottom: 20px !important;
+            }
+            .glass-card h2 {
+              font-size: 1.4rem !important;
+            }
+            .glass-card p {
+              font-size: 0.8rem !important;
+            }
+            /* Mystery Boxes - clean stacked grid */
             .mystery-grid {
-              display: flex !important;
-              overflow-x: auto !important;
-              scroll-snap-type: x mandatory !important;
-              -webkit-overflow-scrolling: touch !important;
+              display: grid !important;
+              grid-template-columns: 1fr !important;
               gap: 20px !important;
-              padding-bottom: 10px !important;
+              overflow-x: visible !important;
             }
             .mystery-grid > * {
-              min-width: 260px !important;
-              flex-shrink: 0 !important;
-              scroll-snap-align: start !important;
+              min-width: 100% !important;
+              width: 100% !important;
+              flex-shrink: 1 !important;
             }
-            .mystery-grid::-webkit-scrollbar {
-              height: 4px !important;
+            .mystery-card {
+              padding: 25px 15px !important;
+              border-radius: 24px !important;
             }
-            .mystery-grid::-webkit-scrollbar-track {
-              background: rgba(255,255,255,0.05) !important;
-              border-radius: 10px !important;
+            .mystery-card h3 {
+              font-size: 1.3rem !important;
+              margin-bottom: 10px !important;
             }
-            .mystery-grid::-webkit-scrollbar-thumb {
-              background: rgba(251,191,36,0.4) !important;
-              border-radius: 10px !important;
+            .mystery-card div[style*="fontSize: '5rem'"] {
+              font-size: 3rem !important;
+              margin-bottom: 15px !important;
+            }
+            .mystery-card div[style*="fontSize: '1.1rem'"] {
+              font-size: 0.9rem !important;
+              padding: 8px 15px !important;
+              border-radius: 12px !important;
+            }
+            .box-rarity {
+              top: 15px !important;
+              right: 15px !important;
+              font-size: 0.6rem !important;
+              padding: 2px 8px !important;
             }
             .streak-day-label {
               font-size: 0.65rem !important;
