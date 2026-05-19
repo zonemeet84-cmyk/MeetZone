@@ -217,15 +217,15 @@ export default function Home() {
     // Funny
     { id: "Dog", name: "Dog Ears", icon: "🐶", cost: 50, category: "Funny" },
     { id: "Cat", name: "Cat Face", icon: "🐱", cost: 60, category: "Funny" },
-    { id: "Beard", name: "Beard", icon: "🧔", cost: 90, category: "Funny" },
+    { id: "Devil", name: "Devil Horns", icon: "😈", cost: 90, category: "Funny" },
     { id: "Glasses", name: "Thug Glasses", icon: "🕶️", cost: 80, category: "Funny" },
     // Premium
     { id: "Anime", name: "Anime", icon: "🎎", cost: 200, category: "Premium" },
     { id: "Neon", name: "Neon Mask", icon: "⚡", cost: 180, category: "Premium" },
+    { id: "Crown", name: "Gold Crown", icon: "👑", cost: 100, category: "Premium" },
     // Couple
-    { id: "Hearts", name: "Hearts", icon: "❤️", cost: 70, category: "Couple" },
-    { id: "Fire", name: "Fire", icon: "🔥", cost: 90, category: "Couple" },
-    { id: "Love", name: "Love Frame", icon: "🖼️", cost: 110, category: "Couple" }
+    { id: "Angel", name: "Angel Halo", icon: "😇", cost: 80, category: "Couple" },
+    { id: "Ghost", name: "Ghost Overlay", icon: "👻", cost: 80, category: "Couple" }
   ];
 
   useEffect(() => {
@@ -273,7 +273,7 @@ export default function Home() {
         try {
           const FaceMeshConstructor = window.FaceMesh.FaceMesh || window.FaceMesh;
           faceMesh = new FaceMeshConstructor({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559531/${file}`,
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/${file}`,
           });
 
           faceMesh.setOptions({
@@ -311,7 +311,14 @@ export default function Home() {
   useEffect(() => {
 
     onResultsRef.current = (results) => {
-      isFaceDetectedRef.current = results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0;
+      const isDetected = !!(results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0 && activeFilterRef.current !== "None");
+      isFaceDetectedRef.current = isDetected;
+
+      if (isDetected !== isTrackingFaceRef.current) {
+        isTrackingFaceRef.current = isDetected;
+        setIsTrackingFace(isDetected);
+      }
+
       const cvs = canvasRef.current;
       if (!cvs) return;
       const ctx = cvs.getContext("2d");
@@ -348,15 +355,15 @@ export default function Home() {
         switch (currentFilter) {
           case "Dog": drawDogFilter(ctx, landmarks, w, h, centerX, centerY, faceWidth, angle); break;
           case "Cat": drawCatFilter(ctx, landmarks, w, h, centerX, centerY, faceWidth, angle); break;
-          case "Beard": drawBeardFilter(ctx, landmarks, w, h); break;
+          case "Devil": drawDevilMask(ctx, landmarks, w, h, centerX, centerY, faceWidth, angle); break;
           case "Glasses": drawGlassesFilter(ctx, landmarks, w, h); break;
           case "Neon": drawNeonMask(ctx, landmarks, w, h, centerX, centerY, faceWidth); break;
-          case "Hearts": drawHeartsFilter(ctx, landmarks, w, h); break;
-          case "Fire": drawFireFilter(ctx, landmarks, w, h, centerX, centerY, faceWidth); break;
+          case "Crown": drawCrownMask(ctx, landmarks, w, h, centerX, centerY, faceWidth, angle); break;
+          case "Angel": drawAngelMask(ctx, landmarks, w, h, centerX, centerY, faceWidth, angle); break;
+          case "Ghost": drawGhostMask(ctx, landmarks, w, h, centerX, centerY, faceWidth, angle); break;
           case "Glow": applyGlowEffect(ctx, w, h); break;
           case "Whitening": applyWhiteningEffect(ctx, w, h); break;
           case "Smooth": applySmoothingEffect(ctx, w, h); break;
-          case "Love": drawLoveFrame(ctx, w, h); break;
           case "Anime": drawAnimeFilter(ctx, landmarks, w, h, centerX, centerY, faceWidth, angle); break;
           case "Beauty":
             ctx.filter = "brightness(1.1) contrast(1.1) blur(1px) saturate(1.2)";
@@ -387,30 +394,45 @@ export default function Home() {
   const drawCatFilter = (ctx, landmarks, w, h, centerX, centerY, faceWidth, angle) => {
     const forehead = landmarks[10];
 
-    if (catEarsImg.complete) {
-      drawImage(ctx, catEarsImg, centerX, forehead.y * h - faceWidth, faceWidth * 2, faceWidth * 1.5, angle);
+    if (catEarsImg && catEarsImg.complete) {
+      drawImage(ctx, catEarsImg, centerX, forehead.y * h - faceWidth * 0.7, faceWidth * 2, faceWidth * 1.5, angle);
     }
 
+    // Draw whiskers with translation and rotation!
+    ctx.save();
+    ctx.translate(centerX, centerY + faceWidth * 0.1);
+    ctx.rotate(angle);
     ctx.strokeStyle = "white";
     ctx.lineWidth = 3;
 
     for (let i = 0; i < 3; i++) {
+      // Left whiskers
       ctx.beginPath();
-      ctx.moveTo(centerX - 20, centerY + 10 + i * 10);
-      ctx.lineTo(centerX - 80, centerY + i * 10);
+      ctx.moveTo(-faceWidth * 0.15, i * 8);
+      ctx.lineTo(-faceWidth * 0.65, -8 + i * 8);
       ctx.stroke();
 
+      // Right whiskers
       ctx.beginPath();
-      ctx.moveTo(centerX + 20, centerY + 10 + i * 10);
-      ctx.lineTo(centerX + 80, centerY + i * 10);
+      ctx.moveTo(faceWidth * 0.15, i * 8);
+      ctx.lineTo(faceWidth * 0.65, -8 + i * 8);
       ctx.stroke();
     }
+    ctx.restore();
   };
 
-  const drawBeardFilter = (ctx, landmarks, w, h) => {
-    const chin = landmarks[152];
-    ctx.font = `${w * 0.25}px serif`;
-    ctx.fillText("🧔", chin.x * w - (w * 0.12), chin.y * h - (h * 0.1));
+  const drawDevilMask = (ctx, landmarks, w, h, centerX, centerY, faceWidth, angle) => {
+    const forehead = landmarks[10];
+    ctx.save();
+    ctx.translate(forehead.x * w, forehead.y * h - faceWidth * 0.4);
+    ctx.rotate(angle);
+    ctx.font = `${faceWidth * 1.2}px serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.shadowColor = "rgba(239, 68, 68, 0.9)";
+    ctx.shadowBlur = 15;
+    ctx.fillText("😈", 0, 0);
+    ctx.restore();
   };
 
   const drawNeonMask = (ctx, landmarks, w, h, centerX, centerY, faceWidth) => {
@@ -424,19 +446,46 @@ export default function Home() {
     ctx.stroke();
   };
 
-  const drawHeartsFilter = (ctx, landmarks, w, h) => {
-    const top = landmarks[10];
-    ctx.font = `${w * 0.1}px serif`;
-    ctx.fillText("❤️", top.x * w - 40, top.y * h - 40);
-    ctx.fillText("❤️", top.x * w + 20, top.y * h - 50);
+  const drawCrownMask = (ctx, landmarks, w, h, centerX, centerY, faceWidth, angle) => {
+    const forehead = landmarks[10];
+    ctx.save();
+    ctx.translate(forehead.x * w, forehead.y * h - faceWidth * 0.7);
+    ctx.rotate(angle);
+    ctx.font = `${faceWidth * 1.2}px serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.shadowColor = "rgba(255, 215, 0, 0.85)";
+    ctx.shadowBlur = 15;
+    ctx.fillText("👑", 0, 0);
+    ctx.restore();
   };
 
-  const drawFireFilter = (ctx, landmarks, w, h, centerX, centerY, faceWidth) => {
-    fireAura(ctx, centerX, centerY, faceWidth * 2);
+  const drawAngelMask = (ctx, landmarks, w, h, centerX, centerY, faceWidth, angle) => {
+    const forehead = landmarks[10];
+    ctx.save();
+    ctx.translate(forehead.x * w, forehead.y * h - faceWidth * 1.0);
+    ctx.rotate(angle);
+    ctx.font = `${faceWidth * 1.3}px serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.shadowColor = "rgba(6, 182, 212, 0.9)";
+    ctx.shadowBlur = 20;
+    ctx.fillText("😇", 0, 0);
+    ctx.restore();
+  };
 
-    ctx.filter = "brightness(1.3) contrast(1.3)";
-    ctx.drawImage(localVideo.current, 0, 0, w, h);
-    ctx.filter = "none";
+  const drawGhostMask = (ctx, landmarks, w, h, centerX, centerY, faceWidth, angle) => {
+    ctx.save();
+    ctx.globalAlpha = 0.55;
+    ctx.translate(centerX + faceWidth * 0.8, centerY - faceWidth * 1.2);
+    ctx.rotate(angle + 0.1);
+    ctx.font = `${faceWidth * 1.4}px serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.shadowColor = "rgba(168, 85, 247, 0.8)";
+    ctx.shadowBlur = 20;
+    ctx.fillText("👻", 0, 0);
+    ctx.restore();
   };
 
   const applyGlowEffect = (ctx, w, h) => {
@@ -465,15 +514,6 @@ export default function Home() {
       ctx.drawImage(localVideo.current, 0, 0, w, h);
       ctx.restore();
     }
-  };
-
-  const drawLoveFrame = (ctx, w, h) => {
-    ctx.strokeStyle = "rgba(255, 20, 147, 0.5)";
-    ctx.lineWidth = 20;
-    ctx.strokeRect(10, 10, w - 20, h - 20);
-    ctx.font = "30px serif";
-    ctx.fillText("💖", 30, 50);
-    ctx.fillText("💖", w - 60, h - 30);
   };
 
   const drawAnimeFilter = (ctx, landmarks, w, h, centerX, centerY, faceWidth, angle) => {
@@ -742,6 +782,8 @@ export default function Home() {
   const [activeMask, setActiveMask] = useState("None");
   const [activeAvatar, setActiveAvatar] = useState("None");
   const [isFaceBlurred, setIsFaceBlurred] = useState(false);
+  const [isTrackingFace, setIsTrackingFace] = useState(false);
+  const isTrackingFaceRef = useRef(false);
   const [activeIdentityMenu, setActiveIdentityMenu] = useState(null); // 'filters', 'avatars', 'voice', 'privacy'
   const [partnerIsBlurred, setPartnerIsBlurred] = useState(false);
   const [partnerAvatar, setPartnerAvatar] = useState("None");
@@ -822,17 +864,19 @@ export default function Home() {
     } else if (filterId === "Dog") {
       setActiveMask("Doggy");
     } else if (filterId === "Cat") {
+      setActiveMask("Cat");
+    } else if (filterId === "Devil") {
+      setActiveMask("Devil");
+    } else if (filterId === "Crown") {
       setActiveMask("Crown");
-    } else if (filterId === "Fire") {
-      setActiveMask("Fire");
-    } else if (filterId === "Hearts") {
-      setActiveMask("Stars");
+    } else if (filterId === "Angel") {
+      setActiveMask("Angel");
+    } else if (filterId === "Ghost") {
+      setActiveMask("Ghost");
     } else if (filterId === "Glasses") {
       setActiveMask("Glass");
     } else if (filterId === "Neon") {
-      setActiveMask("Stars");
-    } else if (filterId === "Love") {
-      setActiveMask("Stars");
+      setActiveMask("Neon");
     } else {
       setActiveMask("None");
     }
@@ -1846,7 +1890,7 @@ export default function Home() {
         <Head>
           <title>Live Video Chat | ZoneMeet</title>
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559531/face_mesh.js" crossorigin="anonymous"></script>
+          <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js" crossorigin="anonymous"></script>
           <script src="https://cdn.jsdelivr.net/npm/jeelizfacefilter/dist/jeelizFaceFilter.js" crossorigin="anonymous"></script>
         </Head>
 
@@ -2342,7 +2386,7 @@ export default function Home() {
                   </div>
                 )}
 
-                {activeMask !== "None" && activeAvatar === "None" && (
+                {!isTrackingFace && activeMask !== "None" && activeAvatar === "None" && (
                   <div className="video-mask-overlay">
                     <div className={`mask-${activeMask.toLowerCase()}`}></div>
                   </div>
@@ -4836,75 +4880,105 @@ export default function Home() {
         /* SNAP FILTERS STYLES */
         .mask-doggy::before { 
           content: '🐶'; 
-          font-size: 10rem; 
+          font-size: 8rem; 
           position: absolute; 
           top: 50%; 
           left: 50%;
           transform: translate(-50%, -50%);
-          filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+          filter: drop-shadow(0 0 15px rgba(0,0,0,0.5));
           animation: faceMove 4s infinite ease-in-out;
         }
-        .mask-crown::before { 
-          content: '🌸'; 
+        .mask-cat::before { 
+          content: '🐱'; 
           font-size: 8rem; 
           position: absolute; 
-          top: 15%; 
+          top: 50%; 
+          left: 50%;
+          transform: translate(-50%, -50%);
+          filter: drop-shadow(0 0 15px rgba(255,255,255,0.6));
+          animation: faceMove 4.5s infinite ease-in-out;
+        }
+        .mask-devil::before { 
+          content: '😈'; 
+          font-size: 8rem; 
+          position: absolute; 
+          top: 45%; 
+          left: 50%;
+          transform: translate(-50%, -50%);
+          filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.85));
+          animation: devilFloat 3s infinite ease-in-out;
+        }
+        .mask-crown::before { 
+          content: '👑'; 
+          font-size: 7rem; 
+          position: absolute; 
+          top: 18%; 
           left: 50%;
           transform: translateX(-50%);
           animation: crownFloat 3s infinite ease-in-out;
-          filter: drop-shadow(0 0 15px rgba(236, 72, 153, 0.6));
+          filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.9));
         }
-        .mask-fire {
-          width: 100%;
-          height: 100%;
-          background: radial-gradient(circle, transparent 40%, rgba(255, 69, 0, 0.2) 70%);
-          mix-blend-mode: color-dodge;
-        }
-        .mask-fire::before, .mask-fire::after { 
-          content: '🔥'; 
-          font-size: 6rem; 
+        .mask-angel::before { 
+          content: '😇'; 
+          font-size: 8rem; 
           position: absolute; 
+          top: 42%; 
+          left: 50%;
+          transform: translate(-50%, -50%);
+          filter: drop-shadow(0 0 20px rgba(6, 182, 212, 0.9));
+          animation: angelFloat 3.5s infinite ease-in-out;
+        }
+        .mask-ghost::before { 
+          content: '👻'; 
+          font-size: 8rem; 
+          position: absolute; 
+          top: 50%; 
+          left: 50%;
+          transform: translate(-50%, -50%);
+          opacity: 0.65;
+          filter: drop-shadow(0 0 25px rgba(168, 85, 247, 0.8));
+          animation: ghostFloat 4s infinite ease-in-out;
+        }
+        .mask-glass::before {
+          content: '👓';
+          position: absolute;
+          top: 45%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          font-size: 7rem;
+          filter: drop-shadow(0 0 12px #00f2ff);
+          animation: faceMove 5s infinite ease-in-out;
+        }
+        .mask-neon::before {
+          content: '⚡';
+          position: absolute;
           top: 40%;
-          animation: eyeBurn 0.5s infinite alternate;
-        }
-        .mask-fire::before { left: 25%; }
-        .mask-fire::after { right: 25%; }
-
-        .mask-stars {
-          width: 100%;
-          height: 100%;
-          background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
-        }
-        .mask-stars::before { 
-          content: '✨'; 
-          font-size: 4rem; 
-          position: absolute; 
-          top: 20%; left: 20%; 
-          animation: starPulse 2s infinite; 
-        }
-        .mask-stars::after { 
-          content: '✨'; 
-          font-size: 4rem; 
-          position: absolute; 
-          bottom: 20%; right: 20%; 
-          animation: starPulse 2s infinite 1s; 
+          left: 50%;
+          transform: translate(-50%, -50%);
+          font-size: 8rem;
+          filter: drop-shadow(0 0 25px #eab308);
+          animation: faceMove 3s infinite ease-in-out;
         }
 
         @keyframes faceMove {
           0%, 100% { transform: translate(-50%, -50%) scale(1); }
-          50% { transform: translate(-50%, -52%) scale(1.05); }
+          50% { transform: translate(-50%, -53%) scale(1.05); }
         }
         @keyframes crownFloat {
           0%, 100% { transform: translateX(-50%) translateY(0) rotate(-2deg); }
-          50% { transform: translateX(-50%) translateY(-15px) rotate(2deg); }
+          50% { transform: translateX(-50%) translateY(-12px) rotate(2deg); }
         }
-        @keyframes eyeBurn {
-          from { transform: scale(1); filter: blur(0px) drop-shadow(0 0 10px orange); }
-          to { transform: scale(1.2); filter: blur(2px) drop-shadow(0 0 20px red); }
+        @keyframes devilFloat {
+          0%, 100% { transform: translate(-50%, -50%) rotate(-3deg); }
+          50% { transform: translate(-50%, -55%) rotate(3deg); }
         }
-        @keyframes starPulse {
-          0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
-          50% { transform: scale(1.5) rotate(180deg); opacity: 0.5; }
+        @keyframes angelFloat {
+          0%, 100% { transform: translate(-50%, -47%) scale(0.98); }
+          50% { transform: translate(-50%, -53%) scale(1.02); }
+        }
+        @keyframes ghostFloat {
+          0%, 100% { transform: translate(-46%, -52%) rotate(-5deg); opacity: 0.5; }
+          50% { transform: translate(-54%, -48%) rotate(5deg); opacity: 0.75; }
         }
 
         .avatar-video-replacement {
