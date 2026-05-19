@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import io from "socket.io-client";
 import axios from "axios";
 import Head from "next/head";
@@ -133,6 +133,18 @@ export default function Home() {
   const [friendReqStatus, setFriendReqStatus] = useState(false);
   const [friendNotification, setFriendNotification] = useState(null);
   const [showPartnerPreview, setShowPartnerPreview] = useState(false);
+
+  // --- PREMIUM TOAST NOTIFICATION SYSTEM ---
+  const [toastQueue, setToastQueue] = useState([]);
+  const toastTimerRef = useRef(null);
+
+  const showToast = useCallback((message, type = 'info', duration = 4000) => {
+    const id = Date.now() + Math.random();
+    setToastQueue(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToastQueue(prev => prev.filter(t => t.id !== id));
+    }, duration);
+  }, []);
 
   const [partnerId, setPartnerId] = useState(null);
   const [partnerInfo, setPartnerInfo] = useState(null);
@@ -589,7 +601,7 @@ export default function Home() {
     const handleKeyDown = (e) => {
       if (e.key === 'PrintScreen' || (e.ctrlKey && e.key === 'p') || (e.ctrlKey && e.shiftKey && e.key === 'S')) {
         e.preventDefault();
-        alert("📸 Screenshots and Screen Recording are restricted for privacy safety.");
+        showToast("📸 Screenshots and Screen Recording are restricted for privacy safety.", "warning");
       }
     };
     const handleContextMenu = (e) => e.preventDefault();
@@ -630,7 +642,7 @@ export default function Home() {
 
   const openReport = () => {
     if (!partnerId) {
-      alert("No partner to report yet!");
+      showToast("No partner to report yet!", "warning");
       return;
     }
     setShowReportModal(true);
@@ -644,13 +656,13 @@ export default function Home() {
 
   const submitReport = async () => {
     if (!selectedReason) {
-      alert("Please select a reason for reporting.");
+      showToast("Please select a reason for reporting.", "warning");
       return;
     }
 
     const targetId = partnerInfo?.id || partnerId;
     if (!targetId) {
-      alert("Partner connection lost. Cannot submit report.");
+      showToast("Partner connection lost. Cannot submit report.", "error");
       return;
     }
 
@@ -685,7 +697,7 @@ export default function Home() {
       nextPartner();
     } catch (err) {
       console.error(err);
-      alert("Failed to submit report. Please try again.");
+      showToast("Failed to submit report. Please try again.", "error");
     } finally {
       setIsReporting(false);
     }
@@ -693,7 +705,7 @@ export default function Home() {
 
   const handleSendGift = async (sticker) => {
     if (!partnerId || !partnerInfo) {
-      alert("Connect with someone first!");
+      showToast("Connect with someone first!", "info");
       return;
     }
 
@@ -701,7 +713,7 @@ export default function Home() {
     const isFree = freeCount > 0;
 
     if (!isFree && user.coins < sticker.price && user.email !== "ds9376314@gmail.com") {
-      alert("Insufficient coins! Go to Home to buy more.");
+      showToast("Insufficient coins! Go to Home to buy more.", "warning");
       return;
     }
 
@@ -739,14 +751,14 @@ export default function Home() {
         setShowGiftPanel(false);
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to send gift.");
+      showToast(err.response?.data?.message || "Failed to send gift.", "error");
     }
   };
 
 
   const addFriend = async () => {
     if (!partnerInfo?.id) {
-      alert("Partner ID not found. Try again.");
+      showToast("Partner ID not found. Try again.", "error");
       return;
     }
 
@@ -767,7 +779,7 @@ export default function Home() {
       if (err.response?.data?.requiresPremium) {
         setShowPricingModal(true);
       } else {
-        alert(err.response?.data?.message || "Failed to send friend request.");
+        showToast(err.response?.data?.message || "Failed to send friend request.", "error");
       }
     }
   };
@@ -895,7 +907,7 @@ export default function Home() {
 
       if (isPremiumFilter && !user?.premium) {
         setShowPricingModal(true);
-        alert("This premium filter/beautify effect requires a Premium Subscription! Upgrade now to unlock HD quality, better masks, and AI beautify.");
+        showToast("This premium effect requires a Premium Subscription! Upgrade now to unlock HD quality, better masks, and AI beautify.", "warning", 5000);
         return;
       }
     }
@@ -1284,7 +1296,7 @@ export default function Home() {
       });
 
       socket.on("warning-alert", (msg) => {
-        alert(msg);
+        showToast(msg, "warning", 5000);
       });
 
       socket.on("nsfw-strike-alert", ({ strikes, maxStrikes, reason }) => {
@@ -1296,7 +1308,7 @@ export default function Home() {
       });
 
       socket.on("banned-alert", (msg) => {
-        alert(msg);
+        showToast(msg, "error", 6000);
         sessionStorage.removeItem("token");
         sessionStorage.removeItem("user");
         window.location.href = "/login";
@@ -1334,7 +1346,7 @@ export default function Home() {
       });
 
       socket.on("direct-call-rejected", () => {
-        alert("Call was declined.");
+        showToast("Call was declined.", "info");
       });
 
 
@@ -1601,7 +1613,7 @@ export default function Home() {
       socket.on("quiz-error", ({ message }) => {
         setQuizError(message);
         setQuizState("idle");
-        alert(message);
+        showToast(message, "error");
       });
 
       socket.on("coins-updated", (newCoins) => {
@@ -1766,7 +1778,7 @@ export default function Home() {
     const hasBadWord = badWords.some(word => message.toLowerCase().includes(word));
 
     if (hasBadWord) {
-      alert("⚠️ Warning: Your message contains restricted words. Please maintain a respectful environment.");
+      showToast("⚠️ Your message contains restricted words. Please maintain a respectful environment.", "warning", 5000);
       return;
     }
 
@@ -1817,7 +1829,7 @@ export default function Home() {
         sessionStorage.setItem("user", JSON.stringify(updatedUser));
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Not enough coins to send message!");
+      showToast(err.response?.data?.message || "Not enough coins to send message!", "warning");
       setMessages(prev => prev.filter(m => m.type !== 'coin-prompt'));
     }
   };
@@ -1861,7 +1873,7 @@ export default function Home() {
     }
 
     if (user.coins < filter.cost) {
-      alert("Not enough coins to unlock this filter!");
+      showToast("Not enough coins to unlock this filter!", "warning");
       return;
     }
 
@@ -1882,10 +1894,10 @@ export default function Home() {
           const updatedUser = { ...user, coins: res.data.coins, unlockedFilters: updatedFilters };
           setUser(updatedUser);
           sessionStorage.setItem("user", JSON.stringify(updatedUser));
-          alert(`${filter.name} unlocked!`);
+          showToast(`${filter.name} unlocked!`, "success");
         }
       } catch (err) {
-        alert("Failed to purchase filter.");
+        showToast("Failed to purchase filter.", "error");
       }
     }
   };
@@ -2069,7 +2081,7 @@ export default function Home() {
     } catch (err) {
       console.error(err);
       setPaymentStep("methods");
-      alert("⚠️ Payment Error: Payment gateway is not connected. Please contact support or try again later.");
+      showToast("⚠️ Payment Error: Payment gateway is not connected. Please contact support or try again later.", "error", 6000);
     }
   };
 
@@ -2348,7 +2360,7 @@ export default function Home() {
                         const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
                         const isElite = (currentUser?.premium && (currentUser?.planName?.toLowerCase().includes("elite") || currentUser?.planName?.toLowerCase().includes("vip"))) || isOwner;
                         if (!isElite) { setShowPricingModal(true); return; }
-                        if (tempCountry === "all") { alert("Please select a country first"); return; }
+                        if (tempCountry === "all") { showToast("Please select a country first", "info"); return; }
                         const nextState = !showStateDrop;
                         setShowStateDrop(nextState);
                         if (nextState) {
@@ -3324,7 +3336,7 @@ export default function Home() {
                       </>
                     ) : (
                       <>
-                        <button className="pay-method-item paypal" onClick={() => alert("PayPal integration coming soon!")}>
+                        <button className="pay-method-item paypal" onClick={() => showToast("PayPal integration coming soon!", "info")}>
                           <div className="pay-icon-box">🅿️</div>
                           <div className="pay-details">
                             <strong>PayPal</strong>
@@ -3417,10 +3429,10 @@ export default function Home() {
                             if (res.data.success) {
                               setUser({ ...user, coins: res.data.coins });
                               await axios.post('https://meetzone-backend.onrender.com/api/friends/request', { targetId: s.id, type: 'reconnect' }, { headers: { Authorization: `Bearer ${token}` } });
-                              alert(`Request sent to ${s.name}!`);
+                              showToast(`Request sent to ${s.name}!`, "success");
                             }
                           } catch (err) {
-                            alert(err.response?.data?.message || 'Failed to reconnect');
+                            showToast(err.response?.data?.message || 'Failed to reconnect', "error");
                           }
                         }
                       }}
@@ -3581,6 +3593,25 @@ export default function Home() {
               View
             </button>
           )}
+        </div>
+      )}
+
+      {/* PREMIUM TOAST NOTIFICATION STACK */}
+      {toastQueue.length > 0 && (
+        <div className="toast-stack-container">
+          {toastQueue.map((toast, idx) => (
+            <div key={toast.id} className={`premium-toast toast-${toast.type}`} style={{ animationDelay: `${idx * 0.05}s` }}>
+              <div className="toast-icon-wrapper">
+                {toast.type === 'success' && <span className="toast-icon">✅</span>}
+                {toast.type === 'error' && <span className="toast-icon">❌</span>}
+                {toast.type === 'warning' && <span className="toast-icon">⚠️</span>}
+                {toast.type === 'info' && <span className="toast-icon">ℹ️</span>}
+              </div>
+              <span className="toast-message">{toast.message}</span>
+              <button className="toast-close" onClick={() => setToastQueue(prev => prev.filter(t => t.id !== toast.id))}>×</button>
+              <div className="toast-progress-bar" style={{ animationDuration: '4s' }}></div>
+            </div>
+          ))}
         </div>
       )}
 
@@ -4819,6 +4850,151 @@ export default function Home() {
 
         .report-success-toast.show {
           bottom: 40px;
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /*           PREMIUM TOAST NOTIFICATION SYSTEM          */
+        /* ═══════════════════════════════════════════════════ */
+        .toast-stack-container {
+          position: fixed;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 999999;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          pointer-events: none;
+          max-width: 480px;
+          width: 92vw;
+        }
+
+        .premium-toast {
+          pointer-events: all;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px 18px;
+          border-radius: 16px;
+          backdrop-filter: blur(20px) saturate(1.8);
+          -webkit-backdrop-filter: blur(20px) saturate(1.8);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.06) inset;
+          animation: toastSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          position: relative;
+          overflow: hidden;
+          font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+
+        @keyframes toastSlideIn {
+          0% { opacity: 0; transform: translateY(-20px) scale(0.95); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Type-specific premium themes */
+        .toast-info {
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(129, 140, 248, 0.15));
+          border: 1px solid rgba(99, 102, 241, 0.35);
+        }
+        .toast-success {
+          background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(52, 211, 153, 0.15));
+          border: 1px solid rgba(16, 185, 129, 0.35);
+        }
+        .toast-warning {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(251, 191, 36, 0.15));
+          border: 1px solid rgba(245, 158, 11, 0.35);
+        }
+        .toast-error {
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.22), rgba(248, 113, 113, 0.15));
+          border: 1px solid rgba(239, 68, 68, 0.35);
+        }
+
+        .toast-icon-wrapper {
+          flex-shrink: 0;
+          width: 32px;
+          height: 32px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1rem;
+        }
+        .toast-info .toast-icon-wrapper { background: rgba(99, 102, 241, 0.2); }
+        .toast-success .toast-icon-wrapper { background: rgba(16, 185, 129, 0.2); }
+        .toast-warning .toast-icon-wrapper { background: rgba(245, 158, 11, 0.2); }
+        .toast-error .toast-icon-wrapper { background: rgba(239, 68, 68, 0.2); }
+
+        .toast-icon {
+          font-size: 0.95rem;
+          line-height: 1;
+        }
+
+        .toast-message {
+          flex: 1;
+          font-size: 0.82rem;
+          font-weight: 600;
+          color: #f1f5f9;
+          line-height: 1.4;
+          letter-spacing: 0.01em;
+        }
+
+        .toast-close {
+          flex-shrink: 0;
+          background: rgba(255,255,255,0.08);
+          border: 1px solid rgba(255,255,255,0.1);
+          color: #94a3b8;
+          width: 26px;
+          height: 26px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 1rem;
+          font-weight: 700;
+          transition: all 0.2s ease;
+          line-height: 1;
+        }
+        .toast-close:hover {
+          background: rgba(255,255,255,0.15);
+          color: #f1f5f9;
+          transform: scale(1.1);
+        }
+
+        .toast-progress-bar {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          height: 3px;
+          border-radius: 0 0 16px 16px;
+          animation: toastProgress linear forwards;
+        }
+        .toast-info .toast-progress-bar { background: linear-gradient(90deg, #6366f1, #818cf8); }
+        .toast-success .toast-progress-bar { background: linear-gradient(90deg, #10b981, #34d399); }
+        .toast-warning .toast-progress-bar { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .toast-error .toast-progress-bar { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+        @keyframes toastProgress {
+          0% { width: 100%; }
+          100% { width: 0%; }
+        }
+
+        @media (max-width: 600px) {
+          .toast-stack-container {
+            top: 10px;
+            width: 96vw;
+          }
+          .premium-toast {
+            padding: 12px 14px;
+            gap: 10px;
+            border-radius: 14px;
+          }
+          .toast-message {
+            font-size: 0.75rem;
+          }
+          .toast-icon-wrapper {
+            width: 28px;
+            height: 28px;
+          }
         }
 
         /* MOBILE RESPONSIVENESS FOR CHAT */
