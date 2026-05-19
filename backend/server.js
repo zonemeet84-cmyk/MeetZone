@@ -1,6 +1,12 @@
+require("dotenv").config();
+
 const express = require("express");
 const { MongoClient } = require('mongodb');
-const MONGO_URI = "mongodb+srv://zonemeet84:kawal%401234@cluster0.rk9oqyx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const MONGO_URI = process.env.MONGO_URI;
+if (!MONGO_URI) {
+  console.error("CRITICAL ERROR: MONGO_URI environment variable is not defined!");
+  process.exit(1);
+}
 const mongoClient = new MongoClient(MONGO_URI);
 let db;
 const http = require("http");
@@ -12,7 +18,7 @@ const fs = require("fs");
 const path = require("path");
 const admin = require("firebase-admin");
 const { Resend } = require('resend');
-const resend = new Resend('re_SmeAqtpz_LWt3ejNZ3ZqSVBG8coVvJCFd');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const app = express();
 app.use(cors({ origin: true, credentials: true }));
@@ -326,7 +332,7 @@ const authenticateToken = (req, res, next) => {
   }
 };
 
-const RECAPTCHA_SECRET = "6LcgIfEsAAAAAErdOQFpHTLEAYfqUZsW1tF85uEG";
+const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
 
 async function verifyCaptcha(token) {
   if (!token) return false;
