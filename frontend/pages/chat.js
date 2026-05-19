@@ -2108,7 +2108,7 @@ export default function Home() {
               </div>
             )}
 
-            <div className={`video-grid-v2 ${quizState === 'active' ? 'quiz-pip-mode' : ''}`}>
+            <div className={`video-grid-v2 ${quizState !== 'idle' ? 'quiz-pip-mode' : ''}`}>
               <div className={`video-card ${isFaceBlurred ? 'blurred-face' : ''}`}>
                 <video
                   ref={localVideo}
