@@ -245,7 +245,7 @@ export default function Dashboard() {
           hi: "Leaderboard (Hall of Fame) mein har mahine top spenders ko prizes milte hain! 🏆 Rank #1 ko 1000 Coins, #2 ko 500, aur #3 ko 200 Coins milte hain mahina khatam hone par. Rankings har mahine reset hoti hain!"
         },
         video: {
-          keywords: ['video', 'chat', 'start', 'call', 'match', 'stranger', 'random', 'camera', 'mic'],
+          keywords: ['video', 'chat', 'start', 'call', 'match', 'peer', 'secure', 'camera', 'mic'],
           en: "Click 'Start Video Chat' to match instantly! Use 'Next' to skip, 'Stop' to end the search, or 'Add Friend' to stay in touch for free later.",
           hi: "Video chat shuru karne ke liye 'Start Video Chat' dabayein. 'Next' se partner badlein, 'Stop' se matching rokein, aur 'Add Friend' se unhe hamesha ke liye dost banayein!"
         },
@@ -275,7 +275,7 @@ export default function Dashboard() {
           hi: "Matching ke waqt aap **🛑 Stop** button use kar sakte hain agar aap thoda break lena chahte hain."
         },
         history: {
-          keywords: ['history', 'recent', 'recentstrangers', 'missed', 'reconnect'],
+          keywords: ['history', 'recent', 'connections', 'missed', 'reconnect'],
           en: "Missed someone? Check your **Recent Connections** icon. You can request to Reconnect for only 10 coins!",
           hi: "Agar koi miss ho jaye, toh 'Recent Connections' mein jaake 10 coins mein firse connect kar sakte hain!"
         }
@@ -1466,35 +1466,35 @@ export default function Dashboard() {
             <div className="support-tag">🛡️ ZERO TOLERANCE PLATFORM</div>
             <h2>Your Safety is our <br /><span>Top Priority.</span></h2>
             <p>
-              Experience a premium, secure global communication network. Our <strong>AI Guardian</strong> technology works 24/7 to monitor streams, protect user privacy, and maintain high professional standards. Need help? Our human support team is just a click away.
+              ZoneMeet uses AI moderation and manual review systems to prevent nudity, abuse, harassment, and unsafe behavior. Our advanced NSFW detection models scan streams in real time to ensure a fully moderated, secure live interaction experience.
             </p>
             <div className="support-features" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
               <div className="s-feat">
-                <span className="s-icon">💬</span>
+                <span className="s-icon">🤖</span>
                 <div>
-                  <h4>24/7 AI Chatbot</h4>
-                  <p>Instant answers in any language.</p>
+                  <h4>AI Moderation</h4>
+                  <p>AI scans inappropriate content in real time.</p>
                 </div>
               </div>
               <div className="s-feat">
-                <span className="s-icon">🛡️</span>
+                <span className="s-icon">🚨</span>
                 <div>
-                  <h4>AI Monitoring</h4>
-                  <p>Real-time stream safety scanning.</p>
-                </div>
-              </div>
-              <div className="s-feat">
-                <span className="s-icon">🔒</span>
-                <div>
-                  <h4>P2P Encryption</h4>
-                  <p>Secured end-to-end video tunnels.</p>
+                  <h4>Report Users</h4>
+                  <p>Report violators instantly with 1-click flagging.</p>
                 </div>
               </div>
               <div className="s-feat">
                 <span className="s-icon">⚡</span>
                 <div>
-                  <h4>Instant Ban</h4>
-                  <p>Violators removed in under 60s.</p>
+                  <h4>Instant Ban System</h4>
+                  <p>Unsafe users are automatically suspended instantly.</p>
+                </div>
+              </div>
+              <div className="s-feat">
+                <span className="s-icon">👥</span>
+                <div>
+                  <h4>Human Moderators</h4>
+                  <p>24/7 manual review team verifying reports.</p>
                 </div>
               </div>
             </div>
@@ -1945,7 +1945,7 @@ export default function Dashboard() {
               </div>
               <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <small style={{ color: '#94a3b8', fontSize: '0.6rem', fontWeight: '800', textTransform: 'uppercase' }}>Stranger Messaging</small>
+                  <small style={{ color: '#94a3b8', fontSize: '0.6rem', fontWeight: '800', textTransform: 'uppercase' }}>Peer Messaging</small>
                   <span>💬</span>
                 </div>
                 <h4 style={{ fontSize: '1.1rem', margin: '8px 0' }}>5 Coins</h4>
