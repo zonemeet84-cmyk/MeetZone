@@ -1236,7 +1236,7 @@ export default function Home() {
         setQuizFinalResult(result);
         
         // Sync local coins balance
-        const myUserId = user?.id || (sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")).id : "");
+        const myUserId = user?.id || (typeof window !== "undefined" && sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")).id : "");
         const isDraw = result.draw;
         const isWinner = result.winnerId === myUserId;
         
@@ -1264,7 +1264,7 @@ export default function Home() {
         setQuizState("finished");
         setQuizFinalResult({
           draw: false,
-          winnerId: (user?.id || (sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")).id : "")),
+          winnerId: (user?.id || (typeof window !== "undefined" && sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")).id : "")),
           forfeit: true,
           message: "Opponent disconnected! You win 100 coins by forfeit!"
         });
@@ -2524,7 +2524,7 @@ export default function Home() {
                     ) : (
                       <>
                         {/* NON-DRAW FLOW */}
-                        {quizFinalResult.winnerId === (user?.id || (sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")).id : "")) ? (
+                        {quizFinalResult.winnerId === (user?.id || (typeof window !== "undefined" && sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")).id : "")) ? (
                           /* WINNER SCREEN */
                           <>
                             <h2 className="victory-text">VICTORY! 🎉</h2>
