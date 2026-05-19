@@ -177,6 +177,7 @@ export default function Home() {
   const [quizTimeoutState, setQuizTimeoutState] = useState(null);
   const [quizForfeitState, setQuizForfeitState] = useState(false);
   const [quizLockedOut, setQuizLockedOut] = useState(false);
+  const [dareChoiceStep, setDareChoiceStep] = useState("none"); // 'none', 'loser-deciding', 'winner-deciding', 'waiting-loser', 'waiting-winner'
 
   // MediaPipe Filters
   const [activeMediaPipeFilter, setActiveMediaPipeFilter] = useState("None");
@@ -1224,29 +1225,31 @@ export default function Home() {
         setQuizResult({ text: `⏰ Time's up! Correct answer: ${correctAnswer}`, type: "timeout" });
       });
 
-      socket.on("quiz-category-stats", (stats) => {
-        setQuizCategoryStats(stats);
-      });
-
       socket.on("quiz-finished", (result) => {
         setQuizState("finished");
         setQuizFinalResult(result);
         
         // Sync local coins balance
+        const myUserId = user?.id || (sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")).id : "");
         const isDraw = result.draw;
-        const isWinner = result.winnerId === (user?.id || (sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")).id : ""));
+        const isWinner = result.winnerId === myUserId;
+        
         if (isDraw) {
+          setDareChoiceStep("none");
           setUser(prev => {
             const updated = { ...prev, coins: (prev.coins || 0) + 50 };
             sessionStorage.setItem("user", JSON.stringify(updated));
             return updated;
           });
         } else if (isWinner) {
+          setDareChoiceStep("waiting-loser");
           setUser(prev => {
             const updated = { ...prev, coins: (prev.coins || 0) + 100 };
             sessionStorage.setItem("user", JSON.stringify(updated));
             return updated;
           });
+        } else {
+          setDareChoiceStep("loser-deciding");
         }
       });
 
@@ -1280,6 +1283,23 @@ export default function Home() {
           sessionStorage.setItem("user", JSON.stringify(updated));
           return updated;
         });
+      });
+
+      socket.on("quiz-dare-accepted-by-opponent", () => {
+        setDareChoiceStep("winner-deciding");
+      });
+
+      socket.on("quiz-stay-connected-success", () => {
+        setQuizState("idle");
+        setQuizFinalResult(null);
+        setDareChoiceStep("none");
+      });
+
+      socket.on("quiz-connection-closed", () => {
+        setQuizState("idle");
+        setQuizFinalResult(null);
+        setDareChoiceStep("none");
+        nextPartner();
       });
     };
 
@@ -2297,6 +2317,30 @@ export default function Home() {
                         <div className="clash-player-avatar">{quizPartnerInfo?.name?.charAt(0) || "O"}</div>
                         <h3>{quizPartnerInfo?.name || "Opponent"}</h3>
                         <span>💰 {quizPartnerInfo?.coins || 0} Coins</span>
+                        {partnerId && (
+                          <button 
+                            className={`quiz-add-friend-btn ${friendReqStatus ? 'active' : ''}`} 
+                            onClick={addFriend} 
+                            disabled={friendReqStatus}
+                            style={{
+                              marginTop: '8px',
+                              padding: '5px 12px',
+                              borderRadius: '15px',
+                              background: friendReqStatus ? '#22c55e' : '#6366f1',
+                              color: 'white',
+                              border: 'none',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              boxShadow: '0 2px 8px rgba(99, 102, 241, 0.3)'
+                            }}
+                          >
+                            {friendReqStatus ? "✅ Requested" : "👤+ Add Friend"}
+                          </button>
+                        )}
                       </div>
                     </div>
                     <div className="countdown-number-wrapper">
@@ -2376,61 +2420,148 @@ export default function Home() {
                 )}
 
                 {quizState === "finished" && quizFinalResult && (
-                  <div className="quiz-finished-view">
+                  <div className="quiz-finished-view" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
                     <span className="finished-trophy">🏆</span>
+
+                    {/* FRIEND REQUEST OPTION WHILE IN QUESTIONS ROOM (FINISHED SCREEN) */}
+                    {partnerId && (
+                      <button 
+                        className={`quiz-add-friend-btn ${friendReqStatus ? 'active' : ''}`} 
+                        onClick={addFriend} 
+                        disabled={friendReqStatus}
+                        style={{
+                          marginBottom: '10px',
+                          padding: '8px 16px',
+                          borderRadius: '20px',
+                          background: friendReqStatus ? '#22c55e' : 'linear-gradient(135deg, #6366f1, #a855f7)',
+                          color: 'white',
+                          border: 'none',
+                          fontSize: '0.85rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 15px rgba(99, 102, 241, 0.4)',
+                          transition: 'all 0.2s ease-in-out'
+                        }}
+                      >
+                        {friendReqStatus ? "✅ Friend Request Sent" : "👤 Add Opponent as Friend"}
+                      </button>
+                    )}
+
                     {quizFinalResult.draw ? (
                       <>
                         <h2>It's a DRAW! 🤝</h2>
                         <p>A legendary clash of minds! You scored {quizFinalResult.totalScores[socket?.id] || 0} points.</p>
                         <div className="prize-credited refund">💰 50 Coins Refunded</div>
-                      </>
-                    ) : quizFinalResult.winnerId === (user?.id || (sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")).id : "")) ? (
-                      <>
-                        <h2 className="victory-text">VICTORY! 🎉</h2>
-                        <p>You absolutely dominated the brain duel!</p>
-                        <div className="final-stats">
-                          <span>Your Score: {quizFinalResult.totalScores[socket?.id] || 0} pts</span>
-                          <span>Opponent: {quizFinalResult.totalScores[Object.keys(quizFinalResult.totalScores).find(id => id !== socket?.id)] || 0} pts</span>
-                        </div>
-                        <div className="prize-credited">💰 +100 Coins Credited!</div>
+                        <button className="quiz-done-btn" onClick={() => {
+                          setQuizState("idle");
+                          setQuizFinalResult(null);
+                          setDareChoiceStep("none");
+                          nextPartner();
+                        }}>
+                          Finish Battle
+                        </button>
                       </>
                     ) : (
                       <>
-                        <h2 className="defeat-text">DEFEAT 💀</h2>
-                        <p>Opponent outsmarted you this time!</p>
-                        <div className="final-stats">
-                          <span>Your Score: {quizFinalResult.totalScores[socket?.id] || 0} pts</span>
-                          <span>Opponent: {quizFinalResult.totalScores[Object.keys(quizFinalResult.totalScores).find(id => id !== socket?.id)] || 0} pts</span>
-                        </div>
-                        
-                        {quizFinalResult.dare && (
-                          <div className="dare-box">
-                            <h3>⚠️ AI Dare for the Loser! ⚠️</h3>
-                            <p className="dare-desc">You lost! You MUST perform this dare live on camera:</p>
-                            <div className="dare-text">"{quizFinalResult.dare}"</div>
-                            <button className="dare-done-btn" onClick={() => {
-                              socket?.emit("quiz-finished-dare-done");
-                              setQuizState("idle");
-                              setQuizFinalResult(null);
-                              setPartnerId(null);
-                              setPartnerInfo(null);
-                            }}>
-                              I performed the Dare! 👍
-                            </button>
-                          </div>
+                        {/* NON-DRAW FLOW */}
+                        {quizFinalResult.winnerId === (user?.id || (sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")).id : "")) ? (
+                          /* WINNER SCREEN */
+                          <>
+                            <h2 className="victory-text">VICTORY! 🎉</h2>
+                            <p>You absolutely dominated the brain duel!</p>
+                            <div className="final-stats">
+                              <span>Your Score: {quizFinalResult.totalScores[socket?.id] || 0} pts</span>
+                              <span>Opponent: {quizFinalResult.totalScores[Object.keys(quizFinalResult.totalScores).find(id => id !== socket?.id)] || 0} pts</span>
+                            </div>
+                            <div className="prize-credited" style={{ marginBottom: '15px' }}>💰 +100 Coins Credited!</div>
+
+                            {dareChoiceStep === "waiting-loser" && (
+                              <div className="dare-box" style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '15px', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.2)', textAlign: 'center', width: '100%' }}>
+                                <h3 style={{ color: '#fbbf24' }}>⏳ Opponent got a Dare!</h3>
+                                <p style={{ fontSize: '0.9rem', opacity: 0.8 }}>Waiting for opponent to accept or decline the dare...</p>
+                                <div className="pulse-loader" style={{ width: '10px', height: '10px', background: '#fbbf24', borderRadius: '50%', margin: '15px auto', animation: 'ping 1s cubic-bezier(0, 0, 0.2, 1) infinite' }}></div>
+                              </div>
+                            )}
+
+                            {dareChoiceStep === "winner-deciding" && (
+                              <div className="dare-box" style={{ background: 'rgba(34, 197, 94, 0.1)', padding: '20px', borderRadius: '12px', border: '1px solid #22c55e', textAlign: 'center', width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <h3 style={{ color: '#22c55e' }}>✨ Opponent Accepted the Dare! ✨</h3>
+                                <p style={{ fontSize: '0.9rem' }}>Opponent accepted the dare! Do you want to stay connected and chat?</p>
+                                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '5px' }}>
+                                  <button 
+                                    className="dare-done-btn" 
+                                    onClick={() => socket?.emit("quiz-winner-decision", { stay: true })}
+                                    style={{ background: '#22c55e', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}
+                                  >
+                                    Yes, stay connected 🤝
+                                  </button>
+                                  <button 
+                                    className="quiz-cancel-btn" 
+                                    onClick={() => {
+                                      socket?.emit("quiz-winner-decision", { stay: false });
+                                      nextPartner();
+                                    }}
+                                    style={{ background: '#ef4444', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}
+                                  >
+                                    No, disconnect ❌
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          /* LOSER SCREEN */
+                          <>
+                            <h2 className="defeat-text">DEFEAT 💀</h2>
+                            <p>Opponent outsmarted you this time!</p>
+                            <div className="final-stats">
+                              <span>Your Score: {quizFinalResult.totalScores[socket?.id] || 0} pts</span>
+                              <span>Opponent: {quizFinalResult.totalScores[Object.keys(quizFinalResult.totalScores).find(id => id !== socket?.id)] || 0} pts</span>
+                            </div>
+
+                            {dareChoiceStep === "loser-deciding" && quizFinalResult.dare && (
+                              <div className="dare-box" style={{ width: '100%' }}>
+                                <h3>⚠️ AI Dare for the Loser! ⚠️</h3>
+                                <p className="dare-desc">You lost! You MUST perform this dare live on camera:</p>
+                                <div className="dare-text" style={{ fontSize: '1.1rem', margin: '15px 0', padding: '12px', background: 'rgba(239, 68, 68, 0.15)', borderRadius: '8px', borderLeft: '4px solid #ef4444', fontWeight: 600 }}>
+                                  "{quizFinalResult.dare}"
+                                </div>
+                                <p style={{ fontSize: '0.9rem', marginBottom: '12px', fontWeight: 600 }}>Will you perform this dare?</p>
+                                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                                  <button 
+                                    className="dare-done-btn" 
+                                    onClick={() => {
+                                      socket?.emit("quiz-dare-response", { accepted: true });
+                                      setDareChoiceStep("waiting-winner");
+                                    }}
+                                    style={{ background: '#22c55e', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}
+                                  >
+                                    Yes, I will do it! 👍
+                                  </button>
+                                  <button 
+                                    className="quiz-cancel-btn" 
+                                    onClick={() => {
+                                      socket?.emit("quiz-dare-response", { accepted: false });
+                                      nextPartner();
+                                    }}
+                                    style={{ background: '#ef4444', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}
+                                  >
+                                    No, decline & leave ❌
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+
+                            {dareChoiceStep === "waiting-winner" && (
+                              <div className="dare-box" style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '15px', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.2)', textAlign: 'center', width: '100%' }}>
+                                <h3 style={{ color: '#fbbf24' }}>⏳ Waiting for Winner...</h3>
+                                <p style={{ fontSize: '0.9rem', opacity: 0.8 }}>You accepted the dare! Waiting for the opponent (winner) to decide if they want to stay connected...</p>
+                                <div className="pulse-loader" style={{ width: '10px', height: '10px', background: '#fbbf24', borderRadius: '50%', margin: '15px auto', animation: 'ping 1s cubic-bezier(0, 0, 0.2, 1) infinite' }}></div>
+                              </div>
+                            )}
+                          </>
                         )}
                       </>
-                    )}
-
-                    {(!quizFinalResult.dare || quizFinalResult.draw || quizFinalResult.winnerId === (user?.id || (sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")).id : ""))) && (
-                      <button className="quiz-done-btn" onClick={() => {
-                        setQuizState("idle");
-                        setQuizFinalResult(null);
-                        setPartnerId(null);
-                        setPartnerInfo(null);
-                      }}>
-                        Finish Battle
-                      </button>
                     )}
                   </div>
                 )}

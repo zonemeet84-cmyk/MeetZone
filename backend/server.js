@@ -1982,13 +1982,7 @@ function endQuiz(roomId) {
         });
       }
 
-      // Clean up roomId on sockets
-      s1.roomId = null;
-      s2.roomId = null;
-      s1.partner = null;
-      s2.partner = null;
-
-      // Clean up
+      // Clean up quiz room state but keep socket.partner and roomId active so they can interact on the dare screen!
       delete quizRooms[roomId];
     }
 
@@ -2477,6 +2471,39 @@ function endQuiz(roomId) {
 
       socket.on("quiz-finished-dare-done", () => {
         socket.emit("quiz-dare-confirmed");
+      });
+
+      socket.on("quiz-dare-response", ({ accepted }) => {
+        const partner = socket.partner;
+        if (accepted) {
+          if (partner) partner.emit("quiz-dare-accepted-by-opponent");
+        } else {
+          socket.emit("quiz-connection-closed");
+          if (partner) {
+            partner.emit("quiz-connection-closed");
+            partner.partner = null;
+            partner.roomId = null;
+          }
+          socket.partner = null;
+          socket.roomId = null;
+        }
+      });
+
+      socket.on("quiz-winner-decision", ({ stay }) => {
+        const partner = socket.partner;
+        if (stay) {
+          socket.emit("quiz-stay-connected-success");
+          if (partner) partner.emit("quiz-stay-connected-success");
+        } else {
+          socket.emit("quiz-connection-closed");
+          if (partner) {
+            partner.emit("quiz-connection-closed");
+            partner.partner = null;
+            partner.roomId = null;
+          }
+          socket.partner = null;
+          socket.roomId = null;
+        }
       });
     });
 
