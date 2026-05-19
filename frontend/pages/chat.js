@@ -618,37 +618,9 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    /*
-    if (!localVideo.current || !socket) return;
 
-    const interval = setInterval(async () => {
-      if (!nsfwModel.current) return;
-      try {
-        const predictions = await nsfwModel.current.classify(localVideo.current);
-        const nsfwClasses = ["Porn", "Hentai", "Sexy"];
-        const violation = predictions.find(p => nsfwClasses.includes(p.className) && p.probability > 0.75);
 
-        if (violation) {
-          console.log("NSFW CONTENT DETECTED!", violation);
-          socket.emit("nsfw-detected");
-        }
-      } catch (err) {
-      }
-    }, 3000);
 
-    return () => clearInterval(interval);
-    */
-  }, [socket]);
-
-  useEffect(() => {
-    if (!socket) return;
-    socket.on("banned-alert", (msg) => {
-      alert(msg);
-      router.push("/");
-    });
-    return () => socket.off("banned-alert");
-  }, [socket]);
 
   // SCREENSHOT PREVENTION & RIGHT CLICK BLOCK
   useEffect(() => {
