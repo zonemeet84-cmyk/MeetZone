@@ -242,10 +242,12 @@ export default function Home() {
     loadModel();
   }, []);
 
-    // ROBUST MANUAL FACE TRACKING
+    // ROBUST MANUAL FACE TRACKING WITH HYBRID DUAL-ENGINE
     useEffect(() => {
       let faceMesh = null;
       let animationFrameId = null;
+      let jeelizActive = false;
+      let hiddenCanvas = null;
 
       const detectFace = async () => {
         if (localVideo.current && faceMeshRef.current) {
@@ -262,10 +264,9 @@ export default function Home() {
         animationFrameId = requestAnimationFrame(detectFace);
       };
 
-
-      const init = async () => {
+      const initMediaPipe = async () => {
         if (!window.FaceMesh) {
-          setTimeout(init, 500);
+          setTimeout(initMediaPipe, 500);
           return;
         }
 
@@ -291,11 +292,100 @@ export default function Home() {
         }
       };
 
-      init();
+      const initJeeliz = () => {
+        if (typeof window === "undefined" || !window.JEELIZFACEFILTER) {
+          setTimeout(initJeeliz, 500);
+          return;
+        }
+
+        try {
+          hiddenCanvas = document.createElement("canvas");
+          hiddenCanvas.width = 320;
+          hiddenCanvas.height = 240;
+          hiddenCanvas.style.display = "none";
+          document.body.appendChild(hiddenCanvas);
+
+          window.JEELIZFACEFILTER.init({
+            canvas: hiddenCanvas,
+            NNCPath: "https://cdn.jsdelivr.net/npm/jeelizfacefilter/dist/",
+            videoSettings: {
+              videoElement: localVideo.current
+            },
+            callbackReady: (errCode, spec) => {
+              if (errCode) {
+                console.warn("JEELIZ init error, falling back to MediaPipe:", errCode);
+                if (hiddenCanvas && hiddenCanvas.parentNode) {
+                  hiddenCanvas.parentNode.removeChild(hiddenCanvas);
+                }
+                initMediaPipe();
+                return;
+              }
+              console.log("JEELIZ FaceFilter WebGL GPU active.");
+              jeelizActive = true;
+            },
+            callbackTrack: (detectState) => {
+              if (!jeelizActive) return;
+              const filter = activeFilterRef.current;
+              if (filter === "None") {
+                const cvs = canvasRef.current;
+                if (cvs) {
+                  const ctx = cvs.getContext("2d");
+                  ctx.clearRect(0, 0, cvs.width, cvs.height);
+                }
+                return;
+              }
+
+              if (detectState.detected > 0.60) {
+                const cvs = canvasRef.current;
+                if (!cvs) return;
+                const w = cvs.width;
+                const h = cvs.height;
+                const centerX = (detectState.x * 0.5 + 0.5) * w;
+                const centerY = (-detectState.y * 0.5 + 0.5) * h;
+                const faceWidth = detectState.s * w;
+
+                // Mock MediaPipe landmarks for backward compatibility with 2D drawings
+                const mockLandmarks = [];
+                mockLandmarks[33] = { x: (centerX - faceWidth * 0.3) / w, y: centerY / h }; // leftEye
+                mockLandmarks[263] = { x: (centerX + faceWidth * 0.3) / w, y: centerY / h }; // rightEye
+                mockLandmarks[10] = { x: centerX / w, y: (centerY - faceWidth * 0.5) / h }; // forehead
+                mockLandmarks[152] = { x: centerX / w, y: (centerY + faceWidth * 0.5) / h }; // chin
+
+                onResults({
+                  multiFaceLandmarks: [mockLandmarks]
+                });
+              } else {
+                const cvs = canvasRef.current;
+                if (cvs) {
+                  const ctx = cvs.getContext("2d");
+                  ctx.clearRect(0, 0, cvs.width, cvs.height);
+                }
+              }
+            }
+          });
+        } catch (err) {
+          console.warn("JEELIZ setup failed, fallback to MediaPipe:", err);
+          if (hiddenCanvas && hiddenCanvas.parentNode) {
+            hiddenCanvas.parentNode.removeChild(hiddenCanvas);
+          }
+          initMediaPipe();
+        }
+      };
+
+      // Try GPU-accelerated Jeeliz FaceFilter first!
+      setTimeout(initJeeliz, 1000);
 
       return () => {
         if (faceMesh) faceMesh.close();
         if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        if (typeof window !== "undefined" && window.JEELIZFACEFILTER) {
+          try {
+            window.JEELIZFACEFILTER.destroy();
+          } catch(e){}
+        }
+        if (hiddenCanvas && hiddenCanvas.parentNode) {
+          hiddenCanvas.parentNode.removeChild(hiddenCanvas);
+        }
       };
     }, []);
 
@@ -1754,6 +1844,7 @@ export default function Home() {
           <title>Live Video Chat | ZoneMeet</title>
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
           <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559531/face_mesh.js" crossorigin="anonymous"></script>
+          <script src="https://cdn.jsdelivr.net/npm/jeelizfacefilter/dist/jeelizFaceFilter.js" crossorigin="anonymous"></script>
         </Head>
 
 
