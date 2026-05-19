@@ -5034,12 +5034,173 @@ export default function Home() {
             height: auto !important;
             min-height: 100vh;
             overflow-x: hidden;
-          }
-          .video-grid-v2 {
-            grid-template-columns: 1fr 1fr !important;
-            margin-bottom: 20px !important;
+            padding: 10px !important;
             gap: 15px !important;
           }
+          .video-grid-v2 {
+            position: relative !important;
+            display: block !important;
+            width: 100% !important;
+            height: 65vh !important;
+            min-height: 440px !important;
+            border-radius: 24px !important;
+            overflow: hidden !important;
+            background: #000 !important;
+            margin-bottom: 0 !important;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.6) !important;
+          }
+          /* Remote Partner full screen background */
+          .video-grid-v2 > .video-card:nth-child(2) {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 1 !important;
+            border-radius: 24px !important;
+            border: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .video-grid-v2 > .video-card:nth-child(2) video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+          }
+          /* Floating small user self-video bubble */
+          .video-grid-v2 > .video-card:first-child {
+            position: absolute !important;
+            width: 100px !important;
+            height: 145px !important;
+            bottom: 20px !important;
+            right: 15px !important;
+            z-index: 10 !important;
+            border-radius: 18px !important;
+            border: 2px solid rgba(255, 255, 255, 0.9) !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+            overflow: hidden !important;
+            background: #0f172a !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            transition: all 0.3s ease !important;
+          }
+          .video-grid-v2 > .video-card:first-child video,
+          .video-grid-v2 > .video-card:first-child canvas {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+          }
+          /* Tiny floating camera/mic controls for local user bubble */
+          .video-grid-v2 > .video-card:first-child .card-controls {
+            display: flex !important;
+            position: absolute !important;
+            bottom: 6px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            background: rgba(0, 0, 0, 0.65) !important;
+            border-radius: 20px !important;
+            padding: 4px 8px !important;
+            gap: 6px !important;
+            z-index: 100 !important;
+            width: auto !important;
+          }
+          .video-grid-v2 > .video-card:first-child .ctrl-btn {
+            width: 26px !important;
+            height: 26px !important;
+            border-radius: 50% !important;
+            font-size: 10px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: rgba(255, 255, 255, 0.15) !important;
+            border: none !important;
+            color: #fff !important;
+          }
+          .video-grid-v2 > .video-card:first-child .card-label {
+            display: none !important;
+          }
+          /* Stranger Top Floating Label */
+          .video-grid-v2 > .video-card:nth-child(2) .card-label {
+            position: absolute !important;
+            top: 15px !important;
+            left: 15px !important;
+            background: rgba(15, 23, 42, 0.6) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            padding: 6px 12px !important;
+            border-radius: 20px !important;
+            font-size: 0.8rem !important;
+            font-weight: 700 !important;
+            color: #fff !important;
+            z-index: 10 !important;
+            width: auto !important;
+            display: flex !important;
+            align-items: center !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          }
+          /* Stranger Top Floating Controls (Add Friend) */
+          .video-grid-v2 > .video-card:nth-child(2) .card-controls {
+            display: flex !important;
+            position: absolute !important;
+            top: 15px !important;
+            right: 15px !important;
+            background: rgba(15, 23, 42, 0.6) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border-radius: 24px !important;
+            padding: 6px 12px !important;
+            z-index: 10 !important;
+            width: auto !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          }
+          .video-grid-v2 > .video-card:nth-child(2) .ctrl-btn {
+            width: 32px !important;
+            height: 32px !important;
+            border-radius: 50% !important;
+            font-size: 13px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: rgba(255, 255, 255, 0.15) !important;
+            border: none !important;
+            color: #fff !important;
+          }
+          /* Premium rounded bottom floating control bar */
+          .action-buttons-row {
+            display: flex !important;
+            justify-content: space-around !important;
+            align-items: center !important;
+            gap: 10px !important;
+            background: rgba(15, 23, 42, 0.5) !important;
+            padding: 10px 14px !important;
+            border-radius: 40px !important;
+            backdrop-filter: blur(15px) !important;
+            -webkit-backdrop-filter: blur(15px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+            width: 100% !important;
+            margin: 5px auto 0 !important;
+            box-sizing: border-box !important;
+          }
+          .action-buttons-row button {
+            flex: 1 !important;
+            height: 46px !important;
+            border-radius: 23px !important;
+            font-size: 0.8rem !important;
+            font-weight: 700 !important;
+            padding: 0 8px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 4px !important;
+            margin: 0 !important;
+            border: none !important;
+            transition: all 0.2s ease !important;
+          }
+          .action-buttons-row button:active {
+            transform: scale(0.93) !important;
+          }
+          /* Header & other responsive elements */
           .header-v2 {
             flex-direction: column !important;
             gap: 10px !important;
@@ -5057,30 +5218,13 @@ export default function Home() {
           .chat-column {
             max-width: 100% !important;
             min-width: 100% !important;
-            height: 400px !important;
-            margin-bottom: 20px;
-          }
-          .bottom-actions {
-            flex-wrap: wrap !important;
-            justify-content: center !important;
-            padding: 10px !important;
+            height: 300px !important;
+            margin-bottom: 10px;
           }
           .filters-row-v2 {
             flex-wrap: wrap !important;
             justify-content: center !important;
-          }
-          .card-controls {
-            flex-wrap: wrap !important;
-            justify-content: center !important;
-            bottom: 0.5rem !important;
-            left: 0.5rem !important;
-            gap: 0.35rem !important;
-          }
-          .ctrl-btn {
-            width: 28px !important;
-            height: 28px !important;
-            border-radius: 8px !important;
-            font-size: 11px !important;
+            gap: 10px !important;
           }
           .gift-bubble {
             width: 95% !important;
