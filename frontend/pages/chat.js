@@ -2990,29 +2990,7 @@ export default function Home() {
                     <button onClick={() => setActiveIdentityMenu(null)}>×</button>
                   </div>
                   <div className="popup-options-row">
-                    {activeIdentityMenu === 'filters' && (
-                      <div className="filters-by-category">
-                        {["Beauty", "Funny", "Premium", "Couple"].map(cat => (
-                          <div key={cat} className="category-section">
-                            <h4 className="cat-title">{cat}</h4>
-                            <div className="popup-options-row">
-                              {FILTERS_DATA.filter(f => f.category === cat).map(f => (
-                                <div
-                                  key={f.id}
-                                  className={`mini-option ${selectedTempFilter === f.id ? 'selected' : ''}`}
-                                  onClick={() => setSelectedTempFilter(f.id)}
-                                >
-                                  <span className="filter-icon">{f.icon}</span>
-                                  <div className="filter-info">
-                                    <span className="filter-name">{f.name}</span>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    {/* Filters category section removed */}
 
                     {activeIdentityMenu === 'avatars' && ['None', 'Robot', 'Anime', 'Girl', 'Ninja', 'Hero', 'Cat', 'Cyber'].map(a => (
                       <div
@@ -3096,9 +3074,7 @@ export default function Home() {
               <div className="bottom-mini-bar">
                 {(user?.email === "ds9376314@gmail.com" || user?.planName === "VIP Elite" || user?.hasSecretIdentity) && (
                   <>
-                    <button className={`tool-btn ${activeIdentityMenu === 'filters' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'filters' ? null : 'filters')}>
-                      🎭 Filters
-                    </button>
+                    {/* Filters button removed */}
                     <button className={`tool-btn ${activeIdentityMenu === 'avatars' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'avatars' ? null : 'avatars')}>
                       👤 Avatars
                     </button>
