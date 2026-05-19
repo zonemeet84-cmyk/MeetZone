@@ -200,6 +200,7 @@ export default function Home() {
 
   // MediaPipe Filters
   const [activeMediaPipeFilter, setActiveMediaPipeFilter] = useState("None");
+  const [pendingMediaPipeFilter, setPendingMediaPipeFilter] = useState("None");
   const [unlockedFilters, setUnlockedFilters] = useState(["None"]); // Basic filters unlocked by default
   const [showGiftPanel, setShowGiftPanel] = useState(false);
   const [receivedGift, setReceivedGift] = useState(null);
@@ -770,6 +771,30 @@ export default function Home() {
   const [pendingAvatar, setPendingAvatar] = useState("None");
   const [pendingVoice, setPendingVoice] = useState("Normal");
   const [pendingBlur, setPendingBlur] = useState(false);
+
+  const handleApplyEffect = () => {
+    if (activeIdentityMenu === 'filters') {
+      setActiveMediaPipeFilter(pendingMediaPipeFilter);
+    } else if (activeIdentityMenu === 'avatars') {
+      setActiveAvatar(pendingAvatar);
+    } else if (activeIdentityMenu === 'voice') {
+      applyVoiceFilter(pendingVoice);
+    } else if (activeIdentityMenu === 'privacy') {
+      setIsFaceBlurred(pendingBlur);
+    }
+  };
+
+  useEffect(() => {
+    if (activeIdentityMenu === 'filters') {
+      setPendingMediaPipeFilter(activeMediaPipeFilter);
+    } else if (activeIdentityMenu === 'avatars') {
+      setPendingAvatar(activeAvatar);
+    } else if (activeIdentityMenu === 'voice') {
+      setPendingVoice(activeVoice);
+    } else if (activeIdentityMenu === 'privacy') {
+      setPendingBlur(isFaceBlurred);
+    }
+  }, [activeIdentityMenu]);
 
   // Audio processing refs
   const audioCtx = useRef(null);
@@ -2751,8 +2776,8 @@ export default function Home() {
                               {FILTERS_DATA.filter(f => f.category === cat).map(f => (
                                 <div
                                   key={f.id}
-                                  className={`mini-option ${activeMediaPipeFilter === f.id ? 'selected' : ''}`}
-                                  onClick={() => setActiveMediaPipeFilter(f.id)}
+                                  className={`mini-option ${pendingMediaPipeFilter === f.id ? 'selected' : ''}`}
+                                  onClick={() => setPendingMediaPipeFilter(f.id)}
                                 >
                                   <span className="filter-icon">{f.icon}</span>
                                   <div className="filter-info">
@@ -2767,23 +2792,59 @@ export default function Home() {
                     )}
 
                     {activeIdentityMenu === 'avatars' && ['None', 'Robot', 'Anime', 'Girl', 'Ninja', 'Hero', 'Cat', 'Cyber'].map(a => (
-                      <div key={a} className={`mini-option ${activeAvatar === a ? 'selected' : ''}`} onClick={() => setActiveAvatar(a)}>
-                        {a === 'None' ? '🚫' : '👤'} {a}
+                      <div
+                        key={a}
+                        className={`mini-option ${pendingAvatar === a ? 'selected' : ''}`}
+                        onClick={() => setPendingAvatar(a)}
+                      >
+                        <span className="filter-icon">{a === 'None' ? '🚫' : '👤'}</span>
+                        <div className="filter-info">
+                          <span className="filter-name">{a}</span>
+                        </div>
                       </div>
                     ))}
 
                     {activeIdentityMenu === 'voice' && ['Normal', 'Robot', 'Deep', 'Chipmunk', 'Alien', 'Echo'].map(v => (
-                      <div key={v} className={`mini-option ${activeVoice === v ? 'selected' : ''}`} onClick={() => applyVoiceFilter(v)}>
-                        {v === 'Normal' ? '⏺️' : '🎙️'} {v}
+                      <div
+                        key={v}
+                        className={`mini-option ${pendingVoice === v ? 'selected' : ''}`}
+                        onClick={() => setPendingVoice(v)}
+                      >
+                        <span className="filter-icon">{v === 'Normal' ? '⏺️' : '🎙️'}</span>
+                        <div className="filter-info">
+                          <span className="filter-name">{v}</span>
+                        </div>
                       </div>
                     ))}
 
                     {activeIdentityMenu === 'privacy' && (
-                      <div className={`mini-option ${isFaceBlurred ? 'selected' : ''}`} onClick={() => setIsFaceBlurred(!isFaceBlurred)}>
-                        {isFaceBlurred ? '✅ Blur Active' : '🌫️ Blur Hidden'}
+                      <div
+                        className={`mini-option ${pendingBlur ? 'selected' : ''}`}
+                        onClick={() => setPendingBlur(!pendingBlur)}
+                        style={{ width: '100%', flex: '1 1 100%' }}
+                      >
+                        <span className="filter-icon">🌫️</span>
+                        <div className="filter-info">
+                          <span className="filter-name">{pendingBlur ? '✅ Blur Enabled' : '🌫️ Blur Disabled'}</span>
+                        </div>
                       </div>
                     )}
                   </div>
+
+                  {/* Sleek Apply Button */}
+                  {((activeIdentityMenu === 'filters' && pendingMediaPipeFilter !== activeMediaPipeFilter) ||
+                    (activeIdentityMenu === 'avatars' && pendingAvatar !== activeAvatar) ||
+                    (activeIdentityMenu === 'voice' && pendingVoice !== activeVoice) ||
+                    (activeIdentityMenu === 'privacy' && pendingBlur !== isFaceBlurred)) && (
+                    <div style={{ padding: '8px 4px 4px 4px', borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: '10px', display: 'flex', justifyContent: 'center', width: '100%' }}>
+                      <button
+                        onClick={handleApplyEffect}
+                        className="apply-effect-btn"
+                      >
+                        Apply Selection
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -4585,7 +4646,10 @@ export default function Home() {
           border-radius: 18px;
           border: 1px solid #334155;
           z-index: 1000;
-          min-width: 250px;
+          width: 340px;
+          max-width: 90vw;
+          left: 50%;
+          transform: translateX(-50%);
           box-shadow: 0 20px 50px rgba(0,0,0,0.6);
           animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
@@ -4616,22 +4680,22 @@ export default function Home() {
         .filters-by-category {
           display: flex;
           flex-direction: column;
-          gap: 1.5rem;
-          padding: 0.5rem;
-          max-height: 400px;
+          gap: 1rem;
+          padding: 0.25rem;
+          max-height: 280px;
           overflow-y: auto;
         }
-        .category-section { display: flex; flex-direction: column; gap: 0.75rem; }
-        .cat-title { font-size: 0.75rem; font-weight: 800; color: #6366f1; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid rgba(99, 102, 241, 0.2); padding-bottom: 0.4rem; margin: 0; text-align: left; }
-        .popup-options-row { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: flex-start; }
-        .mini-option { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.75rem; border-radius: 16px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; min-width: 90px; position: relative; }
+        .category-section { display: flex; flex-direction: column; gap: 0.5rem; }
+        .cat-title { font-size: 0.68rem; font-weight: 800; color: #6366f1; text-transform: uppercase; letter-spacing: 0.15em; border-bottom: 1px solid rgba(99, 102, 241, 0.2); padding-bottom: 0.25rem; margin: 0 0 0.25rem 0; text-align: left; }
+        .popup-options-row { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-start; width: 100%; }
+        .mini-option { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px 10px; border-radius: 12px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 0.2rem; min-width: 75px; flex: 1 1 75px; position: relative; }
         .mini-option:hover { background: rgba(99, 102, 241, 0.1); border-color: #6366f1; transform: translateY(-2px); }
         .mini-option.selected { background: #6366f1; border-color: #818cf8; color: white; box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); }
         .mini-option.locked-filter { opacity: 0.8; filter: grayscale(0.5); }
         .mini-option.locked-filter::after { content: "🔒"; position: absolute; top: 5px; right: 5px; font-size: 0.6rem; }
-        .filter-icon { font-size: 1.5rem; }
+        .filter-icon { font-size: 1.2rem; }
         .filter-info { display: flex; flex-direction: column; align-items: center; }
-        .filter-name { font-size: 0.7rem; font-weight: 700; text-align: center; color: #fff; }
+        .filter-name { font-size: 0.65rem; font-weight: 700; text-align: center; color: #fff; }
         .filter-cost { font-size: 0.6rem; color: #fbbf24; font-weight: 800; margin-top: 2px; }
         .mini-option:hover { background: #334155; transform: scale(1.05); }
         .mini-option.selected {
@@ -4639,6 +4703,32 @@ export default function Home() {
           border-color: #818cf8;
           color: white;
           box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .apply-effect-btn {
+          width: 100%;
+          background: linear-gradient(135deg, #ec4899 0%, #6366f1 100%);
+          border: none;
+          color: white;
+          padding: 8px 16px;
+          border-radius: 12px;
+          font-weight: 800;
+          font-size: 0.8rem;
+          cursor: pointer;
+          transition: all 0.2s ease-in-out;
+          box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          animation: pulseGrow 1.5s infinite alternate;
+        }
+        .apply-effect-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 16px rgba(236, 72, 153, 0.5);
+          filter: brightness(1.1);
+        }
+        @keyframes pulseGrow {
+          from { transform: scale(1); }
+          to { transform: scale(1.02); }
         }
 
         /* REAL SNAP-LIKE MASK COMPONENTS */
