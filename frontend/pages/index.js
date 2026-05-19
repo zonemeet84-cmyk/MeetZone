@@ -1149,19 +1149,19 @@ export default function Dashboard() {
 
                         {/* Redeem Referral */}
                         {!user.referredBy && (
-                          <div style={{ background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.2)', padding: '12px', borderRadius: '16px' }}>
-                            <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#6366f1', textTransform: 'uppercase', marginBottom: '8px' }}>🎁 Referral Code</div>
-                            <div style={{ display: 'flex', gap: '8px' }}>
+                          <div className="profile-referral-box">
+                            <div className="profile-referral-title">🎁 Referral Code</div>
+                            <div className="profile-referral-row">
                               <input
                                 type="text"
                                 placeholder="Code"
                                 value={redeemCode}
+                                className="profile-referral-input"
                                 onChange={(e) => setRedeemCode(e.target.value.toUpperCase())}
-                                style={{ flex: 1, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px 12px', color: '#fff', fontSize: '0.8rem', outline: 'none' }}
                               />
                               <button
                                 onClick={handleRedeemReferral}
-                                style={{ background: '#6366f1', color: '#fff', border: 'none', padding: '0 12px', borderRadius: '10px', fontWeight: 800, fontSize: '0.7rem', cursor: 'pointer' }}
+                                className="profile-referral-btn"
                               >
                                 Redeem
                               </button>
@@ -1233,6 +1233,12 @@ export default function Dashboard() {
                       {/* Friends Button */}
                       <button className="profile-more-btn" onClick={() => router.push("/friends")} style={{ marginTop: '20px' }}>
                         <div className="profile-detail-left">👥 Friends</div>
+                        <span>›</span>
+                      </button>
+
+                      {/* Match History Button */}
+                      <button className="profile-more-btn" onClick={() => { setShowProfileDrop(false); setShowHistoryModal(true); }} style={{ marginTop: '10px' }}>
+                        <div className="profile-detail-left">🕒 Match History</div>
                         <span>›</span>
                       </button>
 
@@ -4364,38 +4370,46 @@ export default function Dashboard() {
             }
             /* Profile Dropdown Modal Card Responsive Fixes */
             .profile-modal-card {
-              max-width: 320px !important;
-              padding: 15px 10px !important;
-              border-radius: 20px !important;
-              max-height: 85vh !important;
+              max-width: 290px !important;
+              padding: 10px 8px !important;
+              border-radius: 16px !important;
+              max-height: 80vh !important;
               overflow-y: auto !important;
             }
+            .profile-modal-header {
+              padding: 8px !important;
+              font-size: 0.95rem !important;
+            }
+            .profile-modal-close {
+              font-size: 1.15rem !important;
+              right: 8px !important;
+            }
             .profile-modal-body {
-              padding: 10px !important;
-              gap: 12px !important;
+              padding: 6px !important;
+              gap: 8px !important;
             }
             .profile-user-card {
-              padding: 10px !important;
-              gap: 10px !important;
-              border-radius: 12px !important;
+              padding: 8px !important;
+              gap: 8px !important;
+              border-radius: 10px !important;
               align-items: center !important;
             }
             .profile-avatar-large {
-              width: 45px !important;
-              height: 45px !important;
-              font-size: 1.3rem !important;
+              width: 38px !important;
+              height: 38px !important;
+              font-size: 1.15rem !important;
             }
             .profile-user-name {
-              font-size: 0.95rem !important;
-              max-width: 140px !important;
+              font-size: 0.85rem !important;
+              max-width: 110px !important;
               overflow: hidden !important;
               text-overflow: ellipsis !important;
               white-space: nowrap !important;
               word-break: break-all !important;
             }
             .profile-user-id {
-              font-size: 0.75rem !important;
-              max-width: 145px !important;
+              font-size: 0.7rem !important;
+              max-width: 115px !important;
               overflow: hidden !important;
               text-overflow: ellipsis !important;
               white-space: nowrap !important;
@@ -4404,74 +4418,97 @@ export default function Dashboard() {
             .profile-edit-btn {
               position: static !important;
               margin-left: auto !important;
-              padding: 6px 10px !important;
-              font-size: 0.75rem !important;
-              border-radius: 12px !important;
+              padding: 3px 6px !important;
+              font-size: 0.65rem !important;
+              border-radius: 8px !important;
               height: auto !important;
             }
             .profile-premium-banner {
-              padding: 10px !important;
-              border-radius: 12px !important;
+              padding: 8px !important;
+              border-radius: 10px !important;
             }
             .profile-premium-title {
-              font-size: 0.9rem !important;
+              font-size: 0.8rem !important;
             }
             .profile-premium-sub {
-              font-size: 0.7rem !important;
+              font-size: 0.65rem !important;
             }
             .profile-premium-btn {
-              padding: 6px 12px !important;
-              font-size: 0.8rem !important;
-              border-radius: 12px !important;
+              padding: 4px 8px !important;
+              font-size: 0.75rem !important;
+              border-radius: 8px !important;
               height: auto !important;
             }
             .profile-balances {
-              padding: 10px !important;
-              border-radius: 12px !important;
-              gap: 5px !important;
-            }
-            .profile-balance-item {
-              font-size: 0.85rem !important;
+              padding: 8px !important;
+              border-radius: 10px !important;
               gap: 4px !important;
             }
+            .profile-balance-item {
+              font-size: 0.75rem !important;
+              gap: 2px !important;
+            }
             .profile-balance-icon {
-              font-size: 1.1rem !important;
+              font-size: 0.95rem !important;
             }
             .profile-balance-divider {
-              height: 20px !important;
+              height: 15px !important;
             }
             .profile-details-list {
-              padding: 4px 0 !important;
-              border-radius: 12px !important;
+              padding: 2px 0 !important;
+              border-radius: 10px !important;
             }
             .profile-detail-item {
-              padding: 6px 10px !important;
-              font-size: 0.8rem !important;
+              padding: 4px 8px !important;
+              font-size: 0.75rem !important;
             }
             .profile-more-btn {
-              padding: 8px 10px !important;
-              font-size: 0.85rem !important;
-              border-radius: 10px !important;
+              padding: 6px 8px !important;
+              font-size: 0.8rem !important;
+              border-radius: 8px !important;
             }
             /* Coins box inside profile card */
             .profile-modal-card div[style*="background: 'rgba(255,255,255,0.02)'"] {
-              padding: 10px !important;
-              gap: 10px !important;
-              border-radius: 16px !important;
-              margin-bottom: 1rem !important;
+              padding: 8px !important;
+              gap: 8px !important;
+              border-radius: 12px !important;
+              margin-bottom: 0.8rem !important;
+            }
+            /* Redeem Referral Styling Mobile */
+            .profile-referral-box {
+              padding: 8px !important;
+              border-radius: 10px !important;
+            }
+            .profile-referral-title {
+              font-size: 0.65rem !important;
+              margin-bottom: 6px !important;
+            }
+            .profile-referral-row {
+              gap: 4px !important;
+            }
+            .profile-referral-input {
+              padding: 5px 8px !important;
+              font-size: 0.75rem !important;
+              border-radius: 6px !important;
+              height: auto !important;
+            }
+            .profile-referral-btn {
+              padding: 0 10px !important;
+              font-size: 0.7rem !important;
+              border-radius: 6px !important;
+              height: auto !important;
             }
             .profile-modal-card input,
             .profile-modal-card select {
-              padding: 8px 12px !important;
-              font-size: 0.8rem !important;
-              border-radius: 8px !important;
+              padding: 6px 10px !important;
+              font-size: 0.75rem !important;
+              border-radius: 6px !important;
               height: auto !important;
             }
             .profile-modal-card button {
-              padding: 8px 12px !important;
-              font-size: 0.8rem !important;
-              border-radius: 8px !important;
-              height: auto !important;
+              padding: 6px 10px !important;
+              font-size: 0.75rem !important;
+              border-radius: 6px !important;
             }
             /* Fix for mystery box confirm */
             .premium-modal {
