@@ -91,6 +91,8 @@ export default function Home() {
   const faceMeshRef = useRef(null);
   const onResultsRef = useRef(null);
   const nsfwModel = useRef(null);
+  const isFaceDetectedRef = useRef(false);
+  const prevFramePixelsRef = useRef(null);
 
 
   // Helper to convert 2-letter ISO country code to Emoji Flag
@@ -325,6 +327,7 @@ export default function Home() {
             },
             callbackTrack: (detectState) => {
               if (!jeelizActive) return;
+              isFaceDetectedRef.current = detectState.detected > 0.60;
               const filter = activeFilterRef.current;
               if (filter === "None") {
                 const cvs = canvasRef.current;
@@ -399,6 +402,7 @@ export default function Home() {
   useEffect(() => {
 
     onResultsRef.current = (results) => {
+      isFaceDetectedRef.current = results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0;
       const cvs = canvasRef.current;
       if (!cvs) return;
       const ctx = cvs.getContext("2d");
@@ -1058,6 +1062,45 @@ export default function Home() {
           const checkVideo = async () => {
             if (localVideo.current && localVideo.current.readyState === 4 && socket && socket.connected) {
               try {
+                // 1. LIGHTWEIGHT MOTION DETECTION (Save user CPU by skipping scans if stream is static/idle)
+                let hasMotion = true;
+                try {
+                  const mCanvas = document.createElement("canvas");
+                  mCanvas.width = 32;
+                  mCanvas.height = 24;
+                  const mCtx = mCanvas.getContext("2d");
+                  mCtx.drawImage(localVideo.current, 0, 0, 32, 24);
+                  const imgData = mCtx.getImageData(0, 0, 32, 24).data;
+
+                  if (!prevFramePixelsRef.current) {
+                    prevFramePixelsRef.current = imgData;
+                  } else {
+                    let totalDiff = 0;
+                    const len = imgData.length;
+                    for (let i = 0; i < len; i += 4) {
+                      const currentIntensity = (imgData[i] + imgData[i+1] + imgData[i+2]) / 3;
+                      const prevIntensity = (prevFramePixelsRef.current[i] + prevFramePixelsRef.current[i+1] + prevFramePixelsRef.current[i+2]) / 3;
+                      totalDiff += Math.abs(currentIntensity - prevIntensity);
+                    }
+                    prevFramePixelsRef.current = imgData;
+                    const avgDiff = totalDiff / (32 * 24);
+                    // If average shift is less than 3 units, video is static/idle (no motion)
+                    hasMotion = avgDiff > 3;
+                  }
+                } catch (e) {
+                  // Fallback to active motion on error
+                }
+
+                if (!hasMotion) {
+                  // Video is frozen or static, skip heavy model execution to conserve CPU
+                  setTimeout(checkVideo, 3000);
+                  return;
+                }
+
+                // 2. FACE DETECTION STATUS
+                const faceDetected = isFaceDetectedRef.current;
+
+                // 3. HEAVY NSFWJS LOCAL CLASSIFICATION (only triggered if motion exists)
                 const predictions = await nsfwModel.current.classify(localVideo.current);
                 
                 const porn = predictions.find(p => p.className === "Porn");
@@ -1072,7 +1115,7 @@ export default function Home() {
                 const isSuspicious = pornProb > 0.65 || hentaiProb > 0.65 || sexyProb > 0.65;
 
                 if (isSuspicious) {
-                  console.warn(`[NSFWJS SOFT TRIG] Suspicious frame (Porn: ${pornProb.toFixed(2)}, Hentai: ${hentaiProb.toFixed(2)}, Sexy: ${sexyProb.toFixed(2)}). Requesting backend Hive AI verification...`);
+                  console.warn(`[NSFWJS SOFT TRIG] Suspicious frame (Porn: ${pornProb.toFixed(2)}, Hentai: ${hentaiProb.toFixed(2)}, Sexy: ${sexyProb.toFixed(2)}, FacePresent: ${faceDetected}). Requesting backend Hive AI verification...`);
                   
                   // Auto-blur local stream instantly on the frontend as a soft precaution while verifying
                   setIsFaceBlurred(true);
