@@ -2909,6 +2909,7 @@ export default function Dashboard() {
           <a href="/privacy" style={{ color: '#6366f1', textDecoration: 'none' }}>Privacy Policy</a>
           <a href="/refund" style={{ color: '#6366f1', textDecoration: 'none' }}>Refund Policy</a>
           <a href="/guidelines" style={{ color: '#6366f1', textDecoration: 'none' }}>Community Guidelines</a>
+          <a href="/safety" style={{ color: '#ef4444', textDecoration: 'none', fontWeight: 'bold' }}>Safety &amp; 18+ Policy</a>
           <a
             href="#"
             onClick={(e) => {
