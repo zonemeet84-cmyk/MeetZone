@@ -958,28 +958,95 @@ export default function Home() {
         setStatus("Please allow camera/mic access");
       }
 
-      // 4. AI Guard: NSFW Detection (Disabled by User Request)
+      // 4. AI Guard: Multi-Layer NSFW Detection
       const initNSFW = async () => {
         try {
-          /*
           await tf.ready();
           nsfwModel.current = await nsfwjs.load();
           console.log("NSFW Guardian active.");
           
+          let consecutiveViolations = 0;
+
           const checkVideo = async () => {
-            if (localVideo.current && localVideo.current.readyState === 4) {
-              const predictions = await nsfwModel.current.classify(localVideo.current);
-              const nsfw = predictions.find(p => p.className === "Porn" || p.className === "Hentai");
-              if (nsfw && nsfw.probability > 0.99) {
-                console.log("NSFW Content Detected! Reporting...");
-                socket.emit("nsfw-detected");
-                return;
+            if (localVideo.current && localVideo.current.readyState === 4 && socket && socket.connected) {
+              try {
+                const predictions = await nsfwModel.current.classify(localVideo.current);
+                
+                const porn = predictions.find(p => p.className === "Porn");
+                const hentai = predictions.find(p => p.className === "Hentai");
+                const sexy = predictions.find(p => p.className === "Sexy");
+                
+                const pornProb = porn ? porn.probability : 0;
+                const hentaiProb = hentai ? hentai.probability : 0;
+                const sexyProb = sexy ? sexy.probability : 0;
+
+                console.log(`[NSFW Prediction] Porn: ${pornProb.toFixed(3)}, Sexy: ${sexyProb.toFixed(3)}, Hentai: ${hentaiProb.toFixed(3)}`);
+
+                // A. Explicit Porn / Serious Violations (Porn > 0.88, Sexy > 0.95, Hentai > 0.88)
+                if (pornProb > 0.88 || sexyProb > 0.95 || hentaiProb > 0.88) {
+                  consecutiveViolations++;
+                  console.warn(`[NSFW Strict violation] Consecutive Count: ${consecutiveViolations}/3`);
+                  
+                  // Auto-blur local webcam stream immediately
+                  setIsFaceBlurred(true);
+                  if (socket) {
+                    socket.emit("partner-effect", { type: "blur", value: true });
+                  }
+
+                  if (consecutiveViolations >= 3) {
+                    // Capture screenshot of webcam for backend evidence
+                    let screenshot = null;
+                    try {
+                      const canvas = document.createElement("canvas");
+                      canvas.width = localVideo.current.videoWidth || 320;
+                      canvas.height = localVideo.current.videoHeight || 240;
+                      const ctx = canvas.getContext("2d");
+                      ctx.drawImage(localVideo.current, 0, 0);
+                      screenshot = canvas.toDataURL("image/jpeg", 0.5);
+                    } catch (e) {
+                      console.error("Failed to capture screenshot evidence:", e);
+                    }
+
+                    socket.emit("nsfw-violation-ban", {
+                      screenshot,
+                      predictions: { porn: pornProb, sexy: sexyProb, hentai: hentaiProb },
+                      reason: `Porn (${pornProb.toFixed(2)}), Hentai (${hentaiProb.toFixed(2)}), or Sexy (${sexyProb.toFixed(2)}) exceeded strict ZoneMeet security thresholds`
+                    });
+                    
+                    consecutiveViolations = 0; // reset
+                  } else {
+                    alert(`CRITICAL WARNING: AI detected inappropriate content! Strike ${consecutiveViolations}/3. Keep your webcam clean or you will be permanently banned!`);
+                  }
+                }
+                // B. Partial Nudity / Moderately Unsafe Behavior (Porn 0.80 - 0.88, Sexy 0.80 - 0.95)
+                else if ((pornProb >= 0.80 && pornProb <= 0.88) || (sexyProb >= 0.80 && sexyProb <= 0.95)) {
+                  console.log("[NSFW Partial Violation] Auto-blurring webcam");
+                  setIsFaceBlurred(true);
+                  if (socket) {
+                    socket.emit("partner-effect", { type: "blur", value: true });
+                  }
+                  consecutiveViolations = 0; // reset consecutive explicit
+                  alert("AI Warning: Unsafe webcam content detected. Your camera has been automatically blurred. Please keep your behavior safe!");
+                }
+                // C. Mild Sexy / revealing clothing (Sexy 0.60 - 0.80 or Porn 0.60 - 0.80)
+                else if ((pornProb >= 0.60 && pornProb < 0.80) || (sexyProb >= 0.60 && sexyProb < 0.80)) {
+                  console.log("[NSFW Mild Sexy] Triggered warning toast/alert");
+                  consecutiveViolations = 0;
+                  alert("AI Warning: Please wear appropriate clothing and maintain clean behavior to avoid getting account strikes.");
+                }
+                else {
+                  // Safe stream
+                  consecutiveViolations = 0;
+                }
+              } catch (e) {
+                console.error("Error classifying stream frame:", e);
               }
             }
+            // Repeat every 3 seconds
             setTimeout(checkVideo, 3000);
           };
+          
           checkVideo();
-          */
         } catch (err) {
           console.error("NSFW Guardian failed to load:", err);
         }
@@ -1016,6 +1083,14 @@ export default function Home() {
 
       socket.on("warning-alert", (msg) => {
         alert(msg);
+      });
+
+      socket.on("nsfw-strike-alert", ({ strikes, maxStrikes, reason }) => {
+        setIsFaceBlurred(true);
+        if (socket) {
+          socket.emit("partner-effect", { type: "blur", value: true });
+        }
+        setMessages(prev => [...prev, { sender: "system", text: `⚠️ [Safety Alert]: AI detected safety violation (${reason}). Strike ${strikes}/${maxStrikes} registered.` }]);
       });
 
       socket.on("banned-alert", (msg) => {

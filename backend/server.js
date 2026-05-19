@@ -2023,7 +2023,8 @@ function endQuiz(roomId) {
     const BAD_WORDS_LIST = [
       "abuse", "fake", "sex", "scam", "nude", "porn", "pussy", "dick", "xxx", "fuck", "bitch",
       "lund", "chod", "gand", "porn", "madarchod", "behenchod", "bhenchod", "chutiya", "loda", "lauda",
-      "kamine", "haramkhor", "bsdk", "bhonsdi", "gaand", "randi", "saala", "saali", "harami"
+      "kamine", "haramkhor", "bsdk", "bhonsdi", "gaand", "randi", "saala", "saali", "harami", "muthi",
+      "chudai", "rand", "bhadwa", "maderchod", "behanchod", "mc", "bc", "gaandu", "tatte", "cunt", "asshole"
     ];
     const userStrikes = new Map(); // email -> strike count
 
@@ -2037,8 +2038,15 @@ function endQuiz(roomId) {
         socket.userId = userId;
         onlineUsers.set(userId, socket.id);
 
-        // Broadcast online status to friends
+        // Safety Ban check: Kick banned users immediately
         const user = users.find(u => u.id === userId);
+        if (user && bannedEmails.includes(user.email)) {
+          socket.emit("banned-alert", "Your account has been permanently banned for safety violations.");
+          socket.disconnect();
+          return;
+        }
+
+        // Broadcast online status to friends
         if (user && user.friends) {
           user.friends.forEach(fId => {
             const friendSocketId = onlineUsers.get(fId);
@@ -2050,6 +2058,13 @@ function endQuiz(roomId) {
       });
 
       socket.on("set-profile", (profile) => {
+        // Safety Ban check: Kick banned users immediately
+        if (profile && bannedEmails.includes(profile.email)) {
+          socket.emit("banned-alert", "Your account has been permanently banned for safety violations.");
+          socket.disconnect();
+          return;
+        }
+
         // Re-verify premium status from DB to prevent client-side manipulation
         const dbUser = users.find(u => u.email === profile.email);
         let isPremium = dbUser ? dbUser.premium : false;
@@ -2090,28 +2105,63 @@ function endQuiz(roomId) {
         console.log(`User ${socket.id} updated filters:`, filters);
       });
 
-      socket.on("send-message", ({ text, to }) => {
+      socket.on("send-message", async ({ text, to }) => {
         if (socket.user) {
           const email = socket.user.email;
           const lowerText = text.toLowerCase();
-          const hasBadWord = BAD_WORDS_LIST.some(word => lowerText.includes(word));
+          
+          let isToxic = false;
+          let violationCategory = "";
 
-          /*
-          // AI Chat Guard Temporarily Disabled
+          // 1. Local Word Scanner (Robust word/phrase match)
+          const hasBadWord = BAD_WORDS_LIST.some(word => {
+            const regex = new RegExp(`\\b${word}\\b|${word}`, "i");
+            return regex.test(lowerText);
+          });
+
           if (hasBadWord) {
-            let strikes = (userStrikes.get(email) || 0) + 1;
-            userStrikes.set(email, strikes);
-    
-            if (strikes >= 2) {
-              console.log(`[GUARDIAN] CHAT ABUSE detected: ${email}. Banning...`);
-              banUser(email, "AI Detection: Repeated use of restricted words in chat");
-              return;
-            } else {
-              socket.emit("warning-alert", `Warning: Your message contains restricted words. Strike ${strikes}/2. Continued abuse will lead to a permanent ban.`);
-              return; 
+            isToxic = true;
+            violationCategory = "Restricted language/slurs";
+          }
+
+          // 2. OpenAI Moderation API Check (if key is set)
+          if (!isToxic && process.env.OPENAI_API_KEY) {
+            try {
+              const res = await fetch("https://api.openai.com/v1/moderations", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+                },
+                body: JSON.stringify({ input: text })
+              });
+              const data = await res.json();
+              if (data.results && data.results[0]?.flagged) {
+                isToxic = true;
+                const categories = data.results[0].categories;
+                violationCategory = Object.keys(categories).filter(c => categories[c]).join(", ");
+              }
+            } catch (err) {
+              console.error("OpenAI Moderation API call failed:", err);
             }
           }
-          */
+
+          // Handle Toxicity / Abuse
+          if (isToxic) {
+            let strikes = (userStrikes.get(email) || 0) + 1;
+            userStrikes.set(email, strikes);
+
+            console.log(`[GUARDIAN] CHAT ABUSE strike for ${email}: Strike ${strikes}/3. Category: ${violationCategory}`);
+
+            if (strikes >= 3) {
+              console.log(`[GUARDIAN] CHAT ABUSE threshold exceeded: ${email}. Banning permanently...`);
+              banUser(email, `AI Detection: Repeated chat abuse and toxicity (${violationCategory})`);
+              return;
+            } else {
+              socket.emit("warning-alert", `Warning: Your message violates our safety guidelines (${violationCategory}). Strike ${strikes}/3. Continued abuse will lead to a permanent account ban.`);
+              return; // Block the message from being sent!
+            }
+          }
         }
 
         io.to(to).emit("receive-message", {
@@ -2222,9 +2272,61 @@ function endQuiz(roomId) {
         }
       });
 
-      // NSFW Detection Ban Removed by User Request
-      socket.on("nsfw-detected", () => {
-        console.log("NSFW detected event ignored.");
+      // NSFW Multi-Layer Moderation Handler
+      socket.on("nsfw-violation-ban", ({ screenshot, predictions, reason }) => {
+        if (socket.user) {
+          const email = socket.user.email;
+          console.log(`[NSFW MULTI-LAYER DETECTED] Email: ${email}, Reason: ${reason}`);
+
+          // Save Screenshot Evidence to local folder
+          if (screenshot) {
+            try {
+              const evidenceDir = path.join(__dirname, "moderation_evidence");
+              if (!fs.existsSync(evidenceDir)) {
+                fs.mkdirSync(evidenceDir, { recursive: true });
+              }
+              const base64Data = screenshot.replace(/^data:image\/jpeg;base64,/, "").replace(/^data:image\/png;base64,/, "");
+              const filename = `evidence_${email.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}.jpg`;
+              const filePath = path.join(evidenceDir, filename);
+              fs.writeFileSync(filePath, base64Data, "base64");
+              console.log(`[NSFW EVIDENCE SAVED] ${filePath}`);
+            } catch (err) {
+              console.error("Failed to save NSFW screenshot evidence:", err);
+            }
+          }
+
+          // Strike System
+          let strikes = (userStrikes.get(email) || 0) + 1;
+          userStrikes.set(email, strikes);
+
+          console.log(`[NSFW VIOLATION STRIKE] User: ${email} - Strike ${strikes}/3.`);
+
+          if (strikes >= 3) {
+            console.log(`[NSFW BANNING USER] ${email} permanently banned.`);
+            banUser(email, `AI Detection: 3 consecutive safety violations for explicit content (${reason})`);
+          } else {
+            // Send warning back to socket
+            socket.emit("warning-alert", `CRITICAL WARNING: Explicit content detected! Strike ${strikes}/3. Continued violations will result in an immediate permanent account ban.`);
+            
+            // Emit partner-effect to blur remote partner's stream
+            if (socket.partner) {
+              socket.partner.emit("partner-effect", { type: "blur", value: true });
+            }
+
+            // Emit local strike alert
+            socket.emit("nsfw-strike-alert", { strikes, maxStrikes: 3, reason });
+
+            // Disconnect current partner session to safeguard partner
+            if (socket.partner) {
+              const partner = socket.partner;
+              partner.emit("partner-disconnected");
+              partner.partner = null;
+              socket.partner = null;
+              queueUser(partner);
+            }
+            queueUser(socket);
+          }
+        }
       });
 
       socket.on("join-room", (roomId) => {
@@ -3078,6 +3180,38 @@ function endQuiz(roomId) {
     app.get("/api/admin/reports", authenticateAdmin, (req, res) => {
       if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
       res.json(reports);
+    });
+
+    // Secure Static Serve for Moderation Screenshot Evidence Files
+    app.use("/api/admin/evidence-files", authenticateAdmin, express.static(path.join(__dirname, "moderation_evidence")));
+
+    // Admin API to fetch all logged NSFW screenshot evidence
+    app.get("/api/admin/moderation-evidence", authenticateAdmin, (req, res) => {
+      if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
+      const evidenceDir = path.join(__dirname, "moderation_evidence");
+      if (!fs.existsSync(evidenceDir)) {
+        return res.json([]);
+      }
+      try {
+        const files = fs.readdirSync(evidenceDir);
+        const list = files
+          .filter(file => file.endsWith(".jpg") || file.endsWith(".png"))
+          .map(file => {
+            const parts = file.replace("evidence_", "").replace(".jpg", "").replace(".png", "").split("_");
+            const email = parts[0] || "unknown";
+            const timestamp = parseInt(parts[1]) || Date.now();
+            return {
+              filename: file,
+              email: email.replace(/_/g, "@"), // Restore real email address from sanitized filename
+              timestamp,
+              url: `/api/admin/evidence-files/${file}`
+            };
+          });
+        res.json(list.reverse()); // Latest evidence first
+      } catch (err) {
+        console.error("Failed to list moderation evidence:", err);
+        res.status(500).json({ error: "Failed to list moderation evidence" });
+      }
     });
 
     app.get("/api/admin/messages", authenticateAdmin, (req, res) => {
