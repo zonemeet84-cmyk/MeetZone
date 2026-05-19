@@ -794,6 +794,18 @@ export default function Home() {
   const [partnerAvatar, setPartnerAvatar] = useState("None");
   const [partnerMask, setPartnerMask] = useState("None");
   const [partnerFilter, setPartnerFilter] = useState("None");
+  const [partnerVoice, setPartnerVoice] = useState("Normal");
+
+  // Keep latest effects values tracked in refs to prevent stale closure bugs in socket listeners
+  const activeAvatarRef = useRef("None");
+  const isFaceBlurredRef = useRef(false);
+  const activeMaskRef = useRef("None");
+  const activeVoiceRef = useRef("Normal");
+
+  useEffect(() => { activeAvatarRef.current = activeAvatar; }, [activeAvatar]);
+  useEffect(() => { isFaceBlurredRef.current = isFaceBlurred; }, [isFaceBlurred]);
+  useEffect(() => { activeMaskRef.current = activeMask; }, [activeMask]);
+  useEffect(() => { activeVoiceRef.current = activeVoice; }, [activeVoice]);
 
   useEffect(() => {
     if (!socket) return;
@@ -803,6 +815,7 @@ export default function Home() {
       if (type === 'avatar') setPartnerAvatar(value);
       if (type === 'mask') setPartnerMask(value);
       if (type === 'filter') setPartnerFilter(value);
+      if (type === 'voice') setPartnerVoice(value);
     });
 
     return () => socket.off("partner-effect");
@@ -814,8 +827,9 @@ export default function Home() {
       socket.emit("partner-effect", { type: 'avatar', value: activeAvatar });
       socket.emit("partner-effect", { type: 'mask', value: activeMask });
       socket.emit("partner-effect", { type: 'filter', value: activeMediaPipeFilter });
+      socket.emit("partner-effect", { type: 'voice', value: activeVoice });
     }
-  }, [isFaceBlurred, activeAvatar, activeMask, activeMediaPipeFilter, partnerId, socket]);
+  }, [isFaceBlurred, activeAvatar, activeMask, activeMediaPipeFilter, activeVoice, partnerId, socket]);
 
 
   // Effects apply directly on click now
@@ -1333,14 +1347,15 @@ export default function Home() {
         iceCandidatesQueue.current = [];
         createPeer(partnerId);
 
-        // BULLETPROOF EFFECT SYNCING
+        // BULLETPROOF EFFECT SYNCING (using refs to avoid stale closure values)
         setTimeout(() => {
           if (socket) {
-            console.log("[Matched] Force syncing current local effects with partner...", activeAvatar, isFaceBlurred);
-            socket.emit("partner-effect", { type: 'blur', value: isFaceBlurred });
-            socket.emit("partner-effect", { type: 'avatar', value: activeAvatar });
-            socket.emit("partner-effect", { type: 'mask', value: activeMask });
-            socket.emit("partner-effect", { type: 'filter', value: activeMediaPipeFilter });
+            console.log("[Matched] Force syncing current local effects with partner...", activeAvatarRef.current, isFaceBlurredRef.current);
+            socket.emit("partner-effect", { type: 'blur', value: isFaceBlurredRef.current });
+            socket.emit("partner-effect", { type: 'avatar', value: activeAvatarRef.current });
+            socket.emit("partner-effect", { type: 'mask', value: activeMaskRef.current });
+            socket.emit("partner-effect", { type: 'filter', value: activeFilterRef.current });
+            socket.emit("partner-effect", { type: 'voice', value: activeVoiceRef.current });
           }
         }, 1000);
 
@@ -1417,6 +1432,7 @@ export default function Home() {
         setPartnerIsBlurred(false);
         setPartnerMask("None");
         setPartnerFilter("None");
+        setPartnerVoice("Normal");
         setFriendReqStatus(false);
         setShowPartnerPreview(false);
         setPartnerMicOn(true);
@@ -1437,6 +1453,7 @@ export default function Home() {
         setPartnerIsBlurred(false);
         setPartnerMask("None");
         setPartnerFilter("None");
+        setPartnerVoice("Normal");
         setFriendReqStatus(false);
         setShowPartnerPreview(false);
         setPartnerMicOn(true);
@@ -1471,14 +1488,15 @@ export default function Home() {
         setPartnerId(partnerId);
         setPartnerInfo({ id: partnerInfo.id, name: partnerInfo.name, country: partnerInfo.country || "IN", gender: "all" });
 
-        // BULLETPROOF EFFECT SYNCING
+        // BULLETPROOF EFFECT SYNCING (using refs to avoid stale closure values)
         setTimeout(() => {
           if (socket) {
-            console.log("[Quiz Matched] Force syncing current local effects with partner...", activeAvatar, isFaceBlurred);
-            socket.emit("partner-effect", { type: 'blur', value: isFaceBlurred });
-            socket.emit("partner-effect", { type: 'avatar', value: activeAvatar });
-            socket.emit("partner-effect", { type: 'mask', value: activeMask });
-            socket.emit("partner-effect", { type: 'filter', value: activeMediaPipeFilter });
+            console.log("[Quiz Matched] Force syncing current local effects with partner...", activeAvatarRef.current, isFaceBlurredRef.current);
+            socket.emit("partner-effect", { type: 'blur', value: isFaceBlurredRef.current });
+            socket.emit("partner-effect", { type: 'avatar', value: activeAvatarRef.current });
+            socket.emit("partner-effect", { type: 'mask', value: activeMaskRef.current });
+            socket.emit("partner-effect", { type: 'filter', value: activeFilterRef.current });
+            socket.emit("partner-effect", { type: 'voice', value: activeVoiceRef.current });
           }
         }, 1000);
 
@@ -2584,6 +2602,22 @@ export default function Home() {
                         {user.planName === "VIP Elite" ? "👑 VIP ELITE" : `🛡️ ${user.planName}`}
                       </span>
                     )}
+                    {activeVoice && activeVoice !== "Normal" && (
+                      <span style={{
+                        background: 'rgba(99, 102, 241, 0.2)',
+                        border: '1px solid rgba(99, 102, 241, 0.4)',
+                        color: '#a5b4fc',
+                        padding: '0.15rem 0.6rem',
+                        borderRadius: '10px',
+                        fontSize: '0.6rem',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '3px'
+                      }}>
+                        🎙️ {activeVoice}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="card-controls">
@@ -2740,6 +2774,22 @@ export default function Home() {
                         gap: '3px'
                       }}>
                         🔇 MUTED
+                      </span>
+                    )}
+                    {partnerVoice && partnerVoice !== "Normal" && (
+                      <span style={{
+                        background: 'rgba(236, 72, 153, 0.2)',
+                        border: '1px solid rgba(236, 72, 153, 0.4)',
+                        color: '#f9a8d4',
+                        padding: '0.15rem 0.6rem',
+                        borderRadius: '10px',
+                        fontSize: '0.6rem',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '3px'
+                      }}>
+                        🎙️ {partnerVoice}
                       </span>
                     )}
                   </div>
