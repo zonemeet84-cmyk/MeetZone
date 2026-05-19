@@ -940,6 +940,7 @@ export default function Home() {
   const sourceNode = useRef(null);
   const pitchNode = useRef(null);
   const destinationNode = useRef(null);
+  const processedAudioTrackRef = useRef(null);
 
   useEffect(() => {
     if (chatEndRef.current) {
@@ -1332,6 +1333,17 @@ export default function Home() {
         iceCandidatesQueue.current = [];
         createPeer(partnerId);
 
+        // BULLETPROOF EFFECT SYNCING
+        setTimeout(() => {
+          if (socket) {
+            console.log("[Matched] Force syncing current local effects with partner...", activeAvatar, isFaceBlurred);
+            socket.emit("partner-effect", { type: 'blur', value: isFaceBlurred });
+            socket.emit("partner-effect", { type: 'avatar', value: activeAvatar });
+            socket.emit("partner-effect", { type: 'mask', value: activeMask });
+            socket.emit("partner-effect", { type: 'filter', value: activeMediaPipeFilter });
+          }
+        }, 1000);
+
         if (initiator) {
           try {
             const offer = await peerConnection.current.createOffer();
@@ -1458,6 +1470,17 @@ export default function Home() {
         // Match standard partner states so WebRTC works out of the box!
         setPartnerId(partnerId);
         setPartnerInfo({ id: partnerInfo.id, name: partnerInfo.name, country: partnerInfo.country || "IN", gender: "all" });
+
+        // BULLETPROOF EFFECT SYNCING
+        setTimeout(() => {
+          if (socket) {
+            console.log("[Quiz Matched] Force syncing current local effects with partner...", activeAvatar, isFaceBlurred);
+            socket.emit("partner-effect", { type: 'blur', value: isFaceBlurred });
+            socket.emit("partner-effect", { type: 'avatar', value: activeAvatar });
+            socket.emit("partner-effect", { type: 'mask', value: activeMask });
+            socket.emit("partner-effect", { type: 'filter', value: activeMediaPipeFilter });
+          }
+        }, 1000);
 
         // Join WebRTC peer connection immediately!
         if (initiator) {
@@ -1623,7 +1646,12 @@ export default function Home() {
     const stream = localVideo.current.srcObject;
     if (stream) {
       stream.getTracks().forEach((track) => {
-        peerConnection.current.addTrack(track, stream);
+        if (track.kind === 'audio' && processedAudioTrackRef.current) {
+          peerConnection.current.addTrack(processedAudioTrackRef.current, stream);
+          console.log("[createPeer] Added voice-filtered audio track to peerConnection:", activeVoice);
+        } else {
+          peerConnection.current.addTrack(track, stream);
+        }
       });
     }
 
@@ -1865,8 +1893,12 @@ export default function Home() {
     if (!audioCtx.current) {
       audioCtx.current = new (window.AudioContext || window.webkitAudioContext)();
     }
+    if (audioCtx.current.state === 'suspended') {
+      await audioCtx.current.resume();
+    }
 
     if (voice === "Normal") {
+      processedAudioTrackRef.current = null;
       // Revert to original raw mic track for the remote peer
       if (peerConnection.current && localVideo.current?.srcObject) {
         const senders = peerConnection.current.getSenders();
@@ -1878,35 +1910,63 @@ export default function Home() {
       return;
     }
 
-    // Basic Pitch Shifting Logic Simulation (Note: Real pitch shifting requires complex FFT nodes, 
-    // here we simulate with BiquadFilter for tonal changes as a lightweight alternative)
+    // Basic Pitch Shifting Logic Simulation / Web Audio Effect Node Setup
     if (sourceNode.current) sourceNode.current.disconnect();
 
     sourceNode.current = audioCtx.current.createMediaStreamSource(localVideo.current.srcObject);
-    const filter = audioCtx.current.createBiquadFilter();
-
-    if (voice === "Robot") {
-      filter.type = "peaking";
-      filter.frequency.value = 1000;
-      filter.Q.value = 20;
-    } else if (voice === "Deep") {
-      filter.type = "lowpass";
-      filter.frequency.value = 400;
-    } else if (voice === "Chipmunk") {
-      filter.type = "highpass";
-      filter.frequency.value = 1500;
-    } else if (voice === "Alien") {
-      filter.type = "notch";
-      filter.frequency.value = 800;
-      filter.Q.value = 10;
-    }
-
-    sourceNode.current.connect(filter);
-    
-    // Create a destination to capture the processed audio
     const dest = audioCtx.current.createMediaStreamDestination();
-    filter.connect(dest);
+
+    if (voice === "Echo") {
+      // High-quality dry/wet echo filter loop
+      const delayNode = audioCtx.current.createDelay(1.0);
+      delayNode.delayTime.value = 0.3; // 300ms delay time
+
+      const feedbackNode = audioCtx.current.createGain();
+      feedbackNode.gain.value = 0.4; // feedback volume
+
+      const dryGain = audioCtx.current.createGain();
+      dryGain.gain.value = 1.0;
+
+      const wetGain = audioCtx.current.createGain();
+      wetGain.gain.value = 0.6;
+
+      // Dry path (original voice)
+      sourceNode.current.connect(dryGain);
+      dryGain.connect(dest);
+
+      // Wet path (echo delay loop)
+      sourceNode.current.connect(delayNode);
+      delayNode.connect(feedbackNode);
+      feedbackNode.connect(delayNode); // feedback loop
+      
+      feedbackNode.connect(wetGain);
+      wetGain.connect(dest);
+    } else {
+      const filter = audioCtx.current.createBiquadFilter();
+
+      if (voice === "Robot") {
+        filter.type = "peaking";
+        filter.frequency.value = 1000;
+        filter.Q.value = 20;
+      } else if (voice === "Deep") {
+        filter.type = "lowpass";
+        filter.frequency.value = 400;
+      } else if (voice === "Chipmunk") {
+        filter.type = "highpass";
+        filter.frequency.value = 1500;
+      } else if (voice === "Alien") {
+        filter.type = "notch";
+        filter.frequency.value = 800;
+        filter.Q.value = 10;
+      }
+
+      sourceNode.current.connect(filter);
+      filter.connect(dest);
+    }
     
+    // Save processed track ref
+    processedAudioTrackRef.current = dest.stream.getAudioTracks()[0];
+
     // Replace the audio track in the peerConnection so the partner HEARS it
     if (peerConnection.current) {
       const senders = peerConnection.current.getSenders();
@@ -3825,7 +3885,7 @@ export default function Home() {
         }
 
         .natural-view {
-          transform: scaleX(1) !important;
+          transform: scaleX(-1) !important;
         }
 
         .searching-overlay-v2 {
