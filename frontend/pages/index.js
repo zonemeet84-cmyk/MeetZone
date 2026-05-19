@@ -3983,19 +3983,60 @@ export default function Dashboard() {
 
           @media (max-width: 768px) {
             .header {
-              padding: 15px 10px;
-              flex-direction: column !important;
-              gap: 15px;
+              padding: 8px 12px !important;
+              flex-direction: row !important;
+              justify-content: space-between !important;
+              align-items: center !important;
+              gap: 8px !important;
+              height: auto !important;
+            }
+            .logo-icon-wrapper svg {
+              width: 30px !important;
+              height: 30px !important;
+            }
+            .logo-text {
+              font-size: 1.15rem !important;
+            }
+            .premium-badge {
+              font-size: 0.6rem !important;
+              padding: 2px 6px !important;
             }
             .header-nav {
-              flex-wrap: wrap !important;
-              justify-content: center !important;
-              gap: 10px !important;
+              display: none !important;
             }
             .user-dashboard-row {
-              flex-wrap: wrap !important;
-              justify-content: center !important;
-              gap: 10px !important;
+              gap: 6px !important;
+            }
+            .header-coins-pill, .header-streak-pill {
+              padding: 4px 8px !important;
+              gap: 4px !important;
+            }
+            .coin-icon, .streak-fire {
+              font-size: 0.9rem !important;
+            }
+            .coin-count, .streak-count {
+              font-size: 0.75rem !important;
+            }
+            .plus-icon {
+              width: 12px !important;
+              height: 12px !important;
+              font-size: 9px !important;
+            }
+            .network-status-pill {
+              display: none !important;
+            }
+            .profile-avatar {
+              width: 30px !important;
+              height: 30px !important;
+              font-size: 0.9rem !important;
+            }
+            .profile-trigger span {
+              display: none !important;
+            }
+            .user-dashboard-row {
+              flex-wrap: nowrap !important;
+              justify-content: flex-end !important;
+              gap: 6px !important;
             }
             .nav-links {
               display: none; 
@@ -4015,6 +4056,8 @@ export default function Dashboard() {
             }
             .pricing-container {
               grid-template-columns: 1fr !important;
+              gap: 20px !important;
+              padding: 0 10px !important;
             }
             .footer-grid {
               grid-template-columns: 1fr 1fr !important;
@@ -4025,7 +4068,7 @@ export default function Dashboard() {
               padding: 30px 20px !important;
             }
             .dashboard-hero {
-              padding-top: 150px !important;
+              padding-top: 100px !important;
             }
             .payment-overlay {
               padding: 1rem 0.5rem !important;
@@ -4168,12 +4211,156 @@ export default function Dashboard() {
             .modal-header-premium h2 {
               font-size: 2rem !important;
             }
-            /* Fix for referral grid */
+            /* Fix for referral grid and details */
+            #referral-section {
+              padding: 30px 15px !important;
+              margin-top: 20px !important;
+            }
+            #referral-section > div:nth-of-type(1) h2 {
+              font-size: 1.8rem !important;
+            }
+            #referral-section > div:nth-of-type(1) p {
+              font-size: 0.85rem !important;
+            }
             #referral-section > div:nth-of-type(2) {
               grid-template-columns: 1fr !important;
+              gap: 15px !important;
             }
-            #referral-section {
+            #referral-section > div:nth-of-type(2) > div {
+              padding: 15px !important;
+              border-radius: 16px !important;
+            }
+            #referral-section > div:nth-of-type(2) > div > div:nth-of-type(1) {
+              font-size: 1.8rem !important;
+            }
+            #referral-section > div:nth-of-type(2) > div > div:nth-of-type(2) {
+              font-size: 1.4rem !important;
+            }
+            #referral-section > div:nth-of-type(3) {
+              padding: 20px 15px !important;
+              border-radius: 18px !important;
+            }
+            #referral-section div[style*="display: 'flex'"],
+            #referral-section div[style*="display: 'flex'"][style*="alignItems: 'center'"] {
+              flex-direction: column !important;
+              align-items: stretch !important;
+              gap: 10px !important;
+            }
+            #referral-section div[style*="fontFamily: 'monospace'"] {
+              font-size: 1.1rem !important;
+              padding: 10px 15px !important;
+              text-align: center !important;
+              letter-spacing: 2px !important;
+            }
+            #referral-section div[style*="overflow: 'hidden'"] {
+              font-size: 0.75rem !important;
+              padding: 10px 15px !important;
+              text-align: center !important;
+            }
+            #referral-section button {
+              width: 100% !important;
+              padding: 12px !important;
+              font-size: 0.85rem !important;
+              height: auto !important;
+            }
+            /* Subscription Packs Smaller sizing */
+            .premium-card {
+              padding: 20px 15px !important;
+              border-radius: 20px !important;
+            }
+            .premium-card h3 {
+              font-size: 1.2rem !important;
+            }
+            .premium-card .duration {
+              font-size: 0.75rem !important;
+            }
+            .premium-card .price-tag {
+              margin: 1rem 0 !important;
+            }
+            .premium-card .amount {
+              font-size: 1.8rem !important;
+            }
+            .premium-card .premium-features {
+              gap: 8px !important;
+              margin-bottom: 1.5rem !important;
+            }
+            .premium-card .premium-features li {
+              font-size: 0.8rem !important;
+            }
+            .premium-card .premium-btn {
+              padding: 12px !important;
+              font-size: 0.9rem !important;
+              border-radius: 12px !important;
+              height: auto !important;
+            }
+            .elite-hero-banner {
+              padding: 20px 15px !important;
+              border-radius: 24px !important;
+              gap: 20px !important;
+            }
+            .elite-main-info h2 {
+              font-size: 1.8rem !important;
+            }
+            .elite-main-info p {
+              font-size: 0.9rem !important;
+            }
+            .elite-price-group .price {
+              font-size: 1.8rem !important;
+            }
+            .elite-btn-v3 {
+              padding: 12px 20px !important;
+              font-size: 0.9rem !important;
+              border-radius: 12px !important;
+              width: 100% !important;
+              text-align: center !important;
+            }
+            .elite-features-grid {
+              grid-template-columns: 1fr !important;
+              gap: 8px !important;
+            }
+            .elite-feature-item {
+              padding: 10px 15px !important;
+              border-radius: 12px !important;
+            }
+            .elite-feature-item strong {
+              font-size: 0.85rem !important;
+            }
+            .elite-feature-item p {
+              font-size: 0.75rem !important;
+            }
+            /* Experience and Gallery overrides */
+            .gallery-sub {
+              display: none !important;
+            }
+            .gallery-main {
+              transform: none !important;
+              border-radius: 20px !important;
+            }
+            .experience-section, .friends-promo-section {
               padding: 40px 15px !important;
+            }
+            .experience-text h2, .friends-text h2 {
+              font-size: 2rem !important;
+            }
+            .experience-text p, .friends-text p {
+              font-size: 0.95rem !important;
+            }
+            /* Global Mobile Button Shrinking */
+            .btn-connect-now {
+              padding: 12px 24px !important;
+              font-size: 1rem !important;
+              border-radius: 12px !important;
+            }
+            .btn-contact-home {
+              padding: 10px 20px !important;
+              font-size: 0.85rem !important;
+              border-radius: 12px !important;
+              width: 100% !important;
+            }
+            .btn-contact-home, .btn-secondary, .btn-primary, .premium-btn, .elite-btn-v3, .streak-cta-btn, .profile-edit-btn, .profile-premium-btn {
+              font-size: 0.85rem !important;
+              padding: 10px 18px !important;
+              height: auto !important;
             }
             /* Fix for mystery box confirm */
             .premium-modal {
