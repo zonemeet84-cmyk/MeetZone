@@ -745,6 +745,8 @@ export default function Home() {
   const [activeIdentityMenu, setActiveIdentityMenu] = useState(null); // 'filters', 'avatars', 'voice', 'privacy'
   const [partnerIsBlurred, setPartnerIsBlurred] = useState(false);
   const [partnerAvatar, setPartnerAvatar] = useState("None");
+  const [partnerMask, setPartnerMask] = useState("None");
+  const [partnerFilter, setPartnerFilter] = useState("None");
 
   useEffect(() => {
     if (!socket) return;
@@ -752,6 +754,8 @@ export default function Home() {
     socket.on("partner-effect", ({ type, value }) => {
       if (type === 'blur') setPartnerIsBlurred(value);
       if (type === 'avatar') setPartnerAvatar(value);
+      if (type === 'mask') setPartnerMask(value);
+      if (type === 'filter') setPartnerFilter(value);
     });
 
     return () => socket.off("partner-effect");
@@ -761,11 +765,78 @@ export default function Home() {
     if (socket && partnerId) {
       socket.emit("partner-effect", { type: 'blur', value: isFaceBlurred });
       socket.emit("partner-effect", { type: 'avatar', value: activeAvatar });
+      socket.emit("partner-effect", { type: 'mask', value: activeMask });
+      socket.emit("partner-effect", { type: 'filter', value: activeMediaPipeFilter });
     }
-  }, [isFaceBlurred, activeAvatar, partnerId, socket]);
+  }, [isFaceBlurred, activeAvatar, activeMask, activeMediaPipeFilter, partnerId, socket]);
 
 
   // Effects apply directly on click now
+
+  const getCssFilterString = () => {
+    let filters = [];
+    if (isFaceBlurred) {
+      filters.push('blur(25px)');
+    } else {
+      if (activeMediaPipeFilter === "Smooth") {
+        filters.push('contrast(1.03) saturate(1.02) brightness(1.02) blur(0.3px)');
+      } else if (activeMediaPipeFilter === "Glow") {
+        filters.push('brightness(1.15) contrast(1.05) saturate(1.1)');
+      } else if (activeMediaPipeFilter === "Whitening") {
+        filters.push('brightness(1.22) contrast(0.95)');
+      } else if (activeMediaPipeFilter === "Beauty") {
+        filters.push('brightness(1.12) contrast(1.08) saturate(1.15)');
+      } else if (activeMediaPipeFilter === "Makeup") {
+        filters.push('hue-rotate(348deg) saturate(1.2) brightness(1.06)');
+      }
+    }
+    return filters.length > 0 ? filters.join(' ') : 'none';
+  };
+
+  const getPartnerCssFilterString = () => {
+    let filters = [];
+    if (partnerIsBlurred) {
+      filters.push('blur(25px)');
+    } else {
+      if (partnerFilter === "Smooth") {
+        filters.push('contrast(1.03) saturate(1.02) brightness(1.02) blur(0.3px)');
+      } else if (partnerFilter === "Glow") {
+        filters.push('brightness(1.15) contrast(1.05) saturate(1.1)');
+      } else if (partnerFilter === "Whitening") {
+        filters.push('brightness(1.22) contrast(0.95)');
+      } else if (partnerFilter === "Beauty") {
+        filters.push('brightness(1.12) contrast(1.08) saturate(1.15)');
+      } else if (partnerFilter === "Makeup") {
+        filters.push('hue-rotate(348deg) saturate(1.2) brightness(1.06)');
+      }
+    }
+    return filters.length > 0 ? filters.join(' ') : 'none';
+  };
+
+  const applyFilterAndMask = (filterId) => {
+    setActiveMediaPipeFilter(filterId);
+    
+    // Map MediaPipe filter IDs to CSS fallback mask IDs
+    if (filterId === "None") {
+      setActiveMask("None");
+    } else if (filterId === "Dog") {
+      setActiveMask("Doggy");
+    } else if (filterId === "Cat") {
+      setActiveMask("Crown");
+    } else if (filterId === "Fire") {
+      setActiveMask("Fire");
+    } else if (filterId === "Hearts") {
+      setActiveMask("Stars");
+    } else if (filterId === "Glasses") {
+      setActiveMask("Glass");
+    } else if (filterId === "Neon") {
+      setActiveMask("Stars");
+    } else if (filterId === "Love") {
+      setActiveMask("Stars");
+    } else {
+      setActiveMask("None");
+    }
+  };
 
   // Audio processing refs
   const audioCtx = useRef(null);
@@ -1203,6 +1274,8 @@ export default function Home() {
         setPartnerInfo(null);
         setPartnerAvatar("None");
         setPartnerIsBlurred(false);
+        setPartnerMask("None");
+        setPartnerFilter("None");
         setFriendReqStatus(false);
         setShowPartnerPreview(false);
         setPartnerMicOn(true);
@@ -1221,6 +1294,8 @@ export default function Home() {
         setPartnerInfo(null);
         setPartnerAvatar("None");
         setPartnerIsBlurred(false);
+        setPartnerMask("None");
+        setPartnerFilter("None");
         setFriendReqStatus(false);
         setShowPartnerPreview(false);
         setPartnerMicOn(true);
@@ -1573,7 +1648,7 @@ export default function Home() {
 
   const purchaseFilter = async (filter) => {
     if (unlockedFilters.includes(filter.id)) {
-      setActiveMediaPipeFilter(filter.id);
+      applyFilterAndMask(filter.id);
       return;
     }
 
@@ -1595,7 +1670,7 @@ export default function Home() {
         if (res.data.success) {
           const updatedFilters = res.data.unlockedFilters || [...unlockedFilters, filter.id];
           setUnlockedFilters(updatedFilters);
-          setActiveMediaPipeFilter(filter.id);
+          applyFilterAndMask(filter.id);
           const updatedUser = { ...user, coins: res.data.coins, unlockedFilters: updatedFilters };
           setUser(updatedUser);
           sessionStorage.setItem("user", JSON.stringify(updatedUser));
@@ -2238,7 +2313,7 @@ export default function Home() {
                   playsInline
                   className="mirrored"
                   style={{
-                    filter: isFaceBlurred ? 'blur(25px)' : 'none',
+                    filter: getCssFilterString(),
                     display: activeAvatar !== "None" ? 'none' : 'block'
                   }}
                 />
@@ -2326,7 +2401,22 @@ export default function Home() {
 
 
             <div className="video-card">
-              <video ref={remoteVideo} autoPlay playsInline className={`natural-view ${partnerIsBlurred ? 'blurred-face' : ''}`} style={{ filter: partnerIsBlurred ? 'blur(25px)' : 'none' }} />
+              <video
+                ref={remoteVideo}
+                autoPlay
+                playsInline
+                className={`natural-view ${partnerIsBlurred ? 'blurred-face' : ''}`}
+                style={{
+                  filter: getPartnerCssFilterString(),
+                  display: partnerAvatar !== "None" ? 'none' : 'block'
+                }}
+              />
+              
+              {partnerMask && partnerMask !== "None" && partnerAvatar === "None" && (
+                <div className="video-mask-overlay">
+                  <div className={`mask-${partnerMask.toLowerCase()}`}></div>
+                </div>
+              )}
 
               {/* PARTNER CAMERA OFF PLACEHOLDER */}
               {partnerId && !partnerCameraOn && (
@@ -2748,7 +2838,7 @@ export default function Home() {
                                 <div
                                   key={f.id}
                                   className={`mini-option ${activeMediaPipeFilter === f.id ? 'selected' : ''}`}
-                                  onClick={() => setActiveMediaPipeFilter(f.id)}
+                                  onClick={() => applyFilterAndMask(f.id)}
                                 >
                                   <span className="filter-icon">{f.icon}</span>
                                   <div className="filter-info">
@@ -4598,11 +4688,11 @@ export default function Home() {
           position: absolute;
           bottom: 75px;
           background: #111827;
-          padding: 12px;
-          border-radius: 18px;
+          padding: 8px;
+          border-radius: 14px;
           border: 1px solid #334155;
           z-index: 1000;
-          width: 340px;
+          width: 280px;
           max-width: 90vw;
           left: 50%;
           transform: translateX(-50%);
@@ -4626,33 +4716,33 @@ export default function Home() {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 12px;
-          padding-bottom: 8px;
+          margin-bottom: 8px;
+          padding-bottom: 6px;
           border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
-        .popup-header span { font-size: 0.65rem; font-weight: 900; color: #ec4899; letter-spacing: 1.5px; }
-        .popup-header button { background: none; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; line-height: 1; }
+        .popup-header span { font-size: 0.6rem; font-weight: 900; color: #ec4899; letter-spacing: 1.2px; }
+        .popup-header button { background: none; border: none; color: #64748b; font-size: 0.95rem; cursor: pointer; line-height: 1; }
 
         .filters-by-category {
           display: flex;
           flex-direction: column;
-          gap: 1rem;
-          padding: 0.25rem;
-          max-height: 280px;
+          gap: 0.6rem;
+          padding: 0.15rem;
+          max-height: 220px;
           overflow-y: auto;
         }
-        .category-section { display: flex; flex-direction: column; gap: 0.5rem; }
-        .cat-title { font-size: 0.68rem; font-weight: 800; color: #6366f1; text-transform: uppercase; letter-spacing: 0.15em; border-bottom: 1px solid rgba(99, 102, 241, 0.2); padding-bottom: 0.25rem; margin: 0 0 0.25rem 0; text-align: left; }
-        .popup-options-row { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-start; width: 100%; }
-        .mini-option { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px 10px; border-radius: 12px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 0.2rem; min-width: 75px; flex: 1 1 75px; position: relative; }
+        .category-section { display: flex; flex-direction: column; gap: 0.35rem; }
+        .cat-title { font-size: 0.62rem; font-weight: 800; color: #6366f1; text-transform: uppercase; letter-spacing: 0.12em; border-bottom: 1px solid rgba(99, 102, 241, 0.2); padding-bottom: 0.2rem; margin: 0 0 0.2rem 0; text-align: left; }
+        .popup-options-row { display: flex; flex-wrap: wrap; gap: 0.3rem; justify-content: flex-start; width: 100%; }
+        .mini-option { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 4px 6px; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 0.15rem; min-width: 55px; flex: 1 1 55px; position: relative; }
         .mini-option:hover { background: rgba(99, 102, 241, 0.1); border-color: #6366f1; transform: translateY(-2px); }
         .mini-option.selected { background: #6366f1; border-color: #818cf8; color: white; box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); }
         .mini-option.locked-filter { opacity: 0.8; filter: grayscale(0.5); }
-        .mini-option.locked-filter::after { content: "🔒"; position: absolute; top: 5px; right: 5px; font-size: 0.6rem; }
-        .filter-icon { font-size: 1.2rem; }
+        .mini-option.locked-filter::after { content: "🔒"; position: absolute; top: 3px; right: 3px; font-size: 0.5rem; }
+        .filter-icon { font-size: 1rem; }
         .filter-info { display: flex; flex-direction: column; align-items: center; }
-        .filter-name { font-size: 0.65rem; font-weight: 700; text-align: center; color: #fff; }
-        .filter-cost { font-size: 0.6rem; color: #fbbf24; font-weight: 800; margin-top: 2px; }
+        .filter-name { font-size: 0.58rem; font-weight: 700; text-align: center; color: #fff; }
+        .filter-cost { font-size: 0.55rem; color: #fbbf24; font-weight: 800; margin-top: 1px; }
         .mini-option:hover { background: #334155; transform: scale(1.05); }
         .mini-option.selected {
           background: #6366f1;
