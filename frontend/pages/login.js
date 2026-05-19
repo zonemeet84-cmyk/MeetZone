@@ -26,7 +26,8 @@ export default function Login() {
   const [forgotSuccess, setForgotSuccess] = useState("");
 
   useEffect(() => {
-    if (sessionStorage.getItem("token")) {
+    const token = sessionStorage.getItem("token");
+    if (token && token !== "undefined" && token !== "null") {
       router.push("/");
     }
   }, [router]);

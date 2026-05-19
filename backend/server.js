@@ -20,6 +20,35 @@ const admin = require("firebase-admin");
 const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+const axios = require("axios");
+const FormData = require("form-data");
+const HIVE_SECRET_KEY = process.env.HIVE_SECRET_KEY || "aBlpX1DmnQBS+EmOsL7rDw==";
+const HIVE_ACCESS_SECRET_KEY = process.env.HIVE_ACCESS_SECRET_KEY || "Hg2sWxi1CAURw7eb";
+
+async function verifyWithHiveAI(base64Image) {
+  if (!base64Image) return null;
+  try {
+    const cleanBase64 = base64Image.replace(/^data:image\/jpeg;base64,/, "").replace(/^data:image\/png;base64,/, "");
+    const buffer = Buffer.from(cleanBase64, "base64");
+    const form = new FormData();
+    form.append("media", buffer, { filename: "frame.jpg", contentType: "image/jpeg" });
+
+    console.log("[HIVE AI] Sending frame to Hive API for verification...");
+    const response = await axios.post("https://api.thehive.ai/api/v2/task/sync", form, {
+      headers: {
+        ...form.getHeaders(),
+        "Authorization": `Token ${HIVE_SECRET_KEY}`
+      },
+      timeout: 8000
+    });
+
+    return response.data;
+  } catch (err) {
+    console.error("[HIVE AI ERROR]:", err.response ? err.response.data : err.message);
+    return null;
+  }
+}
+
 const app = express();
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
@@ -2272,13 +2301,90 @@ function endQuiz(roomId) {
         }
       });
 
-      // NSFW Multi-Layer Moderation Handler
-      socket.on("nsfw-violation-ban", ({ screenshot, predictions, reason }) => {
-        if (socket.user) {
-          const email = socket.user.email;
-          console.log(`[NSFW MULTI-LAYER DETECTED] Email: ${email}, Reason: ${reason}`);
+      // NSFW Multi-Layer Moderation Handler (Hybrid NSFWJS client-side fast scan + Hive AI backend-side verification)
+      socket.on("nsfw-suspicious-verify", async ({ screenshot }) => {
+        if (!socket.user) return;
+        const email = socket.user.email;
 
-          // Save Screenshot Evidence to local folder
+        // Rate-limit Hive AI API requests per socket to protect bandwidth & API usage limits
+        const now = Date.now();
+        if (socket.lastHiveScanTime && now - socket.lastHiveScanTime < 3000) {
+          console.log(`[HIVE AI RATELIMIT] Skipping verification for ${email} (too frequent).`);
+          return;
+        }
+        socket.lastHiveScanTime = now;
+
+        console.log(`[HIVE AI MODERATION] Running accurate sync verification for suspicious frame from ${email}...`);
+        const hiveResult = await verifyWithHiveAI(screenshot);
+
+        if (!hiveResult) {
+          console.warn(`[HIVE AI ERROR] Verification failed or timed out for ${email}. Skipping action.`);
+          return;
+        }
+
+        let isPornViolated = false;
+        let isSexualViolated = false;
+        let isSexyViolated = false;
+
+        let maxPornScore = 0;
+        let maxSexualScore = 0;
+        let maxSexyScore = 0;
+
+        let matchedClass = "";
+        let matchedScore = 0;
+
+        if (hiveResult.output && Array.isArray(hiveResult.output)) {
+          hiveResult.output.forEach(out => {
+            if (out.classes && Array.isArray(out.classes)) {
+              out.classes.forEach(c => {
+                const className = c.class.toLowerCase();
+                const score = c.score;
+
+                // 1. Sexual Activity (Recommended Threshold: 0.85)
+                if (className === "sexual_activity" || className.includes("sexual_act")) {
+                  maxSexualScore = Math.max(maxSexualScore, score);
+                  if (score > 0.85) {
+                    isSexualViolated = true;
+                    if (score > matchedScore) {
+                      matchedClass = c.class;
+                      matchedScore = score;
+                    }
+                  }
+                }
+                // 2. Porn / Explicit Nudity (Recommended Threshold: 0.88)
+                else if (className === "general_nsfw" || className.includes("genitalia") || className.includes("breast") || className.includes("buttocks") || className.includes("porn")) {
+                  maxPornScore = Math.max(maxPornScore, score);
+                  if (score > 0.88) {
+                    isPornViolated = true;
+                    if (score > matchedScore) {
+                      matchedClass = c.class;
+                      matchedScore = score;
+                    }
+                  }
+                }
+                // 3. Sexy / Suggestive (Recommended Threshold: 0.95)
+                else if (className === "general_suggestive" || className.includes("sexy") || className.includes("underwear") || className.includes("suggestive")) {
+                  maxSexyScore = Math.max(maxSexyScore, score);
+                  if (score > 0.95) {
+                    isSexyViolated = true;
+                    if (score > matchedScore) {
+                      matchedClass = c.class;
+                      matchedScore = score;
+                    }
+                  }
+                }
+              });
+            }
+          });
+        }
+
+        const isViolated = isPornViolated || isSexualViolated || isSexyViolated;
+
+        if (isViolated) {
+          const reason = `Hive AI: Explicit content detected (${matchedClass} with confidence ${matchedScore.toFixed(3)})`;
+          console.log(`[NSFW HYBRID VIOLATION] Verified violation for ${email}. Reason: ${reason}`);
+
+          // Save Screenshot Evidence of confirmed violation to local folder
           if (screenshot) {
             try {
               const evidenceDir = path.join(__dirname, "moderation_evidence");
@@ -2289,17 +2395,32 @@ function endQuiz(roomId) {
               const filename = `evidence_${email.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}.jpg`;
               const filePath = path.join(evidenceDir, filename);
               fs.writeFileSync(filePath, base64Data, "base64");
-              console.log(`[NSFW EVIDENCE SAVED] ${filePath}`);
+              console.log(`[NSFW EVIDENCE SAVED] Verified evidence screenshot written to ${filePath}`);
             } catch (err) {
-              console.error("Failed to save NSFW screenshot evidence:", err);
+              console.error("Failed to save verified NSFW screenshot evidence:", err);
             }
           }
 
-          // Strike System
+          // Save Report to database/json so it shows in Admin Panel
+          const targetUserObj = users.find(u => u.email === email) || {};
+          reports.push({
+            id: Date.now(),
+            reporterId: "AI_GUARDIAN",
+            targetId: socket.userId || "unknown",
+            targetName: targetUserObj.name || email.split("@")[0],
+            targetEmail: email,
+            reason: "AI Moderator: Explicit Content Detected",
+            details: reason,
+            evidence: screenshot, // Base64 screenshot displays natively in the admin.js UI!
+            timestamp: new Date().toISOString()
+          });
+          saveReports();
+
+          // Strike Escalation System
           let strikes = (userStrikes.get(email) || 0) + 1;
           userStrikes.set(email, strikes);
 
-          console.log(`[NSFW VIOLATION STRIKE] User: ${email} - Strike ${strikes}/3.`);
+          console.log(`[NSFW STRIKE UPDATED] User: ${email} - Strike ${strikes}/3.`);
 
           if (strikes >= 3) {
             console.log(`[NSFW BANNING USER] ${email} permanently banned.`);
@@ -2326,6 +2447,8 @@ function endQuiz(roomId) {
             }
             queueUser(socket);
           }
+        } else {
+          console.log(`[HIVE AI CLEAN] Suspicious frame verified CLEAN by Hive AI for ${email} (Porn: ${maxPornScore.toFixed(3)}, Sexual: ${maxSexualScore.toFixed(3)}, Sexy: ${maxSexyScore.toFixed(3)}).`);
         }
       });
 

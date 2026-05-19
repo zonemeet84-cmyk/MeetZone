@@ -20,7 +20,8 @@ export default function Signup() {
   const recaptchaRef = useRef();
 
   useEffect(() => {
-    if (sessionStorage.getItem("token")) {
+    const token = sessionStorage.getItem("token");
+    if (token && token !== "undefined" && token !== "null") {
       router.push("/");
     }
   }, [router]);
