@@ -20,7 +20,7 @@ export default function Signup() {
   const recaptchaRef = useRef();
 
   useEffect(() => {
-    if (localStorage.getItem("token")) {
+    if (sessionStorage.getItem("token")) {
       router.push("/");
     }
   }, [router]);
@@ -76,8 +76,8 @@ export default function Signup() {
         ...form,
         captchaToken: captcha
       });
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      sessionStorage.setItem("token", res.data.token);
+      sessionStorage.setItem("user", JSON.stringify(res.data.user));
       router.push("/");
     } catch (err) {
       if (recaptchaRef.current) recaptchaRef.current.reset();
