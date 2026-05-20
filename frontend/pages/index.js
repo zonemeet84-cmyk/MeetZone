@@ -3056,6 +3056,27 @@ export default function Dashboard() {
           </a>
           <a href="/contact" style={{ color: '#6366f1', textDecoration: 'none' }}>Contact Us</a>
         </div>
+
+        {/* Developer Attribution */}
+        <div style={{
+          marginTop: '2rem',
+          padding: '18px 28px',
+          background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.08))',
+          border: '1px solid rgba(99,102,241,0.2)',
+          borderRadius: '16px',
+          textAlign: 'center',
+          maxWidth: '700px',
+          margin: '2rem auto 0'
+        }}>
+          <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: '1.7', margin: 0 }}>
+            <span style={{ color: '#c4b5fd', fontWeight: 700 }}>ZoneMeet</span> is independently developed and managed by{' '}
+            <span style={{ color: '#a5b4fc', fontWeight: 700 }}>Davinder Singh</span>.{' '}
+            For support, partnerships, business inquiries, or any important concerns, please contact:{' '}
+            <a href="mailto:support@zonemeet.chat" style={{ color: '#818cf8', fontWeight: 700, textDecoration: 'none' }}>
+              support@zonemeet.chat
+            </a>
+          </p>
+        </div>
       </div>
       <style jsx>{`
           .auth-buttons {

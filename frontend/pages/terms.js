@@ -67,6 +67,24 @@ export default function Terms() {
         <p>
           The Service is provided on an "as is" and "as available" basis. ZoneMeet makes no representations or warranties of any kind, express or implied, regarding the use or the results of this web site in terms of its correctness, accuracy, reliability, or otherwise.
         </p>
+
+        <div style={{
+          marginTop: '3rem',
+          padding: '24px 28px',
+          background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.08))',
+          border: '1px solid rgba(99,102,241,0.25)',
+          borderRadius: '18px',
+          textAlign: 'center'
+        }}>
+          <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.8', margin: 0 }}>
+            <span style={{ color: '#c4b5fd', fontWeight: 700 }}>ZoneMeet</span> is independently developed and managed by{' '}
+            <span style={{ color: '#a5b4fc', fontWeight: 700 }}>Davinder Singh</span>.<br />
+            For support, partnerships, business inquiries, or any important concerns, please contact:{' '}
+            <a href="mailto:support@zonemeet.chat" style={{ color: '#818cf8', fontWeight: 700, textDecoration: 'none' }}>
+              support@zonemeet.chat
+            </a>
+          </p>
+        </div>
       </div>
 
       <style jsx>{`
