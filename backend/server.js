@@ -3033,7 +3033,7 @@ function endQuiz(roomId) {
             order_amount: (amount / 100).toFixed(2),
             order_currency: "INR",
             customer_details: { customer_id: userEmail.replace(/[@.]/g, "_"), customer_email: userEmail, customer_phone: "9999999999" },
-            order_meta: { return_url: `https://zonemeet.chat/payment-success?order_id={order_id}&plan=${planName}`, notify_url: `https://meetzone-backend.onrender.com/api/payment/cashfree/webhook` },
+            order_meta: { return_url: `https://zonemeet.chat/payment-success?order_id={order_id}&plan=${encodeURIComponent(planName)}`, notify_url: `https://meetzone-backend.onrender.com/api/payment/cashfree/webhook` },
             order_note: `ZoneMeet ${planName}`
           })
         });

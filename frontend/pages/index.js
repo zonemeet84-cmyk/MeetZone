@@ -896,7 +896,7 @@ export default function Dashboard() {
       const cashfree = new window.Cashfree({ mode: process.env.NEXT_PUBLIC_CASHFREE_ENV === "production" ? "production" : "sandbox" });
       cashfree.checkout({
         paymentSessionId: orderRes.data.paymentSessionId,
-        returnUrl: `https://zonemeet.chat/?cf_order=${orderRes.data.orderId}&plan=${selectedPlan.name}&email=${user.email}`,
+        returnUrl: `https://zonemeet.chat/?cf_order=${orderRes.data.orderId}&plan=${encodeURIComponent(selectedPlan.name)}&email=${encodeURIComponent(user.email)}`,
       });
     } catch (err) { console.error(err); setPaymentStep("methods"); showModal({ message: "Cashfree error. Try another method.", type: "error" }); }
   };
