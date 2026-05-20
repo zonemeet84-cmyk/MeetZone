@@ -1157,17 +1157,19 @@ export default function Dashboard() {
                         {!user.referredBy && (
                           <div className="profile-referral-box">
                             <div className="profile-referral-title">🎁 Referral Code</div>
-                            <div className="profile-referral-row">
+                            <div className="profile-referral-row" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', width: '100%', overflow: 'hidden' }}>
                               <input
                                 type="text"
                                 placeholder="Code"
                                 value={redeemCode}
                                 className="profile-referral-input"
+                                style={{ flex: '1 1 0', minWidth: 0 }}
                                 onChange={(e) => setRedeemCode(e.target.value.toUpperCase())}
                               />
                               <button
                                 onClick={handleRedeemReferral}
                                 className="profile-referral-btn"
+                                style={{ flexShrink: 0, whiteSpace: 'nowrap' }}
                               >
                                 Redeem
                               </button>
@@ -4521,25 +4523,35 @@ export default function Dashboard() {
             .profile-referral-box {
               padding: 8px !important;
               border-radius: 10px !important;
+              overflow: hidden !important;
             }
             .profile-referral-title {
               font-size: 0.65rem !important;
               margin-bottom: 6px !important;
             }
             .profile-referral-row {
-              gap: 4px !important;
+              gap: 6px !important;
+              display: flex !important;
+              flex-direction: row !important;
+              align-items: center !important;
+              width: 100% !important;
+              overflow: hidden !important;
             }
             .profile-referral-input {
-              padding: 5px 8px !important;
+              padding: 6px 8px !important;
               font-size: 0.75rem !important;
               border-radius: 6px !important;
               height: auto !important;
+              flex: 1 1 0 !important;
+              min-width: 0 !important;
             }
             .profile-referral-btn {
-              padding: 3px 6px !important;
-              font-size: 0.65rem !important;
+              padding: 6px 10px !important;
+              font-size: 0.72rem !important;
               border-radius: 6px !important;
               height: auto !important;
+              flex-shrink: 0 !important;
+              white-space: nowrap !important;
             }
             .profile-modal-card input,
             .profile-modal-card select {
