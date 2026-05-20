@@ -3039,6 +3039,7 @@ export default function Dashboard() {
           This website and its services are strictly restricted to users of age <strong>18 years and older</strong>. By accessing or using ZoneMeet, you certify and warrant that you are at least 18 years of age. Underage usage is strictly prohibited and subject to immediate permanent ban.
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '15px', marginTop: '1rem' }}>
+          <a href="/about" style={{ color: '#a5b4fc', textDecoration: 'none', fontWeight: '700' }}>About Us</a>
           <a href="/terms" style={{ color: '#6366f1', textDecoration: 'none' }}>Terms &amp; Conditions</a>
           <a href="/privacy" style={{ color: '#6366f1', textDecoration: 'none' }}>Privacy Policy</a>
           <a href="/refund" style={{ color: '#6366f1', textDecoration: 'none' }}>Refund Policy</a>
