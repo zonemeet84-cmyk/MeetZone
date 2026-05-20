@@ -457,8 +457,14 @@ export default function Dashboard() {
             ) {
               setShowStreakModal(true);
             }
-            if (res.data.coins !== user.coins || res.data.streak !== user.streak || res.data.coinActivity) {
-              const updated = { ...user, coins: res.data.coins, streak: res.data.streak, coinActivity: res.data.coinActivity || user.coinActivity };
+            if (res.data.coins !== user.coins || res.data.streak !== user.streak || res.data.coinActivity || res.data.canCollect !== !user.bonusClaimedToday) {
+              const updated = { 
+                ...user, 
+                coins: res.data.coins, 
+                streak: res.data.streak, 
+                coinActivity: res.data.coinActivity || user.coinActivity,
+                bonusClaimedToday: !res.data.canCollect
+              };
               setUser(updated);
               sessionStorage.setItem("user", JSON.stringify(updated));
             }
