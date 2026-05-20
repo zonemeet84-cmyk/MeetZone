@@ -1316,11 +1316,28 @@ export default function Home() {
       });
 
       socket.on("nsfw-strike-alert", ({ strikes, maxStrikes, reason }) => {
+        // 1. Show notification
+        showToast("⚠️ Inappropriate content detected! Auto-skipping partner and blurring screen for 5 seconds.", "error", 5000);
+
+        // 2. Blur screen
         setIsFaceBlurred(true);
         if (socket) {
           socket.emit("partner-effect", { type: "blur", value: true });
         }
+        
+        // 3. System message
         setMessages(prev => [...prev, { sender: "system", text: `⚠️ [Safety Alert]: AI detected safety violation (${reason}). Strike ${strikes}/${maxStrikes} registered.` }]);
+
+        // 4. Auto-skip partner
+        socket.emit("next");
+
+        // 5. Unblur after 5 seconds
+        setTimeout(() => {
+          setIsFaceBlurred(false);
+          if (socket) {
+            socket.emit("partner-effect", { type: "blur", value: false });
+          }
+        }, 5000);
       });
 
       socket.on("banned-alert", (msg) => {
