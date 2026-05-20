@@ -1232,7 +1232,7 @@ export default function Home() {
                   console.warn(`[NSFWJS SOFT TRIG] Suspicious frame (Porn: ${pornProb.toFixed(2)}, Hentai: ${hentaiProb.toFixed(2)}, Sexy: ${sexyProb.toFixed(2)}, FacePresent: ${faceDetected}). Requesting backend Hive AI verification...`);
                   
                   // 1. Show notification
-                  showToast("⚠️ Inappropriate content detected! Auto-skipping partner and blurring screen for 5 seconds.", "error", 5000);
+                  showToast("⚠️ Inappropriate content detected! Agar dubara kiya to account 1 din ke liye ban hojaoge. Auto-skipping...", "error", 6000);
 
                   // 2. Auto-blur local stream instantly on the frontend as a soft precaution while verifying
                   setIsFaceBlurred(true);
@@ -1319,7 +1319,7 @@ export default function Home() {
 
       socket.on("nsfw-strike-alert", ({ strikes, maxStrikes, reason }) => {
         // 1. Show notification
-        showToast("⚠️ Inappropriate content detected! Auto-skipping partner and blurring screen for 5 seconds.", "error", 5000);
+        showToast("⚠️ Inappropriate content detected! Agar dubara kiya to account 1 din ke liye ban hojaoge. Auto-skipping...", "error", 6000);
 
         // 2. Blur screen
         setIsFaceBlurred(true);

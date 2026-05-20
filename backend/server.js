@@ -2423,11 +2423,20 @@ function endQuiz(roomId) {
           console.log(`[NSFW STRIKE UPDATED] User: ${email} - Strike ${strikes}/3.`);
 
           if (strikes >= 3) {
-            console.log(`[NSFW BANNING USER] ${email} permanently banned.`);
-            banUser(email, `AI Detection: 3 consecutive safety violations for explicit content (${reason})`);
+            console.log(`[NSFW BANNING USER] ${email} banned for 1 day.`);
+            banUser(email, `AI Detection: 3 consecutive safety violations. Banned for 1 day.`);
+            // Auto unban after 24 hours
+            setTimeout(() => {
+              const index = bannedEmails.indexOf(email);
+              if (index > -1) {
+                bannedEmails.splice(index, 1);
+                saveBanned();
+                console.log(`[UNBAN] ${email} 1-day ban expired.`);
+              }
+            }, 24 * 60 * 60 * 1000);
           } else {
             // Send warning back to socket
-            socket.emit("warning-alert", `CRITICAL WARNING: Explicit content detected! Strike ${strikes}/3. Continued violations will result in an immediate permanent account ban.`);
+            socket.emit("warning-alert", `⚠️ WARNING: Inappropriate content detected! Agar dubara kiya to 1 din ke liye ban hojaoge. Strike ${strikes}/3.`);
             
             // Emit partner-effect to blur remote partner's stream
             if (socket.partner) {
