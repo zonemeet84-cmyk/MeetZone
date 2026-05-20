@@ -3972,7 +3972,7 @@ export default function Home() {
           grid-template-columns: 1fr 1fr;
           gap: 0.75rem;
           flex: 1;
-          margin-bottom: -85px; /* Pull bottom bar up to touch video */
+          margin-bottom: 0px; 
         }
 
 
@@ -3983,10 +3983,11 @@ export default function Home() {
           overflow: hidden;
           border: 1px solid rgba(255, 255, 255, 0.1);
           box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-          aspect-ratio: 4 / 3;
           display: flex;
           align-items: center;
           justify-content: center;
+          flex: 1;
+          height: 100%;
         }
 
         .video-card video {
@@ -5120,7 +5121,7 @@ export default function Home() {
         
         /* USER REQUESTED BOTTOM BAR & POPUPS CSS */
         .identity-container {
-          margin-top: -60px;
+          margin-top: -20px;
           display: flex;
           flex-direction: column;
           align-items: center;

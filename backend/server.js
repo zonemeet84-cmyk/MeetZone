@@ -1063,98 +1063,64 @@ app.post("/api/user/daily-check", (req, res) => {
   const user = users.find(u => (email && u.email === email) || (phone && u.phone === phone));
   if (!user) return res.json({ success: false, message: "User not found" });
 
-  const now = Date.now();
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  // Calculate yesterday BEFORE mutating `now`
+  const yesterdayDate = new Date();
+  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+  const yesterday = yesterdayDate.toISOString().split('T')[0];
 
-  // Migration for users from the old calendar-based system
-  if (!user.lastClaimTime) {
-    if (user.bonusClaimedToday) {
-      user.lastClaimTime = now; // Just claimed recently
-    } else {
-      user.lastClaimTime = now - (25 * 60 * 60 * 1000); // Ready to claim immediately
-      if (!user.streak) user.streak = 1;
-    }
-  }
-
-  const hoursSinceLastClaim = (now - user.lastClaimTime) / (1000 * 60 * 60);
-
-  if (user.bonusClaimedToday) {
-    if (hoursSinceLastClaim < 24) {
-      // Cannot collect yet
-      return res.json({
-        success: true,
-        streak: user.streak,
-        status: "already_checked",
-        coins: user.coins,
-        canCollect: false,
-        todayReward: DAILY_REWARDS[Math.min((user.streak || 1) - 1, 6)],
-        coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10)
-      });
-    } else if (hoursSinceLastClaim >= 24 && hoursSinceLastClaim <= 48) {
-      // 24 hours have passed! Consecutive day!
-      user.streak = (user.streak || 0) + 1;
-      user.bonusClaimedToday = false;
-      saveUsers();
-      return res.json({
-        success: true,
-        streak: user.streak,
-        status: user.streak >= 7 ? "streak_complete" : "streak_increased",
-        coins: user.coins,
-        canCollect: true,
-        todayReward: DAILY_REWARDS[Math.min(user.streak - 1, 6)],
-        coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10)
-      });
-    } else {
-      // Missed the 24-48h window! Streak broken.
-      const oldStreak = user.streak;
-      user.streak = 1;
-      user.bonusClaimedToday = false;
-      saveUsers();
-      if (oldStreak > 1) {
-        return res.json({
-          success: true,
-          streak: 1,
-          oldStreak,
-          status: "streak_broken",
-          coins: user.coins,
-          canCollect: true,
-          todayReward: DAILY_REWARDS[0],
-          coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10)
-        });
-      }
-    }
-  } else {
-    // Not claimed yet for the current pending day.
-    if (hoursSinceLastClaim > 48 && user.streak > 1) {
-      // Waited too long to claim the pending reward!
-      const oldStreak = user.streak;
-      user.streak = 1;
-      user.bonusClaimedToday = false;
-      saveUsers();
-      return res.json({
-        success: true,
-        streak: 1,
-        oldStreak,
-        status: "streak_broken",
-        coins: user.coins,
-        canCollect: true,
-        todayReward: DAILY_REWARDS[0],
-        coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10)
-      });
-    }
-
-    // Still valid to claim
+  // Already checked today — just return current state
+  if (user.lastLoginDate === today) {
     return res.json({
       success: true,
-      streak: user.streak || 1,
-      status: "pending_claim",
+      streak: user.streak,
+      status: "already_checked",
       coins: user.coins,
-      canCollect: true,
+      canCollect: !user.bonusClaimedToday,
       todayReward: DAILY_REWARDS[Math.min((user.streak || 1) - 1, 6)],
       coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10)
     });
   }
 
-  // Fallback
+  // Consecutive login — increase streak
+  if (user.lastLoginDate === yesterday) {
+    user.streak = (user.streak || 0) + 1;
+    user.lastLoginDate = today;
+    user.bonusClaimedToday = false; // Fresh day — reward ready to collect
+    saveUsers();
+    const todayReward = DAILY_REWARDS[Math.min(user.streak - 1, 6)];
+    return res.json({
+      success: true,
+      streak: user.streak,
+      status: user.streak >= 7 ? "streak_complete" : "streak_increased",
+      coins: user.coins,
+      canCollect: true,
+      todayReward,
+      coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10)
+    });
+  }
+
+  // Streak broken (missed a day or more)
+  const oldStreak = user.streak;
+  user.streak = 1;
+  user.lastLoginDate = today;
+  user.bonusClaimedToday = false;
+  saveUsers();
+
+  if (oldStreak > 1) {
+    return res.json({
+      success: true,
+      streak: 1,
+      oldStreak,
+      status: "streak_broken",
+      coins: user.coins,
+      canCollect: true,
+      todayReward: DAILY_REWARDS[0],
+      coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10)
+    });
+  }
+
   return res.json({
     success: true,
     streak: 1,
@@ -1173,7 +1139,7 @@ app.post("/api/user/collect-daily-reward", (req, res) => {
   if (!user) return res.json({ success: false, message: "User not found" });
 
   if (user.bonusClaimedToday) {
-    return res.json({ success: false, message: "Already collected! Come back after 24 hours." });
+    return res.json({ success: false, message: "Already collected today!" });
   }
 
   const dayIndex = Math.min((user.streak || 1) - 1, 6);
@@ -1183,12 +1149,10 @@ app.post("/api/user/collect-daily-reward", (req, res) => {
   if (user.streak >= 7) {
     user.coins += 100;
     user.bonusClaimedToday = true;
-    user.lastClaimTime = Date.now();
     user.streak = 0; // Reset for next cycle
   } else {
     user.coins += reward;
     user.bonusClaimedToday = true;
-    user.lastClaimTime = Date.now();
   }
 
   const activity = {
