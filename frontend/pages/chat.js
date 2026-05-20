@@ -1229,11 +1229,27 @@ export default function Home() {
                 if (isSuspicious) {
                   console.warn(`[NSFWJS SOFT TRIG] Suspicious frame (Porn: ${pornProb.toFixed(2)}, Hentai: ${hentaiProb.toFixed(2)}, Sexy: ${sexyProb.toFixed(2)}, FacePresent: ${faceDetected}). Requesting backend Hive AI verification...`);
                   
-                  // Auto-blur local stream instantly on the frontend as a soft precaution while verifying
+                  // 1. Show notification
+                  showToast("⚠️ Inappropriate content detected! Auto-skipping partner and blurring screen for 5 seconds.", "error", 5000);
+
+                  // 2. Auto-blur local stream instantly on the frontend as a soft precaution while verifying
                   setIsFaceBlurred(true);
                   if (socket) {
                     socket.emit("partner-effect", { type: "blur", value: true });
                   }
+
+                  // 3. Auto-skip the partner
+                  if (socket) {
+                    socket.emit("next");
+                  }
+
+                  // 4. Unblur after 5 seconds
+                  setTimeout(() => {
+                    setIsFaceBlurred(false);
+                    if (socket) {
+                      socket.emit("partner-effect", { type: "blur", value: false });
+                    }
+                  }, 5000);
 
                   // Capture the exact video frame as base64 JPEG
                   let screenshot = null;
