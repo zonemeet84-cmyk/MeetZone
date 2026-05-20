@@ -183,25 +183,7 @@ export default function Contact() {
             <Link href="/privacy">Privacy</Link>
             <Link href="/refund">Refunds</Link>
           </div>
-          <div style={{
-            marginTop: '20px',
-            padding: '16px 24px',
-            background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(236,72,153,0.08))',
-            border: '1px solid rgba(99,102,241,0.2)',
-            borderRadius: '14px',
-            maxWidth: '600px',
-            margin: '20px auto 0',
-            fontSize: '0.88rem',
-            color: '#94a3b8',
-            lineHeight: '1.7'
-          }}>
-            <span style={{ color: '#c4b5fd', fontWeight: 700 }}>ZoneMeet</span> is independently developed and managed by{' '}
-            <span style={{ color: '#a5b4fc', fontWeight: 700 }}>Davinder Singh</span>.
-            For support, partnerships, business inquiries, or any important concerns, please contact:{' '}
-            <a href="mailto:support@zonemeet.chat" style={{ color: '#818cf8', fontWeight: 700, textDecoration: 'none' }}>
-              support@zonemeet.chat
-            </a>
-          </div>
+
         </footer>
       </div>
 
