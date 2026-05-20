@@ -1232,7 +1232,7 @@ export default function Home() {
                   console.warn(`[NSFWJS SOFT TRIG] Suspicious frame (Porn: ${pornProb.toFixed(2)}, Hentai: ${hentaiProb.toFixed(2)}, Sexy: ${sexyProb.toFixed(2)}, FacePresent: ${faceDetected}). Requesting backend Hive AI verification...`);
                   
                   // 1. Show notification
-                  showToast("⚠️ Inappropriate content detected! Agar dubara kiya to account 1 din ke liye ban hojaoge. Auto-skipping...", "error", 6000);
+                  showToast("⚠️ Inappropriate content detected! If you repeat this, your account will be banned for 1 day. Auto-skipping...", "error", 6000);
 
                   // 2. Auto-blur local stream instantly on the frontend as a soft precaution while verifying
                   setIsFaceBlurred(true);
@@ -1319,7 +1319,7 @@ export default function Home() {
 
       socket.on("nsfw-strike-alert", ({ strikes, maxStrikes, reason }) => {
         // 1. Show notification
-        showToast("⚠️ Inappropriate content detected! Agar dubara kiya to account 1 din ke liye ban hojaoge. Auto-skipping...", "error", 6000);
+        showToast("⚠️ Inappropriate content detected! If you repeat this, your account will be banned for 1 day. Auto-skipping...", "error", 6000);
 
         // 2. Blur screen
         setIsFaceBlurred(true);
@@ -2266,7 +2266,7 @@ export default function Home() {
 
         <div className="main-layout">
           <div className="video-column">
-            <div className="filters-row-v2" style={{ justifyContent: 'space-between', padding: '10px 0', alignItems: 'center' }}>
+            <div className="filters-row-v2" style={{ justifyContent: 'space-between', padding: '2px 0', alignItems: 'center' }}>
               <button 
                 className="filter-settings-trigger-btn" 
                 onClick={() => {
@@ -5071,11 +5071,11 @@ export default function Home() {
           }
           .identity-container {
             margin-top: 0;
-            padding: 10px;
+            padding: 2px;
           }
           .bottom-mini-bar {
-            padding: 10px !important;
-            gap: 10px !important;
+            padding: 4px !important;
+            gap: 5px !important;
           }
           .mini-btn-label {
             display: none;
@@ -5087,7 +5087,7 @@ export default function Home() {
 
         @media (max-width: 480px) {
           .video-card {
-            height: 35vh !important;
+            height: 42vh !important;
           }
           .chat-column {
             height: 300px;

@@ -2436,7 +2436,7 @@ function endQuiz(roomId) {
             }, 24 * 60 * 60 * 1000);
           } else {
             // Send warning back to socket
-            socket.emit("warning-alert", `⚠️ WARNING: Inappropriate content detected! Agar dubara kiya to 1 din ke liye ban hojaoge. Strike ${strikes}/3.`);
+            socket.emit("warning-alert", `⚠️ WARNING: Inappropriate content detected! If you repeat this, you will be banned for 1 day. Strike ${strikes}/3.`);
             
             // Emit partner-effect to blur remote partner's stream
             if (socket.partner) {
