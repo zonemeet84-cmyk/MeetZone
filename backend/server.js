@@ -213,6 +213,12 @@ function normalizeUsers(targetUsers) {
     if (u.streak === undefined) { u.streak = 0; changed = true; }
     if (u.lastLoginDate === undefined) { u.lastLoginDate = ""; changed = true; }
     if (u.bonusClaimedToday === undefined) { u.bonusClaimedToday = false; changed = true; }
+    // lastClaimDate: persist claim date so double-claim is blocked even after server restart
+    if (u.lastClaimDate === undefined) {
+      // If they already claimed today (bonusClaimedToday), set to today so they can't claim again
+      u.lastClaimDate = u.bonusClaimedToday ? new Date().toISOString().split('T')[0] : "";
+      changed = true;
+    }
     // Referral fields - Ensure they stay the same
     if (!u.referralCode) {
       let code;
@@ -524,6 +530,7 @@ app.post("/api/auth/register", async (req, res) => {
   let code;
   do { code = generateReferralCode(name); } while (users.some(x => x.referralCode === code));
 
+  const today = new Date().toISOString().split('T')[0];
   const newUser = {
     id: "u" + Date.now(),
     phone: "",
@@ -540,6 +547,7 @@ app.post("/api/auth/register", async (req, res) => {
     friendRequests: [],
     streak: 0,
     lastLoginDate: "",
+    lastClaimDate: "",
     bonusClaimedToday: false,
     recentStrangers: [],
     boostExpiry: 0,
@@ -812,6 +820,7 @@ app.post("/api/auth/register", async (req, res) => {
     friendRequests: [],
     streak: 0,
     lastLoginDate: "",
+    lastClaimDate: "",
     bonusClaimedToday: false,
     recentStrangers: [],
     boostExpiry: 0,
@@ -1138,6 +1147,14 @@ app.post("/api/user/collect-daily-reward", (req, res) => {
   const user = users.find(u => (email && u.email === email) || (phone && u.phone === phone));
   if (!user) return res.json({ success: false, message: "User not found" });
 
+  const today = new Date().toISOString().split('T')[0];
+
+  // Double-claim protection: block if already claimed today (using date, survives server restarts)
+  if (user.lastClaimDate === today) {
+    return res.json({ success: false, message: "Already collected today! Come back tomorrow." });
+  }
+
+  // Also block via bonusClaimedToday (in-memory check)
   if (user.bonusClaimedToday) {
     return res.json({ success: false, message: "Already collected today!" });
   }
@@ -1149,10 +1166,12 @@ app.post("/api/user/collect-daily-reward", (req, res) => {
   if (user.streak >= 7) {
     user.coins += 100;
     user.bonusClaimedToday = true;
+    user.lastClaimDate = today;
     user.streak = 0; // Reset for next cycle
   } else {
     user.coins += reward;
     user.bonusClaimedToday = true;
+    user.lastClaimDate = today;
   }
 
   const activity = {
