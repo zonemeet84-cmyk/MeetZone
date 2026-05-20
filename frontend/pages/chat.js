@@ -147,6 +147,8 @@ export default function Home() {
   }, []);
 
   const [partnerId, setPartnerId] = useState(null);
+  const partnerIdRef = useRef(null);
+  useEffect(() => { partnerIdRef.current = partnerId; }, [partnerId]);
   const [partnerInfo, setPartnerInfo] = useState(null);
   const [status, setStatus] = useState("Connecting to server...");
   const iceCandidatesQueue = useRef([]);
@@ -1238,8 +1240,8 @@ export default function Home() {
                     socket.emit("partner-effect", { type: "blur", value: true });
                   }
 
-                  // 3. Auto-skip the partner
-                  if (socket) {
+                  // 3. Auto-skip the partner (only if actively connected to someone)
+                  if (socket && partnerIdRef.current) {
                     socket.emit("next");
                   }
 
