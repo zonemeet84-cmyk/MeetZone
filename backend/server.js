@@ -289,7 +289,7 @@ function zonemeetGuardianDetect() {
   });
 }
 
-function banUser(email, reason) {
+function banUser(email, reason, screenshot = null) {
   if (!bannedEmails.includes(email)) {
     bannedEmails.push(email);
     saveBanned();
@@ -302,8 +302,8 @@ function banUser(email, reason) {
       if (socketId) {
         const socket = io.sockets.sockets.get(socketId);
         if (socket) {
-          socket.emit("banned-alert", `Your account has been banned: ${reason}`);
-          socket.disconnect();
+          socket.emit("banned-alert", { reason, screenshot });
+          setTimeout(() => socket.disconnect(), 500);
         }
       }
     }
@@ -1674,8 +1674,8 @@ app.post("/api/report", authenticateToken, (req, res) => {
           bannedIps.push(ip);
           saveBannedIps();
         }
-        socket.emit("banned-alert", "Your account has been permanently banned due to multiple reports.");
-        socket.disconnect();
+        socket.emit("banned-alert", { reason: "Your account has been permanently banned due to multiple reports.", screenshot: null });
+        setTimeout(() => socket.disconnect(), 500);
       }
     }
   }
@@ -2089,8 +2089,8 @@ function endQuiz(roomId) {
         // Safety Ban check: Kick banned users immediately
         const user = users.find(u => u.id === userId);
         if (user && bannedEmails.includes(user.email)) {
-          socket.emit("banned-alert", "Your account has been permanently banned for safety violations.");
-          socket.disconnect();
+          socket.emit("banned-alert", { reason: "Your account has been permanently banned for safety violations.", screenshot: null });
+          setTimeout(() => socket.disconnect(), 500);
           return;
         }
 
@@ -2108,8 +2108,8 @@ function endQuiz(roomId) {
       socket.on("set-profile", (profile) => {
         // Safety Ban check: Kick banned users immediately
         if (profile && bannedEmails.includes(profile.email)) {
-          socket.emit("banned-alert", "Your account has been permanently banned for safety violations.");
-          socket.disconnect();
+          socket.emit("banned-alert", { reason: "Your account has been permanently banned for safety violations.", screenshot: null });
+          setTimeout(() => socket.disconnect(), 500);
           return;
         }
 
@@ -2443,7 +2443,7 @@ function endQuiz(roomId) {
 
           if (strikes >= 3) {
             console.log(`[NSFW BANNING USER] ${email} banned for 1 day.`);
-            banUser(email, `AI Detection: 3 consecutive safety violations. Banned for 1 day.`);
+            banUser(email, `AI Detection: 3 consecutive safety violations. Banned for 1 day.`, screenshot);
             // Auto unban after 24 hours
             setTimeout(() => {
               const index = bannedEmails.indexOf(email);

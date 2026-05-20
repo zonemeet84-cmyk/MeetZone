@@ -155,6 +155,7 @@ export default function Home() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
+  const [banInfo, setBanInfo] = useState(null); // { reason, screenshot }
   const router = useRouter();
 
   // Filters & Premium
@@ -1342,11 +1343,17 @@ export default function Home() {
         }, 5000);
       });
 
-      socket.on("banned-alert", (msg) => {
-        showToast(msg, "error", 6000);
+      socket.on("banned-alert", (data) => {
+        // Support both old string format and new { reason, screenshot } object format
+        const reason = typeof data === "object" ? (data.reason || "Your account has been banned for violating our safety terms.") : data;
+        const screenshot = typeof data === "object" ? (data.screenshot || null) : null;
+
+        // Clear session data
         sessionStorage.removeItem("token");
         sessionStorage.removeItem("user");
-        window.location.href = "/login";
+
+        // Show the beautiful ban screen
+        setBanInfo({ reason, screenshot });
       });
 
       socket.on("receive-sticker", ({ stickerIcon, senderName, amount, newTotalCoins }) => {
@@ -2126,6 +2133,201 @@ export default function Home() {
 
   const selectedCountry = country === "all" ? { name: "Worldwide", flag: "🌎" } : Country.getCountryByCode(country);
   const selectedGender = GENDERS.find(g => g.id === gender);
+
+  // =================== BAN SCREEN ===================
+  if (banInfo) {
+    return (
+      <div style={{
+        position: "fixed", inset: 0, zIndex: 99999,
+        background: "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontFamily: "'Inter', 'Segoe UI', sans-serif",
+        padding: "20px"
+      }}>
+        {/* Animated background particles */}
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
+          {[...Array(12)].map((_, i) => (
+            <div key={i} style={{
+              position: "absolute",
+              width: `${Math.random() * 6 + 2}px`,
+              height: `${Math.random() * 6 + 2}px`,
+              background: "rgba(239,68,68,0.3)",
+              borderRadius: "50%",
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `float ${Math.random() * 6 + 4}s ease-in-out infinite`,
+              animationDelay: `${Math.random() * 4}s`
+            }} />
+          ))}
+        </div>
+
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+          @keyframes float {
+            0%, 100% { transform: translateY(0px) scale(1); opacity: 0.3; }
+            50% { transform: translateY(-30px) scale(1.2); opacity: 0.8; }
+          }
+          @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+            50% { box-shadow: 0 0 0 20px rgba(239,68,68,0); }
+          }
+          @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+            20%, 40%, 60%, 80% { transform: translateX(4px); }
+          }
+          @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .ban-card { animation: fadeInUp 0.6s ease-out; }
+          .ban-icon { animation: pulse-red 2s ease-in-out infinite; }
+          .ban-header-text { animation: shake 0.6s ease-in-out 0.3s; }
+        `}</style>
+
+        <div className="ban-card" style={{
+          background: "rgba(255,255,255,0.04)",
+          backdropFilter: "blur(20px)",
+          border: "1px solid rgba(239,68,68,0.3)",
+          borderRadius: "24px",
+          padding: "48px 40px",
+          maxWidth: "560px",
+          width: "100%",
+          textAlign: "center",
+          boxShadow: "0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08)"
+        }}>
+          {/* Ban Icon */}
+          <div className="ban-icon" style={{
+            width: "96px", height: "96px",
+            background: "linear-gradient(135deg, #ef4444, #b91c1c)",
+            borderRadius: "50%",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            margin: "0 auto 24px",
+            fontSize: "48px"
+          }}>
+            🚫
+          </div>
+
+          {/* Header */}
+          <div className="ban-header-text">
+            <h1 style={{
+              color: "#ef4444",
+              fontSize: "28px",
+              fontWeight: 800,
+              margin: "0 0 8px",
+              letterSpacing: "-0.5px"
+            }}>Account Banned</h1>
+            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "14px", margin: "0 0 28px" }}>
+              Your ZoneMeet account has been suspended
+            </p>
+          </div>
+
+          {/* Reason Box */}
+          <div style={{
+            background: "rgba(239,68,68,0.1)",
+            border: "1px solid rgba(239,68,68,0.25)",
+            borderRadius: "14px",
+            padding: "20px 24px",
+            marginBottom: "24px",
+            textAlign: "left"
+          }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+              <span style={{ fontSize: "20px", marginTop: "2px" }}>⚠️</span>
+              <div>
+                <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 6px" }}>Ban Reason</p>
+                <p style={{ color: "#fca5a5", fontSize: "15px", lineHeight: 1.5, margin: 0, fontWeight: 500 }}>
+                  {banInfo.reason}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Screenshot Evidence (if NSFW ban) */}
+          {banInfo.screenshot && (
+            <div style={{ marginBottom: "24px" }}>
+              <p style={{
+                color: "rgba(255,255,255,0.4)",
+                fontSize: "11px",
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "1px",
+                marginBottom: "12px"
+              }}>📸 Detected Content Screenshot</p>
+              <div style={{
+                position: "relative",
+                borderRadius: "12px",
+                overflow: "hidden",
+                border: "2px solid rgba(239,68,68,0.4)"
+              }}>
+                <img
+                  src={banInfo.screenshot}
+                  alt="Violation evidence"
+                  style={{
+                    width: "100%",
+                    height: "180px",
+                    objectFit: "cover",
+                    display: "block",
+                    filter: "blur(8px) brightness(0.5)"
+                  }}
+                />
+                <div style={{
+                  position: "absolute", inset: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  flexDirection: "column", gap: "8px"
+                }}>
+                  <span style={{ fontSize: "32px" }}>🔞</span>
+                  <p style={{ color: "#fca5a5", fontSize: "12px", fontWeight: 600, margin: 0 }}>Inappropriate Content Detected</p>
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "11px", margin: 0 }}>This evidence has been recorded by AI Guardian</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Appeal Info */}
+          <div style={{
+            background: "rgba(255,255,255,0.04)",
+            borderRadius: "12px",
+            padding: "16px 20px",
+            marginBottom: "28px",
+            textAlign: "left"
+          }}>
+            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px", lineHeight: 1.7, margin: 0 }}>
+              🛡️ Our AI Guardian system detected a violation of ZoneMeet's safety guidelines.
+              If you believe this is a mistake, please contact us at <span style={{ color: "#818cf8" }}>support@zonemeet.chat</span>
+            </p>
+          </div>
+
+          {/* Action Button */}
+          <button
+            onClick={() => {
+              setBanInfo(null);
+              if (typeof window !== "undefined") {
+                window.location.href = "/login";
+              }
+            }}
+            style={{
+              width: "100%",
+              padding: "14px",
+              background: "linear-gradient(135deg, #ef4444, #b91c1c)",
+              border: "none",
+              borderRadius: "12px",
+              color: "white",
+              fontSize: "15px",
+              fontWeight: 700,
+              cursor: "pointer",
+              letterSpacing: "0.3px",
+              transition: "opacity 0.2s"
+            }}
+            onMouseOver={e => e.target.style.opacity = "0.85"}
+            onMouseOut={e => e.target.style.opacity = "1"}
+          >
+            Return to Login Page
+          </button>
+        </div>
+      </div>
+    );
+  }
+  // ====================================================
 
   return (
     <>
