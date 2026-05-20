@@ -4134,12 +4134,12 @@ export default function Home() {
 
         .card-label {
           position: absolute;
-          top: 1rem;
-          left: 1rem;
+          top: 0.5rem;
+          left: 0.5rem;
           background: rgba(0, 0, 0, 0.6);
-          padding: 0.4rem 0.8rem;
-          border-radius: 10px;
-          font-size: 0.75rem;
+          padding: 0.2rem 0.5rem;
+          border-radius: 8px;
+          font-size: 0.65rem;
           font-weight: 600;
           backdrop-filter: blur(4px);
         }
