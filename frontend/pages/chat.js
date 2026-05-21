@@ -2464,12 +2464,6 @@ export default function Home() {
               <span className="icon">🏠</span>
               <span className="text">Home</span>
             </button>
-
-            {!user?.premium && (
-              <div className="paywall-badge-v2" onClick={() => setShowPricingModal(true)} style={{ marginLeft: '6px', cursor: 'pointer' }}>
-                <span>✨ Unlock</span>
-              </div>
-            )}
           </div>
         </div>
 
@@ -2492,6 +2486,12 @@ export default function Home() {
                   {gender !== 'all' || country !== 'all' || age !== 'all' || stateProv !== 'All States' ? 'Active 🎯' : 'All 🌎'}
                 </div>
               </button>
+
+              {!user?.premium && (
+                <div className="paywall-badge-v2" onClick={() => setShowPricingModal(true)} style={{ margin: 0 }}>
+                  <span>✨ Unlock</span>
+                </div>
+              )}
             </div>
 
             {/* PREMIUM FILTER SETTINGS MODAL */}
@@ -4176,29 +4176,23 @@ export default function Home() {
 
         .main-layout {
           display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-          height: calc(100vh - 75px);
+          gap: 1rem;
+          height: calc(100vh - 100px);
         }
 
         .video-column {
-          flex: 1;
+          flex: 8;
           display: flex;
           flex-direction: column;
           gap: 0;
           height: 100%;
           justify-content: center;
-          min-height: 0;
         }
 
         .chat-column {
-          flex: none;
-          height: 220px;
-          width: 100%;
-          min-width: unset;
-          max-width: unset;
-          border-left: none;
-          border-top: 1px solid rgba(255, 255, 255, 0.05);
+          flex: 1;
+          min-width: 300px;
+          max-width: 400px;
         }
 
         .video-grid-v2 {
@@ -6180,7 +6174,8 @@ export default function Home() {
             z-index: 999999 !important;
           }
           .main-layout {
-            display: block !important;
+            display: flex !important;
+            flex-direction: column !important;
             width: 100vw !important;
             height: 100vh !important;
             height: 100dvh !important;
@@ -6192,10 +6187,11 @@ export default function Home() {
           }
           .video-column {
             width: 100% !important;
-            height: 100% !important;
-            flex: none !important;
+            flex: 1 !important;
+            height: auto !important;
             margin: 0 !important;
             padding: 0 !important;
+            position: relative !important;
           }
           .bg-gradient {
             display: none !important;
@@ -6489,73 +6485,42 @@ export default function Home() {
             width: 100% !important;
           }
           /* Mobile Chat Toggle Button styling */
+          /* Mobile Chat Toggle Button hidden since chat is always visible now */
           .mobile-chat-toggle-btn {
             display: none !important;
           }
-          .mobile-chat-toggle-btn {
-            display: flex !important;
-              align-items: center;
-              justify-content: center;
-              position: fixed !important;
-              bottom: 16px !important;
-              left: 12px !important;
-              width: 40px !important;
-              height: 40px !important;
-              border-radius: 50% !important;
-              background: rgba(99, 102, 241, 0.9) !important;
-              backdrop-filter: blur(8px) !important;
-              border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
-              color: white !important;
-              z-index: 9999 !important;
-              box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
-              cursor: pointer !important;
-              transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-              padding: 0 !important;
-            }
-            .mobile-chat-toggle-btn:active {
-              transform: scale(0.9) !important;
-            }
-            .mobile-chat-toggle-btn.active {
-              background: rgba(239, 68, 68, 0.9) !important;
-            }
-            .mobile-chat-unread-badge {
-              position: absolute !important;
-              top: -4px !important;
-              right: -4px !important;
-              background: #ef4444 !important;
-              color: white !important;
-              font-size: 0.65rem !important;
-              font-weight: 700 !important;
-              padding: 2px 6px !important;
-              border-radius: 10px !important;
-              border: 1.5px solid #ffffff !important;
-              box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4) !important;
-            }
+          .mobile-chat-unread-badge {
+            display: none !important;
+          }
 
-            .chat-column {
-              display: none !important;
-            }
-            .chat-column.mobile-chat-open {
-              display: flex !important;
-              position: fixed !important;
-              bottom: 0 !important;
-              left: 0 !important;
-              width: 100vw !important;
-              height: 38vh !important; /* Made compact to avoid blocking the remote video */
-              height: 38dvh !important;
-              background: rgba(15, 23, 42, 0.82) !important; /* Sleek glassmorphism */
-              backdrop-filter: blur(16px) !important;
-              -webkit-backdrop-filter: blur(16px) !important;
-              z-index: 10001 !important;
-              border-top-left-radius: 24px !important;
-              border-top-right-radius: 24px !important;
-              border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
-              box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6) !important;
-              padding: 12px 16px 16px 16px !important;
-              box-sizing: border-box !important;
-              margin: 0 !important;
-              animation: chatSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
-            }
+          .chat-column,
+          .chat-column.mobile-chat-open,
+          .chat-column.mobile-chat-closed {
+            display: flex !important;
+            position: relative !important;
+            bottom: auto !important;
+            left: auto !important;
+            width: 100vw !important;
+            height: 38vh !important; /* Fixed compact height at the bottom */
+            height: 38dvh !important;
+            background: #0f172a !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            z-index: 10 !important;
+            border-top-left-radius: 20px !important;
+            border-top-right-radius: 20px !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3) !important;
+            padding: 12px 16px 16px 16px !important;
+            box-sizing: border-box !important;
+            margin: 0 !important;
+            animation: none !important;
+            max-width: 100vw !important;
+            min-width: 100vw !important;
+          }
+          .mobile-chat-close-btn-header {
+            display: none !important; /* Hide close button since it cannot be closed */
+          }
             @keyframes chatSlideUp {
               from { transform: translateY(100%); }
               to { transform: translateY(0); }
