@@ -2257,22 +2257,154 @@ img, video {
 
 /* ZoneMeet AI Chatbot Widget Mobile Styles */
 @media (max-width: 768px) {
+  /* ZoneMeet AI Bot Widget */
   .bot-window {
     width: calc(100vw - 24px) !important;
     max-width: 350px !important;
-    height: 380px !important;
+    height: 320px !important;
     bottom: 10px !important;
-    right: 0 !important;
+    right: 12px !important;
+    left: 12px !important;
+    margin: 0 auto !important;
   }
   .bot-body {
-    padding: 12px !important;
-    gap: 8px !important;
+    padding: 10px !important;
+    gap: 6px !important;
   }
   .bot-msg-bubble {
-    padding: 8px 12px !important;
-    font-size: 0.85rem !important;
+    padding: 6px 10px !important;
+    font-size: 0.75rem !important;
   }
   .bot-input-area {
+    padding: 8px !important;
+  }
+
+  /* Profile Boost & General Premium Modals */
+  .premium-modal {
+    padding: 20px 12px !important;
+    max-height: 85vh !important;
+  }
+  .premium-modal h2, .total-amount {
+    font-size: 1.8rem !important;
+  }
+  
+  /* My Profile Modal specific overrides */
+  .profile-modal-card {
+    padding: 12px !important;
+    max-height: 85vh !important;
+    overflow-y: auto !important;
+  }
+  .profile-edit-btn {
+    padding: 4px 8px !important;
+    font-size: 0.65rem !important;
+    width: auto !important;
+  }
+  .profile-premium-btn {
+    padding: 6px 12px !important;
+    font-size: 0.75rem !important;
+    height: auto !important;
+  }
+  .profile-referral-row {
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+  .profile-referral-input {
+    font-size: 0.7rem !important;
+    padding: 6px !important;
+  }
+  .profile-referral-btn {
+    font-size: 0.7rem !important;
+    padding: 6px 10px !important;
+  }
+  
+  /* Hall of Fame (Top Spenders) Modal */
+  .leaderboard-modal {
+    padding: 0 !important;
+    height: 85vh !important;
+    max-height: 85vh !important;
+  }
+  .leaderboard-modal h2 {
+    font-size: 1.8rem !important;
+  }
+  .leaderboard-modal div[style*="fontSize: '1.2rem'"],
+  .leaderboard-modal div[style*="font-size: 1.2rem"] {
+    font-size: 0.9rem !important;
+  }
+  .leaderboard-modal p {
+    font-size: 0.85rem !important;
+  }
+  .leaderboard-modal .modal-close-btn {
+    top: 10px !important;
+    right: 10px !important;
+    z-index: 50 !important;
+    background: rgba(0,0,0,0.5) !important;
+  }
+
+  /* Daily Login Reward Modal */
+  .streak-reward-modal {
+    padding: 20px 12px !important;
+    width: 95% !important;
+    max-width: 330px !important;
+    max-height: 85vh !important;
+    overflow-y: auto !important;
+  }
+  .streak-modal-title {
+    font-size: 1.3rem !important;
+  }
+  .streak-modal-sub {
+    font-size: 0.75rem !important;
+  }
+  .streak-days-grid {
+    gap: 4px !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+  }
+  .streak-day-card {
+    padding: 6px 4px !important;
+    min-width: 45px !important;
+    flex: 1 !important;
+  }
+  .streak-day-card.grand {
+    min-width: 100% !important;
+  }
+  .streak-day-coins {
+    font-size: 0.65rem !important;
+  }
+  .streak-day-label {
+    font-size: 0.55rem !important;
+  }
+  .streak-cta-btn {
     padding: 10px !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* Payment / Checkout Modal */
+  .methods-list-premium {
+    gap: 8px !important;
+  }
+  .pay-method-item {
+    padding: 10px !important;
+    gap: 8px !important;
+    align-items: center !important;
+  }
+  .pay-details strong {
+    font-size: 0.8rem !important;
+  }
+  .pay-details span {
+    font-size: 0.6rem !important;
+    line-height: 1.2 !important;
+    white-space: normal !important;
+    display: block !important;
+  }
+  .pay-badge {
+    font-size: 0.55rem !important;
+    padding: 2px 4px !important;
+    flex-shrink: 0 !important;
+  }
+  .pay-icon-box {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 1rem !important;
+    flex-shrink: 0 !important;
   }
 }
