@@ -6173,6 +6173,24 @@ export default function Home() {
             padding: 0 !important;
             z-index: 999999 !important;
           }
+          .main-layout {
+            display: block !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            height: 100dvh !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+          }
+          .video-column {
+            width: 100% !important;
+            height: 100% !important;
+            flex: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
           .bg-gradient {
             display: none !important;
           }
@@ -6336,6 +6354,7 @@ export default function Home() {
             height: 100% !important;
             object-fit: cover !important;
             border-radius: 0 !important;
+          }
 
           /* Stranger Top Floating Label */
           .video-grid-v2 > .video-card:nth-child(2) .card-label {
@@ -6519,20 +6538,20 @@ export default function Home() {
               bottom: 0 !important;
               left: 0 !important;
               width: 100vw !important;
-              height: 60vh !important;
-              height: 60dvh !important;
-              background: rgba(15, 23, 42, 0.93) !important;
-              backdrop-filter: blur(24px) !important;
-              -webkit-backdrop-filter: blur(24px) !important;
+              height: 38vh !important; /* Made compact to avoid blocking the remote video */
+              height: 38dvh !important;
+              background: rgba(15, 23, 42, 0.82) !important; /* Sleek glassmorphism */
+              backdrop-filter: blur(16px) !important;
+              -webkit-backdrop-filter: blur(16px) !important;
               z-index: 10001 !important;
               border-top-left-radius: 24px !important;
               border-top-right-radius: 24px !important;
-              border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+              border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
               box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6) !important;
-              padding: 16px !important;
+              padding: 12px 16px 16px 16px !important;
               box-sizing: border-box !important;
               margin: 0 !important;
-              animation: chatSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+              animation: chatSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
             }
             @keyframes chatSlideUp {
               from { transform: translateY(100%); }
