@@ -4416,10 +4416,29 @@ export default function Dashboard() {
               margin: auto !important;
             }
             .streak-days-grid {
-              gap: 4px !important;
+              gap: 8px !important;
+              display: flex !important;
+              overflow-x: auto !important;
+              padding-bottom: 8px !important;
+              scroll-snap-type: x mandatory !important;
+              -webkit-overflow-scrolling: touch !important;
+            }
+            .streak-days-grid::-webkit-scrollbar {
+              height: 4px !important;
+            }
+            .streak-days-grid::-webkit-scrollbar-track {
+              background: rgba(255, 255, 255, 0.05) !important;
+              border-radius: 4px !important;
+            }
+            .streak-days-grid::-webkit-scrollbar-thumb {
+              background: rgba(255, 255, 255, 0.2) !important;
+              border-radius: 4px !important;
             }
             .streak-day-card {
-              padding: 6px 2px 4px !important;
+              min-width: 60px !important;
+              flex: 0 0 auto !important;
+              scroll-snap-align: start !important;
+              padding: 8px 4px 6px !important;
             }
             /* Coin Usage Transparency - stacked grid */
             .stats-row {
