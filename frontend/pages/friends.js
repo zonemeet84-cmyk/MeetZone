@@ -355,20 +355,27 @@ export default function Friends() {
 
       @media (max-width: 768px) {
         .header {
-          padding: 15px 20px !important;
-          flex-direction: column;
-          gap: 15px;
-          text-align: center;
+          padding: 10px 15px !important;
+          flex-direction: row;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        .header h1 {
+          font-size: 1.2rem;
+          margin: 0;
         }
         .user-info {
-          flex-direction: column;
-          gap: 8px !important;
+          flex-direction: row;
+          justify-content: center;
+          width: 100%;
+          gap: 10px !important;
         }
         .dashboard-hero {
           padding: 10px !important;
         }
         .pricing-card {
-          padding: 20px !important;
+          padding: 15px !important;
         }
         .payment-modal-card {
           width: 90% !important;

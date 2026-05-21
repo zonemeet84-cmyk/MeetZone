@@ -269,12 +269,18 @@ export default function Signup() {
         .google-btn img { width: 18px; height: 18px; }
         .highlight { color: #6366f1; font-weight: 700; cursor: pointer; }
         
-        @media (max-width: 480px) {
+        @media (max-width: 768px) {
+          .login-container {
+            padding: 10px;
+          }
           .login-card {
             padding: 2rem 1.5rem;
-            width: 95%;
+            width: 100%;
+            border-radius: 24px;
           }
           h1 { font-size: 1.5rem; }
+          .zonemeet-logo { font-size: 2rem; margin-bottom: 0.5rem; }
+          .submit-btn { padding: 0.8rem; }
         }
       `}</style>
     </div>

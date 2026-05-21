@@ -4394,11 +4394,11 @@ export default function Dashboard() {
             }
 
             .header {
-              padding: 8px 12px !important;
+              padding: 8px 10px !important;
               flex-direction: row !important;
               justify-content: space-between !important;
               align-items: center !important;
-              gap: 8px !important;
+              gap: 4px !important;
               height: auto !important;
             }
             .logo-icon-wrapper svg {
@@ -4440,6 +4440,7 @@ export default function Dashboard() {
               width: 30px !important;
               height: 30px !important;
               font-size: 0.9rem !important;
+              flex-shrink: 0 !important;
             }
             .profile-trigger span {
               display: none !important;

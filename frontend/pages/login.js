@@ -341,12 +341,18 @@ export default function Login() {
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .mt-4 { margin-top: 1rem; }
         
-        @media (max-width: 480px) {
+        @media (max-width: 768px) {
+          .login-container {
+            padding: 10px;
+          }
           .login-card {
             padding: 2rem 1.5rem;
-            width: 95%;
+            width: 100%;
+            border-radius: 24px;
           }
           h1 { font-size: 1.5rem; }
+          .zonemeet-logo { font-size: 2rem; margin-bottom: 0.5rem; }
+          .submit-btn { padding: 0.8rem; }
         }
       `}</style>
     </div>
