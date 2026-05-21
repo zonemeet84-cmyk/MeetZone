@@ -1684,6 +1684,22 @@ const io = new Server(server, {
   pingInterval: 60000,
 });
 
+// Setup Redis Adapter for Socket.io
+const { createClient } = require("redis");
+const { createAdapter } = require("@socket.io/redis-adapter");
+
+const pubClient = createClient({ url: process.env.REDIS_URL || "redis://localhost:6379" });
+const subClient = pubClient.duplicate();
+
+Promise.all([pubClient.connect(), subClient.connect()])
+  .then(() => {
+    io.adapter(createAdapter(pubClient, subClient));
+    console.log("[REDIS] Socket.io Redis adapter connected successfully");
+  })
+  .catch(err => {
+    console.error("[REDIS ERROR] Could not connect to Redis. Socket.io will run in standalone mode.", err.message);
+  });
+
 // Helper for auth was moved up
 
 // Friends API
