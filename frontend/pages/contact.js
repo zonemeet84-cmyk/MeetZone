@@ -378,6 +378,39 @@ export default function Contact() {
           .stats-grid { grid-template-columns: 1fr 1fr; }
           .interaction-grid { grid-template-columns: 1fr; }
         }
+
+        @media (max-width: 768px) {
+          .contact-main { padding: 20px 12px !important; }
+          .top-nav { margin-bottom: 40px !important; flex-direction: column !important; gap: 15px !important; text-align: center !important; }
+          .hero-text h1 { font-size: 2.5rem !important; letter-spacing: -1.5px !important; }
+          .hero-text p { font-size: 1.1rem !important; margin-bottom: 25px !important; }
+          .hero-btns { flex-direction: column !important; gap: 12px !important; width: 100% !important; align-items: stretch !important; }
+          .btn-primary, .btn-outline { display: block !important; text-align: center !important; padding: 14px 20px !important; border-radius: 12px !important; font-size: 0.95rem !important; }
+          .hero-split { gap: 30px !important; margin-bottom: 60px !important; }
+          .visual-wrapper { border-radius: 20px !important; }
+          .main-3d-img { border-radius: 20px !important; }
+          .floating-card { font-size: 0.75rem !important; padding: 8px 12px !important; border-radius: 12px !important; }
+          .c1 { right: 0px !important; top: 10% !important; }
+          .c2 { left: 0px !important; bottom: 10% !important; }
+          .stats-grid { gap: 15px !important; margin-bottom: 60px !important; }
+          .stat-box { padding: 20px 15px !important; border-radius: 20px !important; }
+          .stat-box h3 { font-size: 1.8rem !important; }
+          .divider { margin-bottom: 60px !important; }
+          .modern-form { padding: 25px 15px !important; border-radius: 24px !important; }
+          .input-row { grid-template-columns: 1fr !important; gap: 15px !important; margin-bottom: 15px !important; }
+          .interaction-grid { gap: 40px !important; margin-bottom: 60px !important; }
+          .faq-list { gap: 15px !important; }
+          .faq-item { padding: 15px !important; border-radius: 0 12px 12px 0 !important; }
+          .sidebar-contact-card { padding: 20px !important; border-radius: 20px !important; }
+          .contact-footer { padding: 40px 0 !important; }
+          .footer-links { gap: 15px !important; }
+        }
+
+        @media (max-width: 480px) {
+          .hero-text h1 { font-size: 2.0rem !important; letter-spacing: -1px !important; }
+          .stats-grid { grid-template-columns: 1fr !important; }
+          .c1, .c2 { display: none !important; }
+        }
       `}</style>
     </div>
   );

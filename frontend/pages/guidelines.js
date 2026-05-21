@@ -150,9 +150,19 @@ export default function Guidelines() {
           transform: translateX(-5px);
         }
         @media (max-width: 768px) {
-          .container { padding: 2rem 1rem; }
-          .content { padding: 2rem; }
-          h1 { font-size: 2.5rem; }
+          .container { padding: 1.5rem 0.75rem !important; }
+          .content { padding: 1.5rem 1rem !important; border-radius: 20px !important; }
+          h1 { font-size: 2.2rem !important; }
+          h2 { font-size: 1.35rem !important; margin-top: 2rem !important; }
+          p, li { font-size: 0.95rem !important; line-height: 1.7 !important; }
+          .back-btn { margin-bottom: 1.5rem !important; font-size: 0.85rem !important; padding: 0.4rem 0.8rem !important; }
+          .intro-box { padding: 1rem !important; margin-bottom: 1.5rem !important; }
+        }
+
+        @media (max-width: 480px) {
+          .container { padding: 1rem 0.5rem !important; }
+          .content { padding: 1.25rem 0.75rem !important; }
+          h1 { font-size: 1.8rem !important; }
         }
       `}</style>
     </div>

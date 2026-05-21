@@ -493,6 +493,40 @@ export default function About() {
           .founder-inner { flex-direction: column; padding: 30px; }
           .age-card { padding: 30px 20px; }
         }
+
+        @media (max-width: 768px) {
+          .page-inner { padding: 20px 14px 40px !important; }
+          .top-nav { flex-direction: column !important; gap: 15px !important; text-align: center !important; margin-bottom: 40px !important; }
+          .hero h1 { font-size: 2.2rem !important; letter-spacing: -1px !important; }
+          .hero-sub { font-size: 1.05rem !important; }
+          .hero { margin-bottom: 40px !important; }
+          .stats-row { gap: 15px !important; margin-bottom: 40px !important; }
+          .stat-card { padding: 20px 10px !important; border-radius: 20px !important; }
+          .stat-card h3 { font-size: 1.8rem !important; }
+          .divider { margin: 40px 0 !important; }
+          .age-card { padding: 25px 15px !important; border-radius: 24px !important; }
+          .age-top { flex-direction: column !important; text-align: center !important; gap: 15px !important; }
+          .age-icon { margin: 0 auto !important; width: 70px !important; height: 70px !important; font-size: 2.5rem !important; }
+          .age-item { padding: 15px !important; border-radius: 16px !important; }
+          .values-grid { gap: 15px !important; }
+          .val-box { padding: 20px !important; border-radius: 20px !important; }
+          .steps-row { gap: 8px !important; }
+          .step { padding: 20px 15px !important; border-radius: 18px !important; }
+          .step-arrow { font-size: 1.2rem !important; margin: 5px 0 !important; }
+          .founder-inner { padding: 20px 15px !important; gap: 20px !important; align-items: center !important; text-align: center !important; }
+          .founder-left { flex-shrink: 1 !important; }
+          .founder-right h2 { font-size: 1.6rem !important; margin-bottom: 12px !important; }
+          .founder-highlight { font-size: 1.1rem !important; }
+          .contact-card { flex-direction: column !important; text-align: center !important; padding: 15px !important; border-radius: 18px !important; gap: 15px !important; }
+          .contact-emoji { margin: 0 auto !important; }
+          .contact-email { font-size: 1.1rem !important; }
+        }
+
+        @media (max-width: 480px) {
+          .stats-row { grid-template-columns: 1fr !important; }
+          .hero h1 { font-size: 1.8rem !important; }
+          .age-top h2 { font-size: 1.6rem !important; }
+        }
       `}</style>
     </div>
   );

@@ -6332,7 +6332,7 @@ export default function Home() {
           /* Micro Floating Live Chat - Tucked completely into the bottom-left corner */
           .chat-column {
             position: absolute !important;
-            bottom: 110px !important;
+            bottom: 160px !important;
             left: 12px !important;
             width: 140px !important;
             height: 120px !important;
@@ -6397,7 +6397,7 @@ export default function Home() {
           /* Micro Identity Tools container floating just above bottom controls */
           .identity-container {
             position: absolute !important;
-            bottom: 54px !important;
+            bottom: 110px !important;
             left: 50% !important;
             transform: translateX(-50%) !important;
             width: 95% !important;
@@ -6461,14 +6461,13 @@ export default function Home() {
             background: rgba(0, 0, 0, 0.45) !important;
             backdrop-filter: blur(12px) !important;
             -webkit-backdrop-filter: blur(12px) !important;
-            padding: 5px 10px !important;
-            border-radius: 30px !important;
+            padding: 8px 12px !important;
+            border-radius: 20px !important;
             border: 1px solid rgba(255, 255, 255, 0.08) !important;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
             display: flex !important;
-            flex-direction: row !important;
+            flex-direction: column !important;
             align-items: center !important;
-            justify-content: space-between !important;
             gap: 6px !important;
             box-sizing: border-box !important;
           }
@@ -6477,17 +6476,19 @@ export default function Home() {
             display: none !important;
           }
           .bottom-actions > div:nth-child(3) {
-            display: flex !important;
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
             width: 100% !important;
             gap: 6px !important;
             margin: 0 !important;
             padding: 0 !important;
           }
           .bottom-actions > div:nth-child(3) button {
-            flex: 1 !important;
-            height: 32px !important;
-            border-radius: 16px !important;
-            font-size: 0.65rem !important;
+            flex: none !important;
+            width: 100% !important;
+            height: 34px !important;
+            border-radius: 12px !important;
+            font-size: 0.72rem !important;
             font-weight: 700 !important;
             padding: 0 !important;
             display: flex !important;

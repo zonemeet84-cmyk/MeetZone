@@ -2939,7 +2939,7 @@ export default function Dashboard() {
 
       {/* REFERRAL / INVITE & EARN SECTION JUST ABOVE FOOTER */}
       {user && (
-        <div id="referral-section" style={{ padding: '80px 20px', maxWidth: '900px', margin: '40px auto 20px' }}>
+        <div id="referral-section" className="referral-section-container">
           {!referralStats ? (
             <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', background: 'rgba(255,255,255,0.02)', borderRadius: '24px' }}>
               <div className="loading-dots">Loading Referral Link...</div>
@@ -2951,7 +2951,7 @@ export default function Dashboard() {
                 <p className="section-subtitle">Share your unique link. When a friend joins, you get <strong style={{ color: '#10b981' }}>+100 Coins</strong> FREE!</p>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '30px' }}>
+              <div className="referral-stats-grid">
                 <div style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(99,102,241,0.05))', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '20px', padding: '25px', textAlign: 'center' }}>
                   <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>🎯</div>
                   <div style={{ fontSize: '2rem', fontWeight: '800', color: '#6366f1' }}>{referralStats?.referralCount || 0}</div>
@@ -2972,8 +2972,8 @@ export default function Dashboard() {
               {/* Referral Link Box */}
               <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '30px' }}>
                 <div style={{ marginBottom: '12px', color: '#94a3b8', fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Unique Referral Code</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-                  <div style={{ flex: 1, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '14px 20px', fontFamily: 'monospace', fontSize: '1.5rem', fontWeight: '800', color: '#fff', letterSpacing: '4px' }}>
+                <div className="referral-flex-row" style={{ marginBottom: '20px' }}>
+                  <div className="referral-input-box" style={{ flex: 1, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '14px 20px', fontFamily: 'monospace', fontSize: '1.5rem', fontWeight: '800', color: '#fff', letterSpacing: '4px' }}>
                     {referralStats?.referralCode || "---"}
                   </div>
                   <button
@@ -2983,6 +2983,7 @@ export default function Dashboard() {
                       setReferralCopied(true);
                       setTimeout(() => setReferralCopied(false), 2000);
                     }}
+                    className="referral-btn"
                     style={{ background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8', padding: '14px 20px', borderRadius: '14px', cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', transition: 'all 0.2s', whiteSpace: 'nowrap' }}
                   >
                     {referralCopied ? '✅ Copied!' : '📋 Copy Code'}
@@ -2990,8 +2991,8 @@ export default function Dashboard() {
                 </div>
 
                 <div style={{ marginBottom: '12px', color: '#94a3b8', fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Invite Link</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ flex: 1, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '14px 20px', fontSize: '0.85rem', color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div className="referral-flex-row">
+                  <div className="referral-input-box" style={{ flex: 1, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '14px 20px', fontSize: '0.85rem', color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {typeof window !== 'undefined' ? `${window.location.origin}/?ref=${referralStats?.referralCode || ""}` : `zonemeet.com/?ref=${referralStats?.referralCode || ""}`}
                   </div>
                   <button
@@ -3005,6 +3006,7 @@ export default function Dashboard() {
                         showModal({ message: 'Invite link copied! Share it with friends.', type: 'success' });
                       }
                     }}
+                    className="referral-btn pink-gradient"
                     style={{ background: 'linear-gradient(135deg, #6366f1, #ec4899)', border: 'none', color: '#fff', padding: '14px 24px', borderRadius: '14px', cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', transition: 'all 0.2s', whiteSpace: 'nowrap' }}
                   >
                     📤 Share Link
@@ -4126,6 +4128,24 @@ export default function Dashboard() {
             50% { opacity: 0.5; transform: scale(1.2); }
           }
 
+          /* Referral Styles */
+          .referral-section-container {
+            padding: 80px 20px;
+            max-width: 900px;
+            margin: 40px auto 20px;
+          }
+          .referral-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+          }
+          .referral-flex-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+          }
+
           /* COMPREHENSIVE MOBILE RESPONSIVENESS */
           @media (max-width: 1024px) {
             .experience-section, .friends-promo-section, .support-banner-content {
@@ -4142,6 +4162,46 @@ export default function Dashboard() {
           }
 
           @media (max-width: 768px) {
+            .referral-section-container {
+              padding: 40px 15px 120px !important;
+              margin: 20px auto 10px !important;
+            }
+            .referral-stats-grid {
+              grid-template-columns: 1fr !important;
+              gap: 15px !important;
+            }
+            .referral-flex-row {
+              flex-direction: column !important;
+              align-items: stretch !important;
+              gap: 10px !important;
+            }
+            .referral-input-box {
+              text-align: center !important;
+              width: 100% !important;
+              box-sizing: border-box !important;
+            }
+            .referral-btn {
+              width: 100% !important;
+              padding: 14px !important;
+              display: flex !important;
+              justify-content: center !important;
+              align-items: center !important;
+            }
+            .zonemeetbot-widget {
+              right: 12px !important;
+            }
+            .bot-toggle-btn {
+              width: 50px !important;
+              height: 50px !important;
+              box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3) !important;
+            }
+            .bot-icon {
+              font-size: 1.5rem !important;
+            }
+            .bot-tooltip {
+              display: none !important;
+            }
+
             .header {
               padding: 8px 12px !important;
               flex-direction: row !important;
