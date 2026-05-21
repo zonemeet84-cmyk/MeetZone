@@ -1741,6 +1741,7 @@ export default function Dashboard() {
               <li><span>✓</span> All Gender & Country Filters</li>
               <li><span>✓</span> Instant Priority Matching</li>
               <li><span>✓</span> Unlimited Friend Requests</li>
+              <li><span>✓</span> HD Video Access</li>
               <li><span>★</span> 150 ZoneMeet Coins (Free)</li>
               <li className="feature-coming-soon"><span>🕒</span> Ad-Free Experience <em>(Coming Soon)</em></li>
             </ul>
@@ -1766,7 +1767,7 @@ export default function Dashboard() {
             <ul className="premium-features">
               <li><span>✓</span> Season-Long Pro Access</li>
               <li><span>✓</span> Elite Identity Badge</li>
-              <li><span>✓</span> Unlimited Interactions</li>
+              <li><span>✓</span> All Prime Subscription Benefits</li>
               <li><span>★</span> 500 ZoneMeet Coins (Free)</li>
               <li className="feature-coming-soon"><span>🕒</span> Ad-Free Experience <em>(Coming Soon)</em></li>
             </ul>
@@ -1815,6 +1816,10 @@ export default function Dashboard() {
             <div className="elite-feature-item">
               <strong>👤 Invisible Mode</strong>
               <p>Browse without being seen</p>
+            </div>
+            <div className="elite-feature-item">
+              <strong>📹 HD Video Access</strong>
+              <p>Crystal clear 1080p stream</p>
             </div>
             <div className="elite-feature-item">
               <strong>🎨 Free Filters & Avatars</strong>
