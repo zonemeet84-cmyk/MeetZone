@@ -1067,7 +1067,7 @@ export default function Dashboard() {
   return (
     <div className="container">
       <Head>
-        <title>ZoneMeet | Global Communication & Professional Networking Platform</title>
+        <title>ZoneMeet – Talk To New People Online</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
         <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
