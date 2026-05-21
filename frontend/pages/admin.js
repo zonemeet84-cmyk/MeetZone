@@ -994,6 +994,40 @@ export default function AdminDashboard() {
         .pulse-icon::after { content: ''; position: absolute; width: 100%; height: 100%; border: 2px solid #10b981; border-radius: inherit; animation: pulse 2s infinite; }
         .guardian-status strong { display: block; font-size: 14px; }
         .guardian-status small { font-size: 11px; opacity: 0.8; }
+
+        @media (max-width: 768px) {
+           .admin-wrapper { flex-direction: column; }
+           .sidebar-glass { position: relative; width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 20px; z-index: 10; }
+           .brand { justify-content: center; margin-bottom: 20px; }
+           .nav-menu { display: flex; overflow-x: auto; flex-wrap: nowrap; gap: 10px; padding-bottom: 10px; }
+           .nav-item { flex: 0 0 auto; padding: 10px 15px; margin-bottom: 0; }
+           .sidebar-footer { display: none; }
+           
+           .content-area { margin-left: 0; padding: 15px; width: 100vw; overflow-x: hidden; }
+           .glass-header { flex-direction: column; gap: 15px; padding: 15px; align-items: stretch; text-align: center; }
+           .header-left h1 { font-size: 22px; }
+           .header-right { flex-direction: column; gap: 15px; width: 100%; }
+           .search-pill { width: 100%; justify-content: center; }
+           .search-pill input { width: 100%; }
+           .admin-badge { justify-content: center; }
+
+           .stats-row { grid-template-columns: 1fr !important; gap: 15px; }
+           .main-grid { grid-template-columns: 1fr; }
+           .revenue-summary { grid-template-columns: 1fr; }
+           .reports-masonry { grid-template-columns: 1fr; }
+           
+           .table-box { padding: 15px; overflow-x: auto; }
+           .modern-table { display: block; width: 100%; overflow-x: auto; white-space: nowrap; }
+           
+           .command-modal { width: 95%; max-width: none; }
+           .modal-header { padding: 20px; }
+           .modal-body { padding: 20px; }
+
+           .login-card { padding: 2rem 1.5rem; width: 90%; }
+           .zonemeet-logo { font-size: 2.5rem; }
+           h1 { font-size: 1.5rem; }
+           .otp-btn { padding: 0 1rem; font-size: 0.75rem; }
+        }
       `}</style>
     </div>
   );
