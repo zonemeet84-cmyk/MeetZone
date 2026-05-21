@@ -4882,7 +4882,33 @@ export default function Dashboard() {
             }
             /* Fix for mystery box confirm */
             .premium-modal {
-              padding: 30px 15px !important;
+              width: 95vw !important;
+              max-width: 400px !important;
+              padding: 0 !important;
+              margin: 0 auto !important;
+              max-height: 90vh !important;
+              overflow-y: auto !important;
+            }
+            .premium-modal > div:not(:first-child) {
+              padding: 20px 15px !important; 
+            }
+            .premium-modal h2 {
+              font-size: 1.5rem !important;
+            }
+            .premium-modal h3 {
+              font-size: 1.3rem !important;
+            }
+            .premium-modal p {
+              font-size: 0.85rem !important;
+              margin-bottom: 20px !important;
+            }
+            .premium-modal button {
+              padding: 12px 15px !important;
+              font-size: 0.9rem !important;
+            }
+            .mystery-float {
+              font-size: 3.5rem !important;
+              margin-bottom: 15px !important;
             }
             /* Fix for spinner windows */
             .slot-machine-frame {
