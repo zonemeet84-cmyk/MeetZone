@@ -2464,6 +2464,12 @@ export default function Home() {
               <span className="icon">🏠</span>
               <span className="text">Home</span>
             </button>
+
+            {!user?.premium && (
+              <div className="paywall-badge-v2" onClick={() => setShowPricingModal(true)} style={{ marginLeft: '6px', cursor: 'pointer' }}>
+                <span>✨ Unlock</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -2486,12 +2492,6 @@ export default function Home() {
                   {gender !== 'all' || country !== 'all' || age !== 'all' || stateProv !== 'All States' ? 'Active 🎯' : 'All 🌎'}
                 </div>
               </button>
-
-              {!user?.premium && (
-                <div className="paywall-badge-v2" onClick={() => setShowPricingModal(true)} style={{ margin: 0 }}>
-                  <span>✨ Unlock</span>
-                </div>
-              )}
             </div>
 
             {/* PREMIUM FILTER SETTINGS MODAL */}
@@ -4176,23 +4176,29 @@ export default function Home() {
 
         .main-layout {
           display: flex;
-          gap: 1rem;
-          height: calc(100vh - 100px);
+          flex-direction: column;
+          gap: 0.5rem;
+          height: calc(100vh - 75px);
         }
 
         .video-column {
-          flex: 8;
+          flex: 1;
           display: flex;
           flex-direction: column;
           gap: 0;
           height: 100%;
           justify-content: center;
+          min-height: 0;
         }
 
         .chat-column {
-          flex: 1;
-          min-width: 300px;
-          max-width: 400px;
+          flex: none;
+          height: 220px;
+          width: 100%;
+          min-width: unset;
+          max-width: unset;
+          border-left: none;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .video-grid-v2 {
