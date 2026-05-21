@@ -1242,10 +1242,12 @@ export default function Home() {
                     socket.emit("partner-effect", { type: "blur", value: true });
                   }
 
-                  // 3. Auto-skip the partner (only if actively connected to someone)
+                  // 3. Auto-skip disabled based on user request (only blurs now)
+                  /*
                   if (socket && partnerIdRef.current) {
                     socket.emit("next");
                   }
+                  */
 
                   // 4. Unblur after 5 seconds
                   setTimeout(() => {
@@ -1332,8 +1334,8 @@ export default function Home() {
         // 3. System message
         setMessages(prev => [...prev, { sender: "system", text: `⚠️ [Safety Alert]: AI detected safety violation (${reason}). Strike ${strikes}/${maxStrikes} registered.` }]);
 
-        // 4. Auto-skip partner
-        socket.emit("next");
+        // 4. Auto-skip disabled based on user request (only blurs now)
+        // socket.emit("next");
 
         // 5. Unblur after 5 seconds
         setTimeout(() => {
@@ -3486,27 +3488,6 @@ export default function Home() {
           </div>
         </div>
 
-        {partnerId && (
-          <button
-            type="button"
-            className={`mobile-chat-toggle-btn ${isMobileChatOpen ? 'active' : ''}`}
-            onClick={() => setIsMobileChatOpen(!isMobileChatOpen)}
-          >
-            {isMobileChatOpen ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
-            ) : (
-              <>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                {messages.filter(m => m.sender === 'partner').length > 0 && (
-                  <span className="mobile-chat-unread-badge">
-                    {messages.filter(m => m.sender === 'partner').length}
-                  </span>
-                )}
-              </>
-            )}
-          </button>
-        )}
-
         <div className={`chat-column ${isMobileChatOpen ? 'mobile-chat-open' : 'mobile-chat-closed'}`}>
           <div className="chat-box-v2">
             <div className="chat-box-header">
@@ -3543,7 +3524,6 @@ export default function Home() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Aa"
-                disabled={!partnerId}
               />
               <button type="submit" disabled={!partnerId || !message}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
@@ -3901,7 +3881,7 @@ export default function Home() {
         .chat-page-v2 {
           max-width: 100% !important;
           min-height: 100vh;
-          overflow-y: auto;
+          overflow: hidden;
           padding: 1rem 2rem !important;
           display: flex;
           flex-direction: column;

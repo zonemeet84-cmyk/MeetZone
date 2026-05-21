@@ -138,6 +138,7 @@ export default function Dashboard() {
   const [referralCopied, setReferralCopied] = useState(false);
   const [redeemCode, setRedeemCode] = useState("");
   const [isGifting, setIsGifting] = useState(false);
+  const [isAutoRenew, setIsAutoRenew] = useState(false);
   const [giftRecipientId, setGiftRecipientId] = useState("");
   const [incomingCall, setIncomingCall] = useState(null);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
@@ -325,6 +326,32 @@ export default function Dashboard() {
       localStorage.setItem("referral", ref);
     }
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id");
+    if (sessionId && user) {
+      setPaymentStep("processing");
+      setShowPremiumModal(true);
+      axios.post("https://meetzone-backend.onrender.com/api/payment/stripe/verify-subscription", { sessionId, userEmail: user.email })
+        .then(res => {
+          if (res.data.success) {
+            const updatedUser = { ...user, ...res.data.user };
+            setUser(updatedUser); sessionStorage.setItem("user", JSON.stringify(updatedUser));
+            setPaymentStep("success");
+            window.history.replaceState(null, '', window.location.pathname);
+          } else {
+            showModal({ message: "Subscription verification failed.", type: "error" });
+            setPaymentStep("methods");
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          setPaymentStep("methods");
+          showModal({ message: "Verification error.", type: "error" });
+        });
+    }
+  }, [user]);
 
   useEffect(() => {
     // Removed auto-success timer to prevent free subscriptions
@@ -858,7 +885,14 @@ export default function Dashboard() {
     try {
       setPaymentStep("processing");
       const amountInPaise = selectedPlan.name === "Starter" ? 14900 : selectedPlan.name === "Prime" ? 59900 : selectedPlan.name === "Silver" ? 159900 : selectedPlan.name === "VIP Elite" ? 99900 : Math.round((parseFloat(selectedPlan.price?.replace(/[₹$]/g,'')) || 79) * 100);
-      const orderRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/razorpay/order", { amount: amountInPaise, currency: "INR" });
+      
+      let endpoint = "https://meetzone-backend.onrender.com/api/payment/razorpay/order";
+      if (isAutoRenew && !selectedPlan.name.includes("Coins")) {
+        endpoint = "https://meetzone-backend.onrender.com/api/payment/razorpay/create-subscription";
+      }
+      
+      const orderRes = await axios.post(endpoint, { amount: amountInPaise, currency: "INR", planName: selectedPlan.name, userEmail: user.email });
+      
       const options = {
         key: RAZORPAY_KEY, amount: orderRes.data.amount, currency: orderRes.data.currency,
         name: "ZoneMeet Premium", description: `Upgrade to ${selectedPlan.name}`,
@@ -877,6 +911,12 @@ export default function Dashboard() {
         theme: { color: "#6366f1" },
         modal: { ondismiss: () => setPaymentStep("methods") }
       };
+
+      if (isAutoRenew && !selectedPlan.name.includes("Coins")) {
+        options.subscription_id = orderRes.data.subscription_id;
+        delete options.order_id;
+      }
+
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (err) { console.error(err); setPaymentStep("methods"); showModal({ message: "⚠️ Could not connect to payment gateway. Please try again.", type: "info" }); }
@@ -891,8 +931,18 @@ export default function Dashboard() {
     try {
       setPaymentStep("processing");
       const amountInPaise = selectedPlan.name === "Starter" ? 14900 : selectedPlan.name === "Prime" ? 59900 : selectedPlan.name === "Silver" ? 159900 : selectedPlan.name === "VIP Elite" ? 99900 : Math.round((parseFloat(selectedPlan.price?.replace(/[₹$]/g,'')) || 79) * 100);
-      const orderRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/cashfree/create-order", { amount: amountInPaise, planName: selectedPlan.name, userEmail: user.email });
+      let endpoint = "https://meetzone-backend.onrender.com/api/payment/cashfree/create-order";
+      if (isAutoRenew && !selectedPlan.name.includes("Coins")) {
+        endpoint = "https://meetzone-backend.onrender.com/api/payment/cashfree/create-subscription";
+      }
+      const orderRes = await axios.post(endpoint, { amount: amountInPaise, planName: selectedPlan.name, userEmail: user.email });
       if (!orderRes.data.paymentSessionId) throw new Error("Cashfree session failed");
+      
+      if (isAutoRenew && !selectedPlan.name.includes("Coins")) {
+        window.location.href = orderRes.data.paymentSessionId;
+        return;
+      }
+
       const cashfree = new window.Cashfree({ mode: process.env.NEXT_PUBLIC_CASHFREE_ENV === "production" ? "production" : "sandbox" });
       cashfree.checkout({
         paymentSessionId: orderRes.data.paymentSessionId,
@@ -911,7 +961,11 @@ export default function Dashboard() {
       setPaymentStep("processing");
       const planPriceUSD = selectedPlan.name === "Starter" ? 1.75 : selectedPlan.name === "Prime" ? 7.17 : selectedPlan.name === "Silver" ? 19.17 : selectedPlan.name === "VIP Elite" ? 11.99 : selectedPlan.name === "100 Coins" ? 0.99 : selectedPlan.name === "200 Coins" ? 1.79 : selectedPlan.name === "500 Coins" ? 3.59 : selectedPlan.name === "1300 Coins" ? 8.49 : (parseFloat(selectedPlan.price?.replace(/[₹$]/g,'')) || 5.00);
       const amountInCents = Math.round(planPriceUSD * 100);
-      const orderRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/paypal/create-order", { amount: amountInCents, currency: "USD", planName: selectedPlan.name, userEmail: user.email });
+      let endpoint = "https://meetzone-backend.onrender.com/api/payment/paypal/create-order";
+      if (isAutoRenew && !selectedPlan.name.includes("Coins")) {
+        endpoint = "https://meetzone-backend.onrender.com/api/payment/paypal/create-subscription";
+      }
+      const orderRes = await axios.post(endpoint, { amount: amountInCents, currency: "USD", planName: selectedPlan.name, userEmail: user.email });
       if (orderRes.data.approveUrl) {
         sessionStorage.setItem("paypal_pending", JSON.stringify({ planName: selectedPlan.name, userEmail: user.email, orderId: orderRes.data.orderId, giftRecipientId: isGifting ? giftRecipientId : null }));
         window.location.href = orderRes.data.approveUrl;
@@ -929,6 +983,15 @@ export default function Dashboard() {
       setPaymentStep("processing");
       const planPriceUSD = selectedPlan.name === "Starter" ? 1.75 : selectedPlan.name === "Prime" ? 7.17 : selectedPlan.name === "Silver" ? 19.17 : selectedPlan.name === "VIP Elite" ? 11.99 : selectedPlan.name === "100 Coins" ? 0.99 : selectedPlan.name === "200 Coins" ? 1.79 : selectedPlan.name === "500 Coins" ? 3.59 : selectedPlan.name === "1300 Coins" ? 8.49 : (parseFloat(selectedPlan.price?.replace(/[₹$]/g,'')) || 5.00);
       const amountInCents = Math.round(planPriceUSD * 100);
+
+      if (isAutoRenew && !selectedPlan.name.includes("Coins")) {
+        const orderRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/stripe/create-subscription-checkout", { amount: amountInCents, currency: "usd", planName: selectedPlan.name, userEmail: user.email });
+        if (orderRes.data.checkoutUrl) {
+          window.location.href = orderRes.data.checkoutUrl;
+          return;
+        }
+      }
+
       const intentRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/stripe/create-intent", { amount: amountInCents, currency: "usd", planName: selectedPlan.name, userEmail: user.email });
       const { loadStripe } = await import("@stripe/stripe-js");
       const stripeObj = await loadStripe(STRIPE_PUB);
@@ -2143,6 +2206,22 @@ export default function Dashboard() {
                           The coins/plan will be credited to this user instantly after payment.
                         </p>
                       </div>
+                    )}
+
+                    {/* Auto Renew Toggle (Only for Subscriptions) */}
+                    {selectedPlan && !selectedPlan.name.includes("Coins") && (
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginTop: '15px', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                        <input
+                          type="checkbox"
+                          checked={isAutoRenew}
+                          onChange={(e) => setIsAutoRenew(e.target.checked)}
+                          style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                        />
+                        <div>
+                          <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: '700', display: 'block' }}>🔄 Auto-Renew Subscription</span>
+                          <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Automatically renew this plan. Cancel anytime.</span>
+                        </div>
+                      </label>
                     )}
                   </div>
 

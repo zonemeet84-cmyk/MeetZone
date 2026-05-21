@@ -2789,11 +2789,33 @@ function endQuiz(roomId) {
       }
     });
 
+    // 1.5 Create Razorpay Subscription
+    app.post('/api/payment/razorpay/create-subscription', async (req, res) => {
+      try {
+        const { amount, currency, planName, userEmail } = req.body;
+        const plan = await razorpay.plans.create({
+          period: "monthly",
+          interval: 1,
+          item: { name: `ZoneMeet ${planName}`, amount: Math.round(amount), currency: currency || "INR", description: `Premium ${planName}` }
+        });
+        const subscription = await razorpay.subscriptions.create({
+          plan_id: plan.id,
+          customer_notify: 1,
+          total_count: 120
+        });
+        res.json({ success: true, subscription_id: subscription.id, amount, currency });
+      } catch (error) {
+        console.error("Razorpay Sub Error:", error);
+        res.status(500).json({ success: false, message: "Could not create subscription" });
+      }
+    });
+
     // 2. Verify Razorpay Payment
     app.post('/api/payment/razorpay/verify', async (req, res) => {
       try {
         const {
           razorpay_order_id,
+          razorpay_subscription_id,
           razorpay_payment_id,
           razorpay_signature,
           userEmail,
@@ -2801,7 +2823,9 @@ function endQuiz(roomId) {
           giftRecipientId
         } = req.body;
 
-        const body = razorpay_order_id + "|" + razorpay_payment_id;
+        const body = razorpay_subscription_id 
+          ? razorpay_payment_id + "|" + razorpay_subscription_id 
+          : razorpay_order_id + "|" + razorpay_payment_id;
         const expectedSignature = crypto
           .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "YOUR_KEY_SECRET")
           .update(body.toString())
@@ -2881,6 +2905,67 @@ function endQuiz(roomId) {
     // --- COINS & HISTORY ENDPOINTS ---
 
     // ========== STRIPE ROUTES ==========
+
+    // Stripe - Create Subscription Checkout
+    app.post("/api/payment/stripe/create-subscription-checkout", async (req, res) => {
+      try {
+        const { amount, currency = "usd", planName, userEmail } = req.body;
+        const session = await stripe.checkout.sessions.create({
+          payment_method_types: ['card'],
+          mode: 'subscription',
+          line_items: [{
+            price_data: {
+              currency,
+              recurring: { interval: 'month' },
+              product_data: { name: `ZoneMeet ${planName}` },
+              unit_amount: Math.round(amount)
+            },
+            quantity: 1,
+          }],
+          metadata: { planName, userEmail },
+          success_url: `https://zonemeet.chat/?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `https://zonemeet.chat/`,
+        });
+        res.json({ checkoutUrl: session.url });
+      } catch (err) {
+        console.error("Stripe Sub Error:", err);
+        res.status(500).json({ error: err.message });
+      }
+    });
+
+    // Stripe - Verify Subscription Checkout
+    app.post("/api/payment/stripe/verify-subscription", async (req, res) => {
+      try {
+        const { sessionId, userEmail } = req.body;
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        if (session.payment_status !== "paid") return res.status(400).json({ success: false, message: "Not paid" });
+        
+        const planName = session.metadata.planName || "Unknown";
+        const targetEmail = session.metadata.userEmail || userEmail;
+        const user = users.find(u => u.email === targetEmail);
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+        let days = 30, bundledCoins = 0;
+        if (planName === "Starter") { days = 7; bundledCoins = 50; }
+        else if (planName === "Prime") { days = 30; bundledCoins = 150; }
+        else if (planName === "Silver") { days = 90; bundledCoins = 500; }
+        else if (planName === "VIP Elite") { days = 30; bundledCoins = 400; }
+        
+        user.planExpiry = Date.now() + (days * 24 * 60 * 60 * 1000);
+        user.premium = true;
+        user.planName = planName;
+        user.coins = (user.coins || 0) + bundledCoins;
+
+        transactions.push({ id: session.subscription, userEmail: targetEmail, planName, gateway: "stripe_subscription", timestamp: Date.now() });
+        saveTransactions(); saveUsers();
+        
+        const updatedUser = { ...user, coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10) };
+        res.json({ success: true, user: updatedUser });
+      } catch (err) {
+        console.error("Stripe Verify Sub Error:", err);
+        res.status(500).json({ success: false, message: "Verification failed" });
+      }
+    });
 
     // Stripe - Create Payment Intent
     app.post("/api/payment/stripe/create-intent", async (req, res) => {
@@ -3009,7 +3094,76 @@ function endQuiz(roomId) {
       }
     });
 
+    // PayPal - Create Subscription
+    app.post("/api/payment/paypal/create-subscription", async (req, res) => {
+      try {
+        const { amount, currency = "USD", planName, userEmail } = req.body;
+        const accessToken = await getPayPalAccessToken();
+        
+        // 1. Create Product
+        const prodRes = await fetch(`${PAYPAL_BASE_URL}/v1/catalogs/products`, {
+          method: "POST", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ name: `ZoneMeet ${planName}`, type: "SERVICE" })
+        });
+        const product = await prodRes.json();
+
+        // 2. Create Plan
+        const planRes = await fetch(`${PAYPAL_BASE_URL}/v1/billing/plans`, {
+          method: "POST", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            product_id: product.id,
+            name: `${planName} Monthly`,
+            billing_cycles: [{ frequency: { interval_unit: "MONTH", interval_count: 1 }, tenure_type: "REGULAR", sequence: 1, total_cycles: 0, pricing_scheme: { fixed_price: { value: parseFloat(amount / 100).toFixed(2), currency_code: currency } } }],
+            payment_preferences: { auto_bill_outstanding: true, setup_fee: { value: "0", currency_code: currency }, setup_fee_failure_action: "CONTINUE", payment_failure_threshold: 3 }
+          })
+        });
+        const plan = await planRes.json();
+
+        // 3. Create Subscription
+        const subRes = await fetch(`${PAYPAL_BASE_URL}/v1/billing/subscriptions`, {
+          method: "POST", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            plan_id: plan.id,
+            custom_id: JSON.stringify({ userEmail, planName }),
+            application_context: { return_url: `https://zonemeet.chat/payment-success?paypal_sub=true`, cancel_url: `https://zonemeet.chat/` }
+          })
+        });
+        const subscription = await subRes.json();
+        
+        const approveUrl = subscription.links.find(l => l.rel === "approve")?.href;
+        res.json({ approveUrl, subscriptionId: subscription.id });
+      } catch (err) {
+        console.error("PayPal Sub Error:", err);
+        res.status(500).json({ error: err.message });
+      }
+    });
+
     // ========== CASHFREE ROUTES ==========
+
+    // Cashfree - Create Subscription
+    app.post("/api/payment/cashfree/create-subscription", async (req, res) => {
+      try {
+        const { amount, planName, userEmail } = req.body;
+        const subId = `CF_SUB_${Date.now()}_${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+        const planId = `PLAN_${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+
+        await fetch(`${CASHFREE_BASE_URL}/subscriptions/plans`, {
+          method: "POST", headers: { "x-client-id": process.env.CASHFREE_APP_ID, "x-client-secret": process.env.CASHFREE_SECRET_KEY, "Content-Type": "application/json" },
+          body: JSON.stringify({ plan_id: planId, plan_name: `ZoneMeet ${planName}`, type: "PERIODIC", max_cycles: 120, amount: (amount / 100).toFixed(2), interval_type: "MONTH", intervals: 1 })
+        });
+
+        const subRes = await fetch(`${CASHFREE_BASE_URL}/subscriptions`, {
+          method: "POST", headers: { "x-client-id": process.env.CASHFREE_APP_ID, "x-client-secret": process.env.CASHFREE_SECRET_KEY, "Content-Type": "application/json" },
+          body: JSON.stringify({ subscription_id: subId, plan_id: planId, customer_name: "Customer", customer_email: userEmail, customer_phone: "9999999999", return_url: `https://zonemeet.chat/payment-success?cf_sub=${subId}` })
+        });
+        const subscription = await subRes.json();
+        
+        res.json({ paymentSessionId: subscription.auth_link, orderId: subId });
+      } catch (err) {
+        console.error("Cashfree Sub Error:", err);
+        res.status(500).json({ error: err.message });
+      }
+    });
 
     // Cashfree - Create Order
     app.post("/api/payment/cashfree/create-order", async (req, res) => {
