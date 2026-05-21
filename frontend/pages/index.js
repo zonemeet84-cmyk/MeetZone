@@ -4248,15 +4248,23 @@ export default function Dashboard() {
             .referral-section-container {
               padding: 40px 15px 120px !important;
               margin: 20px auto 10px !important;
+              width: 100% !important;
+              max-width: 100vw !important;
+              box-sizing: border-box !important;
+              overflow: hidden !important;
             }
             .referral-stats-grid {
               grid-template-columns: 1fr !important;
               gap: 15px !important;
+              width: 100% !important;
+              box-sizing: border-box !important;
             }
             .referral-flex-row {
               flex-direction: column !important;
               align-items: stretch !important;
               gap: 10px !important;
+              width: 100% !important;
+              box-sizing: border-box !important;
             }
             .referral-input-box {
               text-align: center !important;
@@ -4416,29 +4424,21 @@ export default function Dashboard() {
               margin: auto !important;
             }
             .streak-days-grid {
-              gap: 8px !important;
-              display: flex !important;
-              overflow-x: auto !important;
-              padding-bottom: 8px !important;
-              scroll-snap-type: x mandatory !important;
-              -webkit-overflow-scrolling: touch !important;
-            }
-            .streak-days-grid::-webkit-scrollbar {
-              height: 4px !important;
-            }
-            .streak-days-grid::-webkit-scrollbar-track {
-              background: rgba(255, 255, 255, 0.05) !important;
-              border-radius: 4px !important;
-            }
-            .streak-days-grid::-webkit-scrollbar-thumb {
-              background: rgba(255, 255, 255, 0.2) !important;
-              border-radius: 4px !important;
+              gap: 3px !important;
+              display: grid !important;
+              grid-template-columns: repeat(7, 1fr) !important;
+              overflow-x: hidden !important;
+              width: 100% !important;
+              box-sizing: border-box !important;
             }
             .streak-day-card {
-              min-width: 60px !important;
-              flex: 0 0 auto !important;
-              scroll-snap-align: start !important;
-              padding: 8px 4px 6px !important;
+              min-width: 0 !important;
+              padding: 6px 2px 4px !important;
+              font-size: 0.7rem !important;
+            }
+            .streak-day-icon {
+              font-size: 1.1rem !important;
+              margin-bottom: 2px !important;
             }
             /* Coin Usage Transparency - stacked grid */
             .stats-row {
@@ -4521,8 +4521,17 @@ export default function Dashboard() {
             .streak-day-coins {
               font-size: 0.75rem !important;
             }
-            .streak-modal-close {
-              padding: 15px !important;
+            .streak-modal-close, .modal-close-btn, .history-close-btn, .profile-modal-close {
+              padding: 0 !important;
+              width: 32px !important;
+              height: 32px !important;
+              font-size: 1.5rem !important;
+              top: 10px !important;
+              right: 10px !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              border-radius: 50% !important;
             }
             .bot-window {
               width: calc(100vw - 40px) !important;
@@ -4547,6 +4556,9 @@ export default function Dashboard() {
             #referral-section > div:nth-of-type(2) {
               grid-template-columns: 1fr !important;
               gap: 15px !important;
+              width: 100% !important;
+              box-sizing: border-box !important;
+              overflow: hidden !important;
             }
             #referral-section > div:nth-of-type(2) > div {
               padding: 15px !important;
@@ -5378,7 +5390,10 @@ export default function Dashboard() {
 
             @media (max-width: 768px) {
               .hero-explore-title {
-                font-size: 3rem !important;
+                font-size: 2.2rem !important;
+                line-height: 1.2 !important;
+                padding: 0 10px !important;
+                word-wrap: break-word !important;
               }
               .hero-explore-subtitle {
                 font-size: 1.1rem !important;
