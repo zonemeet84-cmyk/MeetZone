@@ -4845,32 +4845,40 @@ export default function Dashboard() {
               overflow: hidden !important;
             }
             .profile-referral-input {
-              padding: 6px 8px !important;
-              font-size: 0.75rem !important;
-              border-radius: 6px !important;
+              padding: 8px 10px !important;
+              font-size: 0.8rem !important;
+              border-radius: 8px !important;
               height: auto !important;
-              flex: 1 1 0 !important;
-              min-width: 0 !important;
+              flex: 1 !important;
+              min-width: 60% !important;
             }
             .profile-referral-btn {
-              padding: 6px 10px !important;
-              font-size: 0.72rem !important;
+              padding: 4px 8px !important;
+              font-size: 0.65rem !important;
               border-radius: 6px !important;
               height: auto !important;
               flex-shrink: 0 !important;
               white-space: nowrap !important;
+              width: auto !important;
+            }
+            .profile-edit-btn, .profile-premium-btn {
+              padding: 4px 8px !important;
+              font-size: 0.65rem !important;
+              border-radius: 6px !important;
+              width: auto !important;
             }
             .profile-modal-card input,
             .profile-modal-card select {
-              padding: 6px 10px !important;
-              font-size: 0.75rem !important;
-              border-radius: 6px !important;
+              padding: 8px 10px !important;
+              font-size: 0.8rem !important;
+              border-radius: 8px !important;
               height: auto !important;
             }
             .profile-modal-card button {
-              padding: 6px 10px !important;
-              font-size: 0.75rem !important;
+              padding: 4px 8px !important;
+              font-size: 0.65rem !important;
               border-radius: 6px !important;
+              width: auto !important;
             }
             /* Fix for mystery box confirm */
             .premium-modal {
