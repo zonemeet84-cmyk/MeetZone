@@ -215,6 +215,7 @@ export default function Home() {
 
   // MediaPipe Filters
   const [activeMediaPipeFilter, setActiveMediaPipeFilter] = useState("None");
+  const [isHDEnabled, setIsHDEnabled] = useState(false);
   const [selectedTempFilter, setSelectedTempFilter] = useState("None");
   const [selectedTempAvatar, setSelectedTempAvatar] = useState("None");
   const [selectedTempVoice, setSelectedTempVoice] = useState("Normal");
@@ -1134,11 +1135,7 @@ export default function Home() {
 
       // 2. Camera Logic
       try {
-        const videoConstraints = isPremiumUser ? {
-          width: { ideal: 1280, max: 1920 },
-          height: { ideal: 720, max: 1080 },
-          frameRate: { ideal: 30, max: 30 }
-        } : {
+        const videoConstraints = {
           width: { ideal: 640, max: 960 },
           height: { ideal: 480, max: 540 },
           frameRate: { ideal: 20, max: 20 }
@@ -1394,6 +1391,38 @@ export default function Home() {
         showToast("Call was declined.", "info");
       });
 
+
+      socket.on("hd-approved", async ({ enable }) => {
+        setIsHDEnabled(enable);
+        try {
+          const videoConstraints = enable ? {
+            width: { ideal: 1920, max: 1920 },
+            height: { ideal: 1080, max: 1080 },
+            frameRate: { ideal: 30, max: 30 }
+          } : {
+            width: { ideal: 640, max: 960 },
+            height: { ideal: 480, max: 540 },
+            frameRate: { ideal: 20, max: 20 }
+          };
+          const stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true });
+          if (localVideo.current) localVideo.current.srcObject = stream;
+          streamInstance = stream;
+          if (peerConnection.current) {
+             const videoTrack = stream.getVideoTracks()[0];
+             const sender = peerConnection.current.getSenders().find(s => s.track && s.track.kind === 'video');
+             if (sender) sender.replaceTrack(videoTrack);
+          }
+          showToast(enable ? "HD Video Enabled" : "HD Video Disabled", "success");
+        } catch(e) {
+          console.error("HD transition failed", e);
+          showToast("Camera access failed for HD", "error");
+        }
+      });
+
+      socket.on("hd-denied", (data) => {
+        setIsHDEnabled(false);
+        showModal({ message: data.message || "HD Denied. Please upgrade to premium.", type: "error" });
+      });
 
       socket.on("matched", async ({ partnerId, initiator, partnerInfo }) => {
         setPartnerId(partnerId);
@@ -2063,6 +2092,16 @@ export default function Home() {
           socket.emit("camera-state-change", { enabled: videoTrack.enabled });
         }
       }
+    }
+  };
+
+  const toggleHD = () => {
+    if (!user?.premium && user?.email !== "ds9376314@gmail.com") {
+      showModal({ message: "HD Video is available for Premium users only.", type: "info" });
+      return;
+    }
+    if (socket) {
+      socket.emit("request-hd-stream", { enable: !isHDEnabled });
     }
   };
 
@@ -2882,6 +2921,9 @@ export default function Home() {
                     {isCameraOn ? "📹" : "🚫"}
                   </button>
 
+                  <button className={`ctrl-btn ${!isHDEnabled ? "off" : ""}`} onClick={toggleHD} title="Toggle HD Video" style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>
+                    HD
+                  </button>
                 </div>
               </div>
 

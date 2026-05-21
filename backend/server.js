@@ -2101,6 +2101,19 @@ function endQuiz(roomId) {
         }
       });
 
+      socket.on("request-hd-stream", ({ enable }) => {
+        if (!socket.userId) {
+          socket.emit("hd-denied", { message: "User not identified. Please login." });
+          return;
+        }
+        const user = users.find(u => u.id === socket.userId);
+        if (user && (user.premium || user.email === "ds9376314@gmail.com")) {
+          socket.emit("hd-approved", { enable });
+        } else {
+          socket.emit("hd-denied", { message: "Premium subscription required for HD video." });
+        }
+      });
+
       socket.on("set-profile", (profile) => {
         // Safety Ban check: Kick banned users immediately
         if (profile && bannedEmails.includes(profile.email)) {
