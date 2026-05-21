@@ -794,6 +794,7 @@ export default function Home() {
   // Chat
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
+  const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
   const chatEndRef = useRef(null);
 
   // --- SECRET IDENTITY STATES ---
@@ -2793,7 +2794,7 @@ export default function Home() {
               </div>
             )}
 
-            <div className={`video-grid-v2 ${quizState === 'active' ? 'quiz-pip-mode' : ''}`}>
+            <div className={`video-grid-v2 ${quizState === 'active' ? 'quiz-pip-mode' : ''} ${partnerId ? 'partner-connected' : 'searching-mode'}`}>
               <div className={`video-card ${isFaceBlurred ? 'blurred-face' : ''}`}>
                 <video
                   ref={localVideo}
@@ -3483,11 +3484,35 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="chat-column">
+        {partnerId && (
+          <button
+            type="button"
+            className={`mobile-chat-toggle-btn ${isMobileChatOpen ? 'active' : ''}`}
+            onClick={() => setIsMobileChatOpen(!isMobileChatOpen)}
+          >
+            {isMobileChatOpen ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            ) : (
+              <>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                {messages.filter(m => m.sender === 'partner').length > 0 && (
+                  <span className="mobile-chat-unread-badge">
+                    {messages.filter(m => m.sender === 'partner').length}
+                  </span>
+                )}
+              </>
+            )}
+          </button>
+        )}
+
+        <div className={`chat-column ${isMobileChatOpen ? 'mobile-chat-open' : 'mobile-chat-closed'}`}>
           <div className="chat-box-v2">
             <div className="chat-box-header">
               <h3>Live Chat</h3>
-              <span className="msg-count">{messages.length} msgs</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span className="msg-count">{messages.length} msgs</span>
+                <button type="button" className="mobile-chat-close-btn-header" onClick={() => setIsMobileChatOpen(false)}>×</button>
+              </div>
             </div>
             <div className="chat-box-messages">
               {messages.length === 0 && <div className="empty-chat">Say Hi! 👋</div>}
@@ -6072,29 +6097,6 @@ export default function Home() {
             font-size: 0.72rem !important;
             background: rgba(255, 255, 255, 0.1) !important;
             border: 1px solid rgba(255, 255, 255, 0.15) !important;
-            border-radius: 8px !important;
-          }
-          .header-coins-pill {
-            padding: 4px 8px !important;
-            font-size: 0.72rem !important;
-            height: 24px !important;
-          }
-          .main-layout {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            display: block !important;
-          }
-          .video-column {
-            width: 100% !important;
-            height: 100% !important;
-            position: relative !important;
-            margin: 0 !important;
-            padding: 0 !important;
           }
           .video-grid-v2 {
             position: absolute !important;
@@ -6108,8 +6110,8 @@ export default function Home() {
             background: #000000 !important;
             z-index: 1 !important;
           }
-          /* Remote stranger full-screen view */
-          .video-grid-v2 > .video-card:nth-child(2) {
+          /* Searching mode: user video is full screen, searching overlay is transparent */
+          .video-grid-v2.searching-mode > .video-card:first-child {
             position: absolute !important;
             top: 0 !important;
             left: 0 !important;
@@ -6118,17 +6120,49 @@ export default function Home() {
             z-index: 2 !important;
             border-radius: 0 !important;
             border: none !important;
-            margin: 0 !important;
-            padding: 0 !important;
+            box-shadow: none !important;
           }
-          .video-grid-v2 > .video-card:nth-child(2) video {
+          .video-grid-v2.searching-mode > .video-card:first-child video,
+          .video-grid-v2.searching-mode > .video-card:first-child canvas {
             width: 100% !important;
             height: 100% !important;
             object-fit: cover !important;
-            border-radius: 0 !important;
           }
-          /* Floating small user self-video bubble */
-          .video-grid-v2 > .video-card:first-child {
+          .video-grid-v2.searching-mode > .video-card:first-child .card-label {
+            display: flex !important;
+            position: absolute !important;
+            bottom: 120px !important;
+            left: 12px !important;
+            z-index: 10 !important;
+          }
+          .video-grid-v2.searching-mode > .video-card:first-child .card-controls {
+            display: flex !important;
+            position: absolute !important;
+            bottom: 120px !important;
+            right: 12px !important;
+            z-index: 10 !important;
+            transform: none !important;
+            left: auto !important;
+          }
+
+          .video-grid-v2.searching-mode > .video-card:nth-child(2) {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 3 !important;
+            background: transparent !important;
+            border: none !important;
+          }
+          .video-grid-v2.searching-mode .searching-overlay-v2 {
+            background: rgba(15, 23, 42, 0.45) !important;
+            backdrop-filter: blur(4px) !important;
+            -webkit-backdrop-filter: blur(4px) !important;
+          }
+
+          /* Partner connected mode: local video is floating bubble, stranger is full screen */
+          .video-grid-v2.partner-connected > .video-card:first-child {
             position: absolute !important;
             width: 75px !important;
             height: 110px !important;
@@ -6144,14 +6178,16 @@ export default function Home() {
             padding: 0 !important;
             transition: all 0.3s ease !important;
           }
-          .video-grid-v2 > .video-card:first-child video,
-          .video-grid-v2 > .video-card:first-child canvas {
+          .video-grid-v2.partner-connected > .video-card:first-child video,
+          .video-grid-v2.partner-connected > .video-card:first-child canvas {
             width: 100% !important;
             height: 100% !important;
             object-fit: cover !important;
           }
-          /* Tiny camera/mic controls for local user bubble */
-          .video-grid-v2 > .video-card:first-child .card-controls {
+          .video-grid-v2.partner-connected > .video-card:first-child .card-label {
+            display: none !important;
+          }
+          .video-grid-v2.partner-connected > .video-card:first-child .card-controls {
             display: flex !important;
             position: absolute !important;
             bottom: 4px !important;
@@ -6164,7 +6200,7 @@ export default function Home() {
             z-index: 110 !important;
             width: auto !important;
           }
-          .video-grid-v2 > .video-card:first-child .ctrl-btn {
+          .video-grid-v2.partner-connected > .video-card:first-child .ctrl-btn {
             width: 18px !important;
             height: 18px !important;
             border-radius: 50% !important;
@@ -6177,9 +6213,24 @@ export default function Home() {
             color: #fff !important;
             padding: 0 !important;
           }
-          .video-grid-v2 > .video-card:first-child .card-label {
-            display: none !important;
+          .video-grid-v2.partner-connected > .video-card:nth-child(2) {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 2 !important;
+            border-radius: 0 !important;
+            border: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
           }
+          .video-grid-v2.partner-connected > .video-card:nth-child(2) video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            border-radius: 0 !important;
+
           /* Stranger Top Floating Label */
           .video-grid-v2 > .video-card:nth-child(2) .card-label {
             position: absolute !important;
@@ -6306,94 +6357,185 @@ export default function Home() {
             height: auto !important;
             width: 100% !important;
           }
-          .select-dropdown-trigger .val-icon {
-            font-size: 0.9rem !important;
-          }
-          .select-dropdown-trigger .val-text {
-            font-size: 0.75rem !important;
-          }
-          .filter-dropdown-menu {
-            max-height: 150px !important;
-          }
-          .filter-dropdown-menu .dropdown-item {
-            padding: 6px 10px !important;
-            font-size: 0.75rem !important;
-          }
-          .filter-modal-footer {
-            padding-top: 8px !important;
-          }
-          .filter-modal-footer .apply-btn {
-            padding: 10px !important;
-            font-size: 0.85rem !important;
-            border-radius: 10px !important;
-            width: 100% !important;
-            height: auto !important;
-          }
-          /* Micro Floating Live Chat - Tucked completely into the bottom-left corner */
-          .chat-column {
-            position: absolute !important;
-            bottom: 160px !important;
-            left: 12px !important;
-            width: 140px !important;
-            height: 120px !important;
-            background: transparent !important;
-            border: none !important;
-            z-index: 80 !important;
-            pointer-events: auto !important;
-            box-shadow: none !important;
-            margin: 0 !important;
-          }
-          .chat-box-v2 {
-            background: transparent !important;
-            border: none !important;
-            display: flex !important;
-            flex-direction: column !important;
-            height: 100% !important;
-          }
-          .chat-box-header {
+          /* Mobile Chat Toggle Button styling */
+          .mobile-chat-toggle-btn {
             display: none !important;
           }
-          .chat-box-messages {
-            flex: 1 !important;
-            background: transparent !important;
-            padding: 0 !important;
-            overflow-y: auto !important;
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 4px !important;
-            mask-image: linear-gradient(to top, black 85%, transparent 100%) !important;
-            -webkit-mask-image: linear-gradient(to top, black 85%, transparent 100%) !important;
+          @media (max-width: 768px) {
+            .mobile-chat-toggle-btn {
+              display: flex !important;
+              align-items: center;
+              justify-content: center;
+              position: fixed !important;
+              bottom: 80px !important;
+              left: 16px !important;
+              width: 44px !important;
+              height: 44px !important;
+              border-radius: 50% !important;
+              background: rgba(99, 102, 241, 0.9) !important;
+              backdrop-filter: blur(8px) !important;
+              border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+              color: white !important;
+              z-index: 9999 !important;
+              box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+              cursor: pointer !important;
+              transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+              padding: 0 !important;
+            }
+            .mobile-chat-toggle-btn:active {
+              transform: scale(0.9) !important;
+            }
+            .mobile-chat-toggle-btn.active {
+              background: rgba(239, 68, 68, 0.9) !important;
+            }
+            .mobile-chat-unread-badge {
+              position: absolute !important;
+              top: -4px !important;
+              right: -4px !important;
+              background: #ef4444 !important;
+              color: white !important;
+              font-size: 0.65rem !important;
+              font-weight: 700 !important;
+              padding: 2px 6px !important;
+              border-radius: 10px !important;
+              border: 1.5px solid #ffffff !important;
+              box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4) !important;
+            }
           }
-          .msg-row {
-            background: rgba(0, 0, 0, 0.5) !important;
-            border-radius: 8px !important;
-            padding: 4px 8px !important;
-            font-size: 0.68rem !important;
-            color: #fff !important;
-            width: max-content !important;
-            max-width: 100% !important;
-            margin: 0 !important;
-            border: 1px solid rgba(255, 255, 255, 0.05) !important;
-          }
-          .chat-box-input {
-            background: rgba(0, 0, 0, 0.55) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 12px !important;
-            padding: 2px 6px !important;
-            margin-top: 4px !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
-          }
-          .chat-box-input input {
-            font-size: 0.65rem !important;
-            color: #fff !important;
-          }
-          .chat-box-input button {
-            width: 22px !important;
-            height: 22px !important;
-            border-radius: 50% !important;
-            font-size: 0.6rem !important;
-          }
+
+          @media (max-width: 768px) {
+            .chat-column {
+              display: none !important;
+            }
+            .chat-column.mobile-chat-open {
+              display: flex !important;
+              position: fixed !important;
+              bottom: 0 !important;
+              left: 0 !important;
+              width: 100vw !important;
+              height: 60vh !important;
+              height: 60dvh !important;
+              background: rgba(15, 23, 42, 0.93) !important;
+              backdrop-filter: blur(24px) !important;
+              -webkit-backdrop-filter: blur(24px) !important;
+              z-index: 10001 !important;
+              border-top-left-radius: 24px !important;
+              border-top-right-radius: 24px !important;
+              border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+              box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6) !important;
+              padding: 16px !important;
+              box-sizing: border-box !important;
+              margin: 0 !important;
+              animation: chatSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+            }
+            @keyframes chatSlideUp {
+              from { transform: translateY(100%); }
+              to { transform: translateY(0); }
+            }
+            .chat-column.mobile-chat-open .chat-box-v2 {
+              display: flex !important;
+              flex-direction: column !important;
+              height: 100% !important;
+              background: transparent !important;
+              border: none !important;
+            }
+            .chat-column.mobile-chat-open .chat-box-header {
+              display: flex !important;
+              justify-content: space-between !important;
+              align-items: center !important;
+              padding: 0 0 12px 0 !important;
+              border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            }
+            .chat-column.mobile-chat-open .chat-box-header h3 {
+              margin: 0 !important;
+              font-size: 0.95rem !important;
+              font-weight: 700 !important;
+              color: #a5b4fc !important;
+            }
+            .chat-column.mobile-chat-open .chat-box-header .msg-count {
+              font-size: 0.65rem !important;
+              color: #94a3b8 !important;
+            }
+            .mobile-chat-close-btn-header {
+              background: rgba(255, 255, 255, 0.08) !important;
+              border: none !important;
+              color: #fff !important;
+              width: 24px !important;
+              height: 24px !important;
+              border-radius: 50% !important;
+              font-size: 1rem !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              cursor: pointer !important;
+              padding: 0 !important;
+              line-height: 1 !important;
+            }
+            .chat-column.mobile-chat-open .chat-box-messages {
+              flex: 1 !important;
+              overflow-y: auto !important;
+              padding: 12px 0 !important;
+              display: flex !important;
+              flex-direction: column !important;
+              gap: 8px !important;
+              mask-image: none !important;
+              -webkit-mask-image: none !important;
+            }
+            .chat-column.mobile-chat-open .msg-row {
+              background: rgba(255, 255, 255, 0.04) !important;
+              border-radius: 12px !important;
+              padding: 6px 12px !important;
+              font-size: 0.78rem !important;
+              width: max-content !important;
+              max-width: 85% !important;
+              margin: 0 !important;
+              border: 1px solid rgba(255, 255, 255, 0.04) !important;
+            }
+            .chat-column.mobile-chat-open .msg-row.me {
+              align-self: flex-end !important;
+              background: #6366f1 !important;
+              color: #fff !important;
+              justify-content: flex-end !important;
+            }
+            .chat-column.mobile-chat-open .msg-row.partner {
+              align-self: flex-start !important;
+              background: rgba(255, 255, 255, 0.08) !important;
+              color: #fff !important;
+              justify-content: flex-start !important;
+            }
+            .chat-column.mobile-chat-open .chat-box-input {
+              background: rgba(255, 255, 255, 0.04) !important;
+              border: 1px solid rgba(255, 255, 255, 0.1) !important;
+              border-radius: 50px !important;
+              padding: 4px 6px 4px 16px !important;
+              margin-top: 8px !important;
+              display: flex !important;
+              align-items: center !important;
+              gap: 8px !important;
+            }
+            .chat-column.mobile-chat-open .chat-box-input input {
+              flex: 1 !important;
+              background: transparent !important;
+              border: none !important;
+              color: #fff !important;
+              font-size: 0.8rem !important;
+              outline: none !important;
+              padding: 6px 0 !important;
+            }
+            .chat-column.mobile-chat-open .chat-box-input button {
+              width: 32px !important;
+              height: 32px !important;
+              border-radius: 50% !important;
+              background: #6366f1 !important;
+              color: #fff !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              border: none !important;
+              cursor: pointer !important;
+              padding: 0 !important;
+            }
+
           /* Micro Identity Tools container floating just above bottom controls */
           .identity-container {
             position: absolute !important;
