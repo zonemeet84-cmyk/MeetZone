@@ -6486,9 +6486,8 @@ export default function Home() {
           .mobile-chat-toggle-btn {
             display: none !important;
           }
-          @media (max-width: 768px) {
-            .mobile-chat-toggle-btn {
-              display: flex !important;
+          .mobile-chat-toggle-btn {
+            display: flex !important;
               align-items: center;
               justify-content: center;
               position: fixed !important;
@@ -6526,9 +6525,7 @@ export default function Home() {
               border: 1.5px solid #ffffff !important;
               box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4) !important;
             }
-          }
 
-          @media (max-width: 768px) {
             .chat-column {
               display: none !important;
             }
