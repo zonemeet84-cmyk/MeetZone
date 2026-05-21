@@ -1069,6 +1069,7 @@ export default function Dashboard() {
       <Head>
         <title>ZoneMeet – Talk To New People Online</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <meta name="description" content="ZoneMeet lets you instantly connect with People worldwide through secure video chat. Meet new people, make friends, and enjoy live conversations online." />
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
         <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
       </Head>
