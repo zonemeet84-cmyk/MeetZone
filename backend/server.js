@@ -2040,15 +2040,10 @@ function endQuiz(roomId) {
 
       const isOwner = socket.email?.toLowerCase() === "ds9376314@gmail.com";
       const plan = socket.planName?.toLowerCase() || "";
-      const isPremium = socket.premium || plan !== "" || isOwner;
+      const isPremium = socket.premium || (plan !== "" && plan !== "free") || isOwner;
 
       // 5 seconds delay for free users, instant (0s) for subscription users
       let delay = isPremium ? 0 : 5000;
-
-      // 1 second delay if matching appearance/preferences are applied
-      if (socket.filters && (socket.filters.gender !== "all" || socket.filters.country !== "all" || socket.filters.age !== "All Ages" || socket.filters.state !== "All States")) {
-        delay = 1000;
-      }
 
       if (delay === 0) {
         if (!waitingUsers.includes(socket)) {
