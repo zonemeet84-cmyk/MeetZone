@@ -6304,7 +6304,14 @@ export default function Home() {
             border: none !important;
           }
           .video-grid-v2.searching-mode .searching-overlay-v2 {
-            background: rgba(15, 23, 42, 0.45) !important;
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+          }
+          .searching-content {
+            background: rgba(0,0,0,0.5) !important;
+            padding: 10px 15px !important;
+            border-radius: 12px !important;
             backdrop-filter: blur(4px) !important;
             -webkit-backdrop-filter: blur(4px) !important;
           }
@@ -6403,23 +6410,27 @@ export default function Home() {
           .video-grid-v2 > .video-card:nth-child(2) .card-controls {
             display: flex !important;
             position: absolute !important;
-            top: 55px !important;
+            top: 90px !important;
             right: 12px !important;
             background: rgba(15, 23, 42, 0.6) !important;
             backdrop-filter: blur(8px) !important;
             -webkit-backdrop-filter: blur(8px) !important;
-            border-radius: 20px !important;
-            padding: 4px 8px !important;
+            border-radius: 12px !important;
+            padding: 2px 4px !important;
             z-index: 10 !important;
             width: auto !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
           }
+          .video-grid-v2 > .video-card:nth-child(2) .card-controls button {
+             font-size: 0.6rem !important;
+             padding: 2px !important;
+          }
              /* Preferences Button Floating Row - Super Small! */
           .filters-row-v2 {
             position: absolute !important;
-            top: 90px !important;
+            top: 55px !important;
             left: 12px !important;
-            right: 12px !important;
+            right: auto !important;
             transform: none !important;
             width: auto !important;
             z-index: 50 !important;
@@ -6435,11 +6446,11 @@ export default function Home() {
             -webkit-backdrop-filter: blur(8px) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             color: #fff !important;
-            border-radius: 12px !important;
-            padding: 4px 8px !important;
-            font-size: 0.65rem !important;
+            border-radius: 8px !important;
+            padding: 2px 6px !important;
+            font-size: 0.55rem !important;
             font-weight: 700 !important;
-            height: 24px !important;
+            height: 20px !important;
             display: flex !important;
             align-items: center !important;
             width: auto !important;
@@ -6518,27 +6529,26 @@ export default function Home() {
           .chat-column,
           .chat-column.mobile-chat-open,
           .chat-column.mobile-chat-closed {
-            display: flex !important;
-            position: relative !important;
-            bottom: auto !important;
-            left: auto !important;
-            width: 100vw !important;
-            height: 38vh !important; /* Fixed compact height at the bottom */
-            height: 38dvh !important;
-            background: #0f172a !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-            z-index: 10 !important;
-            border-top-left-radius: 20px !important;
-            border-top-right-radius: 20px !important;
-            border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3) !important;
-            padding: 12px 16px 16px 16px !important;
-            box-sizing: border-box !important;
-            margin: 0 !important;
+            position: absolute !important;
+            bottom: 15px !important;
+            left: 12px !important;
+            width: 250px !important;
+            height: 25vh !important;
+            min-height: 180px !important;
+            max-height: 220px !important;
+            background: rgba(15, 23, 42, 0.65) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            z-index: 500 !important;
+            border-radius: 16px !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+            padding: 10px !important;
+            pointer-events: auto !important;
             animation: none !important;
-            max-width: 100vw !important;
-            min-width: 100vw !important;
+            max-width: 70vw !important;
+            min-width: 0 !important;
+            display: flex !important;
           }
           .mobile-chat-close-btn-header {
             display: none !important; /* Hide close button since it cannot be closed */
@@ -6743,18 +6753,18 @@ export default function Home() {
           .bottom-actions > div:nth-child(3) button {
             flex: none !important;
             width: auto !important;
-            height: 32px !important;
-            border-radius: 16px !important;
-            font-size: 0.7rem !important;
+            height: 24px !important;
+            border-radius: 8px !important;
+            font-size: 0.55rem !important;
             font-weight: 700 !important;
-            padding: 0 12px !important;
+            padding: 0 8px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
             gap: 4px !important;
             margin: 0 !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
             backdrop-filter: blur(8px) !important;
             transition: all 0.2s ease !important;
           }
