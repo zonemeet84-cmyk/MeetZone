@@ -6935,11 +6935,19 @@ export default function Home() {
           /* Toast / Notification responsiveness */
           .toast-stack-container {
             top: 10px !important;
+            width: 95vw !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
           }
           .premium-toast {
             padding: 10px 14px !important;
             border-radius: 12px !important;
             gap: 8px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
           }
           .toast-icon-wrapper {
             width: 26px !important;

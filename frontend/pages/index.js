@@ -4535,9 +4535,14 @@ export default function Dashboard() {
             }
             .bot-window {
               width: calc(100vw - 40px) !important;
-              height: 400px !important;
+              max-width: 340px !important;
+              height: 320px !important;
               bottom: 80px !important;
               right: 20px !important;
+            }
+            .leaderboard-modal {
+              height: 60vh !important;
+              max-height: 480px !important;
             }
             .modal-header-premium h2 {
               font-size: 2rem !important;
