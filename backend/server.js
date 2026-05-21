@@ -73,6 +73,8 @@ const jwt = require("jsonwebtoken");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Stripe = require("stripe");
+const speakeasy = require("speakeasy");
+const QRCode = require("qrcode");
 
 const onlineUsers = new Map(); // userId -> socket.id
 
@@ -388,6 +390,90 @@ async function verifyCaptcha(token) {
   }
 }
 
+// =======================
+// 2FA SETUP & VERIFICATION
+// =======================
+const temp2FASecrets = {}; // Store temp secrets during setup
+
+app.post("/api/auth/2fa/setup", (req, res) => {
+  const { email } = req.body;
+  const user = users.find(u => u.email === email);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  if (!user.premium && email !== "ds9376314@gmail.com") {
+    return res.status(403).json({ message: "Google Authenticator is only available for Premium and Admin users." });
+  }
+
+  const secret = speakeasy.generateSecret({
+    name: `ZoneMeet (${email})`
+  });
+  
+  temp2FASecrets[email] = secret.base32;
+
+  QRCode.toDataURL(secret.otpauth_url, (err, data_url) => {
+    if (err) return res.status(500).json({ message: "Error generating QR code" });
+    res.json({ secret: secret.base32, qrCode: data_url });
+  });
+});
+
+app.post("/api/auth/2fa/verify-setup", (req, res) => {
+  const { email, token } = req.body;
+  const user = users.find(u => u.email === email);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  const tempSecret = temp2FASecrets[email];
+  if (!tempSecret) return res.status(400).json({ message: "No setup in progress. Please start over." });
+
+  const verified = speakeasy.totp.verify({
+    secret: tempSecret,
+    encoding: 'base32',
+    token: token
+  });
+
+  if (verified) {
+    user.twoFactorSecret = tempSecret;
+    delete temp2FASecrets[email];
+    saveUsers();
+    res.json({ success: true, message: "Google Authenticator successfully enabled!" });
+  } else {
+    res.status(400).json({ message: "Invalid code. Try again." });
+  }
+});
+
+app.post("/api/auth/2fa/login-verify", (req, res) => {
+  const { email, token, type } = req.body; // type: "google" or "email"
+  const user = users.find(u => u.email === email);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  if (type === "google") {
+    if (!user.twoFactorSecret) return res.status(400).json({ message: "2FA not configured" });
+    
+    const verified = speakeasy.totp.verify({
+      secret: user.twoFactorSecret,
+      encoding: 'base32',
+      token: token,
+      window: 1 // allow 30sec before/after
+    });
+
+    if (verified) {
+      const jwtToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || "fallback_secret");
+      return res.json({ success: true, token: jwtToken, user });
+    } else {
+      return res.status(400).json({ message: "Invalid Authenticator Code" });
+    }
+  } else {
+    // Email OTP Fallback/Free user verification
+    const stored = emailOtpStore[email];
+    if (!stored || stored.otp !== token || Date.now() > stored.expiresAt) {
+      return res.status(400).json({ message: "Invalid or expired Email OTP" });
+    }
+    delete emailOtpStore[email];
+    const jwtToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || "fallback_secret");
+    res.json({ success: true, token: jwtToken, user });
+  }
+});
+
+
 app.post("/api/auth/session-login", (req, res) => {
   const { email, name, referralCode } = req.body;
   if (!email) return res.status(400).json({ message: "Email is required" });
@@ -451,9 +537,34 @@ app.post("/api/auth/session-login", (req, res) => {
     }
   }
 
-  const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "7d" });
-  user.coinActivity = coinActivity.filter(a => a.email === email).slice(-10);
-  res.json({ token, user });
+  // 2FA Interception
+  if (user.premium || user.email === "ds9376314@gmail.com") {
+    if (user.twoFactorSecret) {
+      return res.json({ requires2FA: true, type: "google", email: user.email });
+    }
+  }
+
+  // Free User or Premium without TOTP -> Email OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  emailOtpStore[user.email] = { otp, expiresAt: Date.now() + 10 * 60 * 1000 };
+  
+  try {
+    resend.emails.send({
+      from: 'ZoneMeet Security <otp@zonemeet.chat>',
+      to: [user.email],
+      subject: 'ZoneMeet Verification Code',
+      html: `<div style="font-family: sans-serif; padding: 20px; color: #333;">
+              <h2>Login Verification</h2>
+              <p>Your authentication code is:</p>
+              <h1 style="color: #6366f1; font-size: 40px;">${otp}</h1>
+              <p>This code will expire in 10 minutes.</p>
+            </div>`
+    });
+  } catch(e) {
+    console.error("2FA Email sending failed", e);
+  }
+
+  return res.json({ requires2FA: true, type: "email", email: user.email });
 });
 
 // EMAIL OTP ENDPOINT
@@ -681,11 +792,37 @@ app.post("/api/auth/login", async (req, res) => {
     saveUsers();
   }
 
-  const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "7d" });
   user.coinActivity = coinActivity.filter(a => a.email === user.email).slice(-10);
   if (!user.unlockedFilters) user.unlockedFilters = ["None", "Smooth"];
-  console.log("Login successful:", identifier);
-  res.json({ token, user: { ...user, id: user.id, email: user.email, phone: user.phone, coinActivity: user.coinActivity, unlockedFilters: user.unlockedFilters } });
+  
+  // 2FA Interception
+  if (user.premium || user.email === "ds9376314@gmail.com") {
+    if (user.twoFactorSecret) {
+      return res.json({ requires2FA: true, type: "google", email: user.email });
+    }
+  }
+
+  // Free User or Premium without TOTP -> Email OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  emailOtpStore[user.email] = { otp, expiresAt: Date.now() + 10 * 60 * 1000 };
+  
+  try {
+    resend.emails.send({
+      from: 'ZoneMeet Security <otp@zonemeet.chat>',
+      to: [user.email],
+      subject: 'ZoneMeet Verification Code',
+      html: `<div style="font-family: sans-serif; padding: 20px; color: #333;">
+              <h2>Login Verification</h2>
+              <p>Your authentication code is:</p>
+              <h1 style="color: #6366f1; font-size: 40px;">${otp}</h1>
+              <p>This code will expire in 10 minutes.</p>
+            </div>`
+    });
+  } catch(e) {
+    console.error("2FA Email sending failed", e);
+  }
+
+  return res.json({ requires2FA: true, type: "email", email: user.email });
 });
 
 // Update Profile endpoint
@@ -3452,11 +3589,30 @@ function endQuiz(roomId) {
       }
 
       // 3. Verify 2FA OTP
+      let isVerified = false;
       const stored = adminOtpStore[email];
-      if (!stored || stored.otp !== otp || Date.now() > stored.expiresAt) {
-        return res.status(400).json({ message: "Invalid or expired 2FA OTP" });
+      
+      // Check Email OTP first (if fallback was requested and sent)
+      if (stored && stored.otp === otp && Date.now() <= stored.expiresAt) {
+        isVerified = true;
+        delete adminOtpStore[email];
+      } 
+      // Otherwise check Google Authenticator
+      else if (user.twoFactorSecret) {
+        const isValidGoogle = speakeasy.totp.verify({
+          secret: user.twoFactorSecret,
+          encoding: 'base32',
+          token: otp,
+          window: 1
+        });
+        if (isValidGoogle) {
+          isVerified = true;
+        }
       }
-      delete adminOtpStore[email];
+
+      if (!isVerified) {
+        return res.status(400).json({ message: "Invalid Authenticator Code or Email OTP" });
+      }
 
       // 4. Success: Add current IP to allowlist dynamically
       adminIpAllowlist.add(clientIp);

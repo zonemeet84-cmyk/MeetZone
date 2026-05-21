@@ -15,6 +15,13 @@ export default function Login() {
   const [captcha, setCaptcha] = useState(null);
   const recaptchaRef = useRef();
 
+  // 2FA State
+  const [show2FA, setShow2FA] = useState(false);
+  const [twoFAType, setTwoFAType] = useState(""); // "google" or "email"
+  const [twoFAEmail, setTwoFAEmail] = useState("");
+  const [twoFAToken, setTwoFAToken] = useState("");
+
+
   // Forgot Password State
   const [showForgot, setShowForgot] = useState(false);
   const [forgotStep, setForgotStep] = useState(1); // 1: Email, 2: OTP & New Password
@@ -47,6 +54,15 @@ export default function Login() {
         password,
         captchaToken: captcha
       });
+
+      if (res.data.requires2FA) {
+        setTwoFAType(res.data.type);
+        setTwoFAEmail(res.data.email);
+        setShow2FA(true);
+        setLoading(false);
+        return;
+      }
+
       sessionStorage.setItem("token", res.data.token);
       sessionStorage.setItem("user", JSON.stringify(res.data.user));
       router.push("/");
@@ -59,6 +75,25 @@ export default function Login() {
         setError(err.response?.data?.message || "Login failed. Please check your credentials.");
       }
     } finally {
+      if (!show2FA) setLoading(false);
+    }
+  };
+
+  const handle2FASubmit = async () => {
+    if (!twoFAToken) return setError("Please enter the verification code");
+    setLoading(true);
+    setError("");
+    try {
+      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/2fa/login-verify", {
+        email: twoFAEmail,
+        token: twoFAToken,
+        type: twoFAType
+      });
+      sessionStorage.setItem("token", res.data.token);
+      sessionStorage.setItem("user", JSON.stringify(res.data.user));
+      router.push("/");
+    } catch (err) {
+      setError(err.response?.data?.message || "Invalid code");
       setLoading(false);
     }
   };
@@ -120,6 +155,14 @@ export default function Login() {
         referralCode
       });
 
+      if (res.data.requires2FA) {
+        setTwoFAType(res.data.type);
+        setTwoFAEmail(res.data.email);
+        setShow2FA(true);
+        setLoading(false);
+        return;
+      }
+
       if (res.data.token) {
         localStorage.removeItem("referral");
         sessionStorage.setItem("token", res.data.token);
@@ -164,7 +207,32 @@ export default function Login() {
           ⚠️ 18+ AGE RESTRICTION: ZoneMeet is strictly for users aged 18 and older. By logging in, you certify that you are at least 18 years of age.
         </div>
 
-        {!showForgot ? (
+        {show2FA ? (
+          <div className="forgot-flow">
+            <h3>Two-Factor Authentication</h3>
+            <p style={{ color: '#cbd5e1', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+              {twoFAType === "google" 
+                ? "Enter the 6-digit code from your Google Authenticator app." 
+                : "Enter the 6-digit verification code sent to your email."}
+            </p>
+            <div className="input-item animate-in">
+              <label>Authentication Code</label>
+              <input 
+                type="text" 
+                placeholder="123456" 
+                maxLength="6" 
+                value={twoFAToken} 
+                onChange={(e) => setTwoFAToken(e.target.value)} 
+                autoFocus
+              />
+              {error && <div className="error-box mt-4">{error}</div>}
+              <button onClick={handle2FASubmit} className="submit-btn" disabled={loading}>
+                {loading ? "Verifying..." : "Verify Code"}
+              </button>
+            </div>
+            <button className="back-btn" onClick={() => { setShow2FA(false); setTwoFAToken(""); }}>Cancel</button>
+          </div>
+        ) : !showForgot ? (
           <form onSubmit={handleSubmit} className="modern-form">
             <div className="input-item">
               <label>Email or Phone</label>

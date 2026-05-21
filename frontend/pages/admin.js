@@ -223,7 +223,7 @@ export default function AdminDashboard() {
             </div>
 
             <div className="input-item">
-              <label>2FA Authentication Code</label>
+              <label>2FA Code (Google Auth or Email Fallback)</label>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <input 
                   type="text" 
@@ -233,8 +233,8 @@ export default function AdminDashboard() {
                   required 
                   maxLength={6}
                 />
-                <button type="button" className="otp-btn" onClick={handleSend2FA} disabled={otpLoading}>
-                  {otpLoading ? "..." : otpSent ? "Resend" : "Send Code"}
+                <button type="button" className="otp-btn" onClick={handleSend2FA} disabled={otpLoading} style={{ background: otpSent ? '#10b981' : '#6366f1' }}>
+                  {otpLoading ? "..." : otpSent ? "Email Sent" : "Email Fallback"}
                 </button>
               </div>
             </div>

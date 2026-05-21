@@ -155,6 +155,12 @@ export default function Dashboard() {
   const [botInput, setBotInput] = useState("");
   const botEndRef = useRef(null);
 
+  // 2FA Setup State
+  const [show2FASetup, setShow2FASetup] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [setupToken, setSetupToken] = useState("");
+  const [setupError, setSetupError] = useState("");
+
   // Leaderboard State
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const [leaderboardData, setLeaderboardData] = useState([]);
@@ -832,6 +838,44 @@ export default function Dashboard() {
     router.push("/login");
   };
 
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
+
+  // 2FA SETUP FUNCTIONS
+  const start2FASetup = async () => {
+    setSetupError("");
+    setQrCodeUrl("");
+    setShow2FASetup(true);
+    setShowProfileDrop(false);
+    try {
+      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/2fa/setup", { email: user.email });
+      setQrCodeUrl(res.data.qrCode);
+    } catch (err) {
+      setSetupError("Failed to initiate 2FA setup.");
+    }
+  };
+
+  const verify2FASetup = async () => {
+    setSetupError("");
+    try {
+      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/2fa/verify-setup", {
+        email: user.email,
+        token: setupToken
+      });
+      showModal({ message: res.data.message, type: "success" });
+      setShow2FASetup(false);
+      setSetupToken("");
+      // Update local user object so we know they have it enabled
+      const updatedUser = { ...user, twoFactorSecret: true };
+      setUser(updatedUser);
+      sessionStorage.setItem("user", JSON.stringify(updatedUser));
+    } catch (err) {
+      setSetupError(err.response?.data?.message || "Verification failed");
+    }
+  };
+
   const [startingChat, setStartingChat] = useState(false);
 
   const startChat = async () => {
@@ -1162,6 +1206,55 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* 2FA SETUP MODAL */}
+      {show2FASetup && (
+        <div className="payment-overlay" style={{ zIndex: 20000 }}>
+          <div className="premium-modal" style={{ maxWidth: '400px', padding: '2rem', textAlign: 'center' }}>
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#fff' }}>Secure Your Account</h2>
+            <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+              Scan the QR code below with the <b>Google Authenticator</b> app, then enter the 6-digit code.
+            </p>
+
+            {qrCodeUrl ? (
+              <div style={{ background: '#fff', padding: '10px', borderRadius: '12px', display: 'inline-block', marginBottom: '1.5rem' }}>
+                <img src={qrCodeUrl} alt="2FA QR Code" style={{ width: '200px', height: '200px' }} />
+              </div>
+            ) : (
+              <div style={{ padding: '40px', color: '#64748b' }}>Generating QR Code...</div>
+            )}
+
+            <input
+              type="text"
+              placeholder="Enter 6-digit code"
+              value={setupToken}
+              onChange={(e) => setSetupToken(e.target.value)}
+              maxLength={6}
+              style={{
+                width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(0,0,0,0.2)', color: '#fff', fontSize: '1.2rem', textAlign: 'center', letterSpacing: '4px', marginBottom: '1rem'
+              }}
+            />
+
+            {setupError && <div style={{ color: '#ef4444', fontSize: '0.85rem', marginBottom: '1rem' }}>{setupError}</div>}
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                onClick={() => setShow2FASetup(false)}
+                style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '12px', cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={verify2FASetup}
+                style={{ flex: 1, padding: '12px', background: '#6366f1', border: 'none', color: '#fff', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                Verify & Enable
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="header">
         <div className="brand-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }} onClick={() => router.push("/")}>
           <div className="logo-icon-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -1443,6 +1536,13 @@ export default function Dashboard() {
                       {user?.email === "ds9376314@gmail.com" && (
                         <button className="profile-more-btn" onClick={() => router.push("/admin")} style={{ marginTop: '10px', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
                           <div className="profile-detail-left">⚡ Admin Dashboard</div>
+                          <span>›</span>
+                        </button>
+                      )}
+
+                      {(user?.premium || user?.email === "ds9376314@gmail.com") && (
+                        <button className="profile-more-btn" onClick={start2FASetup} style={{ marginTop: '10px', color: '#10b981' }}>
+                          <div className="profile-detail-left">🔒 Set up Google 2FA</div>
                           <span>›</span>
                         </button>
                       )}
