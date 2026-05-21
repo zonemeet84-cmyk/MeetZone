@@ -2401,12 +2401,12 @@ export default function Dashboard() {
       {/* HISTORY MODAL */}
       {showHistoryModal && (
         <div className="payment-overlay" style={{ zIndex: 11000 }} onClick={() => setShowHistoryModal(false)}>
-          <div className="premium-modal" style={{ maxWidth: '440px', padding: 0, textAlign: 'left' }} onClick={e => e.stopPropagation()}>
-            <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 800, fontSize: '1rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>🕒 Recent Connections</span>
-              <button onClick={() => setShowHistoryModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer', lineHeight: 1 }}>×</button>
+          <div className="premium-modal history-modal-v2" onClick={e => e.stopPropagation()}>
+            <div className="history-header">
+              <span className="history-title">🕒 Recent Connections</span>
+              <button className="history-close-btn" onClick={() => setShowHistoryModal(false)}>×</button>
             </div>
-            <div style={{ maxHeight: '65vh', overflowY: 'auto', padding: '1rem', scrollbarWidth: 'none' }}>
+            <div className="history-body">
               {(!user?.recentStrangers || user.recentStrangers.length === 0) ? (
                 <div style={{ padding: '3rem', textAlign: 'center', color: '#475569' }}>
                   <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🫥</div>
@@ -2415,14 +2415,14 @@ export default function Dashboard() {
                 </div>
               ) : (
                 user.recentStrangers.map((s, idx) => (
-                  <div key={idx} className="history-item" style={{ padding: '12px 10px', borderBottom: idx === user.recentStrangers.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '12px', transition: 'background 0.2s' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div className="history-avatar" style={{ width: '40px', height: '40px', background: 'linear-gradient(135deg, #6366f1, #a855f7)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 800, color: 'white', flexShrink: 0 }}>
+                  <div key={idx} className="history-item">
+                    <div className="history-item-left">
+                      <div className="history-avatar">
                         {s.name ? s.name.charAt(0).toUpperCase() : '?'}
                       </div>
-                      <div>
-                        <div className="history-name" style={{ fontSize: '0.95rem', fontWeight: 700, color: 'white' }}>{s.name}</div>
-                        <div className="history-info" style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
+                      <div className="history-details">
+                        <div className="history-name">{s.name}</div>
+                        <div className="history-info">
                           {s.country} • {new Date(s.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </div>
@@ -2450,7 +2450,6 @@ export default function Dashboard() {
                           }
                         });
                       }}
-                      style={{ background: 'linear-gradient(135deg, #6366f1, #a855f7)', border: 'none', color: 'white', padding: '7px 14px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
                     >
                       Reconnect
                     </button>

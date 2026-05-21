@@ -2729,66 +2729,68 @@ export default function Home() {
             {/* QUIZ ROOMS MODAL */}
             {showQuizRoomsModal && (
               <div className="filter-modal-overlay" onClick={() => setShowQuizRoomsModal(false)}>
-                <div className="filter-modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+                <div className="filter-modal-card quiz-modal-v2" onClick={(e) => e.stopPropagation()}>
                   <div className="filter-modal-header">
                     <h2>🧠 Choose a Quiz Arena</h2>
                     <button className="close-btn" onClick={() => setShowQuizRoomsModal(false)}>×</button>
                   </div>
-                  <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: '1.5rem', textAlign: 'center' }}>
-                    Entry Fee: 50 Coins. Winner Takes: 100 Coins. 10 Questions, 15 seconds each!
-                  </p>
-                  
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', padding: '10px' }}>
-                    {[
-                      { id: "GK", title: "General Knowledge", icon: "🌍", color: "#6366f1" },
-                      { id: "Tech", title: "Tech & Coding", icon: "💻", color: "#10b981" },
-                      { id: "Gaming", title: "Gaming", icon: "🎮", color: "#f59e0b" },
-                      { id: "Anime", title: "Anime & Manga", icon: "⚔️", color: "#ef4444" },
-                      { id: "Movies", title: "Movies & Cinema", icon: "🎬", color: "#8b5cf6" },
-                      { id: "Memes", title: "Memes & Culture", icon: "🐸", color: "#14b8a6" },
-                      { id: "Football", title: "Football", icon: "⚽", color: "#3b82f6" },
-                      { id: "Science", title: "Science", icon: "🔬", color: "#ec4899" }
-                    ].map(cat => {
-                      const count = quizCategoryStats[cat.id] || 0;
-                      return (
-                        <button 
-                          key={cat.id} 
-                          style={{
-                            background: 'rgba(255,255,255,0.05)',
-                            border: `1px solid ${cat.color}`,
-                            padding: '1.2rem',
-                            borderRadius: '16px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '10px',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                            color: '#fff',
-                            fontWeight: '700',
-                            position: 'relative'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = `rgba(${parseInt(cat.color.slice(1,3),16)},${parseInt(cat.color.slice(3,5),16)},${parseInt(cat.color.slice(5,7),16)},0.15)`;
-                            e.currentTarget.style.transform = 'translateY(-3px)';
-                            e.currentTarget.style.boxShadow = `0 10px 20px rgba(${parseInt(cat.color.slice(1,3),16)},${parseInt(cat.color.slice(3,5),16)},${parseInt(cat.color.slice(5,7),16)},0.2)`;
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = 'none';
-                          }}
-                          onClick={() => joinQuizRoom(cat.id)}
-                        >
-                          <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.5)', padding: '2px 6px', borderRadius: '12px', fontSize: '0.7rem', color: '#10b981' }}>
-                            <div style={{ width: '6px', height: '6px', background: '#10b981', borderRadius: '50%', boxShadow: '0 0 6px #10b981' }}></div>
-                            {count} Online
-                          </div>
-                          <span style={{ fontSize: '2.5rem', marginTop: '10px' }}>{cat.icon}</span>
-                          <span style={{ textAlign: 'center' }}>{cat.title}</span>
-                        </button>
-                      );
-                    })}
+                  <div className="filter-modal-body">
+                    <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '1.2rem', textAlign: 'center' }}>
+                      Entry Fee: 50 Coins. Winner Takes: 100 Coins. 10 Questions, 15 seconds each!
+                    </p>
+                    
+                    <div className="quiz-grid-v2">
+                      {[
+                        { id: "GK", title: "General Knowledge", icon: "🌍", color: "#6366f1" },
+                        { id: "Tech", title: "Tech & Coding", icon: "💻", color: "#10b981" },
+                        { id: "Gaming", title: "Gaming", icon: "🎮", color: "#f59e0b" },
+                        { id: "Anime", title: "Anime & Manga", icon: "⚔️", color: "#ef4444" },
+                        { id: "Movies", title: "Movies & Cinema", icon: "🎬", color: "#8b5cf6" },
+                        { id: "Memes", title: "Memes & Culture", icon: "🐸", color: "#14b8a6" },
+                        { id: "Football", title: "Football", icon: "⚽", color: "#3b82f6" },
+                        { id: "Science", title: "Science", icon: "🔬", color: "#ec4899" }
+                      ].map(cat => {
+                        const count = quizCategoryStats[cat.id] || 0;
+                        return (
+                          <button 
+                            key={cat.id} 
+                            style={{
+                              background: 'rgba(255,255,255,0.05)',
+                              border: `1px solid ${cat.color}`,
+                              padding: '1.2rem',
+                              borderRadius: '16px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              gap: '10px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                              color: '#fff',
+                              fontWeight: '700',
+                              position: 'relative'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = `rgba(${parseInt(cat.color.slice(1,3),16)},${parseInt(cat.color.slice(3,5),16)},${parseInt(cat.color.slice(5,7),16)},0.15)`;
+                              e.currentTarget.style.transform = 'translateY(-3px)';
+                              e.currentTarget.style.boxShadow = `0 10px 20px rgba(${parseInt(cat.color.slice(1,3),16)},${parseInt(cat.color.slice(3,5),16)},${parseInt(cat.color.slice(5,7),16)},0.2)`;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = 'none';
+                            }}
+                            onClick={() => joinQuizRoom(cat.id)}
+                          >
+                            <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.5)', padding: '2px 6px', borderRadius: '12px', fontSize: '0.7rem', color: '#10b981' }}>
+                              <div style={{ width: '6px', height: '6px', background: '#10b981', borderRadius: '50%', boxShadow: '0 0 6px #10b981' }}></div>
+                              {count} Online
+                            </div>
+                            <span style={{ fontSize: '2.5rem', marginTop: '10px' }}>{cat.icon}</span>
+                            <span style={{ textAlign: 'center' }}>{cat.title}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -3654,12 +3656,12 @@ export default function Home() {
       {/* HISTORY MODAL */}
       {showHistoryModal && (
         <div className="payment-overlay" style={{ zIndex: 11000 }} onClick={() => setShowHistoryModal(false)}>
-          <div className="premium-modal" style={{ maxWidth: '440px', padding: 0, textAlign: 'left' }} onClick={e => e.stopPropagation()}>
-            <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 800, fontSize: '1rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>🕒 Recent Connections</span>
-              <button onClick={() => setShowHistoryModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer', lineHeight: 1 }}>×</button>
+          <div className="premium-modal history-modal-v2" onClick={e => e.stopPropagation()}>
+            <div className="history-header">
+              <span className="history-title">🕒 Recent Connections</span>
+              <button className="history-close-btn" onClick={() => setShowHistoryModal(false)}>×</button>
             </div>
-            <div style={{ maxHeight: '65vh', overflowY: 'auto', padding: '1rem', scrollbarWidth: 'none' }}>
+            <div className="history-body">
               {(!user?.recentStrangers || user.recentStrangers.length === 0) ? (
                 <div style={{ padding: '3rem', textAlign: 'center', color: '#475569' }}>
                   <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🫥</div>
@@ -3668,14 +3670,14 @@ export default function Home() {
                 </div>
               ) : (
                 user.recentStrangers.map((s, idx) => (
-                  <div key={idx} className="history-item" style={{ padding: '12px 10px', borderBottom: idx === user.recentStrangers.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '12px', transition: 'background 0.2s' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div className="history-avatar" style={{ width: '40px', height: '40px', background: 'linear-gradient(135deg, #6366f1, #a855f7)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 800, color: 'white', flexShrink: 0 }}>
+                  <div key={idx} className="history-item">
+                    <div className="history-item-left">
+                      <div className="history-avatar">
                         {s.name ? s.name.charAt(0).toUpperCase() : '?'}
                       </div>
-                      <div>
-                        <div className="history-name" style={{ fontSize: '0.95rem', fontWeight: 700, color: 'white' }}>{s.name}</div>
-                        <div className="history-info" style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
+                      <div className="history-details">
+                        <div className="history-name">{s.name}</div>
+                        <div className="history-info">
                           {s.country} • {new Date(s.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </div>
@@ -3698,7 +3700,6 @@ export default function Home() {
                           }
                         }
                       }}
-                      style={{ background: 'linear-gradient(135deg, #6366f1, #a855f7)', border: 'none', color: 'white', padding: '7px 14px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
                     >
                       Reconnect
                     </button>
@@ -6052,6 +6053,111 @@ export default function Home() {
           box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
         }
 
+        /* Quiz Modal styling */
+        .quiz-modal-v2 {
+          max-width: 600px !important;
+        }
+        .quiz-grid-v2 {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 15px;
+          padding: 10px;
+        }
+
+        /* History Modal base classes */
+        .history-modal-v2 {
+          max-width: 440px !important;
+          padding: 0 !important;
+          text-align: left;
+        }
+        .history-header {
+          padding: 1.5rem;
+          border-bottom: 1px solid rgba(255,255,255,0.07);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .history-title {
+          font-weight: 800;
+          font-size: 1rem;
+          color: #94a3b8;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          white-space: nowrap;
+        }
+        .history-close-btn {
+          background: none;
+          border: none;
+          color: #94a3b8;
+          font-size: 1.5rem;
+          cursor: pointer;
+          line-height: 1;
+        }
+        .history-body {
+          max-height: 65vh;
+          overflow-y: auto;
+          padding: 1rem;
+          scrollbar-width: none;
+        }
+        .history-item {
+          padding: 12px 10px;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-radius: 12px;
+          transition: background 0.2s;
+        }
+        .history-item-left {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .history-avatar {
+          width: 40px;
+          height: 40px;
+          background: linear-gradient(135deg, #6366f1, #a855f7);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1rem;
+          font-weight: 800;
+          color: white;
+          flex-shrink: 0;
+        }
+        .history-details {
+          min-width: 0;
+        }
+        .history-name {
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: white;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .history-info {
+          font-size: 0.75rem;
+          color: #64748b;
+          margin-top: 2px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .history-reconnect-btn {
+          background: linear-gradient(135deg, #6366f1, #a855f7);
+          border: none;
+          color: white;
+          padding: 7px 14px;
+          border-radius: 10px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          cursor: pointer;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+
         /* --- MOBILE RESPONSIVENESS FIXES --- */
         @media (max-width: 768px) {
           .chat-page-v2 {
@@ -6728,26 +6834,133 @@ export default function Home() {
           }
 
           /* History modal item responsiveness */
+          .history-modal-v2 {
+            max-width: 330px !important;
+            padding: 0 !important;
+          }
+          .history-header {
+            padding: 1rem !important;
+          }
+          .history-title {
+            font-size: 0.85rem !important;
+          }
+          .history-body {
+            padding: 0.75rem !important;
+            max-height: 50vh !important;
+          }
           .history-item {
-            padding: 8px 6px !important;
+            padding: 10px 6px !important;
             gap: 8px !important;
+            border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+          }
+          .history-item-left {
+            gap: 8px !important;
+            min-width: 0 !important;
           }
           .history-avatar {
             width: 32px !important;
             height: 32px !important;
             font-size: 0.85rem !important;
           }
+          .history-details {
+            min-width: 0 !important;
+          }
           .history-name {
-            font-size: 0.8rem !important;
+            font-size: 0.85rem !important;
+            max-width: 110px !important;
           }
           .history-info {
-            font-size: 0.65rem !important;
-            margin-top: 1px !important;
+            font-size: 0.7rem !important;
+            max-width: 110px !important;
           }
           .history-reconnect-btn {
-            padding: 4px 8px !important;
-            font-size: 0.65rem !important;
-            border-radius: 6px !important;
+            padding: 6px 10px !important;
+            font-size: 0.7rem !important;
+            border-radius: 8px !important;
+          }
+
+          /* Quiz Modal responsiveness */
+          .quiz-modal-v2 {
+            max-width: 330px !important;
+          }
+          .quiz-grid-v2 {
+            display: grid;
+            grid-template-columns: 1fr !important;
+            gap: 10px !important;
+            padding: 5px !important;
+          }
+          .quiz-grid-v2 button {
+            padding: 0.8rem !important;
+            border-radius: 12px !important;
+            gap: 6px !important;
+          }
+          .quiz-grid-v2 button span {
+            font-size: 1.8rem !important;
+          }
+
+          /* Report modal responsiveness */
+          .report-modal-content {
+            width: 95% !important;
+            max-width: 330px !important;
+            padding: 20px 15px !important;
+            border-radius: 20px !important;
+          }
+          .reasons-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px !important;
+            margin-bottom: 15px !important;
+          }
+          .reason-btn {
+            padding: 8px !important;
+            font-size: 0.75rem !important;
+            border-radius: 10px !important;
+          }
+          .report-details-box {
+            height: 80px !important;
+            padding: 10px !important;
+            font-size: 0.8rem !important;
+          }
+
+          /* Toast / Notification responsiveness */
+          .toast-stack-container {
+            top: 10px !important;
+          }
+          .premium-toast {
+            padding: 10px 14px !important;
+            border-radius: 12px !important;
+            gap: 8px !important;
+          }
+          .toast-icon-wrapper {
+            width: 26px !important;
+            height: 26px !important;
+            border-radius: 8px !important;
+          }
+          .toast-icon {
+            font-size: 0.8rem !important;
+          }
+          .toast-message {
+            font-size: 0.75rem !important;
+          }
+          .toast-close {
+            font-size: 1.1rem !important;
+          }
+          .friend-toast {
+            top: 10px !important;
+            right: 4% !important;
+            left: 4% !important;
+            width: 92vw !important;
+            padding: 10px 14px !important;
+            border-radius: 12px !important;
+            font-size: 0.75rem !important;
+            box-sizing: border-box !important;
+          }
+          .report-success-toast {
+            padding: 10px 20px !important;
+            font-size: 0.8rem !important;
+            bottom: -80px !important;
+          }
+          .report-success-toast.show {
+            bottom: 20px !important;
           }
         }
       `}</style>
