@@ -6492,10 +6492,10 @@ export default function Home() {
               align-items: center;
               justify-content: center;
               position: fixed !important;
-              bottom: 80px !important;
-              left: 16px !important;
-              width: 44px !important;
-              height: 44px !important;
+              bottom: 16px !important;
+              left: 12px !important;
+              width: 40px !important;
+              height: 40px !important;
               border-radius: 50% !important;
               background: rgba(99, 102, 241, 0.9) !important;
               backdrop-filter: blur(8px) !important;
@@ -6717,53 +6717,55 @@ export default function Home() {
           .gift-bubble {
             width: 270px !important;
           }
-          /* Micro-sized rounded bottom actions (Extremely Small and Focused!) */
+          /* Micro-sized vertical stack action buttons on the right edge */
           .bottom-actions {
             position: absolute !important;
-            bottom: env(safe-area-inset-bottom, 8px) !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            width: 94% !important;
+            bottom: 20px !important;
+            right: 12px !important;
+            left: auto !important;
+            transform: none !important;
+            width: auto !important;
             z-index: 1000 !important;
-            background: rgba(0, 0, 0, 0.45) !important;
-            backdrop-filter: blur(12px) !important;
-            -webkit-backdrop-filter: blur(12px) !important;
-            padding: 8px 12px !important;
-            border-radius: 20px !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            padding: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
             display: flex !important;
             flex-direction: column !important;
-            align-items: center !important;
-            gap: 6px !important;
-            box-sizing: border-box !important;
+            align-items: flex-end !important;
+            gap: 10px !important;
           }
           .bottom-actions > div:first-child,
           .bottom-actions > div:nth-child(2) {
             display: none !important;
           }
           .bottom-actions > div:nth-child(3) {
-            display: grid !important;
-            grid-template-columns: 1fr 1fr !important;
-            width: 100% !important;
-            gap: 6px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-end !important;
+            width: auto !important;
+            gap: 10px !important;
             margin: 0 !important;
             padding: 0 !important;
           }
           .bottom-actions > div:nth-child(3) button {
             flex: none !important;
-            width: 100% !important;
-            height: 34px !important;
-            border-radius: 12px !important;
-            font-size: 0.72rem !important;
+            width: auto !important;
+            height: 32px !important;
+            border-radius: 16px !important;
+            font-size: 0.7rem !important;
             font-weight: 700 !important;
-            padding: 0 !important;
+            padding: 0 12px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 2px !important;
+            gap: 4px !important;
             margin: 0 !important;
-            border: none !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+            backdrop-filter: blur(8px) !important;
             transition: all 0.2s ease !important;
           }
           .bottom-actions .quiz-trigger-btn {
