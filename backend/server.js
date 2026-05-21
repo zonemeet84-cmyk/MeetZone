@@ -50,6 +50,7 @@ async function verifyWithHiveAI(base64Image) {
 }
 
 const app = express();
+app.set("trust proxy", 1); // Trust first proxy (Cloudflare/Nginx) for rate-limit IP parsing
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
