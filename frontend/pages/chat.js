@@ -3723,8 +3723,8 @@ export default function Home() {
                   <span className="icon">🎭</span> <span className="text">Tools</span>
                 </button>
               )}
-              <button className="stop-btn" onClick={stopMatching} disabled={quizState !== "idle"}>
-                <span className="icon">🛑</span> <span className="text">Stop</span>
+              <button className="stop-btn" onClick={() => router.push("/")}>
+                <span className="icon">🛑</span> <span className="text">Quit</span>
               </button>
               <button className="report-trigger-btn" onClick={openReport}>
                 <span className="icon">🚨</span> <span className="text">Report</span>
@@ -6619,18 +6619,20 @@ export default function Home() {
           .mobile-inline-chat-form {
             display: flex !important;
             gap: 6px;
-            width: 100%;
+            width: calc(100vw - 45px) !important;
+            margin-top: 2px !important;
           }
           .mobile-inline-chat-form input {
             background: rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 20px;
-            padding: 6px 12px;
+            padding: 4px 10px;
             color: white;
             font-size: 13px;
             outline: none;
             backdrop-filter: blur(5px);
-            width: 140px;
+            flex: 1;
+            width: auto;
           }
           .mobile-inline-chat-form button {
             background: rgba(99, 102, 241, 0.9);
@@ -6749,10 +6751,10 @@ export default function Home() {
             display: none !important;
           }
           
-          /* Stop Button -> Bottom Right, above Tools */
+          /* Stop Button -> Bottom Right */
           .stop-btn {
-            bottom: 80px !important;
-            left: calc(100% - 44px) !important;
+            bottom: 5px !important;
+            left: calc(100% - 35px) !important;
             right: auto !important;
             width: 24px !important;
             height: 24px !important;
