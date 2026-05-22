@@ -3663,14 +3663,12 @@ export default function Home() {
               >
                 🎁 Gifts
               </button>
-              {(user?.email === "ds9376314@gmail.com" || user?.planName === "VIP Elite" || user?.hasSecretIdentity) && (
-                <button 
-                  className="tools-trigger-btn" 
-                  onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'tools_menu' ? null : 'tools_menu')}
-                >
-                  🎭 Tools
-                </button>
-              )}
+              <button 
+                className="tools-trigger-btn" 
+                onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'tools_menu' ? null : 'tools_menu')}
+              >
+                🎭 Tools
+              </button>
               <button className="stop-btn" onClick={stopMatching} disabled={quizState !== "idle"}>
                 🛑 Stop
               </button>
@@ -6743,6 +6741,7 @@ export default function Home() {
             margin: 0 !important;
             padding: 0 !important;
             z-index: 300 !important;
+            transform: none !important;
           }
           .bottom-mini-bar {
             display: none !important;
