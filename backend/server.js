@@ -2064,8 +2064,32 @@ function matchUsers() {
       const user2 = waitingUsers[j];
 
       // Matching logic with filters
-      const matchesGender = (user1.filters?.gender === "all" || user2.gender === user1.filters?.gender || !user1.filters?.gender) &&
-        (user2.filters?.gender === "all" || user1.gender === user2.filters?.gender || !user2.filters?.gender);
+      let u1WantsU2 = false;
+      const u1Pref = user1.filters?.gender || "all";
+      if (u1Pref === "all") {
+          // If no preference, mostly match with Males. Rare chance (2%) to match with Female.
+          if (user2.gender === "Female") {
+              u1WantsU2 = Math.random() < 0.02;
+          } else {
+              u1WantsU2 = true;
+          }
+      } else {
+          u1WantsU2 = (user2.gender === u1Pref);
+      }
+
+      let u2WantsU1 = false;
+      const u2Pref = user2.filters?.gender || "all";
+      if (u2Pref === "all") {
+          if (user1.gender === "Female") {
+              u2WantsU1 = Math.random() < 0.02;
+          } else {
+              u2WantsU1 = true;
+          }
+      } else {
+          u2WantsU1 = (user1.gender === u2Pref);
+      }
+
+      const matchesGender = u1WantsU2 && u2WantsU1;
 
       const matchesCountry = (user1.filters?.country === "all" || user2.country === user1.filters?.country || !user1.filters?.country) &&
         (user2.filters?.country === "all" || user1.country === user2.filters?.country || !user2.filters?.country);
