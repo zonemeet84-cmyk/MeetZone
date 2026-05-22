@@ -31,6 +31,7 @@
     "mongodb": "^7.2.0",
     "nodemailer": "^8.0.7",
     "qrcode": "^1.5.4",
+    "rate-limit-redis": "^5.0.0",
     "razorpay": "^2.9.6",
     "redis": "^5.12.1",
     "socket.io": "^4.8.3",
