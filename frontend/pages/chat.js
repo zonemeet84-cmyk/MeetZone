@@ -3116,16 +3116,15 @@ export default function Home() {
                   bottom: '50px',
                   left: '50%',
                   transform: 'translateX(-50%)',
-                  background: 'rgba(0, 0, 0, 0.65)',
+                  background: 'transparent',
                   color: '#fff',
-                  padding: '8px 16px',
-                  borderRadius: '12px',
-                  fontSize: '1rem',
-                  maxWidth: '85%',
+                  padding: '4px 8px',
+                  fontSize: '1.2rem',
+                  fontWeight: 'bold',
+                  maxWidth: '95%',
                   textAlign: 'center',
                   zIndex: 20,
-                  backdropFilter: 'blur(4px)',
-                  boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(0,0,0,0.5)',
                   pointerEvents: 'none'
                 }}>
                   {currentSubtitle}
@@ -4700,10 +4699,10 @@ export default function Home() {
           position: absolute;
           top: 0;
           left: 0;
-          width: 100%;
+          width: max-content;
           background: rgba(0, 0, 0, 0.6);
           padding: 0.4rem 1rem;
-          border-radius: 0;
+          border-radius: 0 0 8px 0;
           font-size: 0.75rem;
           font-weight: 600;
           backdrop-filter: blur(4px);
@@ -6595,23 +6594,24 @@ export default function Home() {
             background: rgba(0,0,0,0.7) !important;
           }
           .video-grid-v2 > .video-card:nth-child(2) .card-label {
-            top: 0 !important; /* Moved up since header is hidden */
+            top: 0 !important;
             left: 0 !important;
-            width: 100vw !important;
-            border-radius: 0 !important;
+            width: max-content !important;
+            border-radius: 0 0 8px 0 !important;
             justify-content: flex-start !important;
             border-top: none !important;
           }
           .video-grid-v2 > .video-card:nth-child(1) .card-label {
-            top: 0 !important; /* Join local user label to the top border */
+            top: 0 !important;
             left: 0 !important;
-            width: 100vw !important;
-            border-radius: 0 !important;
+            width: max-content !important;
+            border-radius: 0 0 8px 0 !important;
             justify-content: flex-start !important;
           }
           .card-controls-wrapper {
-            bottom: 50px !important; /* Avoid bottom mini bar */
+            bottom: 0px !important;
             left: 5px !important;
+            padding-bottom: 5px !important;
           }
           .card-controls {
             gap: 4px !important;
