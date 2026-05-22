@@ -6760,9 +6760,6 @@ export default function Home() {
             left: auto !important;
             right: 0 !important;
           }
-            border-radius: 6px !important;
-            background: rgba(255,255,255,0.1) !important;
-          }
           
           .filters-row-v2 {
             position: static !important; /* Let absolute positioned children align to screen */
