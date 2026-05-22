@@ -3165,6 +3165,13 @@ export default function Home() {
                         {getCountryName(partnerInfo.country)}
                       </span>
                     </span>
+                    <button 
+                      className="mobile-inline-report-btn" 
+                      onClick={() => setShowReportModal(true)}
+                      title="Report User"
+                    >
+                      🚨
+                    </button>
                     {partnerInfo.premium && partnerInfo.planName && (
                       <span className={partnerInfo.planName === "VIP Elite" ? "vip-crown-tag" : "pro-badge-v2"} style={{ margin: 0, padding: '0.15rem 0.6rem', fontSize: '0.65rem' }}>
                         {partnerInfo.planName === "VIP Elite" ? "👑 VIP ELITE" : `🛡️ ${partnerInfo.planName}`}
@@ -6586,32 +6593,51 @@ export default function Home() {
           .bottom-actions .next-btn::after { content: '⏭️'; font-size: 1rem; color: white; }
           .bottom-actions .next-btn span, .bottom-actions .next-btn .icon { display: none !important; }
 
+          /* Inline Report Button */
+          .mobile-inline-report-btn {
+            display: inline-flex !important;
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 0 0 5px !important;
+            font-size: 0.9rem !important;
+            cursor: pointer;
+            vertical-align: middle;
+          }
+
           /* Chat Toggle Button -> Bottom Left */
           .mobile-chat-toggle-btn {
             bottom: 45px !important;
-            left: 15px !important;
+            left: 20px !important;
+            width: 24px !important;
+            height: 24px !important;
           }
-          .mobile-chat-toggle-btn::after { content: '💬'; font-size: 1.5rem; color: white; }
+          .mobile-chat-toggle-btn::after { content: '💬'; font-size: 1rem; color: white; }
           
-          /* Stop Button -> Moved right */
+          /* Stop Button -> Bottom Right, below Gifts */
           .stop-btn {
             bottom: 45px !important;
-            left: 70px !important;
+            right: 20px !important;
+            left: auto !important;
+            width: 24px !important;
+            height: 24px !important;
           }
-          .stop-btn::after { content: '🛑'; font-size: 1.5rem; color: white; }
+          .stop-btn::after { content: '🛑'; font-size: 1rem; color: white; }
           
-          /* Report Button -> Moved right */
+          /* Report Button -> HIDDEN (Now inline) */
           .report-trigger-btn {
-            bottom: 45px !important;
-            left: 125px !important;
+            display: none !important;
           }
-          .report-trigger-btn::after { content: '🚨'; font-size: 1.5rem; color: white; }
           
+          /* Gift Button -> Bottom Right, above Stop */
           .quiz-trigger-btn {
-            bottom: 45px !important;
-            right: 15px !important;
+            bottom: 80px !important;
+            right: 20px !important;
+            left: auto !important;
+            width: 24px !important;
+            height: 24px !important;
           }
-          .quiz-trigger-btn::after { content: '🎁'; font-size: 1.5rem; color: white; }
+          .quiz-trigger-btn::after { content: '🎁'; font-size: 1rem; color: white; }
           
           /* Make Avatars/Voice/Privacy/Gifts a thin full-width line at the bottom */
           .identity-container {
