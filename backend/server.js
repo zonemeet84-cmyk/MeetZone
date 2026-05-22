@@ -18,8 +18,16 @@ const cookieParser = require("cookie-parser");
 const fs = require("fs");
 const path = require("path");
 const admin = require("firebase-admin");
-const { Resend } = require('resend');
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Brevo (Sendinblue) SMTP Setup
+const transporter = nodemailer.createTransport({
+  host: 'smtp-relay.brevo.com',
+  port: 587,
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: process.env.BREVO_SMTP_LOGIN || 'ac2880001@smtp-brevo.com',
+    pass: process.env.BREVO_SMTP_PASSWORD,
+  },
+});
 
 const axios = require("axios");
 const FormData = require("form-data");
@@ -499,9 +507,9 @@ app.post("/api/auth/2fa/send-backup-otp", async (req, res) => {
   backupOtpCooldownStore[email] = Date.now();
 
   try {
-    await resend.emails.send({
-      from: 'ZoneMeet Security <otp@zonemeet.chat>',
-      to: [email],
+    await transporter.sendMail({
+      from: '"ZoneMeet Security" <otp@zonemeet.chat>',
+      to: email,
       subject: 'ZoneMeet Backup Verification Code',
       html: `<div style="font-family: sans-serif; padding: 20px; color: #333;">
               <h2>Login Backup Verification</h2>
@@ -679,9 +687,9 @@ app.post("/api/auth/send-email-otp", async (req, res) => {
   emailOtpStore[email] = { otp, expiresAt };
 
   try {
-    const { data, error } = await resend.emails.send({
-      from: 'ZoneMeet <otp@zonemeet.chat>', // Updated to official domain
-      to: [email],
+    await transporter.sendMail({
+      from: '"ZoneMeet" <otp@zonemeet.chat>', // Updated to official domain
+      to: email,
       subject: 'ZoneMeet Verification Code',
       html: `
         <div style="font-family: sans-serif; padding: 20px; color: #333;">
@@ -693,11 +701,6 @@ app.post("/api/auth/send-email-otp", async (req, res) => {
         </div>
       `,
     });
-
-    if (error) {
-      console.error("Resend Error:", error);
-      return res.status(500).json({ message: "Failed to send email" });
-    }
 
     res.json({ success: true, message: "OTP sent to your email" });
   } catch (err) {
@@ -854,9 +857,9 @@ app.post("/api/auth/forgot-password", async (req, res) => {
   emailOtpStore[email] = { otp, expiresAt };
 
   try {
-    await resend.emails.send({
-      from: 'ZoneMeet <otp@zonemeet.chat>',
-      to: [email],
+    await transporter.sendMail({
+      from: '"ZoneMeet" <otp@zonemeet.chat>',
+      to: email,
       subject: 'ZoneMeet Password Reset',
       html: `
         <div style="font-family: sans-serif; padding: 20px;">
@@ -955,9 +958,9 @@ app.post("/api/auth/login", async (req, res) => {
   emailOtpStore[user.email] = { otp, expiresAt: Date.now() + 10 * 60 * 1000 };
   
   try {
-    resend.emails.send({
-      from: 'ZoneMeet Security <otp@zonemeet.chat>',
-      to: [user.email],
+    transporter.sendMail({
+      from: '"ZoneMeet Security" <otp@zonemeet.chat>',
+      to: user.email,
       subject: 'ZoneMeet Verification Code',
       html: `<div style="font-family: sans-serif; padding: 20px; color: #333;">
               <h2>Login Verification</h2>
@@ -3713,9 +3716,9 @@ function endQuiz(roomId) {
       adminOtpStore[email] = { otp, expiresAt };
 
       try {
-        await resend.emails.send({
-          from: 'ZoneMeet Admin <otp@zonemeet.chat>',
-          to: [email],
+        await transporter.sendMail({
+          from: '"ZoneMeet Admin" <otp@zonemeet.chat>',
+          to: email,
           subject: 'ZoneMeet Admin 2FA Code',
           html: `
             <div style="font-family: sans-serif; padding: 20px; color: #333; background: #0f172a; border-radius: 20px; border: 1px solid #1e293b;">
@@ -3728,7 +3731,7 @@ function endQuiz(roomId) {
         });
         res.json({ success: true, message: "Admin 2FA OTP sent to your email" });
       } catch (err) {
-        console.error("Resend 2FA Error:", err);
+        console.error("Brevo 2FA Error:", err);
         res.status(500).json({ message: "Failed to send 2FA OTP" });
       }
     });
