@@ -6668,6 +6668,15 @@ export default function Home() {
             left: 20px !important;
             width: 24px !important;
             height: 24px !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            border: none !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0 !important;
+            font-size: 0 !important;
+            color: transparent !important;
           }
           .mobile-chat-toggle-btn::after { content: '💬'; font-size: 1rem; color: white; }
           
@@ -6681,6 +6690,12 @@ export default function Home() {
             background: transparent !important;
             box-shadow: none !important;
             border: none !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0 !important;
+            font-size: 0 !important;
+            color: transparent !important;
           }
           .stop-btn::after { content: '🛑'; font-size: 1rem; color: white; }
           
@@ -6699,6 +6714,12 @@ export default function Home() {
             background: transparent !important;
             box-shadow: none !important;
             border: none !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0 !important;
+            font-size: 0 !important;
+            color: transparent !important;
           }
           .gift-trigger-btn::after { content: '🎁'; font-size: 1rem; color: white; }
           
@@ -6712,6 +6733,12 @@ export default function Home() {
             background: transparent !important;
             box-shadow: none !important;
             border: none !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0 !important;
+            font-size: 0 !important;
+            color: transparent !important;
           }
           .quiz-trigger-btn::after { content: '🎮'; font-size: 1rem; color: white; }
 
