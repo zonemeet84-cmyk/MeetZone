@@ -6019,6 +6019,12 @@ export default function Home() {
         }
 
         /* --- MULTI-FILTER PREFERENCES BUTTON & MODAL --- */
+        .mobile-chat-toggle-btn,
+        .gift-trigger-btn,
+        .tools-trigger-btn {
+          display: none;
+        }
+
         .filter-settings-trigger-btn {
           display: inline-flex;
           align-items: center;
