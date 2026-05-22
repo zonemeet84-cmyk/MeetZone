@@ -179,6 +179,21 @@ export default function Home() {
 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [historyList, setHistoryList] = useState([]);
+  const [translateLang, setTranslateLang] = useState("off");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("translateLang");
+    if (saved) setTranslateLang(saved);
+  }, []);
+
+  const handleTranslateChange = (e) => {
+    const lang = e.target.value;
+    setTranslateLang(lang);
+    localStorage.setItem("translateLang", lang);
+    if (socket && socket.connected) {
+      socket.emit("set-translate-language", lang === "off" ? null : lang);
+    }
+  };
 
   const fetchHistory = async () => {
     try {
@@ -1306,6 +1321,13 @@ export default function Home() {
             setStatus("Joining Direct Chat...");
           }
           socket.emit("set-profile", profile);
+        }
+
+        // Send translate lang on connect if set
+        const savedLang = localStorage.getItem("translateLang") || "off";
+        if (savedLang !== "off") {
+          socket.emit("set-translate-language", savedLang);
+          setTranslateLang(savedLang);
         }
       });
 
@@ -3535,6 +3557,26 @@ export default function Home() {
             <div className="chat-box-header">
               <h3>Live Chat</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {user?.premium && (
+                  <select 
+                    value={translateLang} 
+                    onChange={handleTranslateChange}
+                    style={{ background: '#334155', color: '#fff', border: 'none', borderRadius: '5px', padding: '4px', fontSize: '12px', outline: 'none' }}
+                  >
+                    <option value="off">Auto-Translate: Off</option>
+                    <option value="hi">Hindi</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="ar">Arabic</option>
+                    <option value="zh-cn">Chinese</option>
+                    <option value="ru">Russian</option>
+                    <option value="ja">Japanese</option>
+                    <option value="de">German</option>
+                    <option value="ko">Korean</option>
+                    <option value="pt">Portuguese</option>
+                    <option value="en">English</option>
+                  </select>
+                )}
                 <span className="msg-count">{messages.length} msgs</span>
                 <button type="button" className="mobile-chat-close-btn-header" onClick={() => setIsMobileChatOpen(false)}>×</button>
               </div>
@@ -3555,7 +3597,14 @@ export default function Home() {
                       </div>
                     </div>
                   ) : (
-                    <div className="msg-content">{msg.text}</div>
+                    <div className="msg-content">
+                      {msg.text}
+                      {msg.originalText && msg.originalText !== msg.text && (
+                        <div style={{ fontSize: '0.7em', color: '#94a3b8', marginTop: '4px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2px', fontStyle: 'italic' }}>
+                          Original: {msg.originalText}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               ))}

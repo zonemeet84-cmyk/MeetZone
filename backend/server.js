@@ -1,5 +1,7 @@
 require("dotenv").config();
 
+const RedisStore = require("rate-limit-redis");
+const translate = require('google-translate-api-x');
 const express = require("express");
 const { MongoClient } = require('mongodb');
 const MONGO_URI = process.env.MONGO_URI;
@@ -2496,6 +2498,11 @@ function endQuiz(roomId) {
         console.log(`User ${socket.id} updated filters:`, filters);
       });
 
+      socket.on("set-translate-language", (langCode) => {
+        socket.translateLang = langCode;
+        console.log(`User ${socket.id} set translation language to ${langCode}`);
+      });
+
       socket.on("send-message", async ({ text, to }) => {
         if (socket.user) {
           const email = socket.user.email;
@@ -2555,8 +2562,23 @@ function endQuiz(roomId) {
           }
         }
 
+        let finalText = text;
+        let originalText = null;
+
+        const targetSocket = io.sockets.sockets.get(to);
+        if (targetSocket && targetSocket.translateLang && targetSocket.premium) {
+          try {
+            const res = await translate(text, { to: targetSocket.translateLang });
+            finalText = res.text;
+            originalText = text;
+          } catch (e) {
+            console.error("Translation error:", e);
+          }
+        }
+
         io.to(to).emit("receive-message", {
-          text,
+          text: finalText,
+          originalText: originalText,
           senderId: socket.id,
         });
       });

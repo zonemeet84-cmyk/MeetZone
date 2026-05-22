@@ -1868,6 +1868,7 @@ export default function Dashboard() {
               <li><span>✓</span> Instant Priority Matching</li>
               <li><span>✓</span> Unlimited Friend Requests</li>
               <li><span>✓</span> HD Video Access</li>
+              <li><span>🌐</span> Auto-Translate Chats</li>
               <li><span>★</span> 150 ZoneMeet Coins (Free)</li>
               <li><span>🔒</span> Google Authenticator (2FA)</li>
               <li className="feature-coming-soon"><span>🕒</span> Ad-Free Experience <em>(Coming Soon)</em></li>
@@ -1895,6 +1896,7 @@ export default function Dashboard() {
               <li><span>✓</span> Season-Long Pro Access</li>
               <li><span>✓</span> Elite Identity Badge</li>
               <li><span>✓</span> All Prime Subscription Benefits</li>
+              <li><span>🌐</span> Auto-Translate Chats</li>
               <li><span>★</span> 500 ZoneMeet Coins (Free)</li>
               <li><span>🔒</span> Google Authenticator (2FA)</li>
               <li className="feature-coming-soon"><span>🕒</span> Ad-Free Experience <em>(Coming Soon)</em></li>
@@ -1960,6 +1962,10 @@ export default function Dashboard() {
             <div className="elite-feature-item">
               <strong>🔒 Privacy Tools</strong>
               <p>Blur, mask & identity protection box</p>
+            </div>
+            <div className="elite-feature-item">
+              <strong>🌐 Auto-Translate</strong>
+              <p>Chat seamlessly in any language</p>
             </div>
             <div className="elite-feature-item">
               <strong>🛡️ Google 2FA Secure</strong>
@@ -3585,13 +3591,13 @@ export default function Dashboard() {
             gap: 1rem !important;
           }
 
-          .premium-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 32px; padding: 3rem 2rem; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; transition: all 0.5s cubic-bezier(0.4,0,0.2,1); backdrop-filter: blur(10px); }
+          .premium-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 32px; padding: 2rem 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; transition: all 0.5s cubic-bezier(0.4,0,0.2,1); backdrop-filter: blur(10px); }
           .premium-card:hover { transform: translateY(-15px) scale(1.02); background: rgba(255,255,255,0.04); border-color: rgba(99,102,241,0.4); box-shadow: 0 30px 60px -12px rgba(0,0,0,0.5); }
-          .premium-card.featured { background: linear-gradient(180deg, rgba(99,102,241,0.1) 0%, rgba(236,72,153,0.05) 100%); border: 1px solid rgba(99,102,241,0.5); transform: scale(1.08); z-index: 10; }
-          .premium-card.featured:hover { transform: scale(1.1) translateY(-10px); }
-          .popular-ribbon { position: absolute; top: -15px; background: linear-gradient(90deg, #6366f1, #ec4899); color: white; padding: 0.5rem 1.5rem; border-radius: 50px; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 20px rgba(99,102,241,0.4); }
-          .plan-icon { font-size: 3rem; margin-bottom: 1.5rem; }
-          .card-header h3 { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.25rem; color: white; }
+          .premium-card.featured { background: linear-gradient(180deg, rgba(99,102,241,0.1) 0%, rgba(236,72,153,0.05) 100%); border: 1px solid rgba(99,102,241,0.5); transform: scale(1.04); z-index: 10; }
+          .premium-card.featured:hover { transform: scale(1.06) translateY(-10px); }
+          .popular-ribbon { position: absolute; top: -15px; background: linear-gradient(90deg, #6366f1, #ec4899); color: white; padding: 0.4rem 1.2rem; border-radius: 50px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 20px rgba(99,102,241,0.4); }
+          .plan-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+          .card-header h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.25rem; color: white; }
           .card-header .duration { color: #64748b; font-size: 0.9rem; font-weight: 500; }
           .price-tag { margin: 2rem 0; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
           .amount { font-size: 3.5rem; font-weight: 900; color: white; letter-spacing: -0.02em; }
