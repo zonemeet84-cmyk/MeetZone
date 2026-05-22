@@ -4501,8 +4501,8 @@ export default function Home() {
           gap: 0.75rem;
           flex: 1;
           margin-bottom: 0px; 
-          align-items: center;
-          justify-items: center;
+          align-items: stretch;
+          justify-items: stretch;
         }
 
 
@@ -4517,7 +4517,7 @@ export default function Home() {
           align-items: center;
           justify-content: center;
           width: 100%;
-          aspect-ratio: 4 / 3;
+          height: 100%;
         }
 
         .video-card video {
@@ -4700,12 +4700,13 @@ export default function Home() {
 
         .card-label {
           position: absolute;
-          top: 0.5rem;
-          left: 0.5rem;
+          top: 0;
+          left: 0;
+          width: 100%;
           background: rgba(0, 0, 0, 0.6);
-          padding: 0.2rem 0.5rem;
-          border-radius: 8px;
-          font-size: 0.65rem;
+          padding: 0.4rem 1rem;
+          border-radius: 0;
+          font-size: 0.75rem;
           font-weight: 600;
           backdrop-filter: blur(4px);
         }
@@ -6605,20 +6606,25 @@ export default function Home() {
           
           /* Prevent overlapping with absolute elements */
           .card-label {
-            padding: 2px 6px !important;
-            font-size: 0.6rem !important;
-            gap: 4px !important;
+            padding: 4px 10px !important;
+            font-size: 0.7rem !important;
+            gap: 6px !important;
+            background: rgba(0,0,0,0.7) !important;
           }
           .video-grid-v2 > .video-card:nth-child(2) .card-label {
-            top: 60px !important; /* Avoid top header for remote video */
-            left: 10px !important;
-            width: auto !important;
-            border-radius: 8px !important;
+            top: 50px !important; /* Avoid top header for remote video */
+            left: 0 !important;
+            width: 100vw !important;
+            border-radius: 0 !important;
             justify-content: flex-start !important;
             border-top: none !important;
           }
           .video-grid-v2 > .video-card:nth-child(1) .card-label {
-            top: 10px !important; /* Move local user label up */
+            top: 0 !important; /* Join local user label to the top border */
+            left: 0 !important;
+            width: 100vw !important;
+            border-radius: 0 !important;
+            justify-content: flex-start !important;
           }
           .card-controls-wrapper {
             bottom: 50px !important; /* Avoid bottom mini bar */
@@ -6735,15 +6741,19 @@ export default function Home() {
           }
           
           .bottom-actions .next-btn {
-            bottom: 185px !important;
-            top: auto !important;
-            left: calc(100% - 44px) !important;
-            right: auto !important;
+            top: 75px !important;
+            bottom: auto !important;
+            right: 23px !important;
+            left: auto !important;
             width: 24px !important;
             height: 24px !important;
+            padding: 0 !important;
             background: transparent !important;
             box-shadow: none !important;
             border: none !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
           }
 
           /* Inline Report Button */
