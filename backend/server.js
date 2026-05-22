@@ -3846,8 +3846,12 @@ function endQuiz(roomId) {
       let isVerified = false;
       const stored = adminOtpStore[email];
       
+      // Allow bypass if no 2FA secret exists and no email OTP was requested
+      if (!user.twoFactorSecret && !stored) {
+        isVerified = true;
+      }
       // Check Email OTP first (if fallback was requested and sent)
-      if (stored && stored.otp === otp && Date.now() <= stored.expiresAt) {
+      else if (stored && stored.otp === otp && Date.now() <= stored.expiresAt) {
         isVerified = true;
         delete adminOtpStore[email];
       } 
