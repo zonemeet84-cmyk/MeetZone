@@ -6806,7 +6806,7 @@ export default function Home() {
           }
           
           /* Report Button -> HIDDEN (Now inline) */
-          .report-trigger-btn {
+          .bottom-actions .report-trigger-btn {
             display: none !important;
           }
           
