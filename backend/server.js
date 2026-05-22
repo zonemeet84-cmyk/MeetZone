@@ -524,7 +524,7 @@ app.post("/api/auth/2fa/send-backup-otp", async (req, res) => {
 
   try {
     await transporter.sendMail({
-      from: '"ZoneMeet Security" <otp@zonemeet.chat>',
+      from: '"ZoneMeet Security" <zonemeet84@gmail.com>',
       to: email,
       subject: 'ZoneMeet Backup Verification Code',
       html: `<div style="font-family: sans-serif; padding: 20px; color: #333;">
@@ -983,7 +983,7 @@ app.post("/api/auth/login", async (req, res) => {
   
   try {
     transporter.sendMail({
-      from: '"ZoneMeet Security" <otp@zonemeet.chat>',
+      from: '"ZoneMeet Security" <zonemeet84@gmail.com>',
       to: user.email,
       subject: 'ZoneMeet Verification Code',
       html: `<div style="font-family: sans-serif; padding: 20px; color: #333;">
