@@ -2603,12 +2603,46 @@ export default function Home() {
             <div className="filters-row-v2" style={{ justifyContent: 'space-between', padding: '2px 0', alignItems: 'center' }}>
               <button 
                 className="filter-settings-trigger-btn" 
-                onClick={() => {
-                  setTempGender(gender);
-                  setTempCountry(country);
-                  setTempStateProv(stateProv);
-                  setTempAge(age);
-                  setShowFilterModal(true);
+                onClick={async () => {
+                  const isOwner = user?.email?.toLowerCase() === "ds9376314@gmail.com";
+                  const isElite = user?.planName === "VIP Elite";
+                  const hasBoughtFilter = user?.unlockedFilters?.includes("Matchmaking_Preferences");
+
+                  if (isOwner || isElite || hasBoughtFilter) {
+                    setTempGender(gender);
+                    setTempCountry(country);
+                    setTempStateProv(stateProv);
+                    setTempAge(age);
+                    setShowFilterModal(true);
+                  } else {
+                    if (window.confirm("Unlock Matchmaking Filters for 500 Coins?")) {
+                      if ((user?.coins || 0) < 500) {
+                        showToast("Not enough coins! Go to Home to buy more.", "warning");
+                        return;
+                      }
+                      try {
+                        const res = await axios.post("https://api.zonemeet.chat/api/user/spend-coins", {
+                          email: user.email,
+                          amount: 500,
+                          feature: "Unlock Filter: Matchmaking_Preferences",
+                          filterId: "Matchmaking_Preferences"
+                        });
+                        if (res.data.success) {
+                          const updatedUser = { ...user, coins: res.data.coins, unlockedFilters: res.data.unlockedFilters };
+                          if (typeof setUser === 'function') setUser(updatedUser);
+                          localStorage.setItem("user", JSON.stringify(updatedUser));
+                          showToast("Matchmaking Filters Unlocked!", "success");
+                          setTempGender(gender);
+                          setTempCountry(country);
+                          setTempStateProv(stateProv);
+                          setTempAge(age);
+                          setShowFilterModal(true);
+                        }
+                      } catch (err) {
+                        showToast("Failed to purchase filter.", "error");
+                      }
+                    }
+                  }
                 }}
               >
                 <span className="icon">⚙️</span>
@@ -3663,12 +3697,14 @@ export default function Home() {
               >
                 🎁 Gifts
               </button>
-              <button 
-                className="tools-trigger-btn" 
-                onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'tools_menu' ? null : 'tools_menu')}
-              >
-                🎭 Tools
-              </button>
+              {(user?.email === "ds9376314@gmail.com" || user?.planName === "VIP Elite" || user?.hasSecretIdentity) && (
+                <button 
+                  className="tools-trigger-btn" 
+                  onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'tools_menu' ? null : 'tools_menu')}
+                >
+                  🎭 Tools
+                </button>
+              )}
               <button className="stop-btn" onClick={stopMatching} disabled={quizState !== "idle"}>
                 🛑 Stop
               </button>
