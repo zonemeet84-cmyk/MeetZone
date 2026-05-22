@@ -604,6 +604,15 @@ app.post("/api/auth/session-login", (req, res) => {
     }
   }
 
+  // Subscription expiry check
+  if (user.premium && !user.isPermanentPremium && user.planExpiry && Date.now() > user.planExpiry) {
+    user.premium = false;
+    user.planName = null;
+    user.planExpiry = null;
+    delete user.twoFactorSecret;
+    saveUsers();
+  }
+
   // 2FA Interception
   if (user.twoFactorSecret) {
     return res.json({ requires2FA: true, type: "google", email: user.email });
@@ -1148,6 +1157,7 @@ app.get("/api/auth/verify", (req, res) => {
       user.premium = false;
       user.planName = null;
       user.planExpiry = null;
+      delete user.twoFactorSecret;
       saveUsers();
     }
 
