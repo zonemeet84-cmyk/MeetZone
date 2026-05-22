@@ -6570,30 +6570,62 @@ export default function Home() {
 
           /* Chat Toggle Button -> Bottom Left */
           .mobile-chat-toggle-btn {
-            bottom: 20px !important;
-            left: 20px !important;
+            bottom: 45px !important;
+            left: 15px !important;
           }
           .mobile-chat-toggle-btn::after { content: '💬'; font-size: 1.5rem; color: white; }
           
           /* Stop Button -> Moved right */
           .stop-btn {
-            bottom: 20px !important;
-            left: 80px !important;
+            bottom: 45px !important;
+            left: 70px !important;
           }
           .stop-btn::after { content: '🛑'; font-size: 1.5rem; color: white; }
           
           /* Report Button -> Moved right */
           .report-trigger-btn {
-            bottom: 20px !important;
-            left: 140px !important;
+            bottom: 45px !important;
+            left: 125px !important;
           }
           .report-trigger-btn::after { content: '🚨'; font-size: 1.5rem; color: white; }
           
           .quiz-trigger-btn {
-            bottom: 20px !important;
-            right: 20px !important;
+            bottom: 45px !important;
+            right: 15px !important;
           }
           .quiz-trigger-btn::after { content: '🎁'; font-size: 1.5rem; color: white; }
+          
+          /* Make Avatars/Voice/Privacy/Gifts a thin full-width line at the bottom */
+          .identity-container {
+            position: absolute !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            z-index: 300 !important;
+          }
+          .bottom-mini-bar {
+            width: 100vw !important;
+            border-radius: 0 !important;
+            border: none !important;
+            border-top: 1px solid rgba(255,255,255,0.1) !important;
+            background: rgba(0,0,0,0.8) !important;
+            padding: 6px 4px !important;
+            gap: 4px !important;
+            display: flex !important;
+            justify-content: space-evenly !important;
+            backdrop-filter: blur(5px) !important;
+          }
+          .tool-btn {
+            flex: 1 !important;
+            padding: 4px 2px !important;
+            font-size: 0.75rem !important;
+            white-space: nowrap !important;
+            text-align: center !important;
+            border-radius: 6px !important;
+            background: rgba(255,255,255,0.1) !important;
+          }
           
           .filters-row-v2 {
             position: static !important; /* Let absolute positioned children align to screen */
