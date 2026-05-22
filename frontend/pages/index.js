@@ -1869,6 +1869,7 @@ export default function Dashboard() {
               <li><span>✓</span> Unlimited Friend Requests</li>
               <li><span>✓</span> HD Video Access</li>
               <li><span>★</span> 150 ZoneMeet Coins (Free)</li>
+              <li><span>🔒</span> Google Authenticator (2FA)</li>
               <li className="feature-coming-soon"><span>🕒</span> Ad-Free Experience <em>(Coming Soon)</em></li>
             </ul>
             <button className="premium-btn primary" onClick={() => {
@@ -1895,6 +1896,7 @@ export default function Dashboard() {
               <li><span>✓</span> Elite Identity Badge</li>
               <li><span>✓</span> All Prime Subscription Benefits</li>
               <li><span>★</span> 500 ZoneMeet Coins (Free)</li>
+              <li><span>🔒</span> Google Authenticator (2FA)</li>
               <li className="feature-coming-soon"><span>🕒</span> Ad-Free Experience <em>(Coming Soon)</em></li>
             </ul>
             <button className="premium-btn" onClick={() => {
@@ -1958,6 +1960,10 @@ export default function Dashboard() {
             <div className="elite-feature-item">
               <strong>🔒 Privacy Tools</strong>
               <p>Blur, mask & identity protection box</p>
+            </div>
+            <div className="elite-feature-item">
+              <strong>🛡️ Google 2FA Secure</strong>
+              <p>Top-tier account protection</p>
             </div>
             <div className="elite-feature-item feature-coming-soon-box">
               <strong>📺 Ad-Free Experience</strong>
