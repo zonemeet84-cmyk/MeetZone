@@ -6758,10 +6758,10 @@ export default function Home() {
           }
           
           .bottom-actions .next-btn {
-            top: calc(50% + 5px) !important; /* Below the center point */
+            top: 40px !important;
             bottom: auto !important;
-            left: 5px !important;
-            right: auto !important;
+            right: 20px !important;
+            left: auto !important;
             width: 24px !important;
             height: 24px !important;
             padding: 0 !important;
@@ -6892,9 +6892,9 @@ export default function Home() {
           }
           .filters-row-v2 .filter-settings-trigger-btn {
             position: absolute !important;
-            top: calc(50% - 25px) !important;
-            left: 5px !important;
-            right: auto !important;
+            top: 5px !important;
+            right: 20px !important;
+            left: auto !important;
             width: 24px !important;
             height: 24px !important;
             z-index: 100 !important;
