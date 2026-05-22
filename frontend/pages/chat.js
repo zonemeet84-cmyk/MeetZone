@@ -6948,6 +6948,41 @@ export default function Home() {
           }
         }
         @media (min-width: 769px) {
+          .video-grid-v2:not(.quiz-pip-mode) {
+            display: block !important;
+            position: relative !important;
+            width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            overflow: hidden !important;
+            border-radius: 24px !important;
+          }
+          
+          /* The Local Video (PIP) */
+          .video-grid-v2:not(.quiz-pip-mode) > .video-card:nth-child(1) {
+            position: absolute !important;
+            bottom: 20px !important;
+            left: 20px !important;
+            width: 280px !important;
+            height: 200px !important;
+            z-index: 20 !important;
+            border-radius: 16px !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6) !important;
+            border: 2px solid rgba(255,255,255,0.1) !important;
+          }
+          
+          /* The Remote Video (Main) */
+          .video-grid-v2:not(.quiz-pip-mode) > .video-card:nth-child(2) {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 10 !important;
+            border-radius: 24px !important;
+            border: none !important;
+          }
+
           .video-card .card-label {
             background: transparent !important;
             backdrop-filter: none !important;
@@ -6957,6 +6992,7 @@ export default function Home() {
             left: auto !important;
             right: 1rem !important;
             bottom: 1rem !important;
+            z-index: 50 !important;
           }
         }
       `}</style>
