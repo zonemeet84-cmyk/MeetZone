@@ -1171,9 +1171,9 @@ export default function Home() {
       // 2. Camera Logic
       try {
         const videoConstraints = {
-          width: { ideal: 640, max: 960 },
-          height: { ideal: 480, max: 540 },
-          frameRate: { ideal: 20, max: 20 }
+          width: { ideal: 1280, max: 1280 },
+          height: { ideal: 720, max: 720 },
+          frameRate: { ideal: 30, max: 30 }
         };
 
         console.log("Negotiated camera constraints loaded based on plan:", isPremiumUser, videoConstraints);

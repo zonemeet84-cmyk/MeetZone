@@ -1878,10 +1878,8 @@ export default function Dashboard() {
               <li><span>✓</span> All Gender & Country Filters</li>
               <li><span>✓</span> Instant Priority Matching</li>
               <li><span>✓</span> Unlimited Friend Requests</li>
-              <li><span>✓</span> HD Video Access</li>
               <li><span>🌐</span> Auto-Translate Chats & Live Subtitles</li>
               <li><span>★</span> 150 ZoneMeet Coins (Free)</li>
-              <li><span>🔒</span> Google Authenticator (2FA)</li>
               <li className="feature-coming-soon"><span>🕒</span> Ad-Free Experience <em>(Coming Soon)</em></li>
             </ul>
             <button className="premium-btn primary" onClick={() => {
@@ -1909,7 +1907,6 @@ export default function Dashboard() {
               <li><span>✓</span> All Prime Subscription Benefits</li>
               <li><span>🌐</span> Auto-Translate Chats & Live Subtitles</li>
               <li><span>★</span> 500 ZoneMeet Coins (Free)</li>
-              <li><span>🔒</span> Google Authenticator (2FA)</li>
               <li className="feature-coming-soon"><span>🕒</span> Ad-Free Experience <em>(Coming Soon)</em></li>
             </ul>
             <button className="premium-btn" onClick={() => {
@@ -1959,10 +1956,6 @@ export default function Dashboard() {
               <p>Browse without being seen</p>
             </div>
             <div className="elite-feature-item">
-              <strong>📹 HD Video Access</strong>
-              <p>Crystal clear 1080p stream</p>
-            </div>
-            <div className="elite-feature-item">
               <strong>🎨 Free Filters & Avatars</strong>
               <p>All face filters & animated avatars unlocked</p>
             </div>
@@ -1977,10 +1970,6 @@ export default function Dashboard() {
             <div className="elite-feature-item">
               <strong>🌐 Auto-Translate & CC</strong>
               <p>Live translated subtitles & chats</p>
-            </div>
-            <div className="elite-feature-item">
-              <strong>🛡️ Google 2FA Secure</strong>
-              <p>Top-tier account protection</p>
             </div>
             <div className="elite-feature-item feature-coming-soon-box">
               <strong>📺 Ad-Free Experience</strong>
