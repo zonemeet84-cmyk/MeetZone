@@ -3212,22 +3212,20 @@ export default function Home() {
                 {partnerInfo ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ 
-                        fontWeight: '500', 
-                        maxWidth: '70px', 
-                        whiteSpace: 'nowrap', 
-                        overflow: 'hidden', 
-                        textOverflow: 'ellipsis',
-                        display: 'inline-block',
-                        verticalAlign: 'bottom'
-                      }} title={partnerInfo.name}>{partnerInfo.name}</span>
+                      <span className="partner-name-text" title={partnerInfo.name}>{partnerInfo.name}</span>
                       <span className={`gender-highlight ${partnerInfo.gender?.toLowerCase()}`}>{partnerInfo.gender || "Unknown"}</span>
                       <span className="country-highlight" title={partnerInfo.country}>
                         {getFlagUrl(partnerInfo.country) && <img src={getFlagUrl(partnerInfo.country)} alt={partnerInfo.country} style={{ width: '16px', height: '12px', borderRadius: '2px' }} />}
                         {getCountryName(partnerInfo.country)}
                       </span>
                     </span>
-
+                    <button 
+                      className="mobile-inline-report-btn" 
+                      onClick={() => setShowReportModal(true)}
+                      title="Report User"
+                    >
+                      🚨
+                    </button>
                     {partnerInfo.premium && partnerInfo.planName && (
                       <span className={partnerInfo.planName === "VIP Elite" ? "vip-crown-tag" : "pro-badge-v2"} style={{ margin: 0, padding: '0.15rem 0.6rem', fontSize: '0.65rem' }}>
                         {partnerInfo.planName === "VIP Elite" ? "👑 VIP ELITE" : `🛡️ ${partnerInfo.planName}`}
@@ -4701,16 +4699,17 @@ export default function Home() {
           position: absolute;
           top: 0;
           left: 0;
-          width: max-content;
+          width: 100%;
           background: rgba(0, 0, 0, 0.6);
           padding: 0.4rem 1rem;
-          border-radius: 0 0 8px 0;
+          border-radius: 0;
           font-size: 0.75rem;
           font-weight: 600;
           backdrop-filter: blur(4px);
-          height: 32px;
-          display: flex;
-          align-items: center;
+        }
+
+        .mobile-inline-report-btn {
+          display: none;
         }
 
         .card-controls-wrapper {
@@ -6599,30 +6598,36 @@ export default function Home() {
           
           /* Prevent overlapping with absolute elements */
           .card-label {
-            padding: 4px 10px !important;
+            padding: 0 !important;
             font-size: 0.7rem !important;
             gap: 6px !important;
-            background: rgba(0,0,0,0.7) !important;
+            background: transparent !important;
             height: 28px !important;
             display: flex !important;
             align-items: center !important;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8), 0 2px 5px rgba(0,0,0,0.5) !important;
+            border-radius: 0 !important;
+          }
+          .partner-name-text {
+            max-width: 70px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: inline-block;
+            vertical-align: bottom;
+            font-weight: 500;
           }
           .video-grid-v2 > .video-card:nth-child(2) .card-label {
             top: 5px !important;
             left: 5px !important;
             width: max-content !important;
-            border-radius: 0 !important;
             justify-content: flex-start !important;
             border-top: none !important;
-            background: transparent !important;
-            padding: 0 !important;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.8), 0 2px 5px rgba(0,0,0,0.5) !important;
           }
           .video-grid-v2 > .video-card:nth-child(1) .card-label {
-            top: 0 !important;
-            left: 0 !important;
+            top: 5px !important;
+            left: 5px !important;
             width: max-content !important;
-            border-radius: 0 0 8px 0 !important;
             justify-content: flex-start !important;
           }
           .card-controls-wrapper {
@@ -6760,7 +6765,12 @@ export default function Home() {
 
           /* Inline Report Button */
           .card-label .mobile-inline-report-btn {
-            display: none !important;
+            display: inline-block !important;
+            background: transparent !important;
+            border: none !important;
+            padding: 0 4px !important;
+            font-size: 0.8rem !important;
+            cursor: pointer !important;
           }
 
           /* Chat Toggle Button -> HIDDEN */
