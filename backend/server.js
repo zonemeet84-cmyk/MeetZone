@@ -2583,6 +2583,20 @@ function endQuiz(roomId) {
         });
       });
 
+      socket.on("send-subtitle", async ({ text, to }) => {
+        let finalText = text;
+        const targetSocket = io.sockets.sockets.get(to);
+        if (targetSocket && targetSocket.translateLang && targetSocket.premium) {
+          try {
+            const res = await translate(text, { to: targetSocket.translateLang });
+            finalText = res.text;
+          } catch (e) {
+            console.error("Translation error for subtitle:", e);
+          }
+        }
+        io.to(to).emit("receive-subtitle", { text: finalText });
+      });
+
       socket.on("friend-request", ({ to }) => {
         const targetSocketId = to;
         io.to(targetSocketId).emit("friend-request-received", {

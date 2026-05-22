@@ -1868,7 +1868,7 @@ export default function Dashboard() {
               <li><span>✓</span> Instant Priority Matching</li>
               <li><span>✓</span> Unlimited Friend Requests</li>
               <li><span>✓</span> HD Video Access</li>
-              <li><span>🌐</span> Auto-Translate Chats</li>
+              <li><span>🌐</span> Auto-Translate Chats & Live Subtitles</li>
               <li><span>★</span> 150 ZoneMeet Coins (Free)</li>
               <li><span>🔒</span> Google Authenticator (2FA)</li>
               <li className="feature-coming-soon"><span>🕒</span> Ad-Free Experience <em>(Coming Soon)</em></li>
@@ -1896,7 +1896,7 @@ export default function Dashboard() {
               <li><span>✓</span> Season-Long Pro Access</li>
               <li><span>✓</span> Elite Identity Badge</li>
               <li><span>✓</span> All Prime Subscription Benefits</li>
-              <li><span>🌐</span> Auto-Translate Chats</li>
+              <li><span>🌐</span> Auto-Translate Chats & Live Subtitles</li>
               <li><span>★</span> 500 ZoneMeet Coins (Free)</li>
               <li><span>🔒</span> Google Authenticator (2FA)</li>
               <li className="feature-coming-soon"><span>🕒</span> Ad-Free Experience <em>(Coming Soon)</em></li>
@@ -1964,8 +1964,8 @@ export default function Dashboard() {
               <p>Blur, mask & identity protection box</p>
             </div>
             <div className="elite-feature-item">
-              <strong>🌐 Auto-Translate</strong>
-              <p>Chat seamlessly in any language</p>
+              <strong>🌐 Auto-Translate & CC</strong>
+              <p>Live translated subtitles & chats</p>
             </div>
             <div className="elite-feature-item">
               <strong>🛡️ Google 2FA Secure</strong>

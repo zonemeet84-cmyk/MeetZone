@@ -180,20 +180,39 @@ export default function Home() {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [historyList, setHistoryList] = useState([]);
   const [translateLang, setTranslateLang] = useState("off");
+  const [translateEnabled, setTranslateEnabled] = useState(false);
+  const [subtitlesOn, setSubtitlesOn] = useState(false);
+  const [currentSubtitle, setCurrentSubtitle] = useState("");
+  const recognitionRef = useRef(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("translateLang");
+    const enabled = localStorage.getItem("translateEnabled") === "true";
     if (saved) setTranslateLang(saved);
+    setTranslateEnabled(enabled);
   }, []);
 
   const handleTranslateChange = (e) => {
     const lang = e.target.value;
     setTranslateLang(lang);
     localStorage.setItem("translateLang", lang);
-    if (socket && socket.connected) {
-      socket.emit("set-translate-language", lang === "off" ? null : lang);
-    }
   };
+
+  const toggleTranslate = () => {
+    const newVal = !translateEnabled;
+    setTranslateEnabled(newVal);
+    localStorage.setItem("translateEnabled", newVal);
+  };
+
+  useEffect(() => {
+    if (socket && socket.connected) {
+      if (translateEnabled && translateLang !== "off") {
+        socket.emit("set-translate-language", translateLang);
+      } else {
+        socket.emit("set-translate-language", null);
+      }
+    }
+  }, [translateEnabled, translateLang]);
 
   const fetchHistory = async () => {
     try {
@@ -1524,6 +1543,13 @@ export default function Home() {
         setMessages((prev) => [...prev, { text, sender: "partner" }]);
       });
 
+      socket.on("receive-subtitle", ({ text }) => {
+        setCurrentSubtitle(text);
+        setTimeout(() => {
+          setCurrentSubtitle(prev => prev === text ? "" : prev);
+        }, 5000);
+      });
+
       socket.on("partner-reconnecting", () => {
         setStatus("Partner connection unstable. Reconnecting...");
       });
@@ -1766,6 +1792,43 @@ export default function Home() {
     }
     return () => clearInterval(timer);
   }, [quizState, quizTimeLeft, quizResult]);
+
+  // Speech Recognition for Live Subtitles
+  useEffect(() => {
+    if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = false;
+
+      recognitionRef.current.onresult = (event) => {
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          }
+        }
+        if (finalTranscript.trim() && socket && partnerId) {
+          socket.emit("send-subtitle", { text: finalTranscript, to: partnerId });
+        }
+      };
+
+      recognitionRef.current.onend = () => {
+        // Auto-restart if it was stopped unexpectedly while supposed to be on
+        if (subtitlesOn && partnerId) {
+          try { recognitionRef.current.start(); } catch(e) {}
+        }
+      };
+    }
+  }, [partnerId]); // Re-bind when partner changes so socket captures correct partnerId
+
+  useEffect(() => {
+    if (subtitlesOn && partnerId && recognitionRef.current) {
+      try { recognitionRef.current.start(); } catch(e) {}
+    } else if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch(e) {}
+    }
+  }, [subtitlesOn, partnerId]);
 
   const createPeer = (partner) => {
     peerConnection.current = new RTCPeerConnection(servers);
@@ -2986,6 +3049,29 @@ export default function Home() {
                 }}
               />
               
+              {/* LIVE SUBTITLES */}
+              {currentSubtitle && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: '50px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: 'rgba(0, 0, 0, 0.65)',
+                  color: '#fff',
+                  padding: '8px 16px',
+                  borderRadius: '12px',
+                  fontSize: '1rem',
+                  maxWidth: '85%',
+                  textAlign: 'center',
+                  zIndex: 20,
+                  backdropFilter: 'blur(4px)',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                  pointerEvents: 'none'
+                }}>
+                  {currentSubtitle}
+                </div>
+              )}
+              
               {partnerMask && partnerMask !== "None" && partnerAvatar === "None" && (
                 <div className="video-mask-overlay">
                   <div className={`mask-${partnerMask.toLowerCase()}`}></div>
@@ -3115,6 +3201,11 @@ export default function Home() {
               </div>
 
               <div className="card-controls">
+                {user?.premium && partnerId && (
+                  <button className={`ctrl-btn ${subtitlesOn ? 'active' : ''}`} onClick={() => setSubtitlesOn(!subtitlesOn)} title="Live Subtitles (CC)" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}>
+                    {subtitlesOn ? "CC: ON" : "CC: OFF"}
+                  </button>
+                )}
                 {partnerId && (
                   <button className={`ctrl-btn ${friendReqStatus ? 'active' : ''}`} onClick={addFriend} disabled={friendReqStatus} title="Add Friend">
                     {friendReqStatus ? "✅" : "👤+"}
@@ -3558,24 +3649,43 @@ export default function Home() {
               <h3>Live Chat</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 {user?.premium && (
-                  <select 
-                    value={translateLang} 
-                    onChange={handleTranslateChange}
-                    style={{ background: '#334155', color: '#fff', border: 'none', borderRadius: '5px', padding: '4px', fontSize: '12px', outline: 'none' }}
-                  >
-                    <option value="off">Auto-Translate: Off</option>
-                    <option value="hi">Hindi</option>
-                    <option value="es">Spanish</option>
-                    <option value="fr">French</option>
-                    <option value="ar">Arabic</option>
-                    <option value="zh-cn">Chinese</option>
-                    <option value="ru">Russian</option>
-                    <option value="ja">Japanese</option>
-                    <option value="de">German</option>
-                    <option value="ko">Korean</option>
-                    <option value="pt">Portuguese</option>
-                    <option value="en">English</option>
-                  </select>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '8px' }}>
+                    <button 
+                      onClick={toggleTranslate}
+                      type="button"
+                      title="Toggle Auto-Translate"
+                      style={{
+                        background: translateEnabled ? '#10b981' : '#64748b',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '3px 6px',
+                        fontSize: '11px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      {translateEnabled ? 'ON' : 'OFF'}
+                    </button>
+                    <select 
+                      value={translateLang === "off" ? "en" : translateLang} 
+                      onChange={handleTranslateChange}
+                      disabled={!translateEnabled}
+                      style={{ background: 'transparent', color: '#fff', border: 'none', fontSize: '12px', outline: 'none', cursor: translateEnabled ? 'pointer' : 'not-allowed', opacity: translateEnabled ? 1 : 0.5 }}
+                    >
+                      <option value="en">English</option>
+                      <option value="hi">Hindi</option>
+                      <option value="es">Spanish</option>
+                      <option value="fr">French</option>
+                      <option value="ar">Arabic</option>
+                      <option value="zh-cn">Chinese</option>
+                      <option value="ru">Russian</option>
+                      <option value="ja">Japanese</option>
+                      <option value="de">German</option>
+                      <option value="ko">Korean</option>
+                      <option value="pt">Portuguese</option>
+                    </select>
+                  </div>
                 )}
                 <span className="msg-count">{messages.length} msgs</span>
                 <button type="button" className="mobile-chat-close-btn-header" onClick={() => setIsMobileChatOpen(false)}>×</button>
