@@ -53,7 +53,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!socket) {
-      socket = io("https://meetzone-backend.onrender.com");
+      socket = io("https://api.zonemeet.chat");
     }
 
     const handleConnect = () => {
@@ -173,7 +173,7 @@ export default function Dashboard() {
   const fetchLeaderboard = async (filterType = leaderboardFilter) => {
     setLeaderboardLoading(true);
     try {
-      const res = await axios.get(`https://meetzone-backend.onrender.com/api/user/leaderboard?filter=${filterType}&email=${user?.email || ''}`);
+      const res = await axios.get(`https://api.zonemeet.chat/api/user/leaderboard?filter=${filterType}&email=${user?.email || ''}`);
       if (res.data.success) {
         if (res.data.comingSoon) {
           setLeaderboardComingSoon({ current: res.data.currentCount, target: res.data.targetCount });
@@ -339,7 +339,7 @@ export default function Dashboard() {
     if (sessionId && user) {
       setPaymentStep("processing");
       setShowPremiumModal(true);
-      axios.post("https://meetzone-backend.onrender.com/api/payment/stripe/verify-subscription", { sessionId, userEmail: user.email })
+      axios.post("https://api.zonemeet.chat/api/payment/stripe/verify-subscription", { sessionId, userEmail: user.email })
         .then(res => {
           if (res.data.success) {
             const updatedUser = { ...user, ...res.data.user };
@@ -391,7 +391,7 @@ export default function Dashboard() {
     const token = sessionStorage.getItem("token");
 
     // Wake up the backend immediately
-    axios.get("https://meetzone-backend.onrender.com/api/ping").catch(() => { });
+    axios.get("https://api.zonemeet.chat/api/ping").catch(() => { });
 
     const checkAuth = async () => {
       // 0. IMMEDIATE CACHE LOAD (Fast UI)
@@ -408,7 +408,7 @@ export default function Dashboard() {
         if (!token || token === "undefined") {
           try {
             const referralCode = localStorage.getItem("referral") || undefined;
-            const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/session-login", {
+            const res = await axios.post("https://api.zonemeet.chat/api/auth/session-login", {
               email: session.user.email,
               name: session.user.name,
               referralCode
@@ -424,7 +424,7 @@ export default function Dashboard() {
           }
         } else {
           try {
-            const res = await axios.get("https://meetzone-backend.onrender.com/api/auth/verify", {
+            const res = await axios.get("https://api.zonemeet.chat/api/auth/verify", {
               headers: { Authorization: `Bearer ${token}` },
             });
             if (res.data.valid) {
@@ -446,7 +446,7 @@ export default function Dashboard() {
         }
       } else if (token && token !== "undefined") {
         try {
-          const res = await axios.get("https://meetzone-backend.onrender.com/api/auth/verify", {
+          const res = await axios.get("https://api.zonemeet.chat/api/auth/verify", {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (res.data.valid) {
@@ -490,7 +490,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (user && (user.email || user.phone) && !dailyStatus) {
-      axios.post("https://meetzone-backend.onrender.com/api/user/daily-check", { email: user.email, phone: user.phone })
+      axios.post("https://api.zonemeet.chat/api/user/daily-check", { email: user.email, phone: user.phone })
         .then(res => {
           if (res.data.success) {
             setDailyStatus(res.data);
@@ -535,7 +535,7 @@ export default function Dashboard() {
       const token = sessionStorage.getItem("token");
       if (user && token && !referralStats) {
         try {
-          const res = await axios.get("https://meetzone-backend.onrender.com/api/referral/stats", {
+          const res = await axios.get("https://api.zonemeet.chat/api/referral/stats", {
             headers: { Authorization: `Bearer ${token}` }
           });
           setReferralStats(res.data);
@@ -554,7 +554,7 @@ export default function Dashboard() {
 
   const collectDailyReward = async () => {
     try {
-      const res = await axios.post("https://meetzone-backend.onrender.com/api/user/collect-daily-reward", { email: user.email, phone: user.phone });
+      const res = await axios.post("https://api.zonemeet.chat/api/user/collect-daily-reward", { email: user.email, phone: user.phone });
       if (res.data.success) {
         const updated = { ...user, coins: res.data.coins, streak: res.data.streak, bonusClaimedToday: true };
         setUser(updated);
@@ -611,7 +611,7 @@ export default function Dashboard() {
         try {
           // Show processing state in the message or modal if needed
           // For now, just proceed with the call
-          const res = await axios.post('https://meetzone-backend.onrender.com/api/user/spend-coins', {
+          const res = await axios.post('https://api.zonemeet.chat/api/user/spend-coins', {
             email: user.email,
             amount: isAdmin ? 0 : cost,
             feature: featureName.toLowerCase().replace(/\s+/g, '_')
@@ -663,7 +663,7 @@ export default function Dashboard() {
 
     try {
       const token = sessionStorage.getItem("token");
-      const res = await axios.post("https://meetzone-backend.onrender.com/api/referral/redeem", {
+      const res = await axios.post("https://api.zonemeet.chat/api/referral/redeem", {
         referralCode: redeemCode
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -726,7 +726,7 @@ export default function Dashboard() {
     }, 100);
 
     try {
-      const res = await axios.post("https://meetzone-backend.onrender.com/api/user/open-box", {
+      const res = await axios.post("https://api.zonemeet.chat/api/user/open-box", {
         email: user.email,
         boxType: type
       });
@@ -748,7 +748,7 @@ export default function Dashboard() {
 
   const saveStreak = async () => {
     try {
-      const res = await axios.post("https://meetzone-backend.onrender.com/api/user/save-streak", {
+      const res = await axios.post("https://api.zonemeet.chat/api/user/save-streak", {
         email: user.email,
         oldStreak: dailyStatus.oldStreak
       });
@@ -790,7 +790,7 @@ export default function Dashboard() {
       // Let's assume we need to update the user in users.json.
       // I'll check if there's a profile update endpoint in server.js.
 
-      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/update-profile", {
+      const res = await axios.post("https://api.zonemeet.chat/api/auth/update-profile", {
         email: user.email,
         name: user.name,
         ...updatedData
@@ -850,7 +850,7 @@ export default function Dashboard() {
     setShow2FASetup(true);
     setShowProfileDrop(false);
     try {
-      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/2fa/setup", { email: user.email });
+      const res = await axios.post("https://api.zonemeet.chat/api/auth/2fa/setup", { email: user.email });
       setQrCodeUrl(res.data.qrCode);
     } catch (err) {
       setSetupError("Failed to initiate 2FA setup.");
@@ -860,7 +860,7 @@ export default function Dashboard() {
   const verify2FASetup = async () => {
     setSetupError("");
     try {
-      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/2fa/verify-setup", {
+      const res = await axios.post("https://api.zonemeet.chat/api/auth/2fa/verify-setup", {
         email: user.email,
         token: setupToken
       });
@@ -930,9 +930,9 @@ export default function Dashboard() {
       setPaymentStep("processing");
       const amountInPaise = selectedPlan.name === "Starter" ? 14900 : selectedPlan.name === "Prime" ? 59900 : selectedPlan.name === "Silver" ? 159900 : selectedPlan.name === "VIP Elite" ? 99900 : Math.round((parseFloat(selectedPlan.price?.replace(/[₹$]/g,'')) || 79) * 100);
       
-      let endpoint = "https://meetzone-backend.onrender.com/api/payment/razorpay/order";
+      let endpoint = "https://api.zonemeet.chat/api/payment/razorpay/order";
       if (isAutoRenew && !selectedPlan.name.includes("Coins")) {
-        endpoint = "https://meetzone-backend.onrender.com/api/payment/razorpay/create-subscription";
+        endpoint = "https://api.zonemeet.chat/api/payment/razorpay/create-subscription";
       }
       
       const orderRes = await axios.post(endpoint, { amount: amountInPaise, currency: "INR", planName: selectedPlan.name, userEmail: user.email });
@@ -943,7 +943,7 @@ export default function Dashboard() {
         image: "https://zonemeet.chat/logo.png", order_id: orderRes.data.id,
         handler: async (response) => {
           try {
-            const verifyRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/razorpay/verify", { ...response, userEmail: user.email, planName: selectedPlan.name, giftRecipientId: isGifting ? giftRecipientId : null });
+            const verifyRes = await axios.post("https://api.zonemeet.chat/api/payment/razorpay/verify", { ...response, userEmail: user.email, planName: selectedPlan.name, giftRecipientId: isGifting ? giftRecipientId : null });
             if (verifyRes.data.success) {
               const updatedUser = { ...user, ...verifyRes.data.user };
               setUser(updatedUser); sessionStorage.setItem("user", JSON.stringify(updatedUser));
@@ -975,9 +975,9 @@ export default function Dashboard() {
     try {
       setPaymentStep("processing");
       const amountInPaise = selectedPlan.name === "Starter" ? 14900 : selectedPlan.name === "Prime" ? 59900 : selectedPlan.name === "Silver" ? 159900 : selectedPlan.name === "VIP Elite" ? 99900 : Math.round((parseFloat(selectedPlan.price?.replace(/[₹$]/g,'')) || 79) * 100);
-      let endpoint = "https://meetzone-backend.onrender.com/api/payment/cashfree/create-order";
+      let endpoint = "https://api.zonemeet.chat/api/payment/cashfree/create-order";
       if (isAutoRenew && !selectedPlan.name.includes("Coins")) {
-        endpoint = "https://meetzone-backend.onrender.com/api/payment/cashfree/create-subscription";
+        endpoint = "https://api.zonemeet.chat/api/payment/cashfree/create-subscription";
       }
       const orderRes = await axios.post(endpoint, { amount: amountInPaise, planName: selectedPlan.name, userEmail: user.email });
       if (!orderRes.data.paymentSessionId) throw new Error("Cashfree session failed");
@@ -1005,9 +1005,9 @@ export default function Dashboard() {
       setPaymentStep("processing");
       const planPriceUSD = selectedPlan.name === "Starter" ? 1.75 : selectedPlan.name === "Prime" ? 7.17 : selectedPlan.name === "Silver" ? 19.17 : selectedPlan.name === "VIP Elite" ? 11.99 : selectedPlan.name === "100 Coins" ? 0.99 : selectedPlan.name === "200 Coins" ? 1.79 : selectedPlan.name === "500 Coins" ? 3.59 : selectedPlan.name === "1300 Coins" ? 8.49 : (parseFloat(selectedPlan.price?.replace(/[₹$]/g,'')) || 5.00);
       const amountInCents = Math.round(planPriceUSD * 100);
-      let endpoint = "https://meetzone-backend.onrender.com/api/payment/paypal/create-order";
+      let endpoint = "https://api.zonemeet.chat/api/payment/paypal/create-order";
       if (isAutoRenew && !selectedPlan.name.includes("Coins")) {
-        endpoint = "https://meetzone-backend.onrender.com/api/payment/paypal/create-subscription";
+        endpoint = "https://api.zonemeet.chat/api/payment/paypal/create-subscription";
       }
       const orderRes = await axios.post(endpoint, { amount: amountInCents, currency: "USD", planName: selectedPlan.name, userEmail: user.email });
       if (orderRes.data.approveUrl) {
@@ -1029,21 +1029,21 @@ export default function Dashboard() {
       const amountInCents = Math.round(planPriceUSD * 100);
 
       if (isAutoRenew && !selectedPlan.name.includes("Coins")) {
-        const orderRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/stripe/create-subscription-checkout", { amount: amountInCents, currency: "usd", planName: selectedPlan.name, userEmail: user.email });
+        const orderRes = await axios.post("https://api.zonemeet.chat/api/payment/stripe/create-subscription-checkout", { amount: amountInCents, currency: "usd", planName: selectedPlan.name, userEmail: user.email });
         if (orderRes.data.checkoutUrl) {
           window.location.href = orderRes.data.checkoutUrl;
           return;
         }
       }
 
-      const intentRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/stripe/create-intent", { amount: amountInCents, currency: "usd", planName: selectedPlan.name, userEmail: user.email });
+      const intentRes = await axios.post("https://api.zonemeet.chat/api/payment/stripe/create-intent", { amount: amountInCents, currency: "usd", planName: selectedPlan.name, userEmail: user.email });
       const { loadStripe } = await import("@stripe/stripe-js");
       const stripeObj = await loadStripe(STRIPE_PUB);
       const result = await stripeObj.confirmCardPayment(intentRes.data.clientSecret, {
         payment_method: { card: { token: "tok_visa" }, billing_details: { name: user.name, email: user.email } }
       });
       if (result.error) throw new Error(result.error.message);
-      const verifyRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/stripe/verify", { paymentIntentId: intentRes.data.paymentIntentId, userEmail: user.email, planName: selectedPlan.name, giftRecipientId: isGifting ? giftRecipientId : null });
+      const verifyRes = await axios.post("https://api.zonemeet.chat/api/payment/stripe/verify", { paymentIntentId: intentRes.data.paymentIntentId, userEmail: user.email, planName: selectedPlan.name, giftRecipientId: isGifting ? giftRecipientId : null });
       if (verifyRes.data.success) {
         const updatedUser = { ...user, ...verifyRes.data.user };
         setUser(updatedUser); sessionStorage.setItem("user", JSON.stringify(updatedUser));
@@ -1411,7 +1411,7 @@ export default function Dashboard() {
                             cancelText: "Cancel",
                             onConfirm: async () => {
                               try {
-                                const res = await axios.post("https://meetzone-backend.onrender.com/api/user/spend-coins", { email: user.email, amount: 100, feature: "profile_boost" });
+                                const res = await axios.post("https://api.zonemeet.chat/api/user/spend-coins", { email: user.email, amount: 100, feature: "profile_boost" });
                                 if (res.data.success) {
                                   // Use local Date.now() to prevent server clock drift showing 11 mins
                                   const localExpiry = Date.now() + (10 * 60 * 1000);
@@ -2621,11 +2621,11 @@ export default function Dashboard() {
                           cancelText: "Cancel",
                           onConfirm: async () => {
                             try {
-                              const res = await axios.post('https://meetzone-backend.onrender.com/api/user/spend-coins', { email: user.email, amount: 10, feature: 'reconnect' });
+                              const res = await axios.post('https://api.zonemeet.chat/api/user/spend-coins', { email: user.email, amount: 10, feature: 'reconnect' });
                               if (res.data.success) {
                                 setUser({ ...user, coins: res.data.coins });
                                 const token = localStorage.getItem('token');
-                                await axios.post('https://meetzone-backend.onrender.com/api/friends/request', { targetId: s.id, type: 'reconnect' }, { headers: { Authorization: `Bearer ${token}` } });
+                                await axios.post('https://api.zonemeet.chat/api/friends/request', { targetId: s.id, type: 'reconnect' }, { headers: { Authorization: `Bearer ${token}` } });
                                 showModal({ message: `Request sent to ${s.name}!`, type: "success" });
                               }
                             } catch (err) {

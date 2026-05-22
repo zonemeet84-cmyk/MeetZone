@@ -49,7 +49,7 @@ export default function Login() {
     setError("");
 
     try {
-      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/login", {
+      const res = await axios.post("https://api.zonemeet.chat/api/auth/login", {
         identifier,
         password,
         captchaToken: captcha
@@ -84,7 +84,7 @@ export default function Login() {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/2fa/login-verify", {
+      const res = await axios.post("https://api.zonemeet.chat/api/auth/2fa/login-verify", {
         email: twoFAEmail,
         token: twoFAToken,
         type: twoFAType
@@ -103,7 +103,7 @@ export default function Login() {
     setForgotLoading(true);
     setForgotError("");
     try {
-      await axios.post("https://meetzone-backend.onrender.com/api/auth/forgot-password", { email: forgotEmail });
+      await axios.post("https://api.zonemeet.chat/api/auth/forgot-password", { email: forgotEmail });
       setForgotStep(2);
       setForgotSuccess("Reset code sent to your email!");
     } catch (err) {
@@ -118,7 +118,7 @@ export default function Login() {
     setForgotLoading(true);
     setForgotError("");
     try {
-      await axios.post("https://meetzone-backend.onrender.com/api/auth/reset-password", { 
+      await axios.post("https://api.zonemeet.chat/api/auth/reset-password", { 
         email: forgotEmail, 
         otp: forgotOtp, 
         newPassword 
@@ -149,7 +149,7 @@ export default function Login() {
 
     try {
       const referralCode = localStorage.getItem("referral") || undefined;
-      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/session-login", {
+      const res = await axios.post("https://api.zonemeet.chat/api/auth/session-login", {
         email: firebaseUser.email,
         name: firebaseUser.displayName,
         referralCode

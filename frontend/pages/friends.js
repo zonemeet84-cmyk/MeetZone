@@ -61,7 +61,7 @@ export default function Friends() {
     }
     setUser(storedUser);
 
-    const newSocket = io("https://meetzone-backend.onrender.com");
+    const newSocket = io("https://api.zonemeet.chat");
     setSocket(newSocket);
 
     newSocket.on("connect", () => {
@@ -102,7 +102,7 @@ export default function Friends() {
 
   const fetchFriends = async (token) => {
     try {
-      const res = await axios.get("https://meetzone-backend.onrender.com/api/friends/list", {
+      const res = await axios.get("https://api.zonemeet.chat/api/friends/list", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFriends(res.data.friends);
@@ -116,7 +116,7 @@ export default function Friends() {
     e.preventDefault();
     const token = sessionStorage.getItem("token");
     try {
-      const res = await axios.get(`https://meetzone-backend.onrender.com/api/users/search?email=${searchEmail}`, {
+      const res = await axios.get(`https://api.zonemeet.chat/api/users/search?email=${searchEmail}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSearchResult(res.data);
@@ -129,7 +129,7 @@ export default function Friends() {
   const sendRequest = async () => {
     const token = sessionStorage.getItem("token");
     try {
-      await axios.post("https://meetzone-backend.onrender.com/api/friends/request", { targetId: searchResult.id }, {
+      await axios.post("https://api.zonemeet.chat/api/friends/request", { targetId: searchResult.id }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert("Friend request sent!");
@@ -147,7 +147,7 @@ export default function Friends() {
   const acceptRequest = async (requesterId) => {
     const token = sessionStorage.getItem("token");
     try {
-      await axios.post("https://meetzone-backend.onrender.com/api/friends/accept", { requesterId }, {
+      await axios.post("https://api.zonemeet.chat/api/friends/accept", { requesterId }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchFriends(token);

@@ -42,7 +42,7 @@ export default function Signup() {
     setSuccessMsg("");
 
     try {
-      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/send-email-otp", { email: form.email });
+      const res = await axios.post("https://api.zonemeet.chat/api/auth/send-email-otp", { email: form.email });
       if (res.data.success) {
         setOtpSent(true);
         setSuccessMsg("Verification code sent to your email!");
@@ -73,7 +73,7 @@ export default function Signup() {
     setError("");
 
     try {
-      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/register", {
+      const res = await axios.post("https://api.zonemeet.chat/api/auth/register", {
         ...form,
         captchaToken: captcha
       });
@@ -106,7 +106,7 @@ export default function Signup() {
 
     try {
       const referralCode = localStorage.getItem("referral") || undefined;
-      const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/session-login", {
+      const res = await axios.post("https://api.zonemeet.chat/api/auth/session-login", {
         email: firebaseUser.email,
         name: firebaseUser.displayName,
         referralCode

@@ -19,7 +19,7 @@ export default function Contact() {
     };
 
     try {
-      const res = await axios.post("https://meetzone-backend.onrender.com/api/contact", data);
+      const res = await axios.post("https://api.zonemeet.chat/api/contact", data);
       if (res.data.success) {
         setStatus("success");
         e.target.reset();

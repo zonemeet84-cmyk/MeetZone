@@ -183,7 +183,7 @@ export default function Home() {
   const fetchHistory = async () => {
     try {
       const token = sessionStorage.getItem("token");
-      const res = await axios.get("https://meetzone-backend.onrender.com/api/user/history", {
+      const res = await axios.get("https://api.zonemeet.chat/api/user/history", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setHistoryList(res.data.history || []);
@@ -684,7 +684,7 @@ export default function Home() {
       }
 
       const token = sessionStorage.getItem("token");
-      await axios.post("https://meetzone-backend.onrender.com/api/report", {
+      await axios.post("https://api.zonemeet.chat/api/report", {
         targetId: targetId,
         reason: selectedReason,
         details: reportDetails,
@@ -723,7 +723,7 @@ export default function Home() {
 
     try {
       const token = sessionStorage.getItem("token");
-      const res = await axios.post("https://meetzone-backend.onrender.com/api/user/send-gift", {
+      const res = await axios.post("https://api.zonemeet.chat/api/user/send-gift", {
         recipientId: partnerInfo.id,
         stickerId: sticker.id,
         amount: sticker.price,
@@ -769,7 +769,7 @@ export default function Home() {
     setFriendReqStatus(true);
     try {
       const token = sessionStorage.getItem("token");
-      await axios.post("https://meetzone-backend.onrender.com/api/friends/request", { targetId: partnerInfo.id }, {
+      await axios.post("https://api.zonemeet.chat/api/friends/request", { targetId: partnerInfo.id }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -999,7 +999,7 @@ export default function Home() {
 
   // Fetch Twilio TURN credentials on load
   useEffect(() => {
-    axios.get("https://meetzone-backend.onrender.com/api/turn-credentials")
+    axios.get("https://api.zonemeet.chat/api/turn-credentials")
       .then(res => { if (res.data.iceServers) setIceServers(res.data.iceServers); })
       .catch(() => {}); // fallback to STUN if fails
   }, []);
@@ -1038,7 +1038,7 @@ export default function Home() {
         if (!token || token === "undefined") {
           try {
             const referralCode = localStorage.getItem("referral") || undefined;
-            const res = await axios.post("https://meetzone-backend.onrender.com/api/auth/session-login", {
+            const res = await axios.post("https://api.zonemeet.chat/api/auth/session-login", {
               email: session.user.email,
               name: session.user.name,
               referralCode
@@ -1066,7 +1066,7 @@ export default function Home() {
           }
         } else {
           try {
-            const res = await axios.get("https://meetzone-backend.onrender.com/api/auth/verify", {
+            const res = await axios.get("https://api.zonemeet.chat/api/auth/verify", {
               headers: { Authorization: `Bearer ${token}` },
             });
             if (res.data.valid) {
@@ -1092,7 +1092,7 @@ export default function Home() {
         setAuthLoading(false);
       } else if (token && token !== "undefined") {
         try {
-          const res = await axios.get("https://meetzone-backend.onrender.com/api/auth/verify", {
+          const res = await axios.get("https://api.zonemeet.chat/api/auth/verify", {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (res.data.valid) {
@@ -1287,7 +1287,7 @@ export default function Home() {
       initNSFW();
 
       // 3. Socket Logic
-      socket = io("https://meetzone-backend.onrender.com");
+      socket = io("https://api.zonemeet.chat");
 
       socket.on("connect", () => {
         setStatus("Waiting for a partner...");
@@ -1881,7 +1881,7 @@ export default function Home() {
 
     try {
       const token = sessionStorage.getItem("token");
-      const res = await axios.post("https://meetzone-backend.onrender.com/api/user/spend-coins", {
+      const res = await axios.post("https://api.zonemeet.chat/api/user/spend-coins", {
         email: user.email,
         amount: 5,
         feature: "Friend Message"
@@ -1953,7 +1953,7 @@ export default function Home() {
 
     if (confirm(`Unlock ${filter.name} for ${filter.cost} coins?`)) {
       try {
-        const res = await axios.post("https://meetzone-backend.onrender.com/api/user/spend-coins", {
+        const res = await axios.post("https://api.zonemeet.chat/api/user/spend-coins", {
           email: user.email,
           userId: user.id,
           amount: filter.cost,
@@ -2151,7 +2151,7 @@ export default function Home() {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      const verifyRes = await axios.post("https://meetzone-backend.onrender.com/api/payment/razorpay/verify", {
+      const verifyRes = await axios.post("https://api.zonemeet.chat/api/payment/razorpay/verify", {
         razorpay_order_id: "test_order",
         razorpay_payment_id: "test_payment",
         razorpay_signature: "test_sig",
@@ -3711,10 +3711,10 @@ export default function Home() {
                         if (confirmed) {
                           try {
                             const token = sessionStorage.getItem('token');
-                            const res = await axios.post('https://meetzone-backend.onrender.com/api/user/spend-coins', { email: user.email, amount: 10, feature: 'reconnect' });
+                            const res = await axios.post('https://api.zonemeet.chat/api/user/spend-coins', { email: user.email, amount: 10, feature: 'reconnect' });
                             if (res.data.success) {
                               setUser({ ...user, coins: res.data.coins });
-                              await axios.post('https://meetzone-backend.onrender.com/api/friends/request', { targetId: s.id, type: 'reconnect' }, { headers: { Authorization: `Bearer ${token}` } });
+                              await axios.post('https://api.zonemeet.chat/api/friends/request', { targetId: s.id, type: 'reconnect' }, { headers: { Authorization: `Bearer ${token}` } });
                               showToast(`Request sent to ${s.name}!`, "success");
                             }
                           } catch (err) {
