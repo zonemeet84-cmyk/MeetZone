@@ -896,6 +896,23 @@ export default function Dashboard() {
     }
   };
 
+  const disable2FA = async () => {
+    if (window.confirm("Are you sure you want to disable Two-Factor Authentication?")) {
+      try {
+        const res = await axios.post("https://api.zonemeet.chat/api/auth/2fa/disable", { email: user.email });
+        if (res.data.success) {
+          showModal({ message: res.data.message, type: "success" });
+          const updatedUser = { ...user };
+          delete updatedUser.twoFactorSecret;
+          setUser(updatedUser);
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+        }
+      } catch (err) {
+        showModal({ message: err.response?.data?.message || "Failed to disable 2FA", type: "error" });
+      }
+    }
+  };
+
   const [startingChat, setStartingChat] = useState(false);
 
   const startChat = async () => {
@@ -1561,10 +1578,17 @@ export default function Dashboard() {
                       )}
 
                       {(user?.premium || user?.email === "ds9376314@gmail.com") && (
-                        <button className="profile-more-btn" onClick={start2FASetup} style={{ marginTop: '10px', color: '#10b981' }}>
-                          <div className="profile-detail-left">🔒 Set up Google 2FA</div>
-                          <span>›</span>
-                        </button>
+                        user?.twoFactorSecret ? (
+                          <button className="profile-more-btn" onClick={disable2FA} style={{ marginTop: '10px', color: '#ef4444' }}>
+                            <div className="profile-detail-left">🔓 Disable Google 2FA</div>
+                            <span>›</span>
+                          </button>
+                        ) : (
+                          <button className="profile-more-btn" onClick={start2FASetup} style={{ marginTop: '10px', color: '#10b981' }}>
+                            <div className="profile-detail-left">🔒 Set up Google 2FA</div>
+                            <span>›</span>
+                          </button>
+                        )
                       )}
 
                       {/* Logout All */}

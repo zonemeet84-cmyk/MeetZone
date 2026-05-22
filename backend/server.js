@@ -488,6 +488,20 @@ app.post("/api/auth/2fa/verify-setup", (req, res) => {
   }
 });
 
+app.post("/api/auth/2fa/disable", (req, res) => {
+  const { email } = req.body;
+  const user = users.find(u => u.email === email);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  if (user.twoFactorSecret) {
+    delete user.twoFactorSecret;
+    saveUsers();
+    return res.json({ success: true, message: "Google Authenticator has been disabled." });
+  } else {
+    return res.status(400).json({ message: "2FA is not enabled on this account." });
+  }
+});
+
 app.post("/api/auth/2fa/send-backup-otp", async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: "Email is required" });

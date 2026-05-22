@@ -1546,10 +1546,12 @@ export default function Home() {
 
       socket.on("receive-message", ({ text }) => {
         setMessages((prev) => [...prev, { text, sender: "partner" }]);
-        setCurrentSubtitle(`💬 ${text}`);
-        setTimeout(() => {
-          setCurrentSubtitle(prev => prev === `💬 ${text}` ? "" : prev);
-        }, 6000);
+        if (typeof window !== 'undefined' && window.innerWidth < 768) {
+          setCurrentSubtitle(`💬 ${text}`);
+          setTimeout(() => {
+            setCurrentSubtitle(prev => prev === `💬 ${text}` ? "" : prev);
+          }, 6000);
+        }
       });
 
       socket.on("receive-subtitle", ({ text }) => {
@@ -1963,10 +1965,12 @@ export default function Home() {
 
       socket.emit("send-message", { text: message, to: partnerId });
       setMessages((prev) => [...prev, { text: message, sender: "me" }]);
-      setCurrentSubtitle(`You: ${message}`);
-      setTimeout(() => {
-        setCurrentSubtitle(prev => prev === `You: ${message}` ? "" : prev);
-      }, 4000);
+      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+        setCurrentSubtitle(`You: ${message}`);
+        setTimeout(() => {
+          setCurrentSubtitle(prev => prev === `You: ${message}` ? "" : prev);
+        }, 4000);
+      }
       setMessage("");
     }
   };
@@ -1991,10 +1995,12 @@ export default function Home() {
           const filtered = prev.filter(m => m.type !== 'coin-prompt');
           return [...filtered, { text: pendingText, sender: "me" }];
         });
-        setCurrentSubtitle(`You: ${pendingText}`);
-        setTimeout(() => {
-          setCurrentSubtitle(prev => prev === `You: ${pendingText}` ? "" : prev);
-        }, 4000);
+        if (typeof window !== 'undefined' && window.innerWidth < 768) {
+          setCurrentSubtitle(`You: ${pendingText}`);
+          setTimeout(() => {
+            setCurrentSubtitle(prev => prev === `You: ${pendingText}` ? "" : prev);
+          }, 4000);
+        }
         
         // Update local coins
         const updatedUser = { ...user, coins: res.data.coins };
@@ -3265,17 +3271,19 @@ export default function Home() {
                 ) : "Searching..."}
               </div>
 
-              <div className="card-controls">
-                {user?.premium && partnerId && (
-                  <button className={`ctrl-btn ${subtitlesOn ? 'active' : ''}`} onClick={() => setSubtitlesOn(!subtitlesOn)} title="Live Subtitles (CC)" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}>
-                    {subtitlesOn ? "CC: ON" : "CC: OFF"}
-                  </button>
-                )}
-                {partnerId && (
-                  <button className={`ctrl-btn ${friendReqStatus ? 'active' : ''}`} onClick={addFriend} disabled={friendReqStatus} title="Add Friend">
-                    {friendReqStatus ? "✅" : "👤+"}
-                  </button>
-                )}
+              <div className="card-controls-wrapper partner-controls">
+                <div className="card-controls">
+                  {user?.premium && partnerId && (
+                    <button className={`ctrl-btn ${subtitlesOn ? 'active' : ''}`} onClick={() => setSubtitlesOn(!subtitlesOn)} title="Live Subtitles (CC)" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}>
+                      {subtitlesOn ? "CC: ON" : "CC: OFF"}
+                    </button>
+                  )}
+                  {partnerId && (
+                    <button className={`ctrl-btn ${friendReqStatus ? 'active' : ''}`} onClick={addFriend} disabled={friendReqStatus} title="Add Friend">
+                      {friendReqStatus ? "✅" : "👤+"}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -6642,6 +6650,7 @@ export default function Home() {
             width: max-content !important;
             justify-content: flex-start !important;
           }
+
           .card-controls-wrapper {
             bottom: 0px !important;
             left: 5px !important;
@@ -6936,6 +6945,18 @@ export default function Home() {
           }
           .gender-option {
             padding: 10px !important;
+          }
+        }
+        @media (min-width: 769px) {
+          .video-card .card-label {
+            background: transparent !important;
+            backdrop-filter: none !important;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8), 0 2px 5px rgba(0,0,0,0.5) !important;
+          }
+          .partner-controls {
+            left: auto !important;
+            right: 1rem !important;
+            bottom: 1rem !important;
           }
         }
       `}</style>
