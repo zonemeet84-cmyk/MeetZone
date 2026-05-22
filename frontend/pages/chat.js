@@ -3644,6 +3644,12 @@ export default function Home() {
               >
                 {quizState === "queued" ? "❌ Cancel Duel" : "🚪 Quiz Rooms"}
               </button>
+              <button 
+                className="gift-trigger-btn" 
+                onClick={() => setShowGiftPanel(!showGiftPanel)}
+              >
+                🎁 Gifts
+              </button>
               <button className="stop-btn" onClick={stopMatching} disabled={quizState !== "idle"}>
                 🛑 Stop
               </button>
@@ -6505,6 +6511,14 @@ export default function Home() {
             object-fit: cover !important;
           }
           
+          /* Prevent overlapping with absolute elements */
+          .card-label {
+            top: 60px !important; /* Avoid top header */
+          }
+          .card-controls {
+            bottom: 50px !important; /* Avoid bottom mini bar */
+          }
+          
           /* 4. Chat Box Overlay */
           .chat-column.mobile-chat-closed {
             display: none !important;
@@ -6630,14 +6644,24 @@ export default function Home() {
           }
           
           /* Gift Button -> Bottom Right, above Stop */
-          .quiz-trigger-btn {
+          .gift-trigger-btn {
             bottom: 80px !important;
             right: 20px !important;
             left: auto !important;
             width: 24px !important;
             height: 24px !important;
           }
-          .quiz-trigger-btn::after { content: '🎁'; font-size: 1rem; color: white; }
+          .gift-trigger-btn::after { content: '🎁'; font-size: 1rem; color: white; }
+          
+          /* Quiz Button -> Bottom Right, above Gift */
+          .quiz-trigger-btn {
+            bottom: 115px !important;
+            right: 20px !important;
+            left: auto !important;
+            width: 24px !important;
+            height: 24px !important;
+          }
+          .quiz-trigger-btn::after { content: '🎮'; font-size: 1rem; color: white; }
           
           /* Make Avatars/Voice/Privacy/Gifts a thin full-width line at the bottom */
           .identity-container {
