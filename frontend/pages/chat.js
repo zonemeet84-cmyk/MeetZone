@@ -6615,9 +6615,13 @@ export default function Home() {
           .bottom-actions .next-btn {
             bottom: 150px !important;
             top: auto !important;
-            right: 20px !important;
+            left: calc(100% - 44px) !important;
+            right: auto !important;
             width: 24px !important;
             height: 24px !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            border: none !important;
           }
           .bottom-actions .next-btn::after { content: '⏭️'; font-size: 1rem; color: white; }
           .bottom-actions .next-btn span, .bottom-actions .next-btn .icon { display: none !important; }
@@ -6646,10 +6650,13 @@ export default function Home() {
           /* Stop Button -> Bottom Right, below Gifts */
           .stop-btn {
             bottom: 45px !important;
-            right: 20px !important;
-            left: auto !important;
+            left: calc(100% - 44px) !important;
+            right: auto !important;
             width: 24px !important;
             height: 24px !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            border: none !important;
           }
           .stop-btn::after { content: '🛑'; font-size: 1rem; color: white; }
           
@@ -6661,20 +6668,26 @@ export default function Home() {
           /* Gift Button -> Bottom Right, above Stop */
           .gift-trigger-btn {
             bottom: 80px !important;
-            right: 20px !important;
-            left: auto !important;
+            left: calc(100% - 44px) !important;
+            right: auto !important;
             width: 24px !important;
             height: 24px !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            border: none !important;
           }
           .gift-trigger-btn::after { content: '🎁'; font-size: 1rem; color: white; }
           
           /* Quiz Button -> Bottom Right, above Gift */
           .quiz-trigger-btn {
             bottom: 115px !important;
-            right: 20px !important;
-            left: auto !important;
+            left: calc(100% - 44px) !important;
+            right: auto !important;
             width: 24px !important;
             height: 24px !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            border: none !important;
           }
           .quiz-trigger-btn::after { content: '🎮'; font-size: 1rem; color: white; }
           
