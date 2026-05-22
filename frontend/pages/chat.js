@@ -3682,38 +3682,37 @@ export default function Home() {
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
               <button className="mobile-chat-toggle-btn" onClick={() => setIsMobileChatOpen(!isMobileChatOpen)}>
-                💬 Chat
+                <span className="icon">💬</span> <span className="text">Chat</span>
               </button>
               <button 
                 className={`quiz-trigger-btn ${quizState === "queued" ? "cancel" : ""}`} 
                 onClick={handleBrainClashClick}
                 disabled={quizState !== "idle" && quizState !== "queued"}
               >
-                {quizState === "queued" ? "❌ Cancel Duel" : "🚪 Quiz Rooms"}
+                <span className="icon">{quizState === "queued" ? "❌" : "🚪"}</span> <span className="text">{quizState === "queued" ? "Cancel Duel" : "Quiz Rooms"}</span>
               </button>
               <button 
                 className="gift-trigger-btn" 
                 onClick={() => setShowGiftPanel(!showGiftPanel)}
               >
-                🎁 Gifts
+                <span className="icon">🎁</span> <span className="text">Gifts</span>
               </button>
               {(user?.email === "ds9376314@gmail.com" || user?.planName === "VIP Elite" || user?.hasSecretIdentity) && (
                 <button 
                   className="tools-trigger-btn" 
                   onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'tools_menu' ? null : 'tools_menu')}
                 >
-                  🎭 Tools
+                  <span className="icon">🎭</span> <span className="text">Tools</span>
                 </button>
               )}
               <button className="stop-btn" onClick={stopMatching} disabled={quizState !== "idle"}>
-                🛑 Stop
+                <span className="icon">🛑</span> <span className="text">Stop</span>
               </button>
               <button className="report-trigger-btn" onClick={openReport}>
-                🚨 Report
+                <span className="icon">🚨</span> <span className="text">Report</span>
               </button>
               <button className="next-btn" onClick={nextPartner} disabled={quizState !== "idle"}>
-                Skip & Next
-                <span className="icon">→</span>
+                <span className="icon">⏭️</span> <span className="text">Skip</span>
               </button>
             </div>
           </div>
@@ -6671,12 +6670,18 @@ export default function Home() {
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            font-size: 0 !important; /* Hide original text */
             background: transparent !important;
             border: none !important;
             box-shadow: none !important;
             backdrop-filter: none !important;
-            color: transparent !important;
+          }
+          
+          .bottom-actions button .text, .filters-row-v2 button .text {
+            display: none !important;
+          }
+          .bottom-actions button .icon, .filters-row-v2 button .icon {
+            font-size: 1.5rem !important;
+            display: inline-block !important;
           }
           
           .bottom-actions .next-btn {
@@ -6690,8 +6695,6 @@ export default function Home() {
             box-shadow: none !important;
             border: none !important;
           }
-          .bottom-actions .next-btn::after { content: '⏭️'; font-size: 1rem; color: white; }
-          .bottom-actions .next-btn span, .bottom-actions .next-btn .icon { display: none !important; }
 
           /* Inline Report Button */
           .mobile-inline-report-btn {
@@ -6718,9 +6721,7 @@ export default function Home() {
             align-items: center !important;
             justify-content: center !important;
             padding: 0 !important;
-            font-size: 0 !important;
           }
-          .mobile-chat-toggle-btn::after { content: '💬'; font-size: 1.5rem !important; }
           
           /* Stop Button -> Bottom Right, above Tools */
           .stop-btn {
@@ -6736,9 +6737,7 @@ export default function Home() {
             align-items: center !important;
             justify-content: center !important;
             padding: 0 !important;
-            font-size: 0 !important;
           }
-          .stop-btn::after { content: '🛑'; font-size: 1.5rem !important; }
           
           /* Report Button -> HIDDEN (Now inline) */
           .report-trigger-btn {
@@ -6759,9 +6758,7 @@ export default function Home() {
             align-items: center !important;
             justify-content: center !important;
             padding: 0 !important;
-            font-size: 0 !important;
           }
-          .gift-trigger-btn::after { content: '🎁'; font-size: 1.5rem !important; }
           
           /* Tools Button -> Bottom Right, at the very bottom */
           .tools-trigger-btn {
@@ -6780,9 +6777,7 @@ export default function Home() {
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            font-size: 0 !important; /* Hide original text */
           }
-          .tools-trigger-btn::after { content: '🎭'; font-size: 1.5rem !important; }
 
           /* Quiz Button -> Bottom Right, above Gift */
           .quiz-trigger-btn {
@@ -6798,9 +6793,7 @@ export default function Home() {
             align-items: center !important;
             justify-content: center !important;
             padding: 0 !important;
-            font-size: 0 !important;
           }
-          .quiz-trigger-btn::after { content: '🎮'; font-size: 1.5rem !important; }
           
           /* Hide bottom-mini-bar */
           .identity-container {
