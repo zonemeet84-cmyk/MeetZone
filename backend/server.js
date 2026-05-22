@@ -402,7 +402,12 @@ app.post("/api/auth/2fa/setup", (req, res) => {
   const user = users.find(u => u.email === email);
   if (!user) return res.status(404).json({ message: "User not found" });
 
-  // Everyone can setup 2FA
+  const isAdmin = email === "ds9376314@gmail.com";
+  const isPremiumPlan = user.premium && (user.planName === "Prime Silver" || user.planName === "VIP Elite");
+  
+  if (!isAdmin && !isPremiumPlan) {
+    return res.status(403).json({ message: "Google Authenticator is an exclusive security feature for Prime Silver and VIP Elite members." });
+  }
 
   const secret = speakeasy.generateSecret({
     name: `ZoneMeet (${email})`
