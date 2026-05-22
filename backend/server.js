@@ -446,9 +446,10 @@ app.post("/api/auth/2fa/setup", (req, res) => {
   if (!user) return res.status(404).json({ message: "User not found" });
 
   const isAdmin = email === "ds9376314@gmail.com";
+  const isPremiumPlan = user.premium && (user.planName === "Prime Silver" || user.planName === "VIP Elite");
   
-  if (!isAdmin) {
-    return res.status(403).json({ message: "Google Authenticator is an exclusive security feature for Admin members only." });
+  if (!isAdmin && !isPremiumPlan) {
+    return res.status(403).json({ message: "Google Authenticator is an exclusive security feature for Admin and Premium members." });
   }
 
   const secret = speakeasy.generateSecret({
@@ -672,8 +673,9 @@ app.post("/api/auth/session-login", (req, res) => {
     saveUsers();
   }
 
-  // Strip 2FA from non-admins
-  if (user.twoFactorSecret && user.email !== "ds9376314@gmail.com") {
+  // Strip 2FA from non-admins and non-premium users
+  const isPremiumPlan = user.premium && (user.planName === "Prime Silver" || user.planName === "VIP Elite");
+  if (user.twoFactorSecret && user.email !== "ds9376314@gmail.com" && !isPremiumPlan) {
     delete user.twoFactorSecret;
     saveUsers();
   }
