@@ -456,7 +456,7 @@ app.post("/api/auth/2fa/login-verify", (req, res) => {
     });
 
     if (verified) {
-      const jwtToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || "fallback_secret");
+      const jwtToken = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "7d" });
       return res.json({ success: true, token: jwtToken, user });
     } else {
       return res.status(400).json({ message: "Invalid Authenticator Code" });
@@ -468,7 +468,7 @@ app.post("/api/auth/2fa/login-verify", (req, res) => {
       return res.status(400).json({ message: "Invalid or expired Email OTP" });
     }
     delete emailOtpStore[email];
-    const jwtToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || "fallback_secret");
+    const jwtToken = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "7d" });
     res.json({ success: true, token: jwtToken, user });
   }
 });
