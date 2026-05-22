@@ -708,7 +708,7 @@ app.post("/api/auth/send-email-otp", async (req, res) => {
 
   try {
     await transporter.sendMail({
-      from: '"ZoneMeet" <otp@zonemeet.chat>', // Updated to official domain
+      from: '"ZoneMeet" <zonemeet84@gmail.com>', // Updated to verified sender
       to: email,
       subject: 'ZoneMeet Verification Code',
       html: `
@@ -725,7 +725,7 @@ app.post("/api/auth/send-email-otp", async (req, res) => {
     res.json({ success: true, message: "OTP sent to your email" });
   } catch (err) {
     console.error("Resend Catch Error:", err);
-    res.status(500).json({ message: "Something went wrong" });
+    res.status(500).json({ message: "Failed to send OTP: " + err.message });
   }
 });
 
@@ -878,7 +878,7 @@ app.post("/api/auth/forgot-password", async (req, res) => {
 
   try {
     await transporter.sendMail({
-      from: '"ZoneMeet" <otp@zonemeet.chat>',
+      from: '"ZoneMeet" <zonemeet84@gmail.com>',
       to: email,
       subject: 'ZoneMeet Password Reset',
       html: `
@@ -892,7 +892,7 @@ app.post("/api/auth/forgot-password", async (req, res) => {
     });
     res.json({ success: true, message: "Reset code sent to your email" });
   } catch (err) {
-    res.status(500).json({ message: "Failed to send recovery email" });
+    res.status(500).json({ message: "Failed to send recovery email: " + err.message });
   }
 });
 
