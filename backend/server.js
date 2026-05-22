@@ -20,16 +20,14 @@ const cookieParser = require("cookie-parser");
 const fs = require("fs");
 const path = require("path");
 const admin = require("firebase-admin");
-// Brevo (Sendinblue) SMTP Setup
-const transporter = nodemailer.createTransport({
-  host: 'smtp-relay.brevo.com',
-  port: 587,
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.BREVO_SMTP_LOGIN || 'ac2880001@smtp-brevo.com',
-    pass: process.env.BREVO_SMTP_PASSWORD,
-  },
-});
+// Resend API Email Helper
+const axios_mail = require("axios");
+async function sendEmail({ from, to, subject, html }) {
+  await axios_mail.post("https://api.resend.com/emails", 
+    { from: from || "ZoneMeet <onboarding@resend.dev>", to, subject, html },
+    { headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" } }
+  );
+}
 
 const axios = require("axios");
 const FormData = require("form-data");
@@ -523,8 +521,8 @@ app.post("/api/auth/2fa/send-backup-otp", async (req, res) => {
   backupOtpCooldownStore[email] = Date.now();
 
   try {
-    await transporter.sendMail({
-      from: '"ZoneMeet Security" <zonemeet84@gmail.com>',
+    await sendEmail({
+      from: 'ZoneMeet Security <onboarding@resend.dev>',
       to: email,
       subject: 'ZoneMeet Backup Verification Code',
       html: `<div style="font-family: sans-serif; padding: 20px; color: #333;">
@@ -707,8 +705,8 @@ app.post("/api/auth/send-email-otp", async (req, res) => {
   emailOtpStore[email] = { otp, expiresAt };
 
   try {
-    await transporter.sendMail({
-      from: '"ZoneMeet" <zonemeet84@gmail.com>', // Updated to verified sender
+    await sendEmail({
+      from: 'ZoneMeet <onboarding@resend.dev>',
       to: email,
       subject: 'ZoneMeet Verification Code',
       html: `
@@ -877,8 +875,8 @@ app.post("/api/auth/forgot-password", async (req, res) => {
   emailOtpStore[email] = { otp, expiresAt };
 
   try {
-    await transporter.sendMail({
-      from: '"ZoneMeet" <zonemeet84@gmail.com>',
+    await sendEmail({
+      from: 'ZoneMeet <onboarding@resend.dev>',
       to: email,
       subject: 'ZoneMeet Password Reset',
       html: `
@@ -1783,14 +1781,6 @@ app.post("/api/contact", async (req, res) => {
   const SUPPORT_EMAIL = "support@zonemeet.chat";  // Custom domain shown to users
 
   if (GMAIL_PASS) {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: GMAIL_AUTH_USER,  // ← must be the actual Gmail account
-        pass: GMAIL_PASS
-      }
-    });
-
     const mailOptions = {
       from: `ZoneMeet Support <${SUPPORT_EMAIL}>`,  // Shown as sender to users
       to: GMAIL_AUTH_USER,                           // Delivered to zonemeet84@gmail.com
@@ -1817,13 +1807,12 @@ app.post("/api/contact", async (req, res) => {
       `
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error("Email send error:", error.message);
-      } else {
-        console.log("✅ Contact email sent:", info.response);
-      }
-    });
+    sendEmail({
+      from: 'ZoneMeet Support <onboarding@resend.dev>',
+      to: GMAIL_AUTH_USER,
+      subject: `📩 New Support Message: ${subject || "General Inquiry"}`,
+      html: mailOptions.html
+    }).then(() => console.log("✅ Contact email sent")).catch(e => console.error("Email send error:", e.message));
   } else {
     console.log("[DEV MODE] Email skipped. Set GMAIL_PASS to enable.");
   }
@@ -3775,8 +3764,8 @@ function endQuiz(roomId) {
       adminOtpStore[email] = { otp, expiresAt };
 
       try {
-        await transporter.sendMail({
-          from: '"ZoneMeet Admin" <zonemeet84@gmail.com>',
+        await sendEmail({
+          from: 'ZoneMeet Admin <onboarding@resend.dev>',
           to: email,
           subject: 'ZoneMeet Admin 2FA Code',
           html: `
