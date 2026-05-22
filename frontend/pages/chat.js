@@ -3678,25 +3678,40 @@ export default function Home() {
                       disabled={!translateEnabled}
                       style={{ background: 'transparent', color: '#fff', border: 'none', fontSize: '12px', outline: 'none', cursor: translateEnabled ? 'pointer' : 'not-allowed', opacity: translateEnabled ? 1 : 0.5 }}
                     >
-                      <option value="en">English</option>
-                      <option value="hi">Hindi</option>
-                      <option value="es">Spanish</option>
-                      <option value="fr">French</option>
-                      <option value="ar">Arabic</option>
-                      <option value="zh-cn">Chinese</option>
-                      <option value="ru">Russian</option>
-                      <option value="ja">Japanese</option>
-                      <option value="de">German</option>
-                      <option value="ko">Korean</option>
-                      <option value="pt">Portuguese</option>
-                      <option value="it">Italian</option>
-                      <option value="tr">Turkish</option>
-                      <option value="nl">Dutch</option>
-                      <option value="pl">Polish</option>
-                      <option value="vi">Vietnamese</option>
-                      <option value="th">Thai</option>
-                      <option value="id">Indonesian</option>
-                      <option value="bn">Bengali</option>
+                      {[
+                        { code: "en", name: "English" },
+                        { code: "hi", name: "Hindi" },
+                        { code: "es", name: "Spanish" },
+                        { code: "fr", name: "French" },
+                        { code: "ar", name: "Arabic" },
+                        { code: "zh-cn", name: "Chinese" },
+                        { code: "ru", name: "Russian" },
+                        { code: "ja", name: "Japanese" },
+                        { code: "de", name: "German" },
+                        { code: "ko", name: "Korean" },
+                        { code: "pt", name: "Portuguese" },
+                        { code: "it", name: "Italian" },
+                        { code: "tr", name: "Turkish" },
+                        { code: "nl", name: "Dutch" },
+                        { code: "pl", name: "Polish" },
+                        { code: "vi", name: "Vietnamese" },
+                        { code: "th", name: "Thai" },
+                        { code: "id", name: "Indonesian" },
+                        { code: "bn", name: "Bengali" },
+                        { code: "sv", name: "Swedish" },
+                        { code: "da", name: "Danish" },
+                        { code: "fi", name: "Finnish" },
+                        { code: "no", name: "Norwegian" },
+                        { code: "cs", name: "Czech" },
+                        { code: "el", name: "Greek" },
+                        { code: "he", name: "Hebrew" },
+                        { code: "ro", name: "Romanian" },
+                        { code: "hu", name: "Hungarian" }
+                      ].map(lang => (
+                        <option key={lang.code} value={lang.code} style={{ background: '#1e293b', color: '#fff' }}>
+                          {lang.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 )}
