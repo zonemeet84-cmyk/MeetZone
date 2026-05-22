@@ -975,41 +975,9 @@ app.post("/api/auth/login", async (req, res) => {
   user.coinActivity = coinActivity.filter(a => a.email === user.email).slice(-10);
   if (!user.unlockedFilters) user.unlockedFilters = ["None", "Smooth"];
   
-  // Instant bypass for Admin so they are never locked out by broken SMTP
-  if (user.email === "ds9376314@gmail.com") {
-    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "30d" });
-    return res.json({ token, user });
-  }
-
-  // 2FA Interception
-  const isPremium2FA = user.premium && (user.planName === "Prime Silver" || user.planName === "VIP Elite");
-  if (isPremium2FA) {
-    if (user.twoFactorSecret) {
-      return res.json({ requires2FA: true, type: "google", email: user.email });
-    }
-  }
-
-  // Free User or Premium without TOTP -> Email OTP
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  emailOtpStore[user.email] = { otp, expiresAt: Date.now() + 10 * 60 * 1000 };
-  
-  try {
-    transporter.sendMail({
-      from: '"ZoneMeet Security" <zonemeet84@gmail.com>',
-      to: user.email,
-      subject: 'ZoneMeet Verification Code',
-      html: `<div style="font-family: sans-serif; padding: 20px; color: #333;">
-              <h2>Login Verification</h2>
-              <p>Your authentication code is:</p>
-              <h1 style="color: #6366f1; font-size: 40px;">${otp}</h1>
-              <p>This code will expire in 10 minutes.</p>
-            </div>`
-    });
-  } catch(e) {
-    console.error("2FA Email sending failed", e);
-  }
-
-  return res.json({ requires2FA: true, type: "email", email: user.email });
+  // Instant bypass for everyone - 2FA is fully disabled
+  const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "30d" });
+  return res.json({ token, user });
 });
 
 // Update Profile endpoint

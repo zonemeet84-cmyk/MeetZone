@@ -1577,19 +1577,6 @@ export default function Dashboard() {
                         </button>
                       )}
 
-                      {((user?.premium && (user?.planName === "Prime Silver" || user?.planName === "VIP Elite")) || user?.email === "ds9376314@gmail.com") && (
-                        user?.twoFactorSecret ? (
-                          <button className="profile-more-btn" onClick={disable2FA} style={{ marginTop: '10px', color: '#ef4444' }}>
-                            <div className="profile-detail-left">🔓 Disable Google 2FA</div>
-                            <span>›</span>
-                          </button>
-                        ) : (
-                          <button className="profile-more-btn" onClick={start2FASetup} style={{ marginTop: '10px', color: '#10b981' }}>
-                            <div className="profile-detail-left">🔒 Set up Google 2FA</div>
-                            <span>›</span>
-                          </button>
-                        )
-                      )}
 
                       {/* Logout All */}
                       <button className="profile-more-btn" onClick={logoutAll} style={{ color: '#ef4444' }}>
