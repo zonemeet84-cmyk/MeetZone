@@ -6513,7 +6513,15 @@ export default function Home() {
           
           /* Prevent overlapping with absolute elements */
           .card-label {
-            top: 60px !important; /* Avoid top header */
+            padding: 2px 6px !important;
+            font-size: 0.6rem !important;
+            gap: 4px !important;
+          }
+          .video-grid-v2 > .video-card:nth-child(2) .card-label {
+            top: 60px !important; /* Avoid top header for remote video */
+          }
+          .video-grid-v2 > .video-card:nth-child(1) .card-label {
+            top: 10px !important; /* Move local user label up */
           }
           .card-controls {
             bottom: 50px !important; /* Avoid bottom mini bar */
@@ -6599,7 +6607,8 @@ export default function Home() {
           }
           
           .bottom-actions .next-btn {
-            top: 60px !important;
+            bottom: 150px !important;
+            top: auto !important;
             right: 20px !important;
             width: 24px !important;
             height: 24px !important;
