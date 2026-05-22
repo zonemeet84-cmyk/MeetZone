@@ -3549,6 +3549,20 @@ export default function Home() {
                       </div>
                     ))}
 
+                    {activeIdentityMenu === 'tools_menu' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
+                        <div className="mini-option" onClick={() => setActiveIdentityMenu('avatars')}>
+                          <span className="filter-icon">👤</span> <span className="filter-name">Avatars</span>
+                        </div>
+                        <div className="mini-option" onClick={() => setActiveIdentityMenu('voice')}>
+                          <span className="filter-icon">🎙</span> <span className="filter-name">Voice</span>
+                        </div>
+                        <div className="mini-option" onClick={() => setActiveIdentityMenu('privacy')}>
+                          <span className="filter-icon">🌫</span> <span className="filter-name">Privacy</span>
+                        </div>
+                      </div>
+                    )}
+
                     {activeIdentityMenu === 'privacy' && (
                       <div
                         className={`mini-option ${isFaceBlurred ? 'selected' : ''}`}
@@ -3563,7 +3577,7 @@ export default function Home() {
                     )}
                   </div>
                   
-                  {activeIdentityMenu !== 'privacy' && (
+                  {activeIdentityMenu !== 'privacy' && activeIdentityMenu !== 'tools_menu' && (
                     <div style={{ marginTop: '10px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px', width: '100%' }}>
                       <button className="apply-effect-btn" onClick={handleApplyIdentityChanges}>
                         Apply Selection
@@ -3605,7 +3619,6 @@ export default function Home() {
               <div className="bottom-mini-bar">
                 {(user?.email === "ds9376314@gmail.com" || user?.planName === "VIP Elite" || user?.hasSecretIdentity) && (
                   <>
-                    {/* Filters button removed */}
                     <button className={`tool-btn ${activeIdentityMenu === 'avatars' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'avatars' ? null : 'avatars')}>
                       👤 Avatars
                     </button>
@@ -3650,6 +3663,14 @@ export default function Home() {
               >
                 🎁 Gifts
               </button>
+              {(user?.email === "ds9376314@gmail.com" || user?.planName === "VIP Elite" || user?.hasSecretIdentity) && (
+                <button 
+                  className="tools-trigger-btn" 
+                  onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'tools_menu' ? null : 'tools_menu')}
+                >
+                  🎭 Tools
+                </button>
+              )}
               <button className="stop-btn" onClick={stopMatching} disabled={quizState !== "idle"}>
                 🛑 Stop
               </button>
@@ -6612,7 +6633,7 @@ export default function Home() {
           }
           
           .bottom-actions .next-btn {
-            bottom: 150px !important;
+            bottom: 185px !important;
             top: auto !important;
             left: calc(100% - 44px) !important;
             right: auto !important;
@@ -6677,9 +6698,9 @@ export default function Home() {
           }
           .gift-trigger-btn::after { content: '🎁'; font-size: 1rem; color: white; }
           
-          /* Quiz Button -> Bottom Right, above Gift */
+          /* Quiz Button -> Bottom Right, above Tools */
           .quiz-trigger-btn {
-            bottom: 115px !important;
+            bottom: 150px !important;
             left: calc(100% - 44px) !important;
             right: auto !important;
             width: 24px !important;
@@ -6689,35 +6710,51 @@ export default function Home() {
             border: none !important;
           }
           .quiz-trigger-btn::after { content: '🎮'; font-size: 1rem; color: white; }
+
+          /* Tools Button -> Bottom Right, below Quiz, above Gift */
+          .tools-trigger-btn {
+            bottom: 115px !important;
+            left: calc(100% - 44px) !important;
+            right: auto !important;
+            width: 24px !important;
+            height: 24px !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            border: none !important;
+            pointer-events: auto !important;
+            position: absolute !important;
+            border-radius: 50% !important;
+            padding: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 0 !important; /* Hide original text */
+            color: transparent !important;
+          }
+          .tools-trigger-btn::after { content: '🎭'; font-size: 1rem; color: white; }
           
-          /* Make Avatars/Voice/Privacy/Gifts a thin full-width line at the bottom */
+          /* Hide bottom-mini-bar */
           .identity-container {
             position: absolute !important;
-            bottom: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
+            bottom: 40px !important;
+            left: auto !important;
+            right: 50px !important;
+            width: 250px !important;
             margin: 0 !important;
             padding: 0 !important;
             z-index: 300 !important;
           }
           .bottom-mini-bar {
-            width: 100vw !important;
-            border-radius: 0 !important;
-            border: none !important;
-            border-top: 1px solid rgba(255,255,255,0.1) !important;
-            background: rgba(0,0,0,0.8) !important;
-            padding: 6px 4px !important;
-            gap: 4px !important;
-            display: flex !important;
-            justify-content: space-evenly !important;
-            backdrop-filter: blur(5px) !important;
+            display: none !important;
           }
-          .tool-btn {
-            flex: 1 !important;
-            padding: 4px 2px !important;
-            font-size: 0.75rem !important;
-            white-space: nowrap !important;
-            text-align: center !important;
+          .identity-popup-bubble {
+            width: 250px !important;
+            max-height: 50vh !important;
+            overflow-y: auto !important;
+            bottom: 0 !important;
+            left: auto !important;
+            right: 0 !important;
+          }
             border-radius: 6px !important;
             background: rgba(255,255,255,0.1) !important;
           }
