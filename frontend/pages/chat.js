@@ -5514,8 +5514,14 @@ export default function Home() {
           line-height: 1;
         }
 
-        .toast-message {
+        .toast-content {
           flex: 1;
+          min-width: 0;
+          display: flex;
+          align-items: center;
+        }
+
+        .toast-message {
           font-size: 0.82rem;
           font-weight: 600;
           color: #f1f5f9;
