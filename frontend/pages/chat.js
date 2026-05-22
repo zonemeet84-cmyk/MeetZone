@@ -6490,6 +6490,16 @@ export default function Home() {
           body, html {
             margin: 0; padding: 0; overflow: hidden; height: 100%;
           }
+          .container.chat-page-v2 {
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: 100vw !important;
+          }
+          .chat-main-v2 {
+            padding: 0 !important;
+            margin: 0 !important;
+            gap: 0 !important;
+          }
           .main-layout {
             height: 100vh !important;
             height: 100dvh !important;
@@ -6743,15 +6753,15 @@ export default function Home() {
             display: none !important;
           }
           .bottom-actions button .icon, .filters-row-v2 button .icon {
-            font-size: 1.5rem !important;
+            font-size: 1rem !important;
             display: inline-block !important;
           }
           
           .bottom-actions .next-btn {
-            top: 40px !important; /* Moved up */
+            top: calc(50% + 5px) !important; /* Below the center point */
             bottom: auto !important;
-            right: 20px !important;
-            left: auto !important;
+            left: 5px !important;
+            right: auto !important;
             width: 24px !important;
             height: 24px !important;
             padding: 0 !important;
@@ -6761,6 +6771,7 @@ export default function Home() {
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
+            z-index: 100 !important;
           }
 
           /* Inline Report Button */
@@ -6881,8 +6892,9 @@ export default function Home() {
           }
           .filters-row-v2 .filter-settings-trigger-btn {
             position: absolute !important;
-            top: 5px !important;
-            right: 20px !important;
+            top: calc(50% - 25px) !important;
+            left: 5px !important;
+            right: auto !important;
             width: 24px !important;
             height: 24px !important;
             z-index: 100 !important;
