@@ -20,7 +20,7 @@ export default function Login() {
   const [twoFAType, setTwoFAType] = useState(""); // "google" or "email"
   const [twoFAEmail, setTwoFAEmail] = useState("");
   const [twoFAToken, setTwoFAToken] = useState("");
-
+  const [backupCooldown, setBackupCooldown] = useState(0);
 
   // Forgot Password State
   const [showForgot, setShowForgot] = useState(false);
@@ -33,11 +33,36 @@ export default function Login() {
   const [forgotSuccess, setForgotSuccess] = useState("");
 
   useEffect(() => {
+    let timer;
+    if (backupCooldown > 0) {
+      timer = setInterval(() => {
+        setBackupCooldown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [backupCooldown]);
+
+  useEffect(() => {
     const token = sessionStorage.getItem("token");
     if (token && token !== "undefined" && token !== "null") {
       router.push("/");
     }
   }, [router]);
+
+  const handleSendBackupOTP = async () => {
+    if (backupCooldown > 0) return;
+    setLoading(true);
+    setError("");
+    try {
+      await axios.post("https://api.zonemeet.chat/api/auth/2fa/send-backup-otp", { email: twoFAEmail });
+      setTwoFAType("email");
+      setBackupCooldown(60);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to send backup code.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -230,7 +255,49 @@ export default function Login() {
                 {loading ? "Verifying..." : "Verify Code"}
               </button>
             </div>
-            <button className="back-btn" onClick={() => { setShow2FA(false); setTwoFAToken(""); }}>Cancel</button>
+            
+            {twoFAType === "google" && (
+              <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                <button 
+                  onClick={handleSendBackupOTP} 
+                  disabled={backupCooldown > 0 || loading}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: backupCooldown > 0 ? '#64748b' : '#6366f1',
+                    fontSize: '0.9rem',
+                    cursor: backupCooldown > 0 ? 'not-allowed' : 'pointer',
+                    textDecoration: 'underline'
+                  }}
+                >
+                  {backupCooldown > 0 
+                    ? `Resend available in ${backupCooldown}s` 
+                    : "Can't access authenticator? Use email backup code"}
+                </button>
+              </div>
+            )}
+            {twoFAType === "email" && (
+              <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                <button 
+                  onClick={handleSendBackupOTP} 
+                  disabled={backupCooldown > 0 || loading}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: backupCooldown > 0 ? '#64748b' : '#6366f1',
+                    fontSize: '0.9rem',
+                    cursor: backupCooldown > 0 ? 'not-allowed' : 'pointer',
+                    textDecoration: 'underline'
+                  }}
+                >
+                  {backupCooldown > 0 
+                    ? `Resend email in ${backupCooldown}s` 
+                    : "Resend email code"}
+                </button>
+              </div>
+            )}
+
+            <button className="back-btn" onClick={() => { setShow2FA(false); setTwoFAToken(""); setBackupCooldown(0); }}>Cancel</button>
           </div>
         ) : !showForgot ? (
           <form onSubmit={handleSubmit} className="modern-form">

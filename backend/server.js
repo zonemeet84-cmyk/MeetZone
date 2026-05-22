@@ -136,6 +136,8 @@ if (fs.existsSync(serviceAccountPath)) {
 
 const otpStore = {}; // Memory store for OTPs (dev mode fallback): { phone: "123456" }
 const emailOtpStore = {}; // { email: { otp: "123456", expiresAt: 123456789 } }
+const loginAttemptsStore = {}; // { email: { attempts: 0, lockedUntil: null } }
+const backupOtpCooldownStore = {}; // { email: lastSentTimestamp }
 
 // ========= TWILIO CONFIG =========
 // ⚠️ Step 1: Go to https://www.twilio.com and create a FREE account
@@ -400,9 +402,7 @@ app.post("/api/auth/2fa/setup", (req, res) => {
   const user = users.find(u => u.email === email);
   if (!user) return res.status(404).json({ message: "User not found" });
 
-  if (!user.premium && email !== "ds9376314@gmail.com") {
-    return res.status(403).json({ message: "Google Authenticator is only available for Premium and Admin users." });
-  }
+  // Everyone can setup 2FA
 
   const secret = speakeasy.generateSecret({
     name: `ZoneMeet (${email})`
@@ -440,36 +440,98 @@ app.post("/api/auth/2fa/verify-setup", (req, res) => {
   }
 });
 
+app.post("/api/auth/2fa/send-backup-otp", async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ message: "Email is required" });
+
+  const user = users.find(u => u.email === email);
+  if (!user || !user.twoFactorSecret) {
+    return res.status(400).json({ message: "Invalid request" });
+  }
+
+  // 60 seconds cooldown check
+  const lastSent = backupOtpCooldownStore[email] || 0;
+  if (Date.now() - lastSent < 60000) {
+    return res.status(429).json({ message: "Please wait 60 seconds before requesting another code." });
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  // 5 minute expiry
+  emailOtpStore[email] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
+  backupOtpCooldownStore[email] = Date.now();
+
+  try {
+    await resend.emails.send({
+      from: 'ZoneMeet Security <otp@zonemeet.chat>',
+      to: [email],
+      subject: 'ZoneMeet Backup Verification Code',
+      html: `<div style="font-family: sans-serif; padding: 20px; color: #333;">
+              <h2>Login Backup Verification</h2>
+              <p>Your 5-minute backup authentication code is:</p>
+              <h1 style="color: #6366f1; font-size: 40px;">${otp}</h1>
+              <p>If you didn't request this, please ignore this email.</p>
+            </div>`
+    });
+    return res.json({ success: true, message: "Backup code sent successfully." });
+  } catch (e) {
+    console.error("Backup OTP Email sending failed", e);
+    return res.status(500).json({ message: "Failed to send email. Try again later." });
+  }
+});
+
 app.post("/api/auth/2fa/login-verify", (req, res) => {
   const { email, token, type } = req.body; // type: "google" or "email"
   const user = users.find(u => u.email === email);
   if (!user) return res.status(404).json({ message: "User not found" });
 
-  if (type === "google") {
-    if (!user.twoFactorSecret) return res.status(400).json({ message: "2FA not configured" });
-    
-    const verified = speakeasy.totp.verify({
-      secret: user.twoFactorSecret,
-      encoding: 'base32',
-      token: token,
-      window: 1 // allow 30sec before/after
-    });
+  // Rate Limiting Check
+  const attemptsData = loginAttemptsStore[email] || { attempts: 0, lockedUntil: null };
+  if (attemptsData.lockedUntil && Date.now() < attemptsData.lockedUntil) {
+    const minutesLeft = Math.ceil((attemptsData.lockedUntil - Date.now()) / 60000);
+    return res.status(429).json({ message: `Too many failed attempts. Try again in ${minutesLeft} minutes.` });
+  }
 
-    if (verified) {
-      const jwtToken = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "7d" });
-      return res.json({ success: true, token: jwtToken, user });
+  let verified = false;
+  let errorMessage = "";
+
+  if (type === "google") {
+    if (!user.twoFactorSecret) {
+      errorMessage = "2FA not configured";
     } else {
-      return res.status(400).json({ message: "Invalid Authenticator Code" });
+      verified = speakeasy.totp.verify({
+        secret: user.twoFactorSecret,
+        encoding: 'base32',
+        token: token,
+        window: 1 // allow 30sec before/after
+      });
+      if (!verified) errorMessage = "Invalid Authenticator Code";
     }
   } else {
-    // Email OTP Fallback/Free user verification
+    // Email OTP Verification
     const stored = emailOtpStore[email];
     if (!stored || stored.otp !== token || Date.now() > stored.expiresAt) {
-      return res.status(400).json({ message: "Invalid or expired Email OTP" });
+      errorMessage = "Invalid or expired Email OTP";
+    } else {
+      verified = true;
+      delete emailOtpStore[email];
     }
-    delete emailOtpStore[email];
+  }
+
+  if (verified) {
+    // Reset attempts on success
+    delete loginAttemptsStore[email];
     const jwtToken = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "7d" });
-    res.json({ success: true, token: jwtToken, user });
+    return res.json({ success: true, token: jwtToken, user });
+  } else {
+    // Increment failed attempts
+    attemptsData.attempts += 1;
+    if (attemptsData.attempts >= 3) {
+      attemptsData.lockedUntil = Date.now() + 15 * 60 * 1000; // Lock for 15 mins
+      loginAttemptsStore[email] = attemptsData;
+      return res.status(429).json({ message: `Too many failed attempts. Account locked for 15 minutes.` });
+    }
+    loginAttemptsStore[email] = attemptsData;
+    return res.status(400).json({ message: errorMessage });
   }
 });
 
@@ -538,33 +600,13 @@ app.post("/api/auth/session-login", (req, res) => {
   }
 
   // 2FA Interception
-  if (user.premium || user.email === "ds9376314@gmail.com") {
-    if (user.twoFactorSecret) {
-      return res.json({ requires2FA: true, type: "google", email: user.email });
-    }
+  if (user.twoFactorSecret) {
+    return res.json({ requires2FA: true, type: "google", email: user.email });
   }
 
-  // Free User or Premium without TOTP -> Email OTP
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  emailOtpStore[user.email] = { otp, expiresAt: Date.now() + 10 * 60 * 1000 };
-  
-  try {
-    resend.emails.send({
-      from: 'ZoneMeet Security <otp@zonemeet.chat>',
-      to: [user.email],
-      subject: 'ZoneMeet Verification Code',
-      html: `<div style="font-family: sans-serif; padding: 20px; color: #333;">
-              <h2>Login Verification</h2>
-              <p>Your authentication code is:</p>
-              <h1 style="color: #6366f1; font-size: 40px;">${otp}</h1>
-              <p>This code will expire in 10 minutes.</p>
-            </div>`
-    });
-  } catch(e) {
-    console.error("2FA Email sending failed", e);
-  }
-
-  return res.json({ requires2FA: true, type: "email", email: user.email });
+  // Direct login for users without 2FA
+  const jwtToken = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "7d" });
+  res.json({ token: jwtToken, user });
 });
 
 // EMAIL OTP ENDPOINT
