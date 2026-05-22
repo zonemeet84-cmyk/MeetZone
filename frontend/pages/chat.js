@@ -3227,13 +3227,7 @@ export default function Home() {
                         {getCountryName(partnerInfo.country)}
                       </span>
                     </span>
-                    <button 
-                      className="mobile-inline-report-btn" 
-                      onClick={() => setShowReportModal(true)}
-                      title="Report User"
-                    >
-                      🚨
-                    </button>
+
                     {partnerInfo.premium && partnerInfo.planName && (
                       <span className={partnerInfo.planName === "VIP Elite" ? "vip-crown-tag" : "pro-badge-v2"} style={{ margin: 0, padding: '0.15rem 0.6rem', fontSize: '0.65rem' }}>
                         {partnerInfo.planName === "VIP Elite" ? "👑 VIP ELITE" : `🛡️ ${partnerInfo.planName}`}
@@ -6614,12 +6608,15 @@ export default function Home() {
             align-items: center !important;
           }
           .video-grid-v2 > .video-card:nth-child(2) .card-label {
-            top: 0 !important;
-            left: 0 !important;
+            top: 5px !important;
+            left: 5px !important;
             width: max-content !important;
-            border-radius: 0 0 8px 0 !important;
+            border-radius: 0 !important;
             justify-content: flex-start !important;
             border-top: none !important;
+            background: transparent !important;
+            padding: 0 !important;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8), 0 2px 5px rgba(0,0,0,0.5) !important;
           }
           .video-grid-v2 > .video-card:nth-child(1) .card-label {
             top: 0 !important;
@@ -6746,7 +6743,7 @@ export default function Home() {
           }
           
           .bottom-actions .next-btn {
-            top: 55px !important; /* Moved up with preferences */
+            top: 40px !important; /* Moved up */
             bottom: auto !important;
             right: 20px !important;
             left: auto !important;
@@ -6874,7 +6871,7 @@ export default function Home() {
           }
           .filters-row-v2 .filter-settings-trigger-btn {
             position: absolute !important;
-            top: 20px !important;
+            top: 5px !important;
             right: 20px !important;
             width: 24px !important;
             height: 24px !important;
