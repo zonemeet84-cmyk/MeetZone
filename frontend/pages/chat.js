@@ -6494,22 +6494,7 @@ export default function Home() {
           }
           /* 2. Video Column & Grid - Edge to Edge */
           .header-v2 {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 50px !important;
-            padding: 0 15px !important;
-            z-index: 100 !important;
-            background: rgba(0,0,0,0.5) !important;
-            border: none !important;
-            border-bottom: 1px solid rgba(255,255,255,0.1) !important;
-            backdrop-filter: blur(4px);
-            display: flex !important;
-            align-items: center !important;
-            justify-content: space-between !important;
-            border-radius: 0 !important;
-            margin: 0 !important;
+            display: none !important;
           }
           .header-brand-v2 { display: flex; align-items: center; gap: 4px; }
           .header-brand-v2 svg { width: 18px !important; height: 18px !important; }
@@ -6612,7 +6597,7 @@ export default function Home() {
             background: rgba(0,0,0,0.7) !important;
           }
           .video-grid-v2 > .video-card:nth-child(2) .card-label {
-            top: 50px !important; /* Avoid top header for remote video */
+            top: 0 !important; /* Moved up since header is hidden */
             left: 0 !important;
             width: 100vw !important;
             border-radius: 0 !important;
@@ -6741,9 +6726,9 @@ export default function Home() {
           }
           
           .bottom-actions .next-btn {
-            top: 75px !important;
+            top: 55px !important; /* Moved up with preferences */
             bottom: auto !important;
-            right: 23px !important;
+            right: 20px !important;
             left: auto !important;
             width: 24px !important;
             height: 24px !important;
@@ -6876,7 +6861,7 @@ export default function Home() {
           }
           .filters-row-v2 .filter-settings-trigger-btn {
             position: absolute !important;
-            top: 60px !important;
+            top: 20px !important;
             right: 20px !important;
             width: 24px !important;
             height: 24px !important;
