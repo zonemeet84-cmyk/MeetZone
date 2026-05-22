@@ -6454,12 +6454,30 @@ export default function Home() {
           }
           .video-grid-v2 {
             display: flex !important;
-            flex-direction: column !important;
+            flex-direction: column-reverse !important; /* Swap local and remote video */
             width: 100vw !important;
             height: 100% !important;
             gap: 0 !important;
             margin: 0 !important;
             padding: 0 !important;
+          }
+          
+          /* Force History Items to display correctly on mobile */
+          .history-item {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+          }
+          .history-item-left {
+            display: flex !important;
+            width: auto !important;
+            height: auto !important;
+          }
+          .history-reconnect-btn {
+            width: auto !important;
+            height: auto !important;
+            flex-shrink: 0 !important;
           }
           
           /* 3. Video Cards - Exactly 50% each */
