@@ -205,9 +205,10 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (socket && socket.connected) {
-      if (translateEnabled && translateLang !== "off") {
-        socket.emit("set-translate-language", translateLang);
+    if (socket) {
+      if (translateEnabled) {
+        const langToSend = translateLang === "off" ? "en" : translateLang;
+        socket.emit("set-translate-language", langToSend);
       } else {
         socket.emit("set-translate-language", null);
       }
@@ -1344,10 +1345,14 @@ export default function Home() {
 
         // Send translate lang on connect if set
         const savedLang = localStorage.getItem("translateLang") || "off";
-        if (savedLang !== "off") {
-          socket.emit("set-translate-language", savedLang);
-          setTranslateLang(savedLang);
+        const savedEnabled = localStorage.getItem("translateEnabled") === "true";
+        if (savedEnabled) {
+          const langToSend = savedLang === "off" ? "en" : savedLang;
+          socket.emit("set-translate-language", langToSend);
+        } else {
+          socket.emit("set-translate-language", null);
         }
+        setTranslateLang(savedLang);
       });
 
       socket.on("friend-request-received", ({ fromName }) => {
@@ -3684,6 +3689,14 @@ export default function Home() {
                       <option value="de">German</option>
                       <option value="ko">Korean</option>
                       <option value="pt">Portuguese</option>
+                      <option value="it">Italian</option>
+                      <option value="tr">Turkish</option>
+                      <option value="nl">Dutch</option>
+                      <option value="pl">Polish</option>
+                      <option value="vi">Vietnamese</option>
+                      <option value="th">Thai</option>
+                      <option value="id">Indonesian</option>
+                      <option value="bn">Bengali</option>
                     </select>
                   </div>
                 )}
