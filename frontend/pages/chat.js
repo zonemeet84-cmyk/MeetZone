@@ -3702,9 +3702,7 @@ export default function Home() {
               By continuing with Camera/Mic, you agree to our <a href="/terms" target="_blank" style={{ color: '#6366f1' }}>Terms</a> and <a href="/guidelines" target="_blank" style={{ color: '#6366f1' }}>Community Guidelines</a>.
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button className="mobile-chat-toggle-btn" onClick={() => setIsMobileChatOpen(!isMobileChatOpen)}>
-                <span className="icon">💬</span> <span className="text">Chat</span>
-              </button>
+              {/* Chat toggle removed per user request */}
               <button 
                 className={`quiz-trigger-btn ${quizState === "queued" ? "cancel" : ""}`} 
                 onClick={handleBrainClashClick}
@@ -6742,15 +6740,8 @@ export default function Home() {
           }
 
           /* Inline Report Button */
-          .mobile-inline-report-btn {
-            display: inline-flex !important;
-            background: transparent !important;
-            border: none !important;
-            padding: 0 !important;
-            margin: 0 0 0 5px !important;
-            font-size: 0.9rem !important;
-            cursor: pointer;
-            vertical-align: middle;
+          .card-label .mobile-inline-report-btn {
+            display: none !important;
           }
 
           /* Chat Toggle Button -> HIDDEN */
