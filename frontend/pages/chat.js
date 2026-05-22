@@ -6676,9 +6676,8 @@ export default function Home() {
             justify-content: center !important;
             padding: 0 !important;
             font-size: 0 !important;
-            color: transparent !important;
           }
-          .mobile-chat-toggle-btn::after { content: '💬'; font-size: 1rem; color: white; }
+          .mobile-chat-toggle-btn::after { content: '💬'; font-size: 1.5rem !important; }
           
           /* Stop Button -> Bottom Right, below Gifts */
           .stop-btn {
@@ -6695,9 +6694,8 @@ export default function Home() {
             justify-content: center !important;
             padding: 0 !important;
             font-size: 0 !important;
-            color: transparent !important;
           }
-          .stop-btn::after { content: '🛑'; font-size: 1rem; color: white; }
+          .stop-btn::after { content: '🛑'; font-size: 1.5rem !important; }
           
           /* Report Button -> HIDDEN (Now inline) */
           .report-trigger-btn {
@@ -6719,29 +6717,9 @@ export default function Home() {
             justify-content: center !important;
             padding: 0 !important;
             font-size: 0 !important;
-            color: transparent !important;
           }
-          .gift-trigger-btn::after { content: '🎁'; font-size: 1rem; color: white; }
+          .gift-trigger-btn::after { content: '🎁'; font-size: 1.5rem !important; }
           
-          /* Quiz Button -> Bottom Right, above Tools */
-          .quiz-trigger-btn {
-            bottom: 150px !important;
-            left: calc(100% - 44px) !important;
-            right: auto !important;
-            width: 24px !important;
-            height: 24px !important;
-            background: transparent !important;
-            box-shadow: none !important;
-            border: none !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            padding: 0 !important;
-            font-size: 0 !important;
-            color: transparent !important;
-          }
-          .quiz-trigger-btn::after { content: '🎮'; font-size: 1rem; color: white; }
-
           /* Tools Button -> Bottom Right, below Quiz, above Gift */
           .tools-trigger-btn {
             bottom: 115px !important;
@@ -6760,9 +6738,26 @@ export default function Home() {
             align-items: center !important;
             justify-content: center !important;
             font-size: 0 !important; /* Hide original text */
-            color: transparent !important;
           }
-          .tools-trigger-btn::after { content: '🎭'; font-size: 1rem; color: white; }
+          .tools-trigger-btn::after { content: '🎭'; font-size: 1.5rem !important; }
+
+          /* Quiz Button -> Bottom Right, above Tools */
+          .quiz-trigger-btn {
+            bottom: 150px !important;
+            left: calc(100% - 44px) !important;
+            right: auto !important;
+            width: 24px !important;
+            height: 24px !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            border: none !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0 !important;
+            font-size: 0 !important;
+          }
+          .quiz-trigger-btn::after { content: '🎮'; font-size: 1.5rem !important; }
           
           /* Hide bottom-mini-bar */
           .identity-container {
