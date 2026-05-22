@@ -1577,7 +1577,7 @@ export default function Dashboard() {
                         </button>
                       )}
 
-                      {(user?.premium || user?.email === "ds9376314@gmail.com") && (
+                      {(user?.email === "ds9376314@gmail.com") && (
                         user?.twoFactorSecret ? (
                           <button className="profile-more-btn" onClick={disable2FA} style={{ marginTop: '10px', color: '#ef4444' }}>
                             <div className="profile-detail-left">🔓 Disable Google 2FA</div>
