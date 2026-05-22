@@ -48,13 +48,13 @@ export default function Friends() {
   };
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
+    const token = localStorage.getItem("token");
     if (!token) {
       router.push("/login");
       return;
     }
 
-    const storedUser = sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")) : null;
+    const storedUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
     if (!storedUser || !storedUser.id) {
       router.push("/login");
       return;
@@ -114,7 +114,7 @@ export default function Friends() {
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    const token = sessionStorage.getItem("token");
+    const token = localStorage.getItem("token");
     try {
       const res = await axios.get(`https://api.zonemeet.chat/api/users/search?email=${searchEmail}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -127,7 +127,7 @@ export default function Friends() {
   };
 
   const sendRequest = async () => {
-    const token = sessionStorage.getItem("token");
+    const token = localStorage.getItem("token");
     try {
       await axios.post("https://api.zonemeet.chat/api/friends/request", { targetId: searchResult.id }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -145,7 +145,7 @@ export default function Friends() {
   };
 
   const acceptRequest = async (requesterId) => {
-    const token = sessionStorage.getItem("token");
+    const token = localStorage.getItem("token");
     try {
       await axios.post("https://api.zonemeet.chat/api/friends/accept", { requesterId }, {
         headers: { Authorization: `Bearer ${token}` }

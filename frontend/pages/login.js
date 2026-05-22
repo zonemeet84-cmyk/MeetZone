@@ -43,7 +43,7 @@ export default function Login() {
   }, [backupCooldown]);
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
+    const token = localStorage.getItem("token");
     if (token && token !== "undefined" && token !== "null") {
       router.push("/");
     }
@@ -88,8 +88,8 @@ export default function Login() {
         return;
       }
 
-      sessionStorage.setItem("token", res.data.token);
-      sessionStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
       router.push("/");
     } catch (err) {
       if (recaptchaRef.current) recaptchaRef.current.reset();
@@ -114,8 +114,8 @@ export default function Login() {
         token: twoFAToken,
         type: twoFAType
       });
-      sessionStorage.setItem("token", res.data.token);
-      sessionStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
       router.push("/");
     } catch (err) {
       setError(err.response?.data?.message || "Invalid code");
@@ -190,8 +190,8 @@ export default function Login() {
 
       if (res.data.token) {
         localStorage.removeItem("referral");
-        sessionStorage.setItem("token", res.data.token);
-        sessionStorage.setItem("user", JSON.stringify(res.data.user));
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
         router.push("/");
       }
     } catch (err) {

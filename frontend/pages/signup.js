@@ -20,7 +20,7 @@ export default function Signup() {
   const recaptchaRef = useRef();
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
+    const token = localStorage.getItem("token");
     if (token && token !== "undefined" && token !== "null") {
       router.push("/");
     }
@@ -77,8 +77,8 @@ export default function Signup() {
         ...form,
         captchaToken: captcha
       });
-      sessionStorage.setItem("token", res.data.token);
-      sessionStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
       router.push("/");
     } catch (err) {
       if (recaptchaRef.current) recaptchaRef.current.reset();
@@ -114,8 +114,8 @@ export default function Signup() {
 
       if (res.data.token) {
         localStorage.removeItem("referral");
-        sessionStorage.setItem("token", res.data.token);
-        sessionStorage.setItem("user", JSON.stringify(res.data.user));
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
         router.push("/");
       }
     } catch (err) {

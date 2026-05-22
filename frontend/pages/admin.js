@@ -43,7 +43,7 @@ export default function AdminDashboard() {
     if (sessionStatus === "loading") return;
 
     // Check if already verified in this browser session
-    if (sessionStorage.getItem("adminVerified") === "true") {
+    if (localStorage.getItem("adminVerified") === "true") {
       setIsVerified(true);
       fetchData();
       const interval = setInterval(fetchData, 15000); 
@@ -56,7 +56,7 @@ export default function AdminDashboard() {
     if (isGoogleAdmin) {
       emailVal = session.user.email;
     } else {
-      const localUser = sessionStorage.getItem("user");
+      const localUser = localStorage.getItem("user");
       if (localUser) {
         try {
           const parsed = JSON.parse(localUser);
@@ -89,8 +89,8 @@ export default function AdminDashboard() {
     try {
       const res = await axios.post("https://api.zonemeet.chat/api/admin/verify-login", authForm);
       if (res.data.success) {
-        sessionStorage.setItem("token", res.data.token); // Store token
-        sessionStorage.setItem("adminVerified", "true");
+        localStorage.setItem("token", res.data.token); // Store token
+        localStorage.setItem("adminVerified", "true");
         setIsVerified(true);
         setLoading(true);
         fetchData();
@@ -104,7 +104,7 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
-      let token = sessionStorage.getItem("token");
+      let token = localStorage.getItem("token");
       
       // If token is missing, attempt to sync from session
       if (!token || token === "undefined") {
@@ -114,7 +114,7 @@ export default function AdminDashboard() {
             name: session.user.name
           });
           token = syncRes.data.token;
-          sessionStorage.setItem("token", token);
+          localStorage.setItem("token", token);
         } else {
           // No session and no token - can't fetch
           return;
@@ -145,14 +145,14 @@ export default function AdminDashboard() {
       } catch (innerErr) {
         if (innerErr.response?.status === 401) {
           console.warn("Token expired, clearing and retrying...");
-          sessionStorage.removeItem("token");
+          localStorage.removeItem("token");
           // Re-sync immediately once if we have a session
           if (sessionStatus === "authenticated" && session?.user?.email === "ds9376314@gmail.com") {
              const syncRes = await axios.post("https://api.zonemeet.chat/api/auth/session-login", {
                email: session.user.email,
                name: session.user.name
              });
-             sessionStorage.setItem("token", syncRes.data.token);
+             localStorage.setItem("token", syncRes.data.token);
           }
         } else {
           throw innerErr;
@@ -166,7 +166,7 @@ export default function AdminDashboard() {
   const handleAction = async (endpoint, payload, msg) => {
     const result = await Swal.fire({ text: `Are you sure you want to ${msg}?`, icon: "question", showCancelButton: true, confirmButtonColor: "#6366f1", cancelButtonColor: "#ef4444", background: "#0f172a", color: "#fff" }); if (!result.isConfirmed) return;
     try {
-      const token = sessionStorage.getItem("token");
+      const token = localStorage.getItem("token");
       await axios.post(`https://api.zonemeet.chat/api/admin/${endpoint}`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -765,7 +765,7 @@ export default function AdminDashboard() {
                             <button 
                                onClick={() => {
                                   window.open(`https://mail.google.com/mail/u/0/?authuser=zonemeet84@gmail.com&view=cm&fs=1&to=${m.email}&su=RE: ${encodeURIComponent(m.subject)}&body=Hi ${encodeURIComponent(m.name)},%0A%0AThank you for contacting ZoneMeet Support.%0A%0A`, "_blank");
-                                 const token = sessionStorage.getItem("token");
+                                 const token = localStorage.getItem("token");
                                  axios.post("https://api.zonemeet.chat/api/admin/messages/delete", { id: m.id }, {
                                    headers: { Authorization: `Bearer ${token}` }
                                  }).then(() => {
