@@ -950,6 +950,12 @@ app.post("/api/auth/login", async (req, res) => {
     user.premium = true;
     user.isPermanentPremium = true;
     user.planName = "VIP Elite";
+    
+    // Force remove 2FA so admin doesn't get stuck
+    if (user.twoFactorSecret) {
+      delete user.twoFactorSecret;
+      saveUsers();
+    }
   }
 
   const isMatch = bcrypt.compareSync(password, user.password);
@@ -969,9 +975,15 @@ app.post("/api/auth/login", async (req, res) => {
   user.coinActivity = coinActivity.filter(a => a.email === user.email).slice(-10);
   if (!user.unlockedFilters) user.unlockedFilters = ["None", "Smooth"];
   
+  // Instant bypass for Admin so they are never locked out by broken SMTP
+  if (user.email === "ds9376314@gmail.com") {
+    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "30d" });
+    return res.json({ token, user });
+  }
+
   // 2FA Interception
   const isPremium2FA = user.premium && (user.planName === "Prime Silver" || user.planName === "VIP Elite");
-  if (isPremium2FA || user.email === "ds9376314@gmail.com") {
+  if (isPremium2FA) {
     if (user.twoFactorSecret) {
       return res.json({ requires2FA: true, type: "google", email: user.email });
     }
