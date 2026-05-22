@@ -680,10 +680,7 @@ app.post("/api/auth/session-login", (req, res) => {
     saveUsers();
   }
 
-  // 2FA Interception
-  if (user.twoFactorSecret) {
-    return res.json({ requires2FA: true, type: "google", email: user.email });
-  }
+  // 2FA Interception removed for direct login
 
   // Direct login for users without 2FA
   const { accessToken, refreshToken, cookieOptions } = generateTokens(user, req.body.rememberMe);
