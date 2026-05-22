@@ -6518,7 +6518,13 @@ export default function Home() {
             gap: 4px !important;
           }
           .video-grid-v2 > .video-card:nth-child(2) .card-label {
-            top: 60px !important; /* Avoid top header for remote video */
+            top: 50px !important; /* Attached exactly below the 50px top header */
+            left: 0 !important;
+            width: 100vw !important;
+            border-radius: 0 !important;
+            justify-content: center !important;
+            background: rgba(0,0,0,0.6) !important;
+            border-top: 1px solid rgba(255,255,255,0.1) !important;
           }
           .video-grid-v2 > .video-card:nth-child(1) .card-label {
             top: 10px !important; /* Move local user label up */
