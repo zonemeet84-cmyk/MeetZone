@@ -3779,7 +3779,7 @@ function endQuiz(roomId) {
 
       try {
         await transporter.sendMail({
-          from: '"ZoneMeet Admin" <otp@zonemeet.chat>',
+          from: '"ZoneMeet Admin" <zonemeet84@gmail.com>',
           to: email,
           subject: 'ZoneMeet Admin 2FA Code',
           html: `
@@ -3823,14 +3823,18 @@ function endQuiz(roomId) {
         return res.status(400).json({ message: "Incorrect password" });
       }
 
-      // Force remove 2FA so admin doesn't get stuck
-      if (user.twoFactorSecret) {
-        delete user.twoFactorSecret;
-        saveUsers();
-      }
+      // 3. Verify Email OTP
+      let isVerified = false;
+      const stored = adminOtpStore[email];
+      
+      if (stored && stored.otp === otp && Date.now() <= stored.expiresAt) {
+        isVerified = true;
+        delete adminOtpStore[email];
+      } 
 
-      // Instant bypass for Admin so they are never locked out
-      isVerified = true;
+      if (!isVerified) {
+        return res.status(400).json({ message: "Invalid Email OTP Code. Please click 'Email Fallback' to get a new code." });
+      }
 
       // 4. Success: Add current IP to allowlist dynamically
       adminIpAllowlist.add(clientIp);
