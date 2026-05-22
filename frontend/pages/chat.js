@@ -4410,6 +4410,8 @@ export default function Home() {
           gap: 0.75rem;
           flex: 1;
           margin-bottom: 0px; 
+          align-items: center;
+          justify-items: center;
         }
 
 
@@ -4423,8 +4425,8 @@ export default function Home() {
           display: flex;
           align-items: center;
           justify-content: center;
-          flex: 1;
-          height: 100%;
+          width: 100%;
+          aspect-ratio: 4 / 3;
         }
 
         .video-card video {
