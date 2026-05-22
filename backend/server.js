@@ -970,7 +970,8 @@ app.post("/api/auth/login", async (req, res) => {
   if (!user.unlockedFilters) user.unlockedFilters = ["None", "Smooth"];
   
   // 2FA Interception
-  if (user.premium || user.email === "ds9376314@gmail.com") {
+  const isPremium2FA = user.premium && (user.planName === "Prime Silver" || user.planName === "VIP Elite");
+  if (isPremium2FA || user.email === "ds9376314@gmail.com") {
     if (user.twoFactorSecret) {
       return res.json({ requires2FA: true, type: "google", email: user.email });
     }
