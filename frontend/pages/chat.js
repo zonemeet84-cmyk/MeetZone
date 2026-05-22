@@ -2534,7 +2534,7 @@ export default function Home() {
               <span style={{ color: '#ffffff' }}>Zone</span>
               <span style={{ background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Meet</span>
             </h1>
-            <div style={{
+            <div className="eighteen-plus-badge" style={{
               background: 'rgba(239, 68, 68, 0.15)',
               border: '1px solid rgba(239, 68, 68, 0.4)',
               borderRadius: '50px',
@@ -3627,6 +3627,9 @@ export default function Home() {
               By continuing with Camera/Mic, you agree to our <a href="/terms" target="_blank" style={{ color: '#6366f1' }}>Terms</a> and <a href="/guidelines" target="_blank" style={{ color: '#6366f1' }}>Community Guidelines</a>.
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
+              <button className="mobile-chat-toggle-btn" onClick={() => setIsMobileChatOpen(!isMobileChatOpen)}>
+                💬 Chat
+              </button>
               <button 
                 className={`quiz-trigger-btn ${quizState === "queued" ? "cancel" : ""}`} 
                 onClick={handleBrainClashClick}
@@ -6369,816 +6372,265 @@ export default function Home() {
           flex-shrink: 0;
         }
 
-        /* --- MOBILE RESPONSIVENESS FIXES --- */
         @media (max-width: 768px) {
-          .chat-page-v2 {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            height: 100dvh !important;
-            overflow: hidden !important;
-            background: #000000 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            z-index: 999999 !important;
+          /* 1. Full Screen Reset */
+          body, html {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
           }
           .main-layout {
+            height: 100vh !important;
+            height: 100dvh !important;
+            width: 100vw !important;
+            overflow: hidden !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            position: relative;
+          }
+          /* 2. Video Column & Grid - Edge to Edge */
+          .header-v2 {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 50px !important;
+            padding: 0 15px !important;
+            z-index: 100 !important;
+            background: rgba(0,0,0,0.5) !important;
+            border: none !important;
+            border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+            backdrop-filter: blur(4px);
             display: flex !important;
-            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+          }
+          .header-brand-v2 { display: flex; align-items: center; gap: 4px; }
+          .header-brand-v2 svg { width: 18px !important; height: 18px !important; }
+          .logo-text { font-size: 0.9rem !important; }
+          .eighteen-plus-badge { display: none !important; } /* Hide 18+ Badge */
+          .header-actions { gap: 8px !important; display: flex !important; align-items: center !important; }
+          .header-coins-pill { padding: 2px 6px !important; font-size: 0.75rem !important; height: 24px !important; }
+          
+          /* Compact Profile & Home Button */
+          .user-profile-tag { 
+            display: flex !important;
+            align-items: center !important;
+            background: transparent !important; 
+            border: none !important; 
+            padding: 0 !important; 
+            margin: 0 !important; 
+            gap: 0 !important; 
+            flex-shrink: 0 !important;
+          }
+          .user-details, .pro-badge-v2, .vip-crown-tag { display: none !important; }
+          .avatar { width: 24px !important; height: 24px !important; font-size: 0.8rem !important; }
+          .btn-home { 
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: transparent !important; 
+            border: none !important; 
+            padding: 0 4px !important; 
+            margin: 0 !important; 
+            box-shadow: none !important; 
+            flex-shrink: 0 !important;
+          }
+          .btn-home .text { display: none !important; }
+          .btn-home .icon { font-size: 1.2rem !important; margin: 0 !important; }
+          
+          .header-coins-pill { flex-shrink: 0 !important; }
+
+          .video-column {
+            position: absolute !important;
+            top: 0; left: 0;
             width: 100vw !important;
             height: 100vh !important;
             height: 100dvh !important;
             margin: 0 !important;
             padding: 0 !important;
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-          }
-          .video-column {
-            width: 100% !important;
-            flex: 1 !important;
-            height: auto !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            position: relative !important;
-          }
-          .bg-gradient {
-            display: none !important;
-          }
-          .header-v2 {
-            position: absolute !important;
-            top: env(safe-area-inset-top, 6px) !important;
-            left: 0 !important;
-            width: 100% !important;
-            z-index: 1000 !important;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent) !important;
-            border: none !important;
-            padding: 8px 12px !important;
-            display: flex !important;
-            flex-direction: row !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            box-sizing: border-box !important;
-          }
-          .header-v2 .brand {
-            transform: scale(0.8) !important;
-            transform-origin: left center !important;
-          }
-          .header-v2 .user-profile-tag {
-            display: none !important;
-          }
-          .header-v2 .btn-home {
-            padding: 4px 8px !important;
-            font-size: 0.72rem !important;
-            background: rgba(255, 255, 255, 0.1) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            z-index: 1;
+            flex: none !important;
           }
           .video-grid-v2 {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100vw !important;
             height: 100% !important;
+            gap: 0 !important;
             margin: 0 !important;
             padding: 0 !important;
-            border-radius: 0 !important;
-            background: #000000 !important;
-            z-index: 1 !important;
           }
-          /* Searching mode: user video is full screen, searching overlay is transparent */
-          .video-grid-v2.searching-mode > .video-card:first-child {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
+          
+          /* 3. Video Cards - Exactly 50% each */
+          .video-card {
+            flex: 1 !important;
+            width: 100vw !important;
+            height: 50% !important;
+            aspect-ratio: auto !important;
+            border-radius: 0 !important;
+            border: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            position: relative;
+          }
+          .video-card video {
             width: 100% !important;
             height: 100% !important;
-            z-index: 2 !important;
-            border-radius: 0 !important;
+            object-fit: cover !important;
+          }
+          
+          /* 4. Chat Box Overlay */
+          .chat-column.mobile-chat-closed {
+            display: none !important;
+          }
+          .chat-column.mobile-chat-open {
+            display: flex !important;
+            position: absolute !important;
+            bottom: 80px !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 250px !important;
+            max-height: 40vh !important;
+            z-index: 200 !important;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9)) !important;
+            border: none !important;
+            pointer-events: none;
+            flex-direction: column !important;
+          }
+          .chat-box-v2 {
+            background: transparent !important;
             border: none !important;
             box-shadow: none !important;
-          }
-          .video-grid-v2.searching-mode > .video-card:first-child video,
-          .video-grid-v2.searching-mode > .video-card:first-child canvas {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover !important;
-          }
-          .video-grid-v2.searching-mode > .video-card:first-child .card-label {
-            display: flex !important;
-            position: absolute !important;
-            bottom: 120px !important;
-            left: 12px !important;
-            z-index: 10 !important;
-          }
-          .video-grid-v2.searching-mode > .video-card:first-child .card-controls {
-            display: flex !important;
-            position: absolute !important;
-            bottom: 120px !important;
-            right: 12px !important;
-            z-index: 10 !important;
-            transform: none !important;
-            left: auto !important;
-          }
-
-          .video-grid-v2.searching-mode > .video-card:nth-child(2) {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            z-index: 3 !important;
-            background: transparent !important;
-            border: none !important;
-          }
-          .video-grid-v2.searching-mode .searching-overlay-v2 {
-            background: transparent !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-          }
-          .searching-content {
-            background: rgba(0,0,0,0.5) !important;
-            padding: 10px 15px !important;
-            border-radius: 12px !important;
-            backdrop-filter: blur(4px) !important;
-            -webkit-backdrop-filter: blur(4px) !important;
-          }
-
-          /* Partner connected mode: local video is floating bubble, stranger is full screen */
-          .video-grid-v2.partner-connected > .video-card:first-child {
-            position: absolute !important;
-            width: 75px !important;
-            height: 110px !important;
-            top: 130px !important;
-            right: 12px !important;
-            z-index: 100 !important;
-            border-radius: 12px !important;
-            border: 1.5px solid #ffffff !important;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6) !important;
-            overflow: hidden !important;
-            background: #0f172a !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            transition: all 0.3s ease !important;
-          }
-          .video-grid-v2.partner-connected > .video-card:first-child video,
-          .video-grid-v2.partner-connected > .video-card:first-child canvas {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover !important;
-          }
-          .video-grid-v2.partner-connected > .video-card:first-child .card-label {
-            display: none !important;
-          }
-          .video-grid-v2.partner-connected > .video-card:first-child .card-controls {
-            display: flex !important;
-            position: absolute !important;
-            bottom: 4px !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            background: rgba(0, 0, 0, 0.75) !important;
-            border-radius: 15px !important;
-            padding: 3px 6px !important;
-            gap: 4px !important;
-            z-index: 110 !important;
-            width: auto !important;
-          }
-          .video-grid-v2.partner-connected > .video-card:first-child .ctrl-btn {
-            width: 18px !important;
-            height: 18px !important;
-            border-radius: 50% !important;
-            font-size: 8px !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            background: rgba(255, 255, 255, 0.15) !important;
-            border: none !important;
-            color: #fff !important;
-            padding: 0 !important;
-          }
-          .video-grid-v2.partner-connected > .video-card:nth-child(2) {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            z-index: 2 !important;
-            border-radius: 0 !important;
-            border: none !important;
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-          .video-grid-v2.partner-connected > .video-card:nth-child(2) video {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover !important;
-            border-radius: 0 !important;
-          }
-
-          /* Stranger Top Floating Label */
-          .video-grid-v2 > .video-card:nth-child(2) .card-label {
-            position: absolute !important;
-            top: 55px !important;
-            left: 12px !important;
-            background: rgba(15, 23, 42, 0.6) !important;
-            backdrop-filter: blur(8px) !important;
-            -webkit-backdrop-filter: blur(8px) !important;
-            padding: 4px 8px !important;
-            border-radius: 14px !important;
-            font-size: 0.68rem !important;
-            font-weight: 700 !important;
-            color: #fff !important;
-            z-index: 10 !important;
-            width: auto !important;
-            display: flex !important;
-            align-items: center !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-          }
-          /* Stranger Top Floating Controls (Add Friend) */
-          .video-grid-v2 > .video-card:nth-child(2) .card-controls {
-            display: flex !important;
-            position: absolute !important;
-            top: 90px !important;
-            right: 12px !important;
-            background: rgba(15, 23, 42, 0.6) !important;
-            backdrop-filter: blur(8px) !important;
-            -webkit-backdrop-filter: blur(8px) !important;
-            border-radius: 12px !important;
-            padding: 2px 4px !important;
-            z-index: 10 !important;
-            width: auto !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-          }
-          .video-grid-v2 > .video-card:nth-child(2) .card-controls button {
-             font-size: 0.6rem !important;
-             padding: 2px !important;
-          }
-             /* Preferences Button Floating Row - Super Small! */
-          .filters-row-v2 {
-            position: absolute !important;
-            top: 55px !important;
-            left: 12px !important;
-            right: auto !important;
-            transform: none !important;
-            width: auto !important;
-            z-index: 50 !important;
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 6px !important;
-            background: transparent !important;
-            padding: 0 !important;
-          }
-          .filter-settings-trigger-btn {
-            background: rgba(15, 23, 42, 0.7) !important;
-            backdrop-filter: blur(8px) !important;
-            -webkit-backdrop-filter: blur(8px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            color: #fff !important;
-            border-radius: 8px !important;
-            padding: 2px 6px !important;
-            font-size: 0.55rem !important;
-            font-weight: 700 !important;
-            height: 20px !important;
-            display: flex !important;
-            align-items: center !important;
-            width: auto !important;
-          }
-          .active-filters-preview-badge {
-            font-size: 0.55rem !important;
-            padding: 1px 4px !important;
-            margin-left: 4px !important;
-          }
-          .paywall-badge-v2 {
-            background: rgba(245, 158, 11, 0.9) !important;
-            color: #000 !important;
-            border-radius: 12px !important;
-            padding: 4px 8px !important;
-            font-size: 0.65rem !important;
-            font-weight: 800 !important;
-            height: 24px !important;
-            display: flex !important;
-            align-items: center !important;
-            width: auto !important;
-          }
-          /* Filter Modal Responsiveness */
-          .filter-modal-card {
-            width: 95% !important;
-            max-width: 330px !important;
-            padding: 15px !important;
-            border-radius: 20px !important;
-            gap: 10px !important;
-          }
-          .filter-modal-header h2 {
-            font-size: 1.1rem !important;
-          }
-          .filter-modal-header .close-btn {
-            font-size: 1.5rem !important;
-          }
-          .filter-modal-body {
-            gap: 12px !important;
-          }
-          .filter-section-group {
-            margin-bottom: 8px !important;
-          }
-          .section-label {
-            font-size: 0.7rem !important;
-            margin-bottom: 4px !important;
-          }
-          .gender-options-grid {
-            gap: 6px !important;
-          }
-          .gender-option-card {
-            padding: 8px !important;
-            border-radius: 10px !important;
             flex: 1 !important;
-            width: auto !important;
-          }
-          .gender-option-card .emoji {
-            font-size: 1.1rem !important;
-          }
-          .gender-option-card .name {
-            font-size: 0.65rem !important;
-          }
-          .select-dropdown-trigger {
-            padding: 8px 12px !important;
-            border-radius: 10px !important;
-            height: auto !important;
-            width: 100% !important;
-          }
-          /* Mobile Chat Toggle Button styling */
-          /* Mobile Chat Toggle Button hidden since chat is always visible now */
-          .mobile-chat-toggle-btn {
-            display: none !important;
-          }
-          .mobile-chat-unread-badge {
-            display: none !important;
-          }
-
-          .chat-column,
-          .chat-column.mobile-chat-open,
-          .chat-column.mobile-chat-closed {
-            position: absolute !important;
-            bottom: 15px !important;
-            left: 12px !important;
-            width: 250px !important;
-            height: 25vh !important;
-            min-height: 180px !important;
-            max-height: 220px !important;
-            background: rgba(15, 23, 42, 0.65) !important;
-            backdrop-filter: blur(10px) !important;
-            -webkit-backdrop-filter: blur(10px) !important;
-            z-index: 500 !important;
-            border-radius: 16px !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
-            padding: 10px !important;
-            pointer-events: auto !important;
-            animation: none !important;
-            max-width: 70vw !important;
-            min-width: 0 !important;
             display: flex !important;
+            flex-direction: column !important;
           }
-          .mobile-chat-close-btn-header {
-            display: none !important; /* Hide close button since it cannot be closed */
+          .messages-area {
+            pointer-events: auto;
+            padding: 10px !important;
+            flex: 1 !important;
           }
-            @keyframes chatSlideUp {
-              from { transform: translateY(100%); }
-              to { transform: translateY(0); }
-            }
-            .chat-column.mobile-chat-open .chat-box-v2 {
-              display: flex !important;
-              flex-direction: column !important;
-              height: 100% !important;
-              background: transparent !important;
-              border: none !important;
-            }
-            .chat-column.mobile-chat-open .chat-box-header {
-              display: flex !important;
-              justify-content: space-between !important;
-              align-items: center !important;
-              padding: 0 0 12px 0 !important;
-              border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-            }
-            .chat-column.mobile-chat-open .chat-box-header h3 {
-              margin: 0 !important;
-              font-size: 0.95rem !important;
-              font-weight: 700 !important;
-              color: #a5b4fc !important;
-            }
-            .chat-column.mobile-chat-open .chat-box-header .msg-count {
-              font-size: 0.65rem !important;
-              color: #94a3b8 !important;
-            }
-            .mobile-chat-close-btn-header {
-              background: rgba(255, 255, 255, 0.08) !important;
-              border: none !important;
-              color: #fff !important;
-              width: 24px !important;
-              height: 24px !important;
-              border-radius: 50% !important;
-              font-size: 1rem !important;
-              display: flex !important;
-              align-items: center !important;
-              justify-content: center !important;
-              cursor: pointer !important;
-              padding: 0 !important;
-              line-height: 1 !important;
-            }
-            .chat-column.mobile-chat-open .chat-box-messages {
-              flex: 1 !important;
-              overflow-y: auto !important;
-              padding: 12px 0 !important;
-              display: flex !important;
-              flex-direction: column !important;
-              gap: 8px !important;
-              mask-image: none !important;
-              -webkit-mask-image: none !important;
-            }
-            .chat-column.mobile-chat-open .msg-row {
-              background: rgba(255, 255, 255, 0.04) !important;
-              border-radius: 12px !important;
-              padding: 6px 12px !important;
-              font-size: 0.78rem !important;
-              width: max-content !important;
-              max-width: 85% !important;
-              margin: 0 !important;
-              border: 1px solid rgba(255, 255, 255, 0.04) !important;
-            }
-            .chat-column.mobile-chat-open .msg-row.me {
-              align-self: flex-end !important;
-              background: #6366f1 !important;
-              color: #fff !important;
-              justify-content: flex-end !important;
-            }
-            .chat-column.mobile-chat-open .msg-row.partner {
-              align-self: flex-start !important;
-              background: rgba(255, 255, 255, 0.08) !important;
-              color: #fff !important;
-              justify-content: flex-start !important;
-            }
-            .chat-column.mobile-chat-open .chat-box-input {
-              background: rgba(255, 255, 255, 0.04) !important;
-              border: 1px solid rgba(255, 255, 255, 0.1) !important;
-              border-radius: 50px !important;
-              padding: 4px 6px 4px 16px !important;
-              margin-top: 8px !important;
-              display: flex !important;
-              align-items: center !important;
-              gap: 8px !important;
-            }
-            .chat-column.mobile-chat-open .chat-box-input input {
-              flex: 1 !important;
-              background: transparent !important;
-              border: none !important;
-              color: #fff !important;
-              font-size: 0.8rem !important;
-              outline: none !important;
-              padding: 6px 0 !important;
-            }
-            .chat-column.mobile-chat-open .chat-box-input button {
-              width: 32px !important;
-              height: 32px !important;
-              border-radius: 50% !important;
-              background: #6366f1 !important;
-              color: #fff !important;
-              display: flex !important;
-              align-items: center !important;
-              justify-content: center !important;
-              border: none !important;
-              cursor: pointer !important;
-              padding: 0 !important;
-            }
-
-          /* Micro Identity Tools container floating just above bottom controls */
-          .identity-container {
-            position: absolute !important;
-            bottom: 110px !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            width: 95% !important;
-            z-index: 200 !important;
+          .chat-input-area {
+            pointer-events: auto;
             background: transparent !important;
-          }
-          .bottom-mini-bar {
-            display: flex !important;
-            justify-content: center !important;
-            align-items: center !important;
-            gap: 4px !important;
-            background: rgba(0, 0, 0, 0.45) !important;
-            backdrop-filter: blur(6px) !important;
-            -webkit-backdrop-filter: blur(6px) !important;
-            padding: 3px 6px !important;
-            border-radius: 20px !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            margin: 0 auto !important;
-            width: max-content !important;
-            max-width: 100% !important;
-          }
-          .bottom-mini-bar .tool-btn {
-            padding: 3px 6px !important;
-            font-size: 0.62rem !important;
-            border-radius: 12px !important;
-            background: rgba(255, 255, 255, 0.04) !important;
-            color: #fff !important;
             border: none !important;
-            height: 22px !important;
-          }
-          .bottom-mini-bar .tool-btn.active {
-            background: #6366f1 !important;
-          }
-          .identity-popup-bubble {
-            position: absolute !important;
-            bottom: 35px !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            width: 250px !important;
-            max-width: calc(100vw - 20px) !important;
-            z-index: 300 !important;
-            background: rgba(15, 23, 42, 0.95) !important;
-            backdrop-filter: blur(12px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            border-radius: 16px !important;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
             padding: 10px !important;
-            box-sizing: border-box !important;
           }
-          .gift-bubble {
-            width: 270px !important;
+          .chat-input-area input {
+            background: rgba(0,0,0,0.6) !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            color: white !important;
+            border-radius: 20px !important;
           }
-          /* Micro-sized vertical stack action buttons on the right edge */
+          
+          /* 5. Floating Buttons (Monkey App Style) */
           .bottom-actions {
             position: absolute !important;
-            bottom: 20px !important;
-            right: 12px !important;
-            left: auto !important;
-            transform: none !important;
-            width: auto !important;
-            z-index: 1000 !important;
+            top: 0; left: 0; width: 100vw; height: 100vh;
             background: transparent !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-            padding: 0 !important;
             border: none !important;
-            box-shadow: none !important;
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: flex-end !important;
-            gap: 10px !important;
+            pointer-events: none;
+            z-index: 100;
+            padding: 0 !important; margin: 0 !important;
           }
-          .bottom-actions > div:first-child,
-          .bottom-actions > div:nth-child(2) {
-            display: none !important;
-          }
+          .bottom-actions > div { display: none !important; }
           .bottom-actions > div:nth-child(3) {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: flex-end !important;
-            width: auto !important;
-            gap: 10px !important;
-            margin: 0 !important;
-            padding: 0 !important;
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
           }
-          .bottom-actions > div:nth-child(3) button {
-            flex: none !important;
-            width: auto !important;
-            height: 24px !important;
-            border-radius: 8px !important;
-            font-size: 0.55rem !important;
-            font-weight: 700 !important;
-            padding: 0 8px !important;
+          
+          .bottom-actions button, .filters-row-v2 button {
+            pointer-events: auto;
+            position: absolute !important;
+            border-radius: 50% !important;
+            width: 40px !important;
+            height: 40px !important;
+            padding: 0 !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 4px !important;
-            margin: 0 !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
-            backdrop-filter: blur(8px) !important;
-            transition: all 0.2s ease !important;
+            font-size: 0 !important; /* Hide original text */
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            backdrop-filter: none !important;
+            color: transparent !important;
           }
-          .bottom-actions .quiz-trigger-btn {
-            background: linear-gradient(135deg, #a855f7, #6366f1) !important;
-            color: white !important;
-          }
-          .bottom-actions .stop-btn {
-            background: rgba(239, 68, 68, 0.15) !important;
-            color: #ef4444 !important;
-            border: 1px solid rgba(239, 68, 68, 0.3) !important;
-          }
-          .bottom-actions .report-trigger-btn {
-            background: rgba(255, 255, 255, 0.05) !important;
-            color: #fff !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-          }
+          
           .bottom-actions .next-btn {
-            background: #6366f1 !important;
-            color: white !important;
+            top: 60px !important;
+            right: 20px !important;
+            width: 24px !important;
+            height: 24px !important;
           }
-          .bottom-actions button:active {
-            transform: scale(0.93) !important;
-          }
+          .bottom-actions .next-btn::after { content: '⏭️'; font-size: 1rem; color: white; }
+          .bottom-actions .next-btn span, .bottom-actions .next-btn .icon { display: none !important; }
 
-          /* Payment Modal and Pricing Responsiveness */
-          .payment-overlay {
-            padding: 1rem 0.5rem !important;
+          /* Chat Toggle Button -> Bottom Left */
+          .mobile-chat-toggle-btn {
+            bottom: 20px !important;
+            left: 20px !important;
           }
-          .premium-modal {
-            width: 95% !important;
-            max-width: 330px !important;
-            max-height: 90vh !important;
-            overflow-y: auto !important;
-            padding: 20px 15px !important;
-            margin: auto !important;
-            border-radius: 24px !important;
+          .mobile-chat-toggle-btn::after { content: '💬'; font-size: 1.5rem; color: white; }
+          
+          /* Stop Button -> Moved right */
+          .stop-btn {
+            bottom: 20px !important;
+            left: 80px !important;
           }
-          .premium-modal.pricing-wide {
-            max-width: 330px !important;
+          .stop-btn::after { content: '🛑'; font-size: 1.5rem; color: white; }
+          
+          /* Report Button -> Moved right */
+          .report-trigger-btn {
+            bottom: 20px !important;
+            left: 140px !important;
           }
-          .modal-header-premium {
-            padding: 2rem 1rem 1rem !important;
+          .report-trigger-btn::after { content: '🚨'; font-size: 1.5rem; color: white; }
+          
+          .quiz-trigger-btn {
+            bottom: 20px !important;
+            right: 20px !important;
           }
-          .total-amount {
-            font-size: 2.2rem !important;
-          }
-          .modal-body-premium {
-            padding: 0 1rem 1.5rem !important;
-          }
-          .pricing-grid-premium {
-            grid-template-columns: 1fr !important;
-            gap: 12px !important;
-            margin: 1rem 0 !important;
-          }
-          .premium-card-mini {
-            padding: 12px !important;
-            border-radius: 16px !important;
-          }
-          .card-price {
-            font-size: 1.25rem !important;
-          }
-          .methods-list-premium {
-            gap: 8px !important;
-          }
-          .pay-method-item {
-            padding: 10px !important;
-            border-radius: 16px !important;
-            gap: 10px !important;
-          }
-          .pay-icon-box {
-            width: 44px !important;
-            height: 44px !important;
-            border-radius: 12px !important;
-            font-size: 1.25rem !important;
-          }
-          .pay-details strong {
-            font-size: 0.9rem !important;
-          }
-          .pay-details span {
-            font-size: 0.75rem !important;
-          }
-          .pay-arrow {
-            font-size: 1.1rem !important;
-          }
-          .status-container {
-            padding: 1rem 0 !important;
-          }
-
-          /* History modal item responsiveness */
-          .history-modal-v2 {
-            max-width: 330px !important;
+          .quiz-trigger-btn::after { content: '🎁'; font-size: 1.5rem; color: white; }
+          
+          .filters-row-v2 {
+            position: static !important; /* Let absolute positioned children align to screen */
+            margin: 0 !important;
             padding: 0 !important;
           }
-          .history-header {
-            padding: 1rem !important;
+          .filters-row-v2 .filter-settings-trigger-btn {
+            position: absolute !important;
+            top: 88px !important;
+            right: 20px !important;
+            width: 24px !important;
+            height: 24px !important;
+            z-index: 100 !important;
           }
-          .history-title {
-            font-size: 0.85rem !important;
-          }
-          .history-body {
-            padding: 0.75rem !important;
-            max-height: 50vh !important;
-          }
-          .history-item {
-            padding: 10px 6px !important;
-            gap: 8px !important;
-            border-bottom: 1px solid rgba(255,255,255,0.05) !important;
-          }
-          .history-item-left {
-            gap: 8px !important;
-            min-width: 0 !important;
-          }
-          .history-avatar {
-            width: 32px !important;
-            height: 32px !important;
-            font-size: 0.85rem !important;
-          }
-          .history-details {
-            min-width: 0 !important;
-          }
-          .history-name {
-            font-size: 0.85rem !important;
-            max-width: 110px !important;
-          }
-          .history-info {
-            font-size: 0.7rem !important;
-            max-width: 110px !important;
-          }
-          .history-reconnect-btn {
-            padding: 6px 10px !important;
-            font-size: 0.7rem !important;
-            border-radius: 8px !important;
-          }
+          .filters-row-v2 .filter-settings-trigger-btn::after { content: '⚙️'; font-size: 1rem; color: white; }
+          .filters-row-v2 .filter-settings-trigger-btn .text, .filters-row-v2 .filter-settings-trigger-btn .icon { display: none !important; }
+          .active-filters-preview-badge, .paywall-badge-v2 { display: none !important; }
 
-          /* Quiz Modal responsiveness */
-          .quiz-modal-v2 {
-            max-width: 330px !important;
-          }
-          .quiz-grid-v2 {
-            display: grid;
-            grid-template-columns: 1fr !important;
-            gap: 10px !important;
-            padding: 5px !important;
-          }
-          .quiz-grid-v2 button {
-            padding: 0.8rem !important;
-            border-radius: 12px !important;
-            gap: 6px !important;
-          }
-          .quiz-grid-v2 button span {
-            font-size: 1.8rem !important;
-          }
-
-          /* Report modal responsiveness */
-          .report-modal-content {
+          /* Modals for Mobile */
+          .filter-modal-card, .premium-modal, .history-modal-v2 {
+            max-height: 85vh !important;
+            max-height: 85dvh !important;
+            overflow-y: auto !important;
+            padding: 16px !important;
             width: 95% !important;
-            max-width: 330px !important;
-            padding: 20px 15px !important;
-            border-radius: 20px !important;
           }
-          .reasons-grid {
-            grid-template-columns: 1fr 1fr !important;
-            gap: 8px !important;
-            margin-bottom: 15px !important;
-          }
-          .reason-btn {
-            padding: 8px !important;
-            font-size: 0.75rem !important;
-            border-radius: 10px !important;
-          }
-          .report-details-box {
-            height: 80px !important;
-            padding: 10px !important;
-            font-size: 0.8rem !important;
-          }
-
-          /* Toast / Notification responsiveness */
-          .toast-stack-container {
-            top: 10px !important;
-            width: 95vw !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-          }
-          .premium-toast {
-            padding: 10px 14px !important;
-            border-radius: 12px !important;
-            gap: 8px !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
-          }
-          .toast-icon-wrapper {
-            width: 26px !important;
-            height: 26px !important;
-            border-radius: 8px !important;
-          }
-          .toast-icon {
-            font-size: 0.8rem !important;
-          }
-          .toast-message {
-            font-size: 0.75rem !important;
-          }
-          .toast-close {
+          .filter-modal-header h2, .modal-header-premium h2 {
             font-size: 1.1rem !important;
           }
-          .friend-toast {
-            top: 10px !important;
-            right: 4% !important;
-            left: 4% !important;
-            width: 92vw !important;
-            padding: 10px 14px !important;
-            border-radius: 12px !important;
-            font-size: 0.75rem !important;
-            box-sizing: border-box !important;
+          .filter-modal-body {
+            gap: 15px !important;
           }
-          .report-success-toast {
-            padding: 10px 20px !important;
-            font-size: 0.8rem !important;
-            bottom: -80px !important;
+          .filter-group {
+            padding: 12px !important;
           }
-          .report-success-toast.show {
-            bottom: 20px !important;
+          .gender-option {
+            padding: 10px !important;
           }
         }
       `}</style>
