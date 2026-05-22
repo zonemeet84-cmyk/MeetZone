@@ -6555,6 +6555,13 @@ export default function Home() {
           }
           .card-controls {
             bottom: 50px !important; /* Avoid bottom mini bar */
+            left: 5px !important;
+            gap: 4px !important;
+          }
+          .ctrl-btn {
+            width: 28px !important;
+            height: 28px !important;
+            border-radius: 8px !important;
           }
           
           /* 4. Chat Box Overlay */
@@ -6679,9 +6686,9 @@ export default function Home() {
           }
           .mobile-chat-toggle-btn::after { content: '💬'; font-size: 1.5rem !important; }
           
-          /* Stop Button -> Bottom Right, below Gifts */
+          /* Stop Button -> Bottom Right, above Tools */
           .stop-btn {
-            bottom: 45px !important;
+            bottom: 80px !important;
             left: calc(100% - 44px) !important;
             right: auto !important;
             width: 24px !important;
@@ -6702,9 +6709,9 @@ export default function Home() {
             display: none !important;
           }
           
-          /* Gift Button -> Bottom Right, above Stop */
+          /* Gift Button -> Bottom Right, below Quiz, above Stop */
           .gift-trigger-btn {
-            bottom: 80px !important;
+            bottom: 115px !important;
             left: calc(100% - 44px) !important;
             right: auto !important;
             width: 24px !important;
@@ -6720,9 +6727,9 @@ export default function Home() {
           }
           .gift-trigger-btn::after { content: '🎁'; font-size: 1.5rem !important; }
           
-          /* Tools Button -> Bottom Right, below Quiz, above Gift */
+          /* Tools Button -> Bottom Right, at the very bottom */
           .tools-trigger-btn {
-            bottom: 115px !important;
+            bottom: 45px !important;
             left: calc(100% - 44px) !important;
             right: auto !important;
             width: 24px !important;
@@ -6741,7 +6748,7 @@ export default function Home() {
           }
           .tools-trigger-btn::after { content: '🎭'; font-size: 1.5rem !important; }
 
-          /* Quiz Button -> Bottom Right, above Tools */
+          /* Quiz Button -> Bottom Right, above Gift */
           .quiz-trigger-btn {
             bottom: 150px !important;
             left: calc(100% - 44px) !important;
@@ -6790,7 +6797,7 @@ export default function Home() {
           }
           .filters-row-v2 .filter-settings-trigger-btn {
             position: absolute !important;
-            top: 88px !important;
+            top: 60px !important;
             right: 20px !important;
             width: 24px !important;
             height: 24px !important;
