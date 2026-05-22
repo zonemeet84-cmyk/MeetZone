@@ -4714,6 +4714,9 @@ export default function Home() {
           font-size: 0.75rem;
           font-weight: 600;
           backdrop-filter: blur(4px);
+          height: 32px;
+          display: flex;
+          align-items: center;
         }
 
         .card-controls-wrapper {
@@ -6600,6 +6603,9 @@ export default function Home() {
             font-size: 0.7rem !important;
             gap: 6px !important;
             background: rgba(0,0,0,0.7) !important;
+            height: 28px !important;
+            display: flex !important;
+            align-items: center !important;
           }
           .video-grid-v2 > .video-card:nth-child(2) .card-label {
             top: 0 !important;
