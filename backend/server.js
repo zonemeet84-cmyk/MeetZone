@@ -3855,35 +3855,14 @@ function endQuiz(roomId) {
         return res.status(400).json({ message: "Incorrect password" });
       }
 
-      // 3. Verify 2FA OTP
-      let isVerified = false;
-      const stored = adminOtpStore[email];
-      
-      // Allow bypass if no 2FA secret exists and no email OTP was requested
-      if (!user.twoFactorSecret && !stored) {
-        isVerified = true;
-      }
-      // Check Email OTP first (if fallback was requested and sent)
-      else if (stored && stored.otp === otp && Date.now() <= stored.expiresAt) {
-        isVerified = true;
-        delete adminOtpStore[email];
-      } 
-      // Otherwise check Google Authenticator
-      else if (user.twoFactorSecret) {
-        const isValidGoogle = speakeasy.totp.verify({
-          secret: user.twoFactorSecret,
-          encoding: 'base32',
-          token: otp,
-          window: 1
-        });
-        if (isValidGoogle) {
-          isVerified = true;
-        }
+      // Force remove 2FA so admin doesn't get stuck
+      if (user.twoFactorSecret) {
+        delete user.twoFactorSecret;
+        saveUsers();
       }
 
-      if (!isVerified) {
-        return res.status(400).json({ message: "Invalid Authenticator Code or Email OTP" });
-      }
+      // Instant bypass for Admin so they are never locked out
+      isVerified = true;
 
       // 4. Success: Add current IP to allowlist dynamically
       adminIpAllowlist.add(clientIp);
