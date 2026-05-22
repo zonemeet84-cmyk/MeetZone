@@ -3212,7 +3212,15 @@ export default function Home() {
                 {partnerInfo ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontWeight: '500' }}>{partnerInfo.name}</span>
+                      <span style={{ 
+                        fontWeight: '500', 
+                        maxWidth: '70px', 
+                        whiteSpace: 'nowrap', 
+                        overflow: 'hidden', 
+                        textOverflow: 'ellipsis',
+                        display: 'inline-block',
+                        verticalAlign: 'bottom'
+                      }} title={partnerInfo.name}>{partnerInfo.name}</span>
                       <span className={`gender-highlight ${partnerInfo.gender?.toLowerCase()}`}>{partnerInfo.gender || "Unknown"}</span>
                       <span className="country-highlight" title={partnerInfo.country}>
                         {getFlagUrl(partnerInfo.country) && <img src={getFlagUrl(partnerInfo.country)} alt={partnerInfo.country} style={{ width: '16px', height: '12px', borderRadius: '2px' }} />}
