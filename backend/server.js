@@ -24,7 +24,7 @@ const admin = require("firebase-admin");
 const axios_mail = require("axios");
 async function sendEmail({ from, to, subject, html }) {
   await axios_mail.post("https://api.resend.com/emails", 
-    { from: from || "ZoneMeet <onboarding@resend.dev>", to, subject, html },
+    { from: from || "ZoneMeet <noreply@zonemeet.chat>", to, subject, html },
     { headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" } }
   );
 }
@@ -522,7 +522,7 @@ app.post("/api/auth/2fa/send-backup-otp", async (req, res) => {
 
   try {
     await sendEmail({
-      from: 'ZoneMeet Security <onboarding@resend.dev>',
+      from: 'ZoneMeet Security <noreply@zonemeet.chat>',
       to: email,
       subject: 'ZoneMeet Backup Verification Code',
       html: `<div style="font-family: sans-serif; padding: 20px; color: #333;">
@@ -706,7 +706,7 @@ app.post("/api/auth/send-email-otp", async (req, res) => {
 
   try {
     await sendEmail({
-      from: 'ZoneMeet <onboarding@resend.dev>',
+      from: 'ZoneMeet <noreply@zonemeet.chat>',
       to: email,
       subject: 'ZoneMeet Verification Code',
       html: `
@@ -876,7 +876,7 @@ app.post("/api/auth/forgot-password", async (req, res) => {
 
   try {
     await sendEmail({
-      from: 'ZoneMeet <onboarding@resend.dev>',
+      from: 'ZoneMeet <noreply@zonemeet.chat>',
       to: email,
       subject: 'ZoneMeet Password Reset',
       html: `
@@ -1808,7 +1808,7 @@ app.post("/api/contact", async (req, res) => {
     };
 
     sendEmail({
-      from: 'ZoneMeet Support <onboarding@resend.dev>',
+      from: 'ZoneMeet Support <noreply@zonemeet.chat>',
       to: GMAIL_AUTH_USER,
       subject: `📩 New Support Message: ${subject || "General Inquiry"}`,
       html: mailOptions.html
@@ -3765,7 +3765,7 @@ function endQuiz(roomId) {
 
       try {
         await sendEmail({
-          from: 'ZoneMeet Admin <onboarding@resend.dev>',
+          from: 'ZoneMeet Admin <noreply@zonemeet.chat>',
           to: email,
           subject: 'ZoneMeet Admin 2FA Code',
           html: `
