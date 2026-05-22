@@ -26,7 +26,7 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false, // true for 465, false for other ports
   auth: {
-    user: process.env.BREVO_SMTP_LOGIN || 'ac2880001@smtp-brevo.com',
+    user: process.env.BREVO_SMTP_LOGIN || 'zonemeet84@gmail.com',
     pass: process.env.BREVO_SMTP_PASSWORD,
   },
 });
