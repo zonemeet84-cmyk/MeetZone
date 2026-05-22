@@ -3111,7 +3111,7 @@ export default function Home() {
               
               {/* LIVE SUBTITLES */}
               {currentSubtitle && (
-                <div style={{
+                <div className="live-subtitle-text" style={{
                   position: 'absolute',
                   bottom: '50px',
                   left: '50%',
@@ -3119,7 +3119,6 @@ export default function Home() {
                   background: 'transparent',
                   color: '#fff',
                   padding: '4px 8px',
-                  fontSize: '1.2rem',
                   fontWeight: 'bold',
                   maxWidth: '95%',
                   textAlign: 'center',
@@ -6484,6 +6483,9 @@ export default function Home() {
           white-space: nowrap;
           flex-shrink: 0;
         }
+        .live-subtitle-text {
+          font-size: 1.2rem;
+        }
 
         @media (max-width: 768px) {
           /* 1. Full Screen Reset */
@@ -6647,6 +6649,18 @@ export default function Home() {
           }
           .card-controls {
             gap: 4px !important;
+          }
+          .video-grid-v2 > .video-card:nth-child(2) .card-controls {
+            position: absolute !important;
+            top: 50% !important;
+            left: 5px !important;
+            transform: translateY(-50%) !important;
+            flex-direction: column !important;
+            z-index: 100 !important;
+            bottom: auto !important;
+          }
+          .live-subtitle-text {
+            font-size: 0.8rem !important;
           }
           .mobile-inline-chat-form {
             display: flex !important;
