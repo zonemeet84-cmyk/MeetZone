@@ -537,7 +537,7 @@ app.post("/api/auth/2fa/send-backup-otp", async (req, res) => {
     return res.json({ success: true, message: "Backup code sent successfully." });
   } catch (e) {
     console.error("Backup OTP Email sending failed", e);
-    return res.status(500).json({ message: "Failed to send email. Try again later." });
+    return res.status(500).json({ message: "Failed to send email: " + e.message });
   }
 });
 

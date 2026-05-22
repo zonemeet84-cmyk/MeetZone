@@ -6949,8 +6949,10 @@ export default function Home() {
         }
         @media (min-width: 769px) {
           .video-grid-v2 {
-            min-height: 0;
-            max-height: 100%;
+            height: 100% !important;
+            min-height: 0 !important;
+            max-height: 100% !important;
+            overflow: hidden !important;
           }
           .video-card .card-label {
             background: transparent !important;
