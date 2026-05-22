@@ -3794,7 +3794,7 @@ function endQuiz(roomId) {
         res.json({ success: true, message: "Admin 2FA OTP sent to your email" });
       } catch (err) {
         console.error("Brevo 2FA Error:", err);
-        res.status(500).json({ message: "Failed to send 2FA OTP" });
+        res.status(500).json({ message: "Failed to send 2FA OTP: " + err.message });
       }
     });
 
