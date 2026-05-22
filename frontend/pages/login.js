@@ -11,6 +11,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [captcha, setCaptcha] = useState(null);
   const recaptchaRef = useRef();
@@ -77,8 +78,9 @@ export default function Login() {
       const res = await axios.post("https://api.zonemeet.chat/api/auth/login", {
         identifier,
         password,
-        captchaToken: captcha
-      });
+        captchaToken: captcha,
+        rememberMe
+      }, { withCredentials: true });
 
       if (res.data.requires2FA) {
         setTwoFAType(res.data.type);
@@ -112,8 +114,9 @@ export default function Login() {
       const res = await axios.post("https://api.zonemeet.chat/api/auth/2fa/login-verify", {
         email: twoFAEmail,
         token: twoFAToken,
-        type: twoFAType
-      });
+        type: twoFAType,
+        rememberMe
+      }, { withCredentials: true });
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       router.push("/");
@@ -177,8 +180,9 @@ export default function Login() {
       const res = await axios.post("https://api.zonemeet.chat/api/auth/session-login", {
         email: firebaseUser.email,
         name: firebaseUser.displayName,
-        referralCode
-      });
+        referralCode,
+        rememberMe
+      }, { withCredentials: true });
 
       if (res.data.requires2FA) {
         setTwoFAType(res.data.type);
@@ -312,6 +316,17 @@ export default function Login() {
                 <span className="forgot-link" onClick={() => setShowForgot(true)}>Forgot?</span>
               </div>
               <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            </div>
+
+            <div className="remember-me" style={{ display: 'flex', alignItems: 'center', marginBottom: '1.25rem', gap: '8px' }}>
+              <input 
+                type="checkbox" 
+                id="rememberMe" 
+                checked={rememberMe} 
+                onChange={(e) => setRememberMe(e.target.checked)} 
+                style={{ width: '16px', height: '16px', cursor: 'pointer' }} 
+              />
+              <label htmlFor="rememberMe" style={{ color: '#cbd5e1', fontSize: '0.9rem', cursor: 'pointer', margin: 0 }}>Remember me (keep me logged in)</label>
             </div>
 
             <div className="input-item" style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.25rem' }}>

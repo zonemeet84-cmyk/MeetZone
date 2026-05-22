@@ -14,6 +14,7 @@ const { Server } = require("socket.io");
 const twilio = require("twilio");
 const nodemailer = require("nodemailer");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const fs = require("fs");
 const path = require("path");
 const admin = require("firebase-admin");
@@ -53,6 +54,7 @@ const app = express();
 app.set("trust proxy", 1); // Trust first proxy (Cloudflare/Nginx) for rate-limit IP parsing
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
+app.use(cookieParser());
 
 const rateLimit = require("express-rate-limit");
 const apiLimiter = rateLimit({
@@ -395,6 +397,37 @@ async function verifyCaptcha(token) {
 // =======================
 // 2FA SETUP & VERIFICATION
 // =======================
+// =======================
+// ADVANCED AUTH HELPERS
+// =======================
+function generateTokens(user, rememberMe) {
+  // Access token: short-lived
+  const accessToken = jwt.sign({ 
+    id: user.id,
+    tokenVersion: user.tokenVersion || 0
+  }, JWT_SECRET, { expiresIn: "15m" });
+  
+  // Refresh token: contains tokenVersion
+  const refreshTokenExpiry = rememberMe ? "7d" : "1d";
+  const refreshToken = jwt.sign({ 
+    id: user.id, 
+    tokenVersion: user.tokenVersion || 0 
+  }, JWT_SECRET, { expiresIn: refreshTokenExpiry });
+
+  const cookieOptions = {
+    httpOnly: true,
+    secure: true, // Requires HTTPS (which is true in production)
+    sameSite: "None", // Required for cross-domain requests
+  };
+  
+  if (rememberMe) {
+    cookieOptions.maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+  }
+  // If rememberMe is false, maxAge is omitted -> Session cookie
+
+  return { accessToken, refreshToken, cookieOptions };
+}
+
 const temp2FASecrets = {}; // Store temp secrets during setup
 
 app.post("/api/auth/2fa/setup", (req, res) => {
@@ -525,8 +558,11 @@ app.post("/api/auth/2fa/login-verify", (req, res) => {
   if (verified) {
     // Reset attempts on success
     delete loginAttemptsStore[email];
-    const jwtToken = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "7d" });
-    return res.json({ success: true, token: jwtToken, user });
+    
+    const { accessToken, refreshToken, cookieOptions } = generateTokens(user, req.body.rememberMe);
+    res.cookie('jid', refreshToken, cookieOptions);
+    
+    return res.json({ success: true, token: accessToken, user });
   } else {
     // Increment failed attempts
     attemptsData.attempts += 1;
@@ -619,8 +655,10 @@ app.post("/api/auth/session-login", (req, res) => {
   }
 
   // Direct login for users without 2FA
-  const jwtToken = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "7d" });
-  res.json({ token: jwtToken, user });
+  const { accessToken, refreshToken, cookieOptions } = generateTokens(user, req.body.rememberMe);
+  res.cookie('jid', refreshToken, cookieOptions);
+  
+  res.json({ token: accessToken, user });
 });
 
 // EMAIL OTP ENDPOINT
@@ -746,8 +784,61 @@ app.post("/api/auth/register", async (req, res) => {
   }
 
   saveUsers();
-  const token = jwt.sign({ id: newUser.id }, JWT_SECRET, { expiresIn: "7d" });
-  res.status(201).json({ token, user: newUser });
+  
+  const { accessToken, refreshToken, cookieOptions } = generateTokens(newUser, false);
+  res.cookie('jid', refreshToken, cookieOptions);
+  
+  res.status(201).json({ token: accessToken, user: newUser });
+});
+
+// REFRESH TOKEN ENDPOINT
+app.post("/api/auth/refresh_token", (req, res) => {
+  const token = req.cookies.jid;
+  if (!token) return res.status(401).json({ message: "No refresh token" });
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = users.find(u => u.id === decoded.id);
+    if (!user) return res.status(401).json({ message: "User not found" });
+
+    // Validate tokenVersion
+    if (decoded.tokenVersion !== (user.tokenVersion || 0)) {
+      return res.status(401).json({ message: "Session expired or invalidated" });
+    }
+
+    const { accessToken, refreshToken, cookieOptions } = generateTokens(user, true); // Keep rememberMe behavior active by issuing a new 7d token
+    res.cookie('jid', refreshToken, cookieOptions);
+
+    res.json({ token: accessToken, user });
+  } catch (err) {
+    res.status(401).json({ message: "Invalid refresh token" });
+  }
+});
+
+// LOGOUT ENDPOINT
+app.post("/api/auth/logout", (req, res) => {
+  res.clearCookie('jid', { httpOnly: true, secure: true, sameSite: "None" });
+  res.json({ success: true, message: "Logged out" });
+});
+
+// LOGOUT ALL DEVICES ENDPOINT
+app.post("/api/auth/logout-all", (req, res) => {
+  const token = req.cookies.jid;
+  if (!token) return res.status(401).json({ message: "Not logged in" });
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = users.find(u => u.id === decoded.id);
+    if (user) {
+      user.tokenVersion = (user.tokenVersion || 0) + 1;
+      saveUsers();
+    }
+  } catch (e) {
+    // Ignore verification errors on logout
+  }
+
+  res.clearCookie('jid', { httpOnly: true, secure: true, sameSite: "None" });
+  res.json({ success: true, message: "Logged out from all devices" });
 });
 
 // FORGOT PASSWORD OTP
@@ -797,6 +888,7 @@ app.post("/api/auth/reset-password", async (req, res) => {
   if (!user) return res.status(404).json({ message: "User not found" });
 
   user.password = bcrypt.hashSync(newPassword, 10);
+  user.tokenVersion = (user.tokenVersion || 0) + 1;
   saveUsers();
 
   res.json({ success: true, message: "Password reset successful! You can now login." });
@@ -1151,6 +1243,11 @@ app.get("/api/auth/verify", (req, res) => {
     if (!user) {
       console.log("Verify failed: User not found for ID", decoded.id);
       return res.status(401).json({ valid: false, message: "User not found" });
+    }
+    
+    // Check if token was invalidated by password reset or logout-all
+    if (decoded.tokenVersion !== undefined && decoded.tokenVersion !== (user.tokenVersion || 0)) {
+      return res.status(401).json({ valid: false, message: "Session expired or invalidated" });
     }
     // Check for subscription expiry
     if (user.premium && !user.isPermanentPremium && user.planExpiry && Date.now() > user.planExpiry) {

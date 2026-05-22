@@ -829,6 +829,10 @@ export default function Dashboard() {
   };
 
   const logout = async () => {
+    try {
+      await axios.post("https://api.zonemeet.chat/api/auth/logout", {}, { withCredentials: true });
+    } catch (e) {} // ignore errors
+    
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
@@ -836,6 +840,22 @@ export default function Dashboard() {
       await signOut({ redirect: false });
     }
     router.push("/login");
+  };
+
+  const logoutAll = async () => {
+    if (window.confirm("Are you sure you want to log out from all devices? This will invalidate all your active sessions.")) {
+      try {
+        await axios.post("https://api.zonemeet.chat/api/auth/logout-all", {}, { withCredentials: true });
+      } catch (e) {}
+      
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setUser(null);
+      if (session) {
+        await signOut({ redirect: false });
+      }
+      router.push("/login");
+    }
   };
 
   const handleLogout = () => {
@@ -1546,6 +1566,12 @@ export default function Dashboard() {
                           <span>›</span>
                         </button>
                       )}
+
+                      {/* Logout All */}
+                      <button className="profile-more-btn" onClick={logoutAll} style={{ color: '#ef4444' }}>
+                        <div className="profile-detail-left">🔒 Logout All Devices</div>
+                        <span>›</span>
+                      </button>
 
                       {/* Logout */}
                       <button className="profile-more-btn" onClick={logout} style={{ color: '#ef4444' }}>
