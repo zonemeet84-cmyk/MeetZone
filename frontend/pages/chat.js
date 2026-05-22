@@ -1546,6 +1546,10 @@ export default function Home() {
 
       socket.on("receive-message", ({ text }) => {
         setMessages((prev) => [...prev, { text, sender: "partner" }]);
+        setCurrentSubtitle(`💬 ${text}`);
+        setTimeout(() => {
+          setCurrentSubtitle(prev => prev === `💬 ${text}` ? "" : prev);
+        }, 6000);
       });
 
       socket.on("receive-subtitle", ({ text }) => {
@@ -1951,17 +1955,18 @@ export default function Home() {
       if (!partnerInfo?.isFriend && user?.email?.toLowerCase() !== "ds9376314@gmail.com") {
         const msgToPrompt = message;
         setMessage("");
-        setMessages(prev => [...prev, { 
-          sender: 'system', 
-          type: 'coin-prompt',
-          text: `Sending this message costs 5 coins.`,
-          pendingText: msgToPrompt
-        }]);
+        if (window.confirm("Sending messages to non-friends costs 5 coins. Proceed?")) {
+           confirmAndSendMessage(msgToPrompt);
+        }
         return;
       }
 
       socket.emit("send-message", { text: message, to: partnerId });
       setMessages((prev) => [...prev, { text: message, sender: "me" }]);
+      setCurrentSubtitle(`You: ${message}`);
+      setTimeout(() => {
+        setCurrentSubtitle(prev => prev === `You: ${message}` ? "" : prev);
+      }, 4000);
       setMessage("");
     }
   };
@@ -1986,6 +1991,10 @@ export default function Home() {
           const filtered = prev.filter(m => m.type !== 'coin-prompt');
           return [...filtered, { text: pendingText, sender: "me" }];
         });
+        setCurrentSubtitle(`You: ${pendingText}`);
+        setTimeout(() => {
+          setCurrentSubtitle(prev => prev === `You: ${pendingText}` ? "" : prev);
+        }, 4000);
         
         // Update local coins
         const updatedUser = { ...user, coins: res.data.coins };
@@ -3037,17 +3046,29 @@ export default function Home() {
                     )}
                   </div>
                 </div>
-                <div className="card-controls">
-                  <button className={`ctrl-btn ${!isMicOn ? "off" : ""}`} onClick={toggleMic}>
-                    {isMicOn ? "🎙️" : "🔇"}
-                  </button>
-                  <button className={`ctrl-btn ${!isCameraOn ? "off" : ""}`} onClick={toggleCamera}>
-                    {isCameraOn ? "📹" : "🚫"}
-                  </button>
+                <div className="card-controls-wrapper">
+                  <div className="card-controls">
+                    <button className={`ctrl-btn ${!isMicOn ? "off" : ""}`} onClick={toggleMic}>
+                      {isMicOn ? "🎙️" : "🔇"}
+                    </button>
+                    <button className={`ctrl-btn ${!isCameraOn ? "off" : ""}`} onClick={toggleCamera}>
+                      {isCameraOn ? "📹" : "🚫"}
+                    </button>
 
-                  <button className={`ctrl-btn ${!isHDEnabled ? "off" : ""}`} onClick={toggleHD} title="Toggle HD Video" style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>
-                    HD
-                  </button>
+                    <button className={`ctrl-btn ${!isHDEnabled ? "off" : ""}`} onClick={toggleHD} title="Toggle HD Video" style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>
+                      HD
+                    </button>
+                  </div>
+                  <form onSubmit={sendMessage} className="mobile-inline-chat-form">
+                    <input 
+                      type="text" 
+                      placeholder="Type message..." 
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <button type="submit" disabled={!message.trim()}>💬</button>
+                  </form>
                 </div>
               </div>
 
@@ -4689,12 +4710,23 @@ export default function Home() {
           backdrop-filter: blur(4px);
         }
 
-        .card-controls {
+        .card-controls-wrapper {
           position: absolute;
           bottom: 1rem;
           left: 1rem;
           display: flex;
+          flex-direction: column;
           gap: 0.5rem;
+          z-index: 100;
+        }
+
+        .card-controls {
+          display: flex;
+          gap: 0.5rem;
+        }
+        
+        .mobile-inline-chat-form {
+          display: none;
         }
 
         .ctrl-btn {
@@ -6588,10 +6620,41 @@ export default function Home() {
           .video-grid-v2 > .video-card:nth-child(1) .card-label {
             top: 10px !important; /* Move local user label up */
           }
-          .card-controls {
+          .card-controls-wrapper {
             bottom: 50px !important; /* Avoid bottom mini bar */
             left: 5px !important;
+          }
+          .card-controls {
             gap: 4px !important;
+          }
+          .mobile-inline-chat-form {
+            display: flex !important;
+            gap: 6px;
+            width: 100%;
+          }
+          .mobile-inline-chat-form input {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 6px 12px;
+            color: white;
+            font-size: 13px;
+            outline: none;
+            backdrop-filter: blur(5px);
+            width: 140px;
+          }
+          .mobile-inline-chat-form button {
+            background: rgba(99, 102, 241, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
           }
           .ctrl-btn {
             width: 28px !important;
@@ -6600,23 +6663,10 @@ export default function Home() {
           }
           
           /* 4. Chat Box Overlay */
-          .chat-column.mobile-chat-closed {
+          .chat-column.mobile-chat-closed, .chat-column.mobile-chat-open {
             display: none !important;
           }
-          .chat-column.mobile-chat-open {
-            display: flex !important;
-            position: absolute !important;
-            bottom: 80px !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 250px !important;
-            max-height: 40vh !important;
-            z-index: 200 !important;
-            background: linear-gradient(transparent, rgba(0,0,0,0.9)) !important;
-            border: none !important;
-            pointer-events: none;
-            flex-direction: column !important;
-          }
+          
           .chat-box-v2 {
             background: transparent !important;
             border: none !important;
@@ -6708,19 +6758,9 @@ export default function Home() {
             vertical-align: middle;
           }
 
-          /* Chat Toggle Button -> Bottom Left */
+          /* Chat Toggle Button -> HIDDEN */
           .mobile-chat-toggle-btn {
-            bottom: 45px !important;
-            left: 20px !important;
-            width: 24px !important;
-            height: 24px !important;
-            background: transparent !important;
-            box-shadow: none !important;
-            border: none !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            padding: 0 !important;
+            display: none !important;
           }
           
           /* Stop Button -> Bottom Right, above Tools */
