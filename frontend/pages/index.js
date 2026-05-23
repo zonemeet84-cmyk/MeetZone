@@ -195,6 +195,7 @@ export default function Dashboard() {
     }
   }, [isLeaderboardOpen, leaderboardFilter]);
 
+  const [reconnectConfirm, setReconnectConfirm] = useState(null);
   const [historyReportTarget, setHistoryReportTarget] = useState(null);
   const [showHistoryReportModal, setShowHistoryReportModal] = useState(false);
   const [historyReportReason, setHistoryReportReason] = useState('');
@@ -2190,7 +2191,7 @@ export default function Dashboard() {
             <div style={{ fontSize: '2rem', marginBottom: '10px' }}>🔄</div>
             <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>Reconnect</h3>
             <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Missed a cool person? Request to chat again.</p>
-            <div style={{ marginTop: '15px', fontWeight: '800', color: '#6366f1' }}>50 Coins Total</div>
+            <div style={{ marginTop: '15px', fontWeight: '800', color: '#6366f1' }}>30 Coins</div>
           </div>
           <div className="utility-card" style={{ background: 'rgba(255,255,255,0.03)', padding: '25px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
             <div style={{ fontSize: '2rem', marginBottom: '10px' }}>👑</div>
@@ -2287,20 +2288,13 @@ export default function Dashboard() {
               <div className="buy-badge" style={{ background: 'rgba(236, 72, 153, 0.1)', color: '#ec4899' }}>Click to Purchase</div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateRows: '1fr', gap: '20px' }}>
               <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <small style={{ color: '#94a3b8', fontSize: '0.6rem', fontWeight: '800', textTransform: 'uppercase' }}>Direct Reconnect</small>
                   <span>📞</span>
                 </div>
                 <h4 style={{ fontSize: '1.1rem', margin: '8px 0' }}>30 Coins</h4>
-              </div>
-              <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <small style={{ color: '#94a3b8', fontSize: '0.6rem', fontWeight: '800', textTransform: 'uppercase' }}>Peer Messaging</small>
-                  <span>💬</span>
-                </div>
-                <h4 style={{ fontSize: '1.1rem', margin: '8px 0' }}>5 Coins</h4>
               </div>
             </div>
           </div>
@@ -2701,32 +2695,7 @@ export default function Dashboard() {
                           cursor: 'pointer',
                           padding: '0'
                         }}
-                        onClick={() => {
-                          showModal({
-                            message: `Reconnect with ${s.name}? (30 Coins)`,
-                            type: "question",
-                            confirmText: "Reconnect",
-                            cancelText: "Cancel",
-                            onConfirm: async () => {
-                              try {
-                                const token = localStorage.getItem('token');
-                                const res = await axios.post('https://api.zonemeet.chat/api/user/reconnect-call', { targetId: s.id }, { headers: { Authorization: `Bearer ${token}` } });
-                                
-                                if (res.data.success) {
-                                  setUser({ ...user, coins: res.data.coins });
-                                  if (res.data.status === "calling") {
-                                    showModal({ message: `Calling ${s.name}...`, type: "success" });
-                                    router.push(`/chat?room=${res.data.roomId}`);
-                                  } else {
-                                    showModal({ message: `${s.name} is offline. Reconnect request sent!`, type: "success" });
-                                  }
-                                }
-                              } catch (err) {
-                                showModal({ message: err.response?.data?.message || 'Failed', type: "error" });
-                              }
-                            }
-                          });
-                        }}
+                        onClick={() => setReconnectConfirm(s)}
                       >
                         <span style={{ fontSize: '1.2rem', background: 'white', borderRadius: '4px', padding: '2px 4px', display: 'flex' }}>💌</span>
                       </button>
@@ -2740,19 +2709,71 @@ export default function Dashboard() {
       )}
 
       {/* HISTORY REPORT MODAL */}
+      {/* RECONNECT CONFIRMATION POPUP */}
+      {reconnectConfirm && (
+        <div className="payment-overlay" style={{ zIndex: 12000 }} onClick={() => setReconnectConfirm(null)}>
+          <div className="premium-modal" style={{ maxWidth: '400px', padding: '0', overflow: 'hidden', background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '28px', boxShadow: '0 50px 100px rgba(0,0,0,0.8)' }} onClick={e => e.stopPropagation()}>
+            <div style={{ height: '6px', background: 'linear-gradient(90deg, #fbbf24, #f59e0b)' }}></div>
+            <div style={{ padding: '35px 30px', textAlign: 'center' }}>
+              <div style={{ fontSize: '3.5rem', marginBottom: '15px', filter: 'drop-shadow(0 8px 16px rgba(251,191,36,0.3))' }}>💌</div>
+              <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#fff', marginBottom: '8px' }}>Reconnect Request</h3>
+              <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '8px' }}>
+                Send a reconnect request to <strong style={{ color: '#fbbf24' }}>{reconnectConfirm.name}</strong>?
+              </p>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', padding: '8px 18px', borderRadius: '50px', marginBottom: '25px' }}>
+                <span style={{ fontSize: '1.2rem' }}>🪙</span>
+                <span style={{ color: '#fbbf24', fontWeight: 800, fontSize: '1rem' }}>30 Coins</span>
+              </div>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button onClick={() => setReconnectConfirm(null)} style={{ flex: 1, padding: '14px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#94a3b8', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', transition: '0.2s' }}>Cancel</button>
+                <button onClick={async () => {
+                  try {
+                    const token = localStorage.getItem('token');
+                    const res = await axios.post('https://api.zonemeet.chat/api/user/reconnect-call', { targetId: reconnectConfirm.id }, { headers: { Authorization: `Bearer ${token}` } });
+                    
+                    if (res.data.success) {
+                      setUser({ ...user, coins: res.data.coins });
+                      if (res.data.status === "calling") {
+                        showModal({ message: `Calling ${reconnectConfirm.name}...`, type: "success" });
+                        router.push(`/chat?room=${res.data.roomId}`);
+                      } else {
+                        showModal({ message: `${reconnectConfirm.name} is offline. Reconnect request sent!`, type: "success" });
+                      }
+                    }
+                  } catch (err) {
+                    showModal({ message: err.response?.data?.message || 'Failed', type: "error" });
+                  }
+                  setReconnectConfirm(null);
+                }} style={{ flex: 1.5, padding: '14px', borderRadius: '16px', border: 'none', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#000', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 8px 20px rgba(251,191,36,0.3)', transition: '0.2s' }}>Confirm & Send</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* HISTORY REPORT MODAL */}
       {showHistoryReportModal && historyReportTarget && (
-        <div className="report-modal-overlay" style={{ zIndex: 12000 }} onClick={() => { setShowHistoryReportModal(false); setHistoryReportTarget(null); setHistoryReportReason(''); setHistoryReportDetails(''); }}>
-          <div className="report-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="report-close" onClick={() => { setShowHistoryReportModal(false); setHistoryReportTarget(null); setHistoryReportReason(''); setHistoryReportDetails(''); }}>×</div>
-            <h2>🚨 Report User</h2>
-            <p style={{ textAlign: 'center', color: '#94a3b8', marginBottom: '20px', fontSize: '0.9rem' }}>
-              Reporting: <strong>{historyReportTarget.name}</strong>
+        <div className="payment-overlay" style={{ zIndex: 12000 }} onClick={() => { setShowHistoryReportModal(false); setHistoryReportTarget(null); setHistoryReportReason(''); setHistoryReportDetails(''); }}>
+          <div className="premium-modal" style={{ maxWidth: '400px', padding: '30px' }} onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={() => { setShowHistoryReportModal(false); setHistoryReportTarget(null); setHistoryReportReason(''); setHistoryReportDetails(''); }}>×</button>
+            <h2 style={{ marginBottom: '15px', color: '#ef4444' }}>🚨 Report User</h2>
+            <p style={{ color: '#94a3b8', marginBottom: '20px', fontSize: '0.9rem' }}>
+              Reporting: <strong style={{ color: '#fff' }}>{historyReportTarget.name}</strong>
             </p>
-            <div className="reasons-grid">
-              {["Nudity / NSFW", "Abuse / Harassment", "Spam", "Fake Profile", "Underage User", "Violence", "Recording Screen", "Scammer"].map(reason => (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+              {["Nudity / NSFW", "Abuse / Harassment", "Spam", "Fake Profile", "Underage", "Violence", "Recording Screen", "Scammer"].map(reason => (
                 <button
                   key={reason}
-                  className={`reason-btn ${historyReportReason === reason ? 'active' : ''}`}
+                  style={{
+                    background: historyReportReason === reason ? '#ef4444' : 'rgba(255,255,255,0.05)',
+                    color: 'white',
+                    border: '1px solid',
+                    borderColor: historyReportReason === reason ? '#ef4444' : 'rgba(255,255,255,0.1)',
+                    padding: '8px',
+                    borderRadius: '8px',
+                    fontSize: '0.8rem',
+                    cursor: 'pointer'
+                  }}
                   onClick={() => setHistoryReportReason(reason)}
                 >
                   {reason}
@@ -2760,12 +2781,12 @@ export default function Dashboard() {
               ))}
             </div>
             <textarea
-              className="report-details-box"
+              style={{ width: '100%', padding: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white', minHeight: '80px', marginBottom: '20px' }}
               placeholder="Additional details (optional)..."
               value={historyReportDetails}
               onChange={(e) => setHistoryReportDetails(e.target.value)}
             />
-            <button className="report-submit-btn" onClick={async () => {
+            <button style={{ width: '100%', padding: '15px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }} onClick={async () => {
               if (!historyReportReason) { showModal({ message: 'Please select a reason', type: 'warning' }); return; }
               try {
                 const token = localStorage.getItem('token');

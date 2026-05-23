@@ -1957,16 +1957,6 @@ export default function Home() {
     }
 
     if (message.trim() && partnerId) {
-      // DEDUCT 5 COINS ONLY IF NOT FRIENDS
-      if (!partnerInfo?.isFriend && user?.email?.toLowerCase() !== "ds9376314@gmail.com") {
-        const msgToPrompt = message;
-        setMessage("");
-        if (window.confirm("Sending messages to non-friends costs 5 coins. Proceed?")) {
-           confirmAndSendMessage(msgToPrompt);
-        }
-        return;
-      }
-
       socket.emit("send-message", { text: message, to: partnerId });
       setMessages((prev) => [...prev, { text: message, sender: "me" }]);
       if (typeof window !== 'undefined' && window.innerWidth < 768) {
@@ -4260,23 +4250,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* COIN DEDUCTION MODAL FOR MESSAGING */}
-      {showCoinPopup && (
 
-        <div className="auth-overlay" style={{ background: 'rgba(0,0,0,0.8)', zIndex: 10001 }}>
-          <div className="error-card" style={{ maxWidth: '400px', padding: '30px', textAlign: 'center', background: '#111827', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '30px' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '15px' }}>🪙</div>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '10px' }}>Spend Coins?</h2>
-            <p style={{ color: '#94a3b8', marginBottom: '25px', lineHeight: '1.5' }}>
-              Sending a message to a non-friend partner costs <strong>5 Coins</strong>. Do you want to continue?
-            </p>
-            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-              <button className="btn btn-primary" onClick={confirmAndSendMessage} style={{ padding: '12px 25px', borderRadius: '15px', fontWeight: '800' }}>Confirm (-5)</button>
-              <button className="btn btn-secondary" onClick={() => setShowCoinPopup(false)} style={{ padding: '12px 25px', borderRadius: '15px', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)' }}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
 
 
       <style jsx global>{`
