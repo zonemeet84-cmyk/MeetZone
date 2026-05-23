@@ -2482,8 +2482,37 @@ function endQuiz(roomId) {
       });
 
       socket.on("update-filters", (filters) => {
-        socket.filters = filters;
-        console.log(`User ${socket.id} updated filters:`, filters);
+        const isOwner = socket.email?.toLowerCase() === "ds9376314@gmail.com";
+        const isPremium = socket.premium || isOwner;
+        const isElite = (socket.premium && socket.planName === "VIP Elite") || isOwner;
+
+        const secureFilters = {
+          gender: "all",
+          country: "all",
+          state: "All States",
+          age: "All Ages"
+        };
+
+        if (isPremium) {
+          if (filters && (filters.gender === "Male" || filters.gender === "Female" || filters.gender === "all")) {
+            secureFilters.gender = filters.gender;
+          }
+          if (filters && filters.country) {
+            secureFilters.country = filters.country;
+          }
+
+          if (isElite) {
+            if (filters && filters.state) {
+              secureFilters.state = filters.state;
+            }
+            if (filters && filters.age) {
+              secureFilters.age = filters.age;
+            }
+          }
+        }
+
+        socket.filters = secureFilters;
+        console.log(`User ${socket.id} updated filters securely:`, secureFilters);
       });
 
       socket.on("set-translate-language", (langCode) => {
@@ -3711,6 +3740,9 @@ function endQuiz(roomId) {
       // SAVE UNLOCKED FILTERS
       if (feature && feature.startsWith("Unlock Filter: ")) {
         const { filterId } = req.body;
+        if (filterId === "Matchmaking_Preferences") {
+          return res.status(403).json({ success: false, message: "Matchmaking preferences cannot be purchased with coins!" });
+        }
         if (!user.unlockedFilters) {
           user.unlockedFilters = ["None", "Smooth"];
         }

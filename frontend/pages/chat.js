@@ -2211,8 +2211,9 @@ export default function Home() {
       return;
     }
     // Feature Gating: Only VIP Elite (or ds9376314@gmail.com) can use age and state filters
-    const isElite = (user?.premium && (user?.planName?.toLowerCase().includes("elite") || user?.planName?.toLowerCase().includes("vip"))) || isOwner;
+    const isElite = (user?.premium && user?.planName === "VIP Elite") || isOwner;
     if ((type === "age" || type === "state" || type === "stateProv") && !isElite) {
+      showToast("State & Age filters are exclusive to VIP Elite members!", "warning");
       setShowPricingModal(true);
       return;
     }
@@ -2567,43 +2568,17 @@ export default function Home() {
                 className="filter-settings-trigger-btn" 
                 onClick={async () => {
                   const isOwner = user?.email?.toLowerCase() === "ds9376314@gmail.com";
-                  const isElite = user?.planName === "VIP Elite";
-                  const hasBoughtFilter = user?.unlockedFilters?.includes("Matchmaking_Preferences");
+                  const isPremium = user?.premium || isOwner;
 
-                  if (isOwner || isElite || hasBoughtFilter) {
+                  if (isPremium) {
                     setTempGender(gender);
                     setTempCountry(country);
                     setTempStateProv(stateProv);
                     setTempAge(age);
                     setShowFilterModal(true);
                   } else {
-                    if (window.confirm("Unlock Matchmaking Filters for 500 Coins?")) {
-                      if ((user?.coins || 0) < 500) {
-                        showToast("Not enough coins! Go to Home to buy more.", "warning");
-                        return;
-                      }
-                      try {
-                        const res = await axios.post("https://api.zonemeet.chat/api/user/spend-coins", {
-                          email: user.email,
-                          amount: 500,
-                          feature: "Unlock Filter: Matchmaking_Preferences",
-                          filterId: "Matchmaking_Preferences"
-                        });
-                        if (res.data.success) {
-                          const updatedUser = { ...user, coins: res.data.coins, unlockedFilters: res.data.unlockedFilters };
-                          if (typeof setUser === 'function') setUser(updatedUser);
-                          localStorage.setItem("user", JSON.stringify(updatedUser));
-                          showToast("Matchmaking Filters Unlocked!", "success");
-                          setTempGender(gender);
-                          setTempCountry(country);
-                          setTempStateProv(stateProv);
-                          setTempAge(age);
-                          setShowFilterModal(true);
-                        }
-                      } catch (err) {
-                        showToast("Failed to purchase filter.", "error");
-                      }
-                    }
+                    showToast("Matchmaking preferences are a subscription feature! Please unlock Premium to use.", "warning");
+                    setShowPricingModal(true);
                   }
                 }}
               >
@@ -2771,8 +2746,12 @@ export default function Home() {
                         const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
                         const currentUser = user || storedUser;
                         const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
-                        const isElite = (currentUser?.premium && (currentUser?.planName?.toLowerCase().includes("elite") || currentUser?.planName?.toLowerCase().includes("vip"))) || isOwner;
-                        if (!isElite) { setShowPricingModal(true); return; }
+                        const isElite = (currentUser?.premium && currentUser?.planName === "VIP Elite") || isOwner;
+                        if (!isElite) {
+                          showToast("State / Province selection is exclusive to VIP Elite members!", "warning");
+                          setShowPricingModal(true);
+                          return;
+                        }
                         if (tempCountry === "all") { showToast("Please select a country first", "info"); return; }
                         const nextState = !showStateDrop;
                         setShowStateDrop(nextState);
@@ -2815,8 +2794,12 @@ export default function Home() {
                         const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
                         const currentUser = user || storedUser;
                         const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
-                        const isElite = (currentUser?.premium && (currentUser?.planName?.toLowerCase().includes("elite") || currentUser?.planName?.toLowerCase().includes("vip"))) || isOwner;
-                        if (!isElite) { setShowPricingModal(true); return; }
+                        const isElite = (currentUser?.premium && currentUser?.planName === "VIP Elite") || isOwner;
+                        if (!isElite) {
+                          showToast("Age Group selection is exclusive to VIP Elite members!", "warning");
+                          setShowPricingModal(true);
+                          return;
+                        }
                         const nextState = !showAgeDrop;
                         setShowAgeDrop(nextState);
                         if (nextState) {
@@ -2857,7 +2840,7 @@ export default function Home() {
                       const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
                       const currentUser = user || storedUser;
                       const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
-                      const isElite = (currentUser?.premium && (currentUser?.planName?.toLowerCase().includes("elite") || currentUser?.planName?.toLowerCase().includes("vip"))) || isOwner;
+                      const isElite = (currentUser?.premium && currentUser?.planName === "VIP Elite") || isOwner;
 
                       // 1. Gender Selection Gating (must be premium for Male or Female)
                       if (tempGender !== "all" && !currentUser?.premium && !isOwner) {
@@ -2871,11 +2854,13 @@ export default function Home() {
                       }
                       // 3. State Selection Gating (must be VIP Elite)
                       if (tempStateProv !== "All States" && !isElite) {
+                        showToast("State selection is exclusive to VIP Elite members!", "warning");
                         setShowPricingModal(true);
                         return;
                       }
                       // 4. Age Group Selection Gating (must be VIP Elite)
                       if (tempAge !== "all" && !isElite) {
+                        showToast("Age selection is exclusive to VIP Elite members!", "warning");
                         setShowPricingModal(true);
                         return;
                       }
