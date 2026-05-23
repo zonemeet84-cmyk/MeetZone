@@ -2568,54 +2568,7 @@ export default function Home() {
           </div>
 
           <div className="header-actions">
-            <div className="header-coins-pill" onClick={() => router.push("/#coins-section")}>
-              <span className="coin-icon">💰</span>
-              <span className="coin-count">{user?.coins || 0}</span>
-              <span className="plus-icon">+</span>
-            </div>
-
-            <div className="user-profile-tag">
-              <div className="avatar">
-                {user?.name?.charAt(0) || "?"}
-              </div>
-              <div className="user-details">
-                <span className="user-name">
-                  {user?.name || "ZoneMeet User"}
-                  {user?.email === "ds9376314@gmail.com" && <span className="vip-badge-inline">VIP</span>}
-                </span>
-                <span className="user-sub">
-                  {user?.gender || "Guest"} • {getFlagUrl(user?.country) && <img src={getFlagUrl(user?.country)} alt="" style={{ width: '14px', height: '10px', marginRight: '4px', verticalAlign: 'middle', borderRadius: '1px' }} />}
-                  {user?.country || "Earth"}
-                </span>
-              </div>
-              {user?.premium && (
-                user.planName === "VIP Elite" ? (
-                  <div className="vip-crown-tag">
-                    👑 VIP ELITE
-                  </div>
-                ) : (
-                  <div className="pro-badge-v2">
-                    🛡️ {user.planName} PRO
-                  </div>
-                )
-              )}
-            </div>
-
-            <button className="btn-home" onClick={() => { fetchHistory(); setShowHistoryModal(true); }} style={{ marginRight: '6px' }}>
-              <span className="icon">🕒</span>
-              <span className="text">History</span>
-            </button>
-
-            <button className="btn-home" onClick={() => router.push("/")}>
-              <span className="icon">🏠</span>
-              <span className="text">Home</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="main-layout">
-          <div className="video-column">
-            <div className="filters-row-v2" style={{ justifyContent: 'space-between', padding: '2px 0', alignItems: 'center' }}>
+            <div className="filters-row-v2" style={{ padding: '0', background: 'transparent', border: 'none', margin: '0' }}>
               <button 
                 className="filter-settings-trigger-btn" 
                 onClick={async () => {
@@ -2673,6 +2626,54 @@ export default function Home() {
                 </div>
               )}
             </div>
+
+            <div className="header-coins-pill" onClick={() => router.push("/#coins-section")}>
+              <span className="coin-icon">💰</span>
+              <span className="coin-count">{user?.coins || 0}</span>
+              <span className="plus-icon">+</span>
+            </div>
+
+            <div className="user-profile-tag">
+              <div className="avatar">
+                {user?.name?.charAt(0) || "?"}
+              </div>
+              <div className="user-details">
+                <span className="user-name">
+                  {user?.name || "ZoneMeet User"}
+                  {user?.email === "ds9376314@gmail.com" && <span className="vip-badge-inline">VIP</span>}
+                </span>
+                <span className="user-sub">
+                  {user?.gender || "Guest"} • {getFlagUrl(user?.country) && <img src={getFlagUrl(user?.country)} alt="" style={{ width: '14px', height: '10px', marginRight: '4px', verticalAlign: 'middle', borderRadius: '1px' }} />}
+                  {user?.country || "Earth"}
+                </span>
+              </div>
+              {user?.premium && (
+                user.planName === "VIP Elite" ? (
+                  <div className="vip-crown-tag">
+                    👑 VIP ELITE
+                  </div>
+                ) : (
+                  <div className="pro-badge-v2">
+                    🛡️ {user.planName} PRO
+                  </div>
+                )
+              )}
+            </div>
+
+            <button className="btn-home" onClick={() => { fetchHistory(); setShowHistoryModal(true); }} style={{ marginRight: '6px' }}>
+              <span className="icon">🕒</span>
+              <span className="text">History</span>
+            </button>
+
+            <button className="btn-home" onClick={() => router.push("/")}>
+              <span className="icon">🏠</span>
+              <span className="text">Home</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="main-layout">
+          <div className="video-column">
 
             {/* PREMIUM FILTER SETTINGS MODAL */}
             {showFilterModal && (
@@ -3173,8 +3174,7 @@ export default function Home() {
                   <div className="searching-ripple" style={{ animationDelay: '2s' }}></div>
                   <div className="searching-content">
                     <div className="searching-icon">🔍</div>
-                    <h3>Searching for Partner...</h3>
-                    <p>Connecting you with someone amazing</p>
+                    <h3 style={{ fontSize: '0.95rem', margin: 0 }}>{status}</h3>
                   </div>
                 </div>
               )}
@@ -3702,7 +3702,6 @@ export default function Home() {
           <div className="bottom-actions">
             <div className="conn-status">
               <div className={`dot ${partnerId ? "active" : "searching"}`} />
-              {status}
             </div>
             <div style={{ flex: 1, textAlign: 'center', fontSize: '0.75rem', color: '#94a3b8' }}>
               By continuing with Camera/Mic, you agree to our <a href="/terms" target="_blank" style={{ color: '#6366f1' }}>Terms</a> and <a href="/guidelines" target="_blank" style={{ color: '#6366f1' }}>Community Guidelines</a>.
@@ -3810,7 +3809,7 @@ export default function Home() {
                     </select>
                   </div>
                 )}
-                <span className="msg-count">{messages.length} msgs</span>
+
                 <button type="button" className="mobile-chat-close-btn-header" onClick={() => setIsMobileChatOpen(false)}>×</button>
               </div>
             </div>
@@ -3973,40 +3972,73 @@ export default function Home() {
                   <p style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Start a chat to see your history here.</p>
                 </div>
               ) : (
-                user.recentStrangers.map((s, idx) => (
-                  <div key={idx} className="history-item">
-                    <div className="history-item-left">
-                      <div className="history-avatar">
-                        {s.name ? s.name.charAt(0).toUpperCase() : '?'}
+                  <div key={idx} className="history-item" style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '16px', marginBottom: '12px' }}>
+                    
+                    {/* Top Row */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.8rem', color: '#94a3b8' }}>
+                        <span>{new Date(s.timestamp).toLocaleString([], { month: '2-digit', day: '2-digit', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                          00:00
+                        </span>
                       </div>
-                      <div className="history-details">
-                        <div className="history-name">{s.name}</div>
-                        <div className="history-info">
-                          {s.country} • {new Date(s.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                        </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button onClick={() => openReport()} style={{ background: '#e11d48', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}>👮</button>
+                        <button onClick={() => setHistoryList(historyList.filter((_, i) => i !== idx))} style={{ background: '#1e293b', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', padding: 0 }}>🗑️</button>
                       </div>
                     </div>
-                    <button
-                      className="history-reconnect-btn"
-                      onClick={async () => {
-                        const confirmed = window.confirm(`Reconnect with ${s.name}? (10 Coins)`);
-                        if (confirmed) {
-                          try {
-                            const token = localStorage.getItem('token');
-                            const res = await axios.post('https://api.zonemeet.chat/api/user/spend-coins', { email: user.email, amount: 10, feature: 'reconnect' });
-                            if (res.data.success) {
-                              setUser({ ...user, coins: res.data.coins });
-                              await axios.post('https://api.zonemeet.chat/api/friends/request', { targetId: s.id, type: 'reconnect' }, { headers: { Authorization: `Bearer ${token}` } });
-                              showToast(`Request sent to ${s.name}!`, "success");
+
+                    {/* Bottom Row */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '4px' }}>
+                      <div className="history-item-left" style={{ gap: '16px' }}>
+                        <div className="history-avatar" style={{ width: '48px', height: '48px' }}>
+                          {s.name ? s.name.charAt(0).toUpperCase() : '?'}
+                        </div>
+                        <div className="history-details">
+                          <div className="history-name" style={{ fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            {s.name} 👱
+                          </div>
+                          <div className="history-info" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem' }}>
+                            📍 {s.country || "Earth"}
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        className="history-reconnect-btn"
+                        style={{
+                          background: '#fde047', 
+                          border: 'none', 
+                          borderRadius: '50%', 
+                          width: '44px', 
+                          height: '44px', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          boxShadow: '0 4px 10px rgba(253, 224, 71, 0.3)',
+                          cursor: 'pointer',
+                          padding: '0'
+                        }}
+                        onClick={async () => {
+                          const confirmed = window.confirm(`Use 30 coins to send a request for reconnect with ${s.name}?`);
+                          if (confirmed) {
+                            try {
+                              const token = localStorage.getItem('token');
+                              const res = await axios.post('https://api.zonemeet.chat/api/user/spend-coins', { email: user.email, amount: 30, feature: 'reconnect' });
+                              if (res.data.success) {
+                                setUser({ ...user, coins: res.data.coins });
+                                await axios.post('https://api.zonemeet.chat/api/friends/request', { targetId: s.id, type: 'reconnect' }, { headers: { Authorization: `Bearer ${token}` } });
+                                showToast(`Request sent to ${s.name}!`, "success");
+                              }
+                            } catch (err) {
+                              showToast(err.response?.data?.message || 'Failed to reconnect', "error");
                             }
-                          } catch (err) {
-                            showToast(err.response?.data?.message || 'Failed to reconnect', "error");
                           }
-                        }
-                      }}
-                    >
-                      Reconnect
-                    </button>
+                        }}
+                      >
+                        <span style={{ fontSize: '1.2rem', background: 'white', borderRadius: '4px', padding: '2px 4px', display: 'flex' }}>💌</span>
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
@@ -4816,8 +4848,8 @@ export default function Home() {
           justify-content: space-between;
           align-items: center;
           background: rgba(255, 255, 255, 0.03);
-          padding: 0.75rem 1.5rem;
-          border-radius: 20px;
+          padding: 0.35rem 1rem;
+          border-radius: 16px;
         }
 
         .conn-status {
