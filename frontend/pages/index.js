@@ -241,8 +241,8 @@ export default function Dashboard() {
         },
         vip: {
           keywords: ['vip', 'premium', 'elite', 'plan', 'membership', 'filter', 'gender', 'country', 'age', 'pricing', 'starter', 'prime', 'silver', 'price', 'kharch', 'subscription'],
-          en: "Our Premium Plans are designed for the best experience: \n\n✨ **Starter (₹149):** Filters + 50 Coins.\n🚀 **Prime (₹599):** ALL Filters + 150 Coins.\n💎 **Silver (₹1599):** 90 Days + 500 Coins.\n👑 **VIP Elite (₹999):** Age Filter + Stealth Mode + 400 Coins. \n\nCheck the 'Pricing' section for full details!",
-          hi: "Humare VIP plans aapko best filters dete hain: \n\n✨ **Starter (₹149):** Filters + 50 Coins.\n🚀 **Prime (₹599):** Saare Filters + 150 Coins.\n💎 **Silver (₹1599):** 90 Din + 500 Coins.\n👑 **VIP Elite (₹999):** Age Filter + Invisible Mode + 400 Coins. \n\n'Pricing' section mein saari details dekh sakte hain!"
+          en: "Our Premium Plans are designed for the best experience: \n\n✨ **Starter (₹149):** Filters + 50 Coins.\n🚀 **Prime (₹599):** ALL Filters + 150 Coins.\n💎 **Silver (₹1599):** 90 Days + 500 Coins.\n👑 **VIP Elite (₹999):** Age Filter + 400 Coins. \n\nCheck the 'Pricing' section for full details!",
+          hi: "Humare VIP plans aapko best filters dete hain: \n\n✨ **Starter (₹149):** Filters + 50 Coins.\n🚀 **Prime (₹599):** Saare Filters + 150 Coins.\n💎 **Silver (₹1599):** 90 Din + 500 Coins.\n👑 **VIP Elite (₹999):** Age Filter + 400 Coins. \n\n'Pricing' section mein saari details dekh sakte hain!"
         },
         mystery: {
           keywords: ['box', 'mystery', 'gift', 'dabba', 'reward', 'win', 'bronze', 'silver', 'gold', 'luck', 'chest'],
@@ -1007,7 +1007,7 @@ export default function Dashboard() {
     if (!user) { showModal({ message: "Please login first", type: "info" }); return; }
     const CF_APP_ID = process.env.NEXT_PUBLIC_CASHFREE_APP_ID;
     if (!CF_APP_ID || CF_APP_ID === "YOUR_CASHFREE_APP_ID") {
-      showModal({ message: "⚠️ Cashfree gateway coming soon! Use Razorpay for now.", type: "info" }); return;
+      showModal({ message: "⚠️ Cashfree gateway is being configured. Please try again in a few minutes or contact support.", type: "info" }); return;
     }
     try {
       setPaymentStep("processing");
@@ -1036,7 +1036,7 @@ export default function Dashboard() {
     if (!user) { showModal({ message: "Please login first", type: "info" }); return; }
     const PP_CLIENT = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
     if (!PP_CLIENT || PP_CLIENT === "YOUR_PAYPAL_CLIENT_ID") {
-      showModal({ message: "⚠️ PayPal gateway coming soon! Use Razorpay or Stripe for now.", type: "info" }); return;
+      showModal({ message: "⚠️ PayPal gateway coming soon! Use Stripe for now.", type: "info" }); return;
     }
     try {
       setPaymentStep("processing");
@@ -1058,7 +1058,7 @@ export default function Dashboard() {
     if (!user) { showModal({ message: "Please login first", type: "info" }); return; }
     const STRIPE_PUB = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
     if (!STRIPE_PUB || STRIPE_PUB === "YOUR_STRIPE_PUBLISHABLE_KEY") {
-      showModal({ message: "⚠️ Stripe gateway coming soon! Use Razorpay for now.", type: "info" }); return;
+      showModal({ message: "⚠️ Stripe gateway coming soon! Please contact support.", type: "info" }); return;
     }
     try {
       setPaymentStep("processing");
@@ -1214,7 +1214,6 @@ export default function Dashboard() {
         <title>ZoneMeet – Talk To New People Online</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <meta name="description" content="ZoneMeet lets you instantly connect with People worldwide through secure video chat. Meet new people, make friends, and enjoy live conversations online." />
-        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
         <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
       </Head>
 
@@ -1951,10 +1950,7 @@ export default function Dashboard() {
               <strong>⚡ Instant Zero-Wait</strong>
               <p>Never wait for a match again</p>
             </div>
-            <div className="elite-feature-item">
-              <strong>👤 Invisible Mode</strong>
-              <p>Browse without being seen</p>
-            </div>
+
             <div className="elite-feature-item">
               <strong>🎨 Free Filters & Avatars</strong>
               <p>All face filters & animated avatars unlocked</p>
@@ -2371,28 +2367,22 @@ export default function Dashboard() {
                   <div className="methods-list-premium">
                     {currency === "INR" ? (
                       <>
-                        <div className="gateway-section-label">🇮🇳 Indian Payment Methods</div>
-                        <button className="pay-method-item" onClick={() => handleRazorpayPayment()}>
+                        <div className="gateway-section-label">🇮🇳 Indian Payment Methods (via Cashfree)</div>
+                        <button className="pay-method-item" onClick={() => handleCashfreePayment()}>
                           <div className="pay-icon-box">📱</div>
-                          <div className="pay-details"><strong>UPI Payment</strong><span>GPay, PhonePe, Paytm via Razorpay</span></div>
-                          <div className="pay-badge">Razorpay</div>
-                          <div className="pay-arrow">›</div>
-                        </button>
-                        <button className="pay-method-item" onClick={() => handleRazorpayPayment()}>
-                          <div className="pay-icon-box">💳</div>
-                          <div className="pay-details"><strong>Debit / Credit Card</strong><span>All Indian & International Cards</span></div>
-                          <div className="pay-badge">Razorpay</div>
-                          <div className="pay-arrow">›</div>
-                        </button>
-                        <button className="pay-method-item" onClick={() => handleRazorpayPayment()}>
-                          <div className="pay-icon-box">🏦</div>
-                          <div className="pay-details"><strong>Net Banking</strong><span>All Major Indian Banks</span></div>
-                          <div className="pay-badge">Razorpay</div>
+                          <div className="pay-details"><strong>UPI Payment</strong><span>GPay, PhonePe, Paytm via Cashfree</span></div>
+                          <div className="pay-badge" style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981' }}>Cashfree</div>
                           <div className="pay-arrow">›</div>
                         </button>
                         <button className="pay-method-item" onClick={() => handleCashfreePayment()}>
-                          <div className="pay-icon-box">⚡</div>
-                          <div className="pay-details"><strong>Cashfree Pay</strong><span>UPI, Cards, Wallets — 1.75% fee</span></div>
+                          <div className="pay-icon-box">💳</div>
+                          <div className="pay-details"><strong>Debit / Credit Card</strong><span>Visa, Mastercard, RuPay via Cashfree</span></div>
+                          <div className="pay-badge" style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981' }}>Cashfree</div>
+                          <div className="pay-arrow">›</div>
+                        </button>
+                        <button className="pay-method-item" onClick={() => handleCashfreePayment()}>
+                          <div className="pay-icon-box">🏦</div>
+                          <div className="pay-details"><strong>Net Banking</strong><span>All Major Indian Banks via Cashfree</span></div>
                           <div className="pay-badge" style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981' }}>Cashfree</div>
                           <div className="pay-arrow">›</div>
                         </button>

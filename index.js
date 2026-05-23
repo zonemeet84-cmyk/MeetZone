@@ -231,8 +231,8 @@ export default function Dashboard() {
         },
         vip: {
           keywords: ['vip', 'premium', 'elite', 'plan', 'membership', 'filter', 'gender', 'country', 'age', 'pricing', 'starter', 'prime', 'silver', 'price', 'kharch', 'subscription'],
-          en: "Our Premium Plans are designed for the best experience: \n\n✨ **Starter (₹99):** Filters + 50 Coins.\n🚀 **Prime (₹349):** ALL Filters + 150 Coins.\n💎 **Silver (₹999):** 90 Days + 500 Coins.\n👑 **VIP Elite (₹899):** Age Filter + Stealth Mode + 400 Coins. \n\nCheck the 'Pricing' section for full details!",
-          hi: "Humare VIP plans aapko best filters dete hain: \n\n✨ **Starter (₹99):** Filters + 50 Coins.\n🚀 **Prime (₹349):** Saare Filters + 150 Coins.\n💎 **Silver (₹999):** 90 Din + 500 Coins.\n👑 **VIP Elite (₹899):** Age Filter + Invisible Mode + 400 Coins. \n\n'Pricing' section mein saari details dekh sakte hain!"
+          en: "Our Premium Plans are designed for the best experience: \n\n✨ **Starter (₹99):** Filters + 50 Coins.\n🚀 **Prime (₹349):** ALL Filters + 150 Coins.\n💎 **Silver (₹999):** 90 Days + 500 Coins.\n👑 **VIP Elite (₹899):** Age Filter + 400 Coins. \n\nCheck the 'Pricing' section for full details!",
+          hi: "Humare VIP plans aapko best filters dete hain: \n\n✨ **Starter (₹99):** Filters + 50 Coins.\n🚀 **Prime (₹349):** Saare Filters + 150 Coins.\n💎 **Silver (₹999):** 90 Din + 500 Coins.\n👑 **VIP Elite (₹899):** Age Filter + 400 Coins. \n\n'Pricing' section mein saari details dekh sakte hain!"
         },
         mystery: {
           keywords: ['box', 'mystery', 'gift', 'dabba', 'reward', 'win', 'bronze', 'silver', 'gold', 'luck', 'chest'],
@@ -1640,10 +1640,7 @@ export default function Dashboard() {
               <strong>⚡ Instant Zero-Wait</strong>
               <p>Never wait for a match again</p>
             </div>
-            <div className="elite-feature-item">
-              <strong>👤 Invisible Mode</strong>
-              <p>Browse without being seen</p>
-            </div>
+
           </div>
         </div>
       </div>

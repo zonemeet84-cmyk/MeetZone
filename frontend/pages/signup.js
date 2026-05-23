@@ -141,20 +141,6 @@ export default function Signup() {
           <p>Join ZoneMeet and start matching today!</p>
         </div>
 
-        <div style={{
-          background: 'rgba(239, 68, 68, 0.08)',
-          border: '1px solid rgba(239, 68, 68, 0.25)',
-          borderRadius: '16px',
-          padding: '8px 12px',
-          marginBottom: '10px',
-          fontSize: '0.75rem',
-          lineHeight: '1.3',
-          color: '#f87171',
-          fontWeight: '700',
-          textAlign: 'center'
-        }}>
-          ⚠️ 18+ RESTRICTION: You must be at least 18 years old to use ZoneMeet.
-        </div>
 
         <form onSubmit={handleSubmit} className="modern-form">
           <div className="input-item">

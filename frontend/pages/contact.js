@@ -161,8 +161,8 @@ export default function Contact() {
                 <p>Absolutely. We use end-to-end encryption for all video calls and never store your private data.</p>
               </div>
               <div className="faq-item">
-                <h4>How to cancel VIP?</h4>
-                <p>You can cancel anytime from your profile settings. No hidden fees or commitments.</p>
+                <h4>How do I report inappropriate behavior?</h4>
+                <p>You can instantly report any user during a call by clicking the red flag button. Our AI Guardian and support team review reports 24/7 to keep the community safe.</p>
               </div>
             </div>
 
