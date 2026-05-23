@@ -2709,12 +2709,17 @@ export default function Dashboard() {
                             cancelText: "Cancel",
                             onConfirm: async () => {
                               try {
-                                const res = await axios.post('https://api.zonemeet.chat/api/user/spend-coins', { email: user.email, amount: 30, feature: 'reconnect' });
+                                const token = localStorage.getItem('token');
+                                const res = await axios.post('https://api.zonemeet.chat/api/user/reconnect-call', { targetId: s.id }, { headers: { Authorization: `Bearer ${token}` } });
+                                
                                 if (res.data.success) {
                                   setUser({ ...user, coins: res.data.coins });
-                                  const token = localStorage.getItem('token');
-                                  await axios.post('https://api.zonemeet.chat/api/friends/request', { targetId: s.id, type: 'reconnect' }, { headers: { Authorization: `Bearer ${token}` } });
-                                  showModal({ message: `Request sent to ${s.name}!`, type: "success" });
+                                  if (res.data.status === "calling") {
+                                    showModal({ message: `Calling ${s.name}...`, type: "success" });
+                                    router.push(`/chat?room=${res.data.roomId}`);
+                                  } else {
+                                    showModal({ message: `${s.name} is offline. Reconnect request sent!`, type: "success" });
+                                  }
                                 }
                               } catch (err) {
                                 showModal({ message: err.response?.data?.message || 'Failed', type: "error" });

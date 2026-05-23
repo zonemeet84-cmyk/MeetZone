@@ -3611,6 +3611,58 @@ function endQuiz(roomId) {
       }
     });
 
+    app.post("/api/user/reconnect-call", authenticateToken, (req, res) => {
+      const { targetId } = req.body;
+      const user = req.user;
+      
+      const targetUser = users.find(u => u.id === targetId);
+      if (!targetUser) return res.status(404).json({ message: "Target user not found" });
+
+      if (user.email !== "ds9376314@gmail.com") {
+        if (user.coins < 30) {
+          return res.status(400).json({ success: false, message: "Not enough coins!" });
+        }
+        user.coins -= 30;
+        user.monthlySpend = (user.monthlySpend || 0) + 30;
+        // checkLeaderboardReset(); // assuming this is global
+      }
+
+      // Track coin spend
+      coinActivity.push({
+        id: Date.now() + Math.random(),
+        email: user.email,
+        name: user.name,
+        feature: "reconnect",
+        amount: 30,
+        timestamp: Date.now()
+      });
+      saveCoinActivity();
+      saveUsers();
+
+      const targetSocketId = onlineUsers.get(targetId);
+      if (targetSocketId && io.sockets.sockets.has(targetSocketId)) {
+        // Target is online, initiate direct call
+        const roomId = "room_" + Math.random().toString(36).substring(7);
+        const targetSocket = io.sockets.sockets.get(targetSocketId);
+        
+        targetSocket.emit("incoming-direct-call", {
+          fromUser: { id: user.id, name: user.name, email: user.email },
+          roomId,
+          fromSocketId: onlineUsers.get(user.id)
+        });
+        return res.json({ success: true, status: "calling", roomId, coins: user.coins });
+      }
+
+      // Target is offline, send friend request
+      if (!targetUser.friendRequests) targetUser.friendRequests = [];
+      const alreadyRequested = targetUser.friendRequests.some(r => (typeof r === 'string' ? r : r.id) === user.id);
+      if (!alreadyRequested && !(targetUser.friends && targetUser.friends.includes(user.id))) {
+        targetUser.friendRequests.push({ id: user.id, type: 'reconnect' });
+        saveUsers();
+      }
+      
+      return res.json({ success: true, status: "offline_request_sent", coins: user.coins });
+    });
 
 
     app.post("/api/user/spend-coins", (req, res) => {

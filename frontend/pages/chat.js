@@ -4582,7 +4582,7 @@ export default function Home() {
           grid-template-columns: 1fr 1fr;
           gap: 0.75rem;
           flex: 1;
-          margin-bottom: 0px; 
+          margin-bottom: 1rem; 
           align-items: stretch;
           justify-items: stretch;
         }
