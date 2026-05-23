@@ -3972,6 +3972,7 @@ export default function Home() {
                   <p style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Start a chat to see your history here.</p>
                 </div>
               ) : (
+                user.recentStrangers.map((s, idx) => (
                   <div key={idx} className="history-item" style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '16px', marginBottom: '12px' }}>
                     
                     {/* Top Row */}
