@@ -195,6 +195,11 @@ export default function Dashboard() {
     }
   }, [isLeaderboardOpen, leaderboardFilter]);
 
+  const [historyReportTarget, setHistoryReportTarget] = useState(null);
+  const [showHistoryReportModal, setShowHistoryReportModal] = useState(false);
+  const [historyReportReason, setHistoryReportReason] = useState('');
+  const [historyReportDetails, setHistoryReportDetails] = useState('');
+
   // Premium Modal State
   const [premiumModal, setPremiumModal] = useState({
     isOpen: false,
@@ -286,8 +291,8 @@ export default function Dashboard() {
         },
         history: {
           keywords: ['history', 'recent', 'connections', 'missed', 'reconnect'],
-          en: "Missed someone? Check your **Recent Connections** icon. You can request to Reconnect for only 10 coins!",
-          hi: "Agar koi miss ho jaye, toh 'Recent Connections' mein jaake 10 coins mein firse connect kar sakte hain!"
+          en: "Missed someone? Check your **Recent Connections** icon. You can request to Reconnect for only 30 coins!",
+          hi: "Agar koi miss ho jaye, toh 'Recent Connections' mein jaake 30 coins mein firse connect kar sakte hain!"
         }
       };
 
@@ -2288,7 +2293,7 @@ export default function Dashboard() {
                   <small style={{ color: '#94a3b8', fontSize: '0.6rem', fontWeight: '800', textTransform: 'uppercase' }}>Direct Reconnect</small>
                   <span>📞</span>
                 </div>
-                <h4 style={{ fontSize: '1.1rem', margin: '8px 0' }}>10 Coins</h4>
+                <h4 style={{ fontSize: '1.1rem', margin: '8px 0' }}>30 Coins</h4>
               </div>
               <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -2627,48 +2632,152 @@ export default function Dashboard() {
                 </div>
               ) : (
                 user.recentStrangers.map((s, idx) => (
-                  <div key={idx} className="history-item">
-                    <div className="history-item-left">
-                      <div className="history-avatar">
-                        {s.name ? s.name.charAt(0).toUpperCase() : '?'}
+                  <div key={idx} className="history-item" style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '16px', marginBottom: '12px' }}>
+                    
+                    {/* Top Row */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.8rem', color: '#94a3b8' }}>
+                        <span>{new Date(s.timestamp).toLocaleString([], { month: '2-digit', day: '2-digit', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                          {(() => {
+                            const diff = Date.now() - new Date(s.timestamp).getTime();
+                            const mins = Math.floor(diff / 60000);
+                            const hrs = Math.floor(mins / 60);
+                            const days = Math.floor(hrs / 24);
+                            if (days > 0) return `${days}d ago`;
+                            if (hrs > 0) return `${hrs}h ago`;
+                            if (mins > 0) return `${mins}m ago`;
+                            return 'Just now';
+                          })()}
+                        </span>
                       </div>
-                      <div className="history-details">
-                        <div className="history-name">{s.name}</div>
-                        <div className="history-info">
-                          {s.country} • {new Date(s.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                        </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button onClick={() => {
+                          setHistoryReportTarget(s);
+                          setShowHistoryReportModal(true);
+                        }} style={{ background: '#e11d48', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}>👮</button>
+                        <button onClick={async () => {
+                          const updated = user.recentStrangers.filter((_, i) => i !== idx);
+                          setUser({ ...user, recentStrangers: updated });
+                          try {
+                            const token = localStorage.getItem('token');
+                            await axios.post('https://api.zonemeet.chat/api/user/delete-history', { targetId: s.id }, { headers: { Authorization: `Bearer ${token}` } });
+                            showModal({ message: 'Removed from history', type: 'success' });
+                          } catch (err) {
+                            showModal({ message: 'Failed to delete', type: 'error' });
+                          }
+                        }} style={{ background: '#1e293b', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', padding: 0 }}>🗑️</button>
                       </div>
                     </div>
-                    <button
-                      className="history-reconnect-btn"
-                      onClick={async () => {
-                        showModal({
-                          message: `Reconnect with ${s.name}? (10 Coins)`,
-                          type: "question",
-                          confirmText: "Reconnect",
-                          cancelText: "Cancel",
-                          onConfirm: async () => {
-                            try {
-                              const res = await axios.post('https://api.zonemeet.chat/api/user/spend-coins', { email: user.email, amount: 10, feature: 'reconnect' });
-                              if (res.data.success) {
-                                setUser({ ...user, coins: res.data.coins });
-                                const token = localStorage.getItem('token');
-                                await axios.post('https://api.zonemeet.chat/api/friends/request', { targetId: s.id, type: 'reconnect' }, { headers: { Authorization: `Bearer ${token}` } });
-                                showModal({ message: `Request sent to ${s.name}!`, type: "success" });
+
+                    {/* Bottom Row */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '4px' }}>
+                      <div className="history-item-left" style={{ gap: '16px' }}>
+                        <div className="history-avatar" style={{ width: '48px', height: '48px' }}>
+                          {s.name ? s.name.charAt(0).toUpperCase() : '?'}
+                        </div>
+                        <div className="history-details">
+                          <div className="history-name" style={{ fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            {s.name} 👱
+                          </div>
+                          <div className="history-info" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem' }}>
+                            📍 {s.country || "Earth"}
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        className="history-reconnect-btn"
+                        style={{
+                          background: '#fde047', 
+                          border: 'none', 
+                          borderRadius: '50%', 
+                          width: '44px', 
+                          height: '44px', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          boxShadow: '0 4px 10px rgba(253, 224, 71, 0.3)',
+                          cursor: 'pointer',
+                          padding: '0'
+                        }}
+                        onClick={() => {
+                          showModal({
+                            message: `Reconnect with ${s.name}? (30 Coins)`,
+                            type: "question",
+                            confirmText: "Reconnect",
+                            cancelText: "Cancel",
+                            onConfirm: async () => {
+                              try {
+                                const res = await axios.post('https://api.zonemeet.chat/api/user/spend-coins', { email: user.email, amount: 30, feature: 'reconnect' });
+                                if (res.data.success) {
+                                  setUser({ ...user, coins: res.data.coins });
+                                  const token = localStorage.getItem('token');
+                                  await axios.post('https://api.zonemeet.chat/api/friends/request', { targetId: s.id, type: 'reconnect' }, { headers: { Authorization: `Bearer ${token}` } });
+                                  showModal({ message: `Request sent to ${s.name}!`, type: "success" });
+                                }
+                              } catch (err) {
+                                showModal({ message: err.response?.data?.message || 'Failed', type: "error" });
                               }
-                            } catch (err) {
-                              showModal({ message: err.response?.data?.message || 'Failed', type: "error" });
                             }
-                          }
-                        });
-                      }}
-                    >
-                      Reconnect
-                    </button>
+                          });
+                        }}
+                      >
+                        <span style={{ fontSize: '1.2rem', background: 'white', borderRadius: '4px', padding: '2px 4px', display: 'flex' }}>💌</span>
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* HISTORY REPORT MODAL */}
+      {showHistoryReportModal && historyReportTarget && (
+        <div className="report-modal-overlay" style={{ zIndex: 12000 }} onClick={() => { setShowHistoryReportModal(false); setHistoryReportTarget(null); setHistoryReportReason(''); setHistoryReportDetails(''); }}>
+          <div className="report-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="report-close" onClick={() => { setShowHistoryReportModal(false); setHistoryReportTarget(null); setHistoryReportReason(''); setHistoryReportDetails(''); }}>×</div>
+            <h2>🚨 Report User</h2>
+            <p style={{ textAlign: 'center', color: '#94a3b8', marginBottom: '20px', fontSize: '0.9rem' }}>
+              Reporting: <strong>{historyReportTarget.name}</strong>
+            </p>
+            <div className="reasons-grid">
+              {["Nudity / NSFW", "Abuse / Harassment", "Spam", "Fake Profile", "Underage User", "Violence", "Recording Screen", "Scammer"].map(reason => (
+                <button
+                  key={reason}
+                  className={`reason-btn ${historyReportReason === reason ? 'active' : ''}`}
+                  onClick={() => setHistoryReportReason(reason)}
+                >
+                  {reason}
+                </button>
+              ))}
+            </div>
+            <textarea
+              className="report-details-box"
+              placeholder="Additional details (optional)..."
+              value={historyReportDetails}
+              onChange={(e) => setHistoryReportDetails(e.target.value)}
+            />
+            <button className="report-submit-btn" onClick={async () => {
+              if (!historyReportReason) { showModal({ message: 'Please select a reason', type: 'warning' }); return; }
+              try {
+                const token = localStorage.getItem('token');
+                await axios.post('https://api.zonemeet.chat/api/report', {
+                  targetId: historyReportTarget.id,
+                  reason: historyReportReason,
+                  details: historyReportDetails
+                }, { headers: { Authorization: `Bearer ${token}` } });
+                showModal({ message: 'Report submitted successfully!', type: 'success' });
+                setShowHistoryReportModal(false);
+                setHistoryReportTarget(null);
+                setHistoryReportReason('');
+                setHistoryReportDetails('');
+              } catch (err) {
+                showModal({ message: 'Failed to submit report', type: 'error' });
+              }
+            }}>Submit Report</button>
           </div>
         </div>
       )}

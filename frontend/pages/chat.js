@@ -179,6 +179,9 @@ export default function Home() {
 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [historyList, setHistoryList] = useState([]);
+  const [reconnectConfirm, setReconnectConfirm] = useState(null);
+  const [reportTargetFromHistory, setReportTargetFromHistory] = useState(null);
+  const [showPremiumMiniBar, setShowPremiumMiniBar] = useState(false);
   const [translateLang, setTranslateLang] = useState("off");
   const [translateEnabled, setTranslateEnabled] = useState(false);
   const [subtitlesOn, setSubtitlesOn] = useState(false);
@@ -691,6 +694,7 @@ export default function Home() {
     setShowReportModal(false);
     setSelectedReason("");
     setReportDetails("");
+    setReportTargetFromHistory(null);
   };
 
   const submitReport = async () => {
@@ -699,7 +703,7 @@ export default function Home() {
       return;
     }
 
-    const targetId = partnerInfo?.id || partnerId;
+    const targetId = reportTargetFromHistory?.id || partnerInfo?.id || partnerId;
     if (!targetId) {
       showToast("Partner connection lost. Cannot submit report.", "error");
       return;
@@ -3677,24 +3681,22 @@ export default function Home() {
 
 
               {/* Bottom Mini Bar */}
-              <div className="bottom-mini-bar">
-                {(user?.email === "ds9376314@gmail.com" || user?.planName === "VIP Elite" || user?.hasSecretIdentity) && (
-                  <>
-                    <button className={`tool-btn ${activeIdentityMenu === 'avatars' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'avatars' ? null : 'avatars')}>
-                      👤 Avatars
-                    </button>
-                    <button className={`tool-btn ${activeIdentityMenu === 'voice' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'voice' ? null : 'voice')}>
-                      🎙 Voice
-                    </button>
-                    <button className={`tool-btn ${activeIdentityMenu === 'privacy' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'privacy' ? null : 'privacy')}>
-                      🌫 Privacy
-                    </button>
-                  </>
-                )}
-                <button className={`tool-btn ${showGiftPanel ? 'active' : ''}`} onClick={() => setShowGiftPanel(!showGiftPanel)} style={{ background: 'rgba(236, 72, 153, 0.1)', color: '#ec4899', borderColor: 'rgba(236, 72, 153, 0.3)' }}>
-                  🎁 Gifts
-                </button>
-              </div>
+              {showPremiumMiniBar && (user?.email === "ds9376314@gmail.com" || user?.planName === "VIP Elite" || user?.hasSecretIdentity) && (
+                <div className="bottom-mini-bar">
+                  <button className={`tool-btn ${activeIdentityMenu === 'avatars' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'avatars' ? null : 'avatars')}>
+                    👤 Avatars
+                  </button>
+                  <button className={`tool-btn ${activeIdentityMenu === 'voice' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'voice' ? null : 'voice')}>
+                    🎙 Voice
+                  </button>
+                  <button className={`tool-btn ${activeIdentityMenu === 'privacy' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'privacy' ? null : 'privacy')}>
+                    🌫 Privacy
+                  </button>
+                  <button className={`tool-btn ${showGiftPanel ? 'active' : ''}`} onClick={() => setShowGiftPanel(!showGiftPanel)} style={{ background: 'rgba(236, 72, 153, 0.1)', color: '#ec4899', borderColor: 'rgba(236, 72, 153, 0.3)' }}>
+                    🎁 Gifts
+                  </button>
+                </div>
+              )}
 
             </div>
 
@@ -3717,18 +3719,17 @@ export default function Home() {
               </button>
               <button 
                 className="gift-trigger-btn" 
-                onClick={() => setShowGiftPanel(!showGiftPanel)}
+                onClick={() => {
+                  const isSubscribed = user?.email === "ds9376314@gmail.com" || user?.planName === "VIP Elite" || user?.hasSecretIdentity;
+                  if (isSubscribed) {
+                    setShowPremiumMiniBar(!showPremiumMiniBar);
+                  } else {
+                    setShowGiftPanel(!showGiftPanel);
+                  }
+                }}
               >
                 <span className="icon">🎁</span> <span className="text">Gifts</span>
               </button>
-              {(user?.email === "ds9376314@gmail.com" || user?.planName === "VIP Elite" || user?.hasSecretIdentity) && (
-                <button 
-                  className="tools-trigger-btn" 
-                  onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'tools_menu' ? null : 'tools_menu')}
-                >
-                  <span className="icon">🎭</span> <span className="text">Tools</span>
-                </button>
-              )}
               <button className="stop-btn" onClick={() => router.push("/")}>
                 <span className="icon">🛑</span> <span className="text">Quit</span>
               </button>
@@ -3980,13 +3981,35 @@ export default function Home() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.8rem', color: '#94a3b8' }}>
                         <span>{new Date(s.timestamp).toLocaleString([], { month: '2-digit', day: '2-digit', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</span>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                          00:00
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                          {(() => {
+                            const diff = Date.now() - new Date(s.timestamp).getTime();
+                            const mins = Math.floor(diff / 60000);
+                            const hrs = Math.floor(mins / 60);
+                            const days = Math.floor(hrs / 24);
+                            if (days > 0) return `${days}d ago`;
+                            if (hrs > 0) return `${hrs}h ago`;
+                            if (mins > 0) return `${mins}m ago`;
+                            return 'Just now';
+                          })()}
                         </span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <button onClick={() => openReport()} style={{ background: '#e11d48', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}>👮</button>
-                        <button onClick={() => setHistoryList(historyList.filter((_, i) => i !== idx))} style={{ background: '#1e293b', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', padding: 0 }}>🗑️</button>
+                        <button onClick={() => {
+  setShowReportModal(true);
+  setReportTargetFromHistory(s);
+}} style={{ background: '#e11d48', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}>👮</button>
+                        <button onClick={async () => {
+  const updated = user.recentStrangers.filter((_, i) => i !== idx);
+  setUser({ ...user, recentStrangers: updated });
+  try {
+    const token = localStorage.getItem('token');
+    await axios.post('https://api.zonemeet.chat/api/user/delete-history', { targetId: s.id }, { headers: { Authorization: `Bearer ${token}` } });
+    showToast('Removed from history', 'success');
+  } catch (err) {
+    showToast('Failed to delete', 'error');
+  }
+}} style={{ background: '#1e293b', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', padding: 0 }}>🗑️</button>
                       </div>
                     </div>
 
@@ -4020,22 +4043,7 @@ export default function Home() {
                           cursor: 'pointer',
                           padding: '0'
                         }}
-                        onClick={async () => {
-                          const confirmed = window.confirm(`Use 30 coins to send a request for reconnect with ${s.name}?`);
-                          if (confirmed) {
-                            try {
-                              const token = localStorage.getItem('token');
-                              const res = await axios.post('https://api.zonemeet.chat/api/user/spend-coins', { email: user.email, amount: 30, feature: 'reconnect' });
-                              if (res.data.success) {
-                                setUser({ ...user, coins: res.data.coins });
-                                await axios.post('https://api.zonemeet.chat/api/friends/request', { targetId: s.id, type: 'reconnect' }, { headers: { Authorization: `Bearer ${token}` } });
-                                showToast(`Request sent to ${s.name}!`, "success");
-                              }
-                            } catch (err) {
-                              showToast(err.response?.data?.message || 'Failed to reconnect', "error");
-                            }
-                          }
-                        }}
+                        onClick={() => setReconnectConfirm(s)}
                       >
                         <span style={{ fontSize: '1.2rem', background: 'white', borderRadius: '4px', padding: '2px 4px', display: 'flex' }}>💌</span>
                       </button>
@@ -4043,6 +4051,43 @@ export default function Home() {
                   </div>
                 ))
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RECONNECT CONFIRMATION POPUP */}
+      {reconnectConfirm && (
+        <div className="payment-overlay" style={{ zIndex: 12000 }} onClick={() => setReconnectConfirm(null)}>
+          <div className="premium-modal" style={{ maxWidth: '400px', padding: '0', overflow: 'hidden', background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '28px', boxShadow: '0 50px 100px rgba(0,0,0,0.8)' }} onClick={e => e.stopPropagation()}>
+            <div style={{ height: '6px', background: 'linear-gradient(90deg, #fbbf24, #f59e0b)' }}></div>
+            <div style={{ padding: '35px 30px', textAlign: 'center' }}>
+              <div style={{ fontSize: '3.5rem', marginBottom: '15px', filter: 'drop-shadow(0 8px 16px rgba(251,191,36,0.3))' }}>💌</div>
+              <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#fff', marginBottom: '8px' }}>Reconnect Request</h3>
+              <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '8px' }}>
+                Send a reconnect request to <strong style={{ color: '#fbbf24' }}>{reconnectConfirm.name}</strong>?
+              </p>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', padding: '8px 18px', borderRadius: '50px', marginBottom: '25px' }}>
+                <span style={{ fontSize: '1.2rem' }}>🪙</span>
+                <span style={{ color: '#fbbf24', fontWeight: 800, fontSize: '1rem' }}>30 Coins</span>
+              </div>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button onClick={() => setReconnectConfirm(null)} style={{ flex: 1, padding: '14px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#94a3b8', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', transition: '0.2s' }}>Cancel</button>
+                <button onClick={async () => {
+                  try {
+                    const token = localStorage.getItem('token');
+                    const res = await axios.post('https://api.zonemeet.chat/api/user/spend-coins', { email: user.email, amount: 30, feature: 'reconnect' });
+                    if (res.data.success) {
+                      setUser({ ...user, coins: res.data.coins });
+                      await axios.post('https://api.zonemeet.chat/api/friends/request', { targetId: reconnectConfirm.id, type: 'reconnect' }, { headers: { Authorization: `Bearer ${token}` } });
+                      showToast(`Request sent to ${reconnectConfirm.name}!`, "success");
+                    }
+                  } catch (err) {
+                    showToast(err.response?.data?.message || 'Failed to reconnect', "error");
+                  }
+                  setReconnectConfirm(null);
+                }} style={{ flex: 1.5, padding: '14px', borderRadius: '16px', border: 'none', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#000', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 8px 20px rgba(251,191,36,0.3)', transition: '0.2s' }}>Confirm & Send</button>
+              </div>
             </div>
           </div>
         </div>
@@ -4149,7 +4194,7 @@ export default function Home() {
             <div className="report-close" onClick={closeReport}>×</div>
             <h2>🚨 Report User</h2>
             <p style={{ textAlign: 'center', color: '#94a3b8', marginBottom: '20px', fontSize: '0.9rem' }}>
-              Reporting partner: <strong>{partnerInfo?.name || "ZoneMeet User"}</strong>
+              Reporting partner: <strong>{reportTargetFromHistory?.name || partnerInfo?.name || "ZoneMeet User"}</strong>
             </p>
 
             <div className="reasons-grid">
@@ -5719,10 +5764,10 @@ export default function Home() {
         }
         .bottom-mini-bar {
           display: flex;
-          gap: 6px;
+          gap: 5px;
           background: #111827;
-          padding: 4px 8px;
-          border-radius: 14px;
+          padding: 3px 6px;
+          border-radius: 12px;
           border: 1px solid #334155;
           z-index: 999;
           box-shadow: 0 10px 30px rgba(0,0,0,0.5);
@@ -5731,10 +5776,10 @@ export default function Home() {
           background: #1e293b;
           border: none;
           color: white;
-          padding: 8px 12px;
-          border-radius: 10px;
+          padding: 5px 10px;
+          border-radius: 8px;
           cursor: pointer;
-          font-size: 13px;
+          font-size: 11px;
           transition: 0.2s;
           font-weight: 700;
         }
@@ -6135,7 +6180,6 @@ export default function Home() {
 
         /* --- MULTI-FILTER PREFERENCES BUTTON & MODAL --- */
         .mobile-chat-toggle-btn,
-        .gift-trigger-btn,
         .tools-trigger-btn {
           display: none;
         }
@@ -6997,6 +7041,76 @@ export default function Home() {
             right: 1rem !important;
             bottom: 1rem !important;
             z-index: 50 !important;
+          }
+          /* Desktop Bottom Buttons styling to make them smaller and aligned in a row */
+          .bottom-actions button {
+            font-size: 0.8rem !important;
+            padding: 8px 12px !important;
+            border-radius: 10px !important;
+            font-weight: 700 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            height: auto !important;
+            width: auto !important;
+            position: static !important;
+            box-shadow: none !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            background: #1e293b !important;
+            color: white !important;
+            cursor: pointer !important;
+            transition: all 0.2s !important;
+          }
+          .bottom-actions button:hover {
+            background: #334155 !important;
+            transform: translateY(-1px) !important;
+          }
+          .bottom-actions .stop-btn {
+            background: rgba(239, 68, 68, 0.1) !important;
+            color: #ef4444 !important;
+            border-color: rgba(239, 68, 68, 0.2) !important;
+          }
+          .bottom-actions .stop-btn:hover {
+            background: #ef4444 !important;
+            color: white !important;
+          }
+          .bottom-actions .report-trigger-btn {
+            background: rgba(239, 68, 68, 0.1) !important;
+            color: #ef4444 !important;
+            border-color: rgba(239, 68, 68, 0.2) !important;
+          }
+          .bottom-actions .report-trigger-btn:hover {
+            background: #ef4444 !important;
+            color: white !important;
+          }
+          .bottom-actions .next-btn {
+            background: #6366f1 !important;
+            color: white !important;
+            border-color: rgba(99, 102, 241, 0.2) !important;
+          }
+          .bottom-actions .next-btn:hover {
+            background: #4f46e5 !important;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+          }
+          .bottom-actions .gift-trigger-btn {
+            background: rgba(236, 72, 153, 0.1) !important;
+            color: #ec4899 !important;
+            border-color: rgba(236, 72, 153, 0.2) !important;
+          }
+          .bottom-actions .gift-trigger-btn:hover {
+            background: #ec4899 !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3) !important;
+          }
+          .bottom-actions .quiz-trigger-btn {
+            background: rgba(245, 158, 11, 0.1) !important;
+            color: #f59e0b !important;
+            border-color: rgba(245, 158, 11, 0.2) !important;
+          }
+          .bottom-actions .quiz-trigger-btn:hover {
+            background: #f59e0b !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
           }
         }
       `}</style>

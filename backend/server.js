@@ -3703,6 +3703,27 @@ function endQuiz(roomId) {
       res.json(user.recentStrangers || []);
     });
 
+    // DELETE a specific entry from history
+    app.post("/api/user/delete-history", (req, res) => {
+      try {
+        const token = req.headers.authorization?.split(" ")[1];
+        if (!token) return res.status(401).json({ message: "No token provided" });
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const user = users.find(u => u.id === decoded.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        const { targetId } = req.body;
+        if (!targetId) return res.status(400).json({ message: "targetId required" });
+
+        user.recentStrangers = (user.recentStrangers || []).filter(s => s.id !== targetId);
+        saveUsers();
+        res.json({ success: true, message: "History entry deleted" });
+      } catch (err) {
+        console.error("Delete history error:", err);
+        res.status(500).json({ message: "Failed to delete history entry" });
+      }
+    });
+
     // ADMIN 2FA, IP ALLOWLIST, SECRET ROUTE, SECURE COOKIES
     let adminIpAllowlist = new Set(["127.0.0.1", "::1", "::ffff:127.0.0.1"]);
     let adminOtpStore = {};
