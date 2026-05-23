@@ -4821,7 +4821,7 @@ export default function Home() {
 
         .friend-toast {
           position: fixed;
-          top: 20px;
+          top: 100px;
           right: 20px;
           padding: 1rem 1.5rem;
           border-radius: 16px;
@@ -5475,7 +5475,7 @@ export default function Home() {
         /* ═══════════════════════════════════════════════════ */
         .toast-stack-container {
           position: fixed;
-          top: 20px;
+          top: 100px;
           left: 50%;
           transform: translateX(-50%);
           z-index: 999999;
@@ -5604,7 +5604,7 @@ export default function Home() {
 
         @media (max-width: 600px) {
           .toast-stack-container {
-            top: 10px;
+            top: 80px;
             width: 96vw;
           }
           .premium-toast {
