@@ -1,5 +1,6 @@
 import PremiumModal from "../components/PremiumModal";
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import axios from "axios";
@@ -138,6 +139,15 @@ export default function Dashboard() {
         .then(res => setNews(res.data))
         .catch(err => console.error("Failed to load news", err));
     }
+  }, [showProfileDrop]);
+
+  useEffect(() => {
+    if (!showProfileDrop) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
   }, [showProfileDrop]);
 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -1397,8 +1407,8 @@ export default function Dashboard() {
                   {user.name ? user.name.charAt(0).toUpperCase() : "U"}
                 </div>
               </div>
-              {showProfileDrop && (
-                <div className="profile-modal-overlay" onClick={() => setShowProfileDrop(false)}>
+              {showProfileDrop && typeof document !== "undefined" && createPortal(
+                <div className="profile-modal-overlay profile-modal-overlay--portal" onClick={() => setShowProfileDrop(false)}>
                   <div className="profile-modal-card" onClick={(e) => e.stopPropagation()}>
                     <div className="profile-modal-header">
                       My Profile
@@ -1664,7 +1674,8 @@ export default function Dashboard() {
                       </button>
                     </div>
                   </div>
-                </div>
+                </div>,
+                document.body
               )}
             </div>
           </div>
@@ -3482,23 +3493,37 @@ export default function Dashboard() {
             gap: 1rem;
           }
 
-          /* Profile Dropdown Styles */
-          .profile-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+          /* Profile Modal (portaled to body on mobile + desktop) */
+          .profile-modal-overlay--portal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            z-index: 10050;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-end;
+            padding: 88px 3rem 1.5rem 1.5rem;
+            box-sizing: border-box;
+          }
+          .profile-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 10050; display: flex; align-items: center; justify-content: center; }
           .profile-modal-card { 
-            position: fixed; 
-            top: 85px; 
-            right: 4rem; 
+            position: relative;
+            top: auto;
+            right: auto;
             background: #0f172a; 
             border: 1px solid rgba(255,255,255,0.1); 
             width: 100%; 
             max-width: 360px; 
-            max-height: 80vh; 
+            max-height: min(80vh, calc(100dvh - 100px)); 
             border-radius: 28px; 
+            overflow-x: hidden;
             overflow-y: auto; 
             box-shadow: 0 40px 100px rgba(0,0,0,0.5); 
             animation: dropdownSlideDown 0.3s cubic-bezier(0.16,1,0.3,1); 
             scrollbar-width: none; 
-            z-index: 1001;
+            z-index: 10051;
+            -webkit-overflow-scrolling: touch;
           }
           @keyframes dropdownSlideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
           .profile-modal-card::-webkit-scrollbar { display: none; }
@@ -4796,18 +4821,24 @@ export default function Dashboard() {
             .bot-body {
               padding: 0 15px 20px !important;
             }
+            .profile-modal-overlay--portal {
+              align-items: center !important;
+              justify-content: center !important;
+              padding: 12px !important;
+            }
             .profile-modal-card {
               position: relative !important;
               top: auto !important;
               left: auto !important;
               right: auto !important;
               transform: none !important;
-              width: 95% !important;
-              max-width: 360px !important;
-              max-height: 85vh !important;
+              width: calc(100vw - 24px) !important;
+              max-width: 400px !important;
+              max-height: min(90dvh, 90vh) !important;
               overflow-y: auto !important;
-              border-radius: 28px !important;
-              margin: auto !important;
+              overflow-x: hidden !important;
+              border-radius: 20px !important;
+              margin: 0 auto !important;
             }
             .streak-reward-modal {
               width: 95% !important;
@@ -5095,13 +5126,17 @@ export default function Dashboard() {
               padding: 10px 18px !important;
               height: auto !important;
             }
-            /* Profile Dropdown Modal Card Responsive Fixes */
+            /* Profile Modal — full visible card on small phones */
+            .profile-modal-overlay--portal {
+              padding: 10px !important;
+            }
             .profile-modal-card {
-              max-width: 290px !important;
-              padding: 10px 8px !important;
-              border-radius: 16px !important;
-              max-height: 80vh !important;
+              width: calc(100vw - 20px) !important;
+              max-width: 100% !important;
+              max-height: min(92dvh, 92vh) !important;
               overflow-y: auto !important;
+              overflow-x: hidden !important;
+              border-radius: 18px !important;
             }
             .profile-modal-header {
               padding: 8px !important;
