@@ -1366,7 +1366,7 @@ img, video {
   .user-dashboard-row {
     display: contents !important;
   }
-  .brand-group .premium-badge {
+  .brand-group .header-sub-badge-desktop {
     display: none !important;
   }
   .header-premium-mobile-only {
