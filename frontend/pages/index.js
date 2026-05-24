@@ -122,6 +122,7 @@ export default function Dashboard() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [paymentStep, setPaymentStep] = useState("methods");
   const [showProfileDrop, setShowProfileDrop] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(false);
   const [news, setNews] = useState([]);
   const [dailyStatus, setDailyStatus] = useState(null);
   const [showStreakModal, setShowStreakModal] = useState(false);
@@ -142,13 +143,20 @@ export default function Dashboard() {
   }, [showProfileDrop]);
 
   useEffect(() => {
-    if (!showProfileDrop) return;
+    const updateViewport = () => setIsMobileView(window.innerWidth <= 768);
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    return () => window.removeEventListener("resize", updateViewport);
+  }, []);
+
+  useEffect(() => {
+    if (!showProfileDrop || !isMobileView) return;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prevOverflow;
     };
-  }, [showProfileDrop]);
+  }, [showProfileDrop, isMobileView]);
 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showCoinPopup, setShowCoinPopup] = useState(false);
@@ -1337,10 +1345,11 @@ export default function Dashboard() {
             <span style={{ color: '#ffffff' }}>Zone</span>
             <span style={{ background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Meet</span>
           </h1>
+          {user?.premium && <span className="premium-badge">{user.planName || "PREMIUM"}</span>}
         </div>
 
         {user?.premium && (
-          <span className="premium-badge header-premium-badge">{user.planName || "PREMIUM"}</span>
+          <span className="premium-badge header-premium-badge header-premium-mobile-only">{user.planName || "PREMIUM"}</span>
         )}
 
         <nav className="header-nav">
@@ -1371,7 +1380,7 @@ export default function Dashboard() {
             <span className="loading-dots">Verifying session...</span>
           </div>
         ) : user ? (
-          <div className="header-actions-group">
+          <div className="user-dashboard-row" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <div
               className="header-streak-pill"
               onClick={() => setShowStreakModal(true)}
@@ -1393,23 +1402,24 @@ export default function Dashboard() {
               <span className="plus-icon">+</span>
             </div>
 
-            <div className={`network-status-pill hide-mobile ${isOnline ? 'online' : 'offline'}`}>
+            <div className={`network-status-pill ${isOnline ? 'online' : 'offline'}`} style={{ marginLeft: '10px' }}>
               <span className="status-dot"></span>
               {isOnline ? 'Live' : 'Offline'}
             </div>
 
-            <div className="profile-dropdown-container header-profile-slot">
+            <div className="profile-dropdown-container">
               <div className="profile-trigger" onClick={() => setShowProfileDrop(!showProfileDrop)} style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
-                <span style={{ color: '#ffffff', fontWeight: '500', fontSize: '1rem' }}>
+                <span className="profile-trigger-name" style={{ color: '#ffffff', fontWeight: '500', fontSize: '1rem' }}>
                   {user.name} {user.email === "ds9376314@gmail.com" && <span style={{ color: '#f59e0b', fontSize: '0.7rem', fontWeight: '800', border: '1px solid #f59e0b', padding: '1px 5px', borderRadius: '4px', marginLeft: '5px' }}>VIP</span>}
                 </span>
                 <div className="profile-avatar">
                   {user.name ? user.name.charAt(0).toUpperCase() : "U"}
                 </div>
               </div>
-              {showProfileDrop && typeof document !== "undefined" && createPortal(
-                <div className="profile-modal-overlay profile-modal-overlay--portal" onClick={() => setShowProfileDrop(false)}>
-                  <div className="profile-modal-card" onClick={(e) => e.stopPropagation()}>
+              {showProfileDrop && (() => {
+                const profileModal = (
+                <div className={`profile-modal-overlay${isMobileView ? " profile-modal-overlay--mobile" : ""}`} onClick={() => setShowProfileDrop(false)}>
+                  <div className={`profile-modal-card${isMobileView ? " profile-modal-card--mobile" : ""}`} onClick={(e) => e.stopPropagation()}>
                     <div className="profile-modal-header">
                       My Profile
                       <button className="profile-modal-close" onClick={() => setShowProfileDrop(false)}>×</button>
@@ -1674,9 +1684,12 @@ export default function Dashboard() {
                       </button>
                     </div>
                   </div>
-                </div>,
-                document.body
-              )}
+                </div>
+                );
+                return isMobileView && typeof document !== "undefined"
+                  ? createPortal(profileModal, document.body)
+                  : profileModal;
+              })()}
             </div>
           </div>
         ) : (
@@ -3493,37 +3506,38 @@ export default function Dashboard() {
             gap: 1rem;
           }
 
-          /* Profile Modal (portaled to body on mobile + desktop) */
-          .profile-modal-overlay--portal {
+          /* Profile Modal — desktop dropdown (original) */
+          .profile-modal-overlay {
             position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(10px);
-            z-index: 10050;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
             display: flex;
-            align-items: flex-start;
-            justify-content: flex-end;
-            padding: 88px 3rem 1.5rem 1.5rem;
-            box-sizing: border-box;
+            align-items: center;
+            justify-content: center;
           }
-          .profile-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 10050; display: flex; align-items: center; justify-content: center; }
-          .profile-modal-card { 
-            position: relative;
-            top: auto;
-            right: auto;
-            background: #0f172a; 
-            border: 1px solid rgba(255,255,255,0.1); 
-            width: 100%; 
-            max-width: 360px; 
-            max-height: min(80vh, calc(100dvh - 100px)); 
-            border-radius: 28px; 
-            overflow-x: hidden;
-            overflow-y: auto; 
-            box-shadow: 0 40px 100px rgba(0,0,0,0.5); 
-            animation: dropdownSlideDown 0.3s cubic-bezier(0.16,1,0.3,1); 
-            scrollbar-width: none; 
-            z-index: 10051;
-            -webkit-overflow-scrolling: touch;
+          .profile-modal-card {
+            position: fixed;
+            top: 85px;
+            right: 4rem;
+            background: #0f172a;
+            border: 1px solid rgba(255,255,255,0.1);
+            width: 100%;
+            max-width: 360px;
+            max-height: 80vh;
+            border-radius: 28px;
+            overflow-y: auto;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+            animation: dropdownSlideDown 0.3s cubic-bezier(0.16,1,0.3,1);
+            scrollbar-width: none;
+            z-index: 1001;
+          }
+          .header-premium-mobile-only {
+            display: none;
           }
           @keyframes dropdownSlideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
           .profile-modal-card::-webkit-scrollbar { display: none; }
@@ -3598,20 +3612,12 @@ export default function Dashboard() {
             align-items: center;
           }
 
-          .header-premium-badge {
-            flex-shrink: 0;
-          }
-
-          .header-actions-group {
+          .user-dashboard-row {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 20px;
             flex-shrink: 0;
             margin-left: auto;
-          }
-
-          .header-profile-slot {
-            flex-shrink: 0;
           }
 
           .nav-link:hover {
@@ -4701,8 +4707,11 @@ export default function Dashboard() {
               font-size: 0.95rem !important;
               white-space: nowrap !important;
             }
-            .header-premium-badge,
-            .premium-badge.header-premium-badge {
+            .brand-group .premium-badge {
+              display: none !important;
+            }
+            .header-premium-mobile-only {
+              display: inline-block !important;
               font-size: 0.5rem !important;
               padding: 2px 5px !important;
               flex-shrink: 0 !important;
@@ -4711,16 +4720,16 @@ export default function Dashboard() {
               overflow: hidden !important;
               text-overflow: ellipsis !important;
             }
-            /* Flatten actions so order is: ZoneMeet → Premium → Streak → Coins → Profile */
-            .header-actions-group {
+            /* Flatten row: ZoneMeet → Premium → Streak → Coins → Profile */
+            .user-dashboard-row {
               display: contents !important;
             }
             .header-streak-pill,
             .header-coins-pill,
-            .header-profile-slot {
+            .profile-dropdown-container {
               flex-shrink: 0 !important;
             }
-            .header-profile-slot {
+            .profile-dropdown-container {
               margin-left: auto !important;
             }
             .header .profile-dropdown-container,
@@ -4765,7 +4774,7 @@ export default function Dashboard() {
               padding: 3px 6px !important;
               gap: 0 !important;
             }
-            .profile-trigger span {
+            .profile-trigger-name {
               display: none !important;
             }
             .nav-links {
@@ -4821,12 +4830,13 @@ export default function Dashboard() {
             .bot-body {
               padding: 0 15px 20px !important;
             }
-            .profile-modal-overlay--portal {
+            .profile-modal-overlay--mobile {
               align-items: center !important;
               justify-content: center !important;
               padding: 12px !important;
+              z-index: 10050 !important;
             }
-            .profile-modal-card {
+            .profile-modal-card--mobile {
               position: relative !important;
               top: auto !important;
               left: auto !important;
@@ -5127,10 +5137,10 @@ export default function Dashboard() {
               height: auto !important;
             }
             /* Profile Modal — full visible card on small phones */
-            .profile-modal-overlay--portal {
+            .profile-modal-overlay--mobile {
               padding: 10px !important;
             }
-            .profile-modal-card {
+            .profile-modal-card--mobile {
               width: calc(100vw - 20px) !important;
               max-width: 100% !important;
               max-height: min(92dvh, 92vh) !important;

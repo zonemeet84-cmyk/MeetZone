@@ -72,6 +72,10 @@ body {
   gap: 1rem;
 }
 
+.header-premium-mobile-only {
+  display: none;
+}
+
 .premium-badge {
   background: linear-gradient(135deg, #f59e0b, #d97706);
   color: white;
@@ -1359,18 +1363,22 @@ img, video {
     flex-shrink: 0;
     margin-left: auto;
   }
-  .header-actions-group {
+  .user-dashboard-row {
     display: contents !important;
   }
-  .header-premium-badge {
+  .brand-group .premium-badge {
+    display: none !important;
+  }
+  .header-premium-mobile-only {
+    display: inline-block !important;
     flex-shrink: 0 !important;
   }
   .header-streak-pill,
   .header-coins-pill,
-  .header-profile-slot {
+  .profile-dropdown-container {
     flex-shrink: 0 !important;
   }
-  .header-profile-slot {
+  .profile-dropdown-container {
     margin-left: auto !important;
   }
   .header .profile-dropdown-container,
@@ -2299,14 +2307,17 @@ img, video {
     font-size: 1.8rem !important;
   }
   
-  /* My Profile Modal — centered full card on phone */
-  .profile-modal-overlay--portal {
+  /* My Profile Modal — centered full card on phone only */
+  .profile-modal-overlay--mobile {
     align-items: center !important;
     justify-content: center !important;
     padding: 12px !important;
     z-index: 10050 !important;
   }
-  .profile-modal-card {
+  .profile-modal-card--mobile {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
     width: calc(100vw - 24px) !important;
     max-width: 400px !important;
     max-height: min(92dvh, 92vh) !important;
@@ -2457,14 +2468,11 @@ img, video {
   .header-premium-badge {
     flex-shrink: 0 !important;
   }
-  .header-actions-group {
-    display: contents !important;
-  }
-  .header-profile-slot {
-    margin-left: auto !important;
-  }
   .user-dashboard-row {
     display: contents !important;
+  }
+  .profile-dropdown-container {
+    margin-left: auto !important;
   }
   .header .profile-dropdown-container,
   .header .profile-trigger {
