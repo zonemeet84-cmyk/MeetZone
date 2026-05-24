@@ -5209,7 +5209,7 @@ export default function Dashboard() {
               border-radius: 12px !important;
               width: 100% !important;
             }
-            .btn-contact-home, .btn-secondary, .btn-primary, .premium-btn, .elite-btn-v3, .streak-cta-btn, .profile-edit-btn, .profile-premium-btn {
+            .btn-contact-home, .btn-secondary, .btn-primary, .premium-btn, .elite-btn-v3, .streak-cta-btn, .profile-edit-btn {
               font-size: 0.85rem !important;
               padding: 10px 18px !important;
               height: auto !important;
@@ -5302,11 +5302,17 @@ export default function Dashboard() {
             .profile-premium-sub {
               font-size: 0.65rem !important;
             }
-            .profile-premium-btn {
-              padding: 3px 6px !important;
-              font-size: 0.65rem !important;
-              border-radius: 8px !important;
+            .profile-modal-card--mobile .profile-premium-btn {
+              width: auto !important;
+              padding: 4px 9px !important;
+              font-size: 0.62rem !important;
+              border-radius: 6px !important;
               height: auto !important;
+              min-height: 0 !important;
+              line-height: 1.2 !important;
+              font-weight: 700 !important;
+              flex-shrink: 0 !important;
+              margin-bottom: 0 !important;
             }
             .profile-balances {
               padding: 8px !important;
@@ -5369,33 +5375,37 @@ export default function Dashboard() {
               flex: 1 !important;
               min-width: 60% !important;
             }
-            .profile-referral-btn {
-              padding: 4px 8px !important;
-              font-size: 0.65rem !important;
+            .profile-modal-card--mobile .profile-referral-btn {
+              width: auto !important;
+              padding: 4px 9px !important;
+              font-size: 0.62rem !important;
               border-radius: 6px !important;
               height: auto !important;
+              min-height: 0 !important;
+              line-height: 1.2 !important;
+              font-weight: 700 !important;
               flex-shrink: 0 !important;
               white-space: nowrap !important;
-              width: auto !important;
+              margin-bottom: 0 !important;
             }
-            .profile-edit-btn, .profile-premium-btn {
-              padding: 4px 8px !important;
-              font-size: 0.65rem !important;
+            .profile-modal-card--mobile .profile-edit-btn {
+              padding: 3px 7px !important;
+              font-size: 0.6rem !important;
               border-radius: 6px !important;
               width: auto !important;
             }
-            .profile-modal-card input,
-            .profile-modal-card select {
+            .profile-modal-card--mobile input,
+            .profile-modal-card--mobile select {
               padding: 8px 10px !important;
               font-size: 0.8rem !important;
               border-radius: 8px !important;
               height: auto !important;
             }
-            .profile-modal-card button {
-              padding: 4px 8px !important;
-              font-size: 0.65rem !important;
-              border-radius: 6px !important;
-              width: auto !important;
+            .profile-modal-card--mobile .profile-more-btn {
+              padding: 6px 8px !important;
+              font-size: 0.8rem !important;
+              border-radius: 8px !important;
+              width: 100% !important;
             }
             /* Fix for mystery box confirm */
             .premium-modal {

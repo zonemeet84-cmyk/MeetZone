@@ -1420,7 +1420,7 @@ img, video {
   }
   
   /* Buttons & Inputs */
-  button:not(.nav-link):not(.profile-modal-close):not(.ctrl-btn):not(.quiz-opt-btn):not(.quiz-add-friend-btn):not(.sticker-cat-btn):not(.gift-send-btn):not(.close-btn):not(.quiz-done-btn):not(.dare-done-btn):not(.filter-settings-trigger-btn):not(.btn-home):not(.apply-btn):not(.next-btn):not(.stop-btn):not(.report-trigger-btn):not(.quiz-trigger-btn):not(.reason-btn):not(.tool-btn) {
+  button:not(.nav-link):not(.profile-modal-close):not(.profile-premium-btn):not(.profile-referral-btn):not(.ctrl-btn):not(.quiz-opt-btn):not(.quiz-add-friend-btn):not(.sticker-cat-btn):not(.gift-send-btn):not(.close-btn):not(.quiz-done-btn):not(.dare-done-btn):not(.filter-settings-trigger-btn):not(.btn-home):not(.apply-btn):not(.next-btn):not(.stop-btn):not(.report-trigger-btn):not(.quiz-trigger-btn):not(.reason-btn):not(.tool-btn) {
     width: 100% !important;
     padding: 12px 20px !important;
     font-size: 16px !important;
@@ -2329,10 +2329,14 @@ img, video {
     font-size: 0.65rem !important;
     width: auto !important;
   }
-  .profile-premium-btn {
-    padding: 6px 12px !important;
-    font-size: 0.75rem !important;
-    height: auto !important;
+  .profile-modal-card--mobile .profile-premium-btn {
+    width: auto !important;
+    padding: 4px 9px !important;
+    font-size: 0.62rem !important;
+    border-radius: 6px !important;
+    min-height: 0 !important;
+    line-height: 1.2 !important;
+    margin-bottom: 0 !important;
   }
   .profile-referral-row {
     flex-direction: row !important;
@@ -2342,9 +2346,14 @@ img, video {
     font-size: 0.7rem !important;
     padding: 6px !important;
   }
-  .profile-referral-btn {
-    font-size: 0.7rem !important;
-    padding: 6px 10px !important;
+  .profile-modal-card--mobile .profile-referral-btn {
+    width: auto !important;
+    font-size: 0.62rem !important;
+    padding: 4px 9px !important;
+    border-radius: 6px !important;
+    min-height: 0 !important;
+    line-height: 1.2 !important;
+    margin-bottom: 0 !important;
   }
   
   /* Hall of Fame (Top Spenders) Modal */
