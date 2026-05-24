@@ -132,6 +132,19 @@ export default function Home() {
     }
   };
 
+  // Helper to get distinct and gorgeous avatars using Robohash sets
+  const getAvatarUrl = (avatarName) => {
+    if (!avatarName || avatarName === "None") return null;
+    if (avatarName === 'Robot') return `https://robohash.org/${avatarName}?set=set1&size=200x200`;
+    if (avatarName === 'Anime') return `https://robohash.org/${avatarName}?set=set5&size=200x200`;
+    if (avatarName === 'Girl') return `https://robohash.org/girl_avatar?set=set5&bgset=bg2&size=200x200`;
+    if (avatarName === 'Ninja') return `https://robohash.org/ninja_avatar?set=set2&bgset=bg1&size=200x200`;
+    if (avatarName === 'Hero') return `https://robohash.org/hero_avatar?set=set1&bgset=bg2&size=200x200`;
+    if (avatarName === 'Cat') return `https://robohash.org/${avatarName}?set=set4&size=200x200`;
+    if (avatarName === 'Cyber') return `https://robohash.org/cyber_avatar?set=set3&bgset=bg1&size=200x200`;
+    return `https://robohash.org/${avatarName}?set=set2&size=200x200`;
+  };
+
   // --- CACHE BUSTER 1.0 ---
   const [friendReqStatus, setFriendReqStatus] = useState(false);
   const [friendNotification, setFriendNotification] = useState(null);
@@ -188,8 +201,11 @@ export default function Home() {
   const [translateLang, setTranslateLang] = useState("off");
   const [translateEnabled, setTranslateEnabled] = useState(false);
   const [subtitlesOn, setSubtitlesOn] = useState(false);
+  const [partnerWantsSubtitles, setPartnerWantsSubtitles] = useState(false);
   const [currentSubtitle, setCurrentSubtitle] = useState("");
   const recognitionRef = useRef(null);
+  const userRef = useRef(null);
+  useEffect(() => { userRef.current = user; }, [user]);
 
   useEffect(() => {
     const saved = localStorage.getItem("translateLang");
@@ -1014,6 +1030,7 @@ export default function Home() {
   const pitchNode = useRef(null);
   const destinationNode = useRef(null);
   const processedAudioTrackRef = useRef(null);
+  const activeVoiceNodesRef = useRef([]);
 
   useEffect(() => {
     if (chatEndRef.current) {
@@ -1562,10 +1579,16 @@ export default function Home() {
       });
 
       socket.on("receive-subtitle", ({ text }) => {
-        setCurrentSubtitle(text);
-        setTimeout(() => {
-          setCurrentSubtitle(prev => prev === text ? "" : prev);
-        }, 5000);
+        if (userRef.current?.premium) {
+          setCurrentSubtitle(text);
+          setTimeout(() => {
+            setCurrentSubtitle(prev => prev === text ? "" : prev);
+          }, 5000);
+        }
+      });
+
+      socket.on("partner-request-subtitles", ({ enabled }) => {
+        setPartnerWantsSubtitles(enabled);
       });
 
       socket.on("partner-reconnecting", () => {
@@ -1580,6 +1603,7 @@ export default function Home() {
         }
         setPartnerId(null);
         setPartnerInfo(null);
+        setPartnerWantsSubtitles(false);
         setPartnerAvatar("None");
         setPartnerIsBlurred(false);
         setPartnerMask("None");
@@ -1601,6 +1625,7 @@ export default function Home() {
         }
         setPartnerId(null);
         setPartnerInfo(null);
+        setPartnerWantsSubtitles(false);
         setPartnerAvatar("None");
         setPartnerIsBlurred(false);
         setPartnerMask("None");
@@ -1829,20 +1854,27 @@ export default function Home() {
 
       recognitionRef.current.onend = () => {
         // Auto-restart if it was stopped unexpectedly while supposed to be on
-        if (subtitlesOn && partnerId) {
+        if ((subtitlesOn || partnerWantsSubtitles) && partnerId) {
           try { recognitionRef.current.start(); } catch(e) {}
         }
       };
     }
-  }, [partnerId]); // Re-bind when partner changes so socket captures correct partnerId
+  }, [partnerId, subtitlesOn, partnerWantsSubtitles]); // Re-bind when partner changes or state updates so callback has fresh variables
+
+  // Signal subtitles request to partner
+  useEffect(() => {
+    if (socket && partnerId) {
+      socket.emit("request-subtitles", { enabled: subtitlesOn, to: partnerId });
+    }
+  }, [subtitlesOn, partnerId]);
 
   useEffect(() => {
-    if (subtitlesOn && partnerId && recognitionRef.current) {
+    if ((subtitlesOn || partnerWantsSubtitles) && partnerId && recognitionRef.current) {
       try { recognitionRef.current.start(); } catch(e) {}
     } else if (recognitionRef.current) {
       try { recognitionRef.current.stop(); } catch(e) {}
     }
-  }, [subtitlesOn, partnerId]);
+  }, [subtitlesOn, partnerWantsSubtitles, partnerId]);
 
   const createPeer = (partner) => {
     peerConnection.current = new RTCPeerConnection(servers);
@@ -2088,9 +2120,73 @@ export default function Home() {
     }
   };
 
+  const createPitchShifterNode = (audioCtx, pitchRatio) => {
+    const bufferSize = 1024;
+    const node = audioCtx.createScriptProcessor(bufferSize, 1, 1);
+    
+    // Ring buffer
+    const ringBuffer = new Float32Array(16384);
+    let readPtr = 0.0;
+    let writePtr = 0;
+    
+    node.onaudioprocess = (e) => {
+      const input = e.inputBuffer.getChannelData(0);
+      const output = e.outputBuffer.getChannelData(0);
+      
+      for (let i = 0; i < bufferSize; i++) {
+        ringBuffer[writePtr] = input[i];
+        writePtr = (writePtr + 1) % ringBuffer.length;
+        
+        // Linear interpolation resampler
+        const index = Math.floor(readPtr);
+        const nextIndex = (index + 1) % ringBuffer.length;
+        const frac = readPtr - index;
+        
+        const s0 = ringBuffer[index];
+        const s1 = ringBuffer[nextIndex];
+        const sample = s0 + frac * (s1 - s0);
+        
+        output[i] = sample;
+        
+        readPtr += pitchRatio;
+        if (readPtr >= ringBuffer.length) {
+          readPtr -= ringBuffer.length;
+        }
+        
+        // Keep read pointer dynamically bounded around the write pointer
+        // to prevent drift and ensure low-latency (between 256 and 1536 samples)
+        const diff = (writePtr - readPtr + ringBuffer.length) % ringBuffer.length;
+        if (diff > 1536 || diff < 256) {
+          readPtr = (writePtr - 768 + ringBuffer.length) % ringBuffer.length;
+        }
+      }
+    };
+    return node;
+  };
+
   const applyVoiceFilter = async (voice) => {
     setActiveVoice(voice);
-    if (!localVideo.current.srcObject) return;
+    if (!localVideo.current?.srcObject) return;
+
+    // Stop previous processed track if any
+    if (processedAudioTrackRef.current) {
+      try { processedAudioTrackRef.current.stop(); } catch(e) {}
+      processedAudioTrackRef.current = null;
+    }
+
+    // Disconnect and stop all active nodes in the previous graph
+    if (activeVoiceNodesRef.current) {
+      activeVoiceNodesRef.current.forEach(node => {
+        try { node.disconnect(); } catch(e) {}
+        try { node.stop(); } catch(e) {}
+      });
+      activeVoiceNodesRef.current = [];
+    }
+
+    if (sourceNode.current) {
+      try { sourceNode.current.disconnect(); } catch(e) {}
+      sourceNode.current = null;
+    }
 
     if (!audioCtx.current) {
       audioCtx.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -2100,7 +2196,6 @@ export default function Home() {
     }
 
     if (voice === "Normal") {
-      processedAudioTrackRef.current = null;
       // Revert to original raw mic track for the remote peer
       if (peerConnection.current && localVideo.current?.srcObject) {
         const senders = peerConnection.current.getSenders();
@@ -2112,64 +2207,206 @@ export default function Home() {
       return;
     }
 
-    // Basic Pitch Shifting Logic Simulation / Web Audio Effect Node Setup
-    if (sourceNode.current) sourceNode.current.disconnect();
-
     sourceNode.current = audioCtx.current.createMediaStreamSource(localVideo.current.srcObject);
     const dest = audioCtx.current.createMediaStreamDestination();
+    const nodesToCleanup = [];
 
-    if (voice === "Echo") {
-      // High-quality dry/wet echo filter loop
-      const delayNode = audioCtx.current.createDelay(1.0);
-      delayNode.delayTime.value = 0.3; // 300ms delay time
+    if (voice === "Baby Voice") {
+      const hp = audioCtx.current.createBiquadFilter();
+      hp.type = "highpass";
+      hp.frequency.value = 250;
+      nodesToCleanup.push(hp);
 
-      const feedbackNode = audioCtx.current.createGain();
-      feedbackNode.gain.value = 0.4; // feedback volume
+      const peak = audioCtx.current.createBiquadFilter();
+      peak.type = "peaking";
+      peak.frequency.value = 3000;
+      peak.Q.value = 1.5;
+      peak.gain.value = 8;
+      nodesToCleanup.push(peak);
 
-      const dryGain = audioCtx.current.createGain();
-      dryGain.gain.value = 1.0;
+      const pitch = createPitchShifterNode(audioCtx.current, 1.6);
+      nodesToCleanup.push(pitch);
 
-      const wetGain = audioCtx.current.createGain();
-      wetGain.gain.value = 0.6;
+      sourceNode.current.connect(hp);
+      hp.connect(peak);
+      peak.connect(pitch);
+      pitch.connect(dest);
 
-      // Dry path (original voice)
-      sourceNode.current.connect(dryGain);
-      dryGain.connect(dest);
+    } else if (voice === "Girl Voice") {
+      const hp = audioCtx.current.createBiquadFilter();
+      hp.type = "highpass";
+      hp.frequency.value = 200;
+      nodesToCleanup.push(hp);
 
-      // Wet path (echo delay loop)
-      sourceNode.current.connect(delayNode);
-      delayNode.connect(feedbackNode);
-      feedbackNode.connect(delayNode); // feedback loop
+      const peak = audioCtx.current.createBiquadFilter();
+      peak.type = "peaking";
+      peak.frequency.value = 2500;
+      peak.Q.value = 1.2;
+      peak.gain.value = 6;
+      nodesToCleanup.push(peak);
+
+      const pitch = createPitchShifterNode(audioCtx.current, 1.32);
+      nodesToCleanup.push(pitch);
+
+      sourceNode.current.connect(hp);
+      hp.connect(peak);
+      peak.connect(pitch);
+      pitch.connect(dest);
+
+    } else if (voice === "Anime Voice") {
+      const hp = audioCtx.current.createBiquadFilter();
+      hp.type = "highpass";
+      hp.frequency.value = 300;
+      nodesToCleanup.push(hp);
+
+      const peak = audioCtx.current.createBiquadFilter();
+      peak.type = "peaking";
+      peak.frequency.value = 3800;
+      peak.Q.value = 2.0;
+      peak.gain.value = 10;
+      nodesToCleanup.push(peak);
+
+      const pitch = createPitchShifterNode(audioCtx.current, 1.52);
+      nodesToCleanup.push(pitch);
+
+      sourceNode.current.connect(hp);
+      hp.connect(peak);
+      peak.connect(pitch);
+      pitch.connect(dest);
+
+    } else if (voice === "Ghost Whisper") {
+      const hp = audioCtx.current.createBiquadFilter();
+      hp.type = "highpass";
+      hp.frequency.value = 800;
+      nodesToCleanup.push(hp);
+
+      const pitch = createPitchShifterNode(audioCtx.current, 0.9);
+      nodesToCleanup.push(pitch);
+
+      const tremolo = audioCtx.current.createGain();
+      tremolo.gain.value = 0.6;
+      nodesToCleanup.push(tremolo);
+
+      const lfo = audioCtx.current.createOscillator();
+      lfo.frequency.value = 15;
+      nodesToCleanup.push(lfo);
+
+      const lfoGain = audioCtx.current.createGain();
+      lfoGain.gain.value = 0.3;
+      nodesToCleanup.push(lfoGain);
+
+      lfo.connect(lfoGain);
+      lfoGain.connect(tremolo.gain);
+      lfo.start();
+
+      const delay = audioCtx.current.createDelay(1.0);
+      delay.delayTime.value = 0.4;
+      nodesToCleanup.push(delay);
+
+      const feedback = audioCtx.current.createGain();
+      feedback.gain.value = 0.5;
+      nodesToCleanup.push(feedback);
+
+      sourceNode.current.connect(hp);
+      hp.connect(pitch);
+      pitch.connect(tremolo);
+      tremolo.connect(dest);
+
+      // Delay feedback loop
+      tremolo.connect(delay);
+      delay.connect(feedback);
+      feedback.connect(delay);
+      feedback.connect(dest);
+
+    } else if (voice === "Cartoon Voice") {
+      const hp = audioCtx.current.createBiquadFilter();
+      hp.type = "highpass";
+      hp.frequency.value = 220;
+      nodesToCleanup.push(hp);
+
+      const pitch = createPitchShifterNode(audioCtx.current, 1.45);
+      nodesToCleanup.push(pitch);
+
+      const vibratoDelay = audioCtx.current.createDelay(1.0);
+      vibratoDelay.delayTime.value = 0.005;
+      nodesToCleanup.push(vibratoDelay);
+
+      const lfo = audioCtx.current.createOscillator();
+      lfo.frequency.value = 8;
+      nodesToCleanup.push(lfo);
+
+      const lfoGain = audioCtx.current.createGain();
+      lfoGain.gain.value = 0.002;
+      nodesToCleanup.push(lfoGain);
+
+      lfo.connect(lfoGain);
+      lfoGain.connect(vibratoDelay.delayTime);
+      lfo.start();
+
+      sourceNode.current.connect(hp);
+      hp.connect(pitch);
+      pitch.connect(vibratoDelay);
+      vibratoDelay.connect(dest);
+
+    } else if (voice === "AI girl voice") {
+      const hp = audioCtx.current.createBiquadFilter();
+      hp.type = "highpass";
+      hp.frequency.value = 180;
+      nodesToCleanup.push(hp);
+
+      const pitch = createPitchShifterNode(audioCtx.current, 1.35);
+      nodesToCleanup.push(pitch);
+
+      // Metallic Comb filter
+      const combDelay = audioCtx.current.createDelay(1.0);
+      combDelay.delayTime.value = 0.0012;
+      nodesToCleanup.push(combDelay);
+
+      const combFeedback = audioCtx.current.createGain();
+      combFeedback.gain.value = 0.8;
+      nodesToCleanup.push(combFeedback);
+
+      sourceNode.current.connect(hp);
+      hp.connect(pitch);
       
-      feedbackNode.connect(wetGain);
-      wetGain.connect(dest);
+      // Direct path
+      pitch.connect(dest);
+
+      // Feedback Comb Path
+      pitch.connect(combDelay);
+      combDelay.connect(combFeedback);
+      combFeedback.connect(combDelay);
+      combFeedback.connect(dest);
+
+    } else if (voice === "Sigma deep voice") {
+      const peak = audioCtx.current.createBiquadFilter();
+      peak.type = "peaking";
+      peak.frequency.value = 85;
+      peak.Q.value = 1.0;
+      peak.gain.value = 12; // deep rumble
+      nodesToCleanup.push(peak);
+
+      const lp = audioCtx.current.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 1000;
+      nodesToCleanup.push(lp);
+
+      const pitch = createPitchShifterNode(audioCtx.current, 0.72);
+      nodesToCleanup.push(pitch);
+
+      sourceNode.current.connect(peak);
+      peak.connect(lp);
+      lp.connect(pitch);
+      pitch.connect(dest);
     } else {
-      const filter = audioCtx.current.createBiquadFilter();
-
-      if (voice === "Robot") {
-        filter.type = "peaking";
-        filter.frequency.value = 1000;
-        filter.Q.value = 20;
-      } else if (voice === "Deep") {
-        filter.type = "lowpass";
-        filter.frequency.value = 400;
-      } else if (voice === "Chipmunk") {
-        filter.type = "highpass";
-        filter.frequency.value = 1500;
-      } else if (voice === "Alien") {
-        filter.type = "notch";
-        filter.frequency.value = 800;
-        filter.Q.value = 10;
-      }
-
-      sourceNode.current.connect(filter);
-      filter.connect(dest);
+      // Fallback/Normal
+      sourceNode.current.connect(dest);
     }
-    
-    // Save processed track ref
+
+    activeVoiceNodesRef.current = nodesToCleanup;
     processedAudioTrackRef.current = dest.stream.getAudioTracks()[0];
 
-    // Replace the audio track in the peerConnection so the partner HEARS it
+    // Replace audio track in WebRTC peer Connection
     if (peerConnection.current) {
       const senders = peerConnection.current.getSenders();
       const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
@@ -2989,7 +3226,7 @@ export default function Home() {
 
                 {activeAvatar !== "None" && (
                   <div className="avatar-video-replacement">
-                    <img src={`https://robohash.org/${activeAvatar}?set=set${activeAvatar === 'Robot' ? '1' : activeAvatar === 'Anime' ? '5' : '4'}&key=${activeAvatar}`} alt="Avatar" />
+                    <img src={getAvatarUrl(activeAvatar)} alt="Avatar" />
                   </div>
                 )}
 
@@ -3160,7 +3397,7 @@ export default function Home() {
               {/* SHARED PARTNER AVATAR */}
               {partnerAvatar && partnerAvatar !== "None" && (
                 <div className="avatar-video-replacement partner-avatar-view">
-                  <img src={`https://robohash.org/${partnerAvatar}?set=set${partnerAvatar === 'Robot' ? '1' : partnerAvatar === 'Anime' ? '5' : '4'}&key=${partnerAvatar}`} alt="Partner Avatar" />
+                  <img src={getAvatarUrl(partnerAvatar)} alt="Partner Avatar" />
                 </div>
               )}
 
@@ -3575,7 +3812,7 @@ export default function Home() {
                       </div>
                     ))}
 
-                    {activeIdentityMenu === 'voice' && ['Normal', 'Robot', 'Deep', 'Chipmunk', 'Alien', 'Echo'].map(v => (
+                    {activeIdentityMenu === 'voice' && ['Normal', 'Baby Voice', 'Girl Voice', 'Anime Voice', 'Ghost Whisper', 'Cartoon Voice', 'AI girl voice', 'Sigma deep voice'].map(v => (
                       <div
                         key={v}
                         className={`mini-option ${selectedTempVoice === v ? 'selected' : ''}`}

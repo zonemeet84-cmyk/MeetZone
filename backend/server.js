@@ -2614,6 +2614,11 @@ function endQuiz(roomId) {
         io.to(to).emit("receive-subtitle", { text: finalText });
       });
 
+      socket.on("request-subtitles", ({ enabled, to }) => {
+        io.to(to).emit("partner-request-subtitles", { enabled });
+      });
+
+
       socket.on("friend-request", ({ to }) => {
         const targetSocketId = to;
         io.to(targetSocketId).emit("friend-request-received", {
