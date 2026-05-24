@@ -1195,12 +1195,12 @@ export default function Home() {
       // 2. Camera Logic
       try {
         const videoConstraints = {
-          width: { ideal: 1280, max: 1280 },
-          height: { ideal: 720, max: 720 },
+          width: { ideal: 1920, max: 1920 },
+          height: { ideal: 1080, max: 1080 },
           frameRate: { ideal: 30, max: 30 }
         };
 
-        console.log("Negotiated camera constraints loaded based on plan:", isPremiumUser, videoConstraints);
+        console.log("Forcing High Quality Camera Constraints:", videoConstraints);
         streamInstance = await navigator.mediaDevices.getUserMedia({
           video: videoConstraints,
           audio: true,
@@ -1462,37 +1462,7 @@ export default function Home() {
       });
 
 
-      socket.on("hd-approved", async ({ enable }) => {
-        setIsHDEnabled(enable);
-        try {
-          const videoConstraints = enable ? {
-            width: { ideal: 1920, max: 1920 },
-            height: { ideal: 1080, max: 1080 },
-            frameRate: { ideal: 30, max: 30 }
-          } : {
-            width: { ideal: 640, max: 960 },
-            height: { ideal: 480, max: 540 },
-            frameRate: { ideal: 20, max: 20 }
-          };
-          const stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true });
-          if (localVideo.current) localVideo.current.srcObject = stream;
-          streamInstance = stream;
-          if (peerConnection.current) {
-             const videoTrack = stream.getVideoTracks()[0];
-             const sender = peerConnection.current.getSenders().find(s => s.track && s.track.kind === 'video');
-             if (sender) sender.replaceTrack(videoTrack);
-          }
-          showToast(enable ? "HD Video Enabled" : "HD Video Disabled", "success");
-        } catch(e) {
-          console.error("HD transition failed", e);
-          showToast("Camera access failed for HD", "error");
-        }
-      });
 
-      socket.on("hd-denied", (data) => {
-        setIsHDEnabled(false);
-        showModal({ message: data.message || "HD Denied. Please upgrade to premium.", type: "error" });
-      });
 
       socket.on("matched", async ({ partnerId, initiator, partnerInfo }) => {
         setPartnerId(partnerId);
@@ -1579,7 +1549,8 @@ export default function Home() {
       });
 
       socket.on("receive-subtitle", ({ text }) => {
-        if (userRef.current?.premium) {
+        const u = userRef.current;
+        if (u?.premium || u?.email === "ds9376314@gmail.com" || u?.planName === "VIP Elite") {
           setCurrentSubtitle(text);
           setTimeout(() => {
             setCurrentSubtitle(prev => prev === text ? "" : prev);
@@ -1856,6 +1827,12 @@ export default function Home() {
         // Auto-restart if it was stopped unexpectedly while supposed to be on
         if ((subtitlesOn || partnerWantsSubtitles) && partnerId) {
           try { recognitionRef.current.start(); } catch(e) {}
+        }
+      };
+
+      return () => {
+        if (recognitionRef.current) {
+          try { recognitionRef.current.stop(); } catch(e) {}
         }
       };
     }
@@ -2201,7 +2178,7 @@ export default function Home() {
         const senders = peerConnection.current.getSenders();
         const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
         if (audioSender) {
-          audioSender.replaceTrack(localVideo.current.srcObject.getAudioTracks()[0]);
+          await audioSender.replaceTrack(localVideo.current.srcObject.getAudioTracks()[0]);
         }
       }
       return;
@@ -2411,7 +2388,7 @@ export default function Home() {
       const senders = peerConnection.current.getSenders();
       const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
       if (audioSender) {
-        audioSender.replaceTrack(dest.stream.getAudioTracks()[0]);
+        await audioSender.replaceTrack(dest.stream.getAudioTracks()[0]);
       }
     }
   };
@@ -2430,15 +2407,7 @@ export default function Home() {
     }
   };
 
-  const toggleHD = () => {
-    if (!user?.premium && user?.email !== "ds9376314@gmail.com") {
-      showModal({ message: "HD Video is available for Premium users only.", type: "info" });
-      return;
-    }
-    if (socket) {
-      socket.emit("request-hd-stream", { enable: !isHDEnabled });
-    }
-  };
+
 
   const handleFilterChange = (type, value) => {
     const isOwner = user?.email?.toLowerCase() === "ds9376314@gmail.com";
@@ -3277,9 +3246,7 @@ export default function Home() {
                       {isCameraOn ? "📹" : "🚫"}
                     </button>
 
-                    <button className={`ctrl-btn ${!isHDEnabled ? "off" : ""}`} onClick={toggleHD} title="Toggle HD Video" style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>
-                      HD
-                    </button>
+
                   </div>
                   <form onSubmit={sendMessage} className="mobile-inline-chat-form">
                     <input 
@@ -3924,7 +3891,7 @@ export default function Home() {
                 onClick={handleBrainClashClick}
                 disabled={quizState !== "idle" && quizState !== "queued"}
               >
-                <span className="icon">{quizState === "queued" ? "❌" : "🚪"}</span> <span className="text">{quizState === "queued" ? "Cancel Duel" : "Quiz Rooms"}</span>
+                <span className="icon">{quizState === "queued" ? "❌" : "🧠"}</span> <span className="text">{quizState === "queued" ? "Cancel Duel" : "Quiz Rooms"}</span>
               </button>
               <button 
                 className="gift-trigger-btn" 
@@ -7100,20 +7067,20 @@ export default function Home() {
             display: none !important;
           }
           
+          /* Circle Backgrounds for all mobile buttons */
+          .bottom-actions button, .filters-row-v2 button {
+            background: rgba(0,0,0,0.6) !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            backdrop-filter: blur(4px) !important;
+            width: 44px !important;
+            height: 44px !important;
+          }
+          
           /* Stop Button -> Bottom Right */
           .stop-btn {
-            bottom: 5px !important;
-            left: calc(100% - 35px) !important;
-            right: auto !important;
-            width: 24px !important;
-            height: 24px !important;
-            background: transparent !important;
-            box-shadow: none !important;
-            border: none !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            padding: 0 !important;
+            bottom: 20px !important;
+            right: 15px !important;
+            left: auto !important;
           }
           
           /* Report Button -> HIDDEN (Now inline) */
@@ -7121,55 +7088,28 @@ export default function Home() {
             display: none !important;
           }
           
-          /* Gift Button -> Bottom Right, below Quiz, above Stop */
+          /* Gift Button -> Above Quit */
           .gift-trigger-btn {
-            bottom: 115px !important;
-            left: calc(100% - 44px) !important;
-            right: auto !important;
-            width: 24px !important;
-            height: 24px !important;
-            background: transparent !important;
-            box-shadow: none !important;
-            border: none !important;
+            bottom: 80px !important;
+            right: 15px !important;
+            left: auto !important;
             display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            padding: 0 !important;
           }
           
           /* Tools Button -> Bottom Right, at the very bottom */
           .tools-trigger-btn {
             bottom: 45px !important;
-            left: calc(100% - 44px) !important;
-            right: auto !important;
-            width: 24px !important;
-            height: 24px !important;
-            background: transparent !important;
-            box-shadow: none !important;
-            border: none !important;
+            right: 15px !important;
+            left: auto !important;
             pointer-events: auto !important;
             position: absolute !important;
-            border-radius: 50% !important;
-            padding: 0 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
           }
 
-          /* Quiz Button -> Bottom Right, above Gift */
+          /* Quiz Button -> Above Gift */
           .quiz-trigger-btn {
-            bottom: 150px !important;
-            left: calc(100% - 44px) !important;
-            right: auto !important;
-            width: 24px !important;
-            height: 24px !important;
-            background: transparent !important;
-            box-shadow: none !important;
-            border: none !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            padding: 0 !important;
+            bottom: 140px !important;
+            right: 15px !important;
+            left: auto !important;
           }
           
           /* Hide bottom-mini-bar */
