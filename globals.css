@@ -1286,25 +1286,48 @@ img, video {
 @media (max-width: 768px) {
   /* Header & Nav */
   .header {
-    flex-direction: column !important;
-    gap: 15px !important;
-    padding: 15px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    padding: 10px 12px !important;
+    text-align: left !important;
+  }
+  .brand-group {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: flex-start !important;
+    overflow: hidden;
   }
   .header-nav {
-    flex-wrap: wrap !important;
-    justify-content: center !important;
-    gap: 10px !important;
+    display: none !important;
   }
   .brand-group h1 {
     font-size: 1.5rem !important;
   }
   .user-info {
-    flex-direction: column !important;
-    gap: 10px !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    flex-shrink: 0;
+    margin-left: auto;
   }
-  div[style*="alignItems: 'center'"][style*="gap: '20px'"] {
-    flex-wrap: wrap !important;
-    justify-content: center !important;
+  .user-dashboard-row {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 6px !important;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+  .header .profile-dropdown-container,
+  .header .profile-trigger {
+    width: auto !important;
+    justify-content: flex-end !important;
   }
 
   /* Structural Grids & Flex */
@@ -1349,9 +1372,15 @@ img, video {
   }
   
   /* Dropdowns and Modals */
-  .profile-dropdown-container, .profile-trigger {
+  .profile-dropdown-container,
+  .profile-trigger {
     width: 100% !important;
     justify-content: center !important;
+  }
+  .header .profile-dropdown-container,
+  .header .profile-trigger {
+    width: auto !important;
+    justify-content: flex-end !important;
   }
   .profile-modal-card, .payment-modal-card, .premium-modal, .incoming-call-card {
     width: 95% !important;

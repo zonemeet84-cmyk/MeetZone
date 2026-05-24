@@ -1328,25 +1328,52 @@ img, video {
 @media (max-width: 768px) {
   /* Header & Nav */
   .header {
-    flex-direction: column !important;
-    gap: 15px !important;
-    padding: 15px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    padding: 10px 12px !important;
+    text-align: left !important;
+  }
+  .brand-group {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: flex-start !important;
+    overflow: hidden;
   }
   .header-nav {
-    flex-wrap: wrap !important;
-    justify-content: center !important;
-    gap: 10px !important;
+    display: none !important;
   }
   .brand-group h1 {
     font-size: 1.5rem !important;
   }
   .user-info {
-    flex-direction: column !important;
-    gap: 10px !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    flex-shrink: 0;
+    margin-left: auto;
   }
-  div[style*="alignItems: 'center'"][style*="gap: '20px'"] {
-    flex-wrap: wrap !important;
-    justify-content: center !important;
+  .header-actions-group {
+    display: contents !important;
+  }
+  .header-premium-badge {
+    flex-shrink: 0 !important;
+  }
+  .header-streak-pill,
+  .header-coins-pill,
+  .header-profile-slot {
+    flex-shrink: 0 !important;
+  }
+  .header-profile-slot {
+    margin-left: auto !important;
+  }
+  .header .profile-dropdown-container,
+  .header .profile-trigger {
+    width: auto !important;
+    justify-content: flex-end !important;
   }
 
   /* Structural Grids & Flex */
@@ -1391,9 +1418,15 @@ img, video {
   }
   
   /* Dropdowns and Modals */
-  .profile-dropdown-container, .profile-trigger {
+  .profile-dropdown-container,
+  .profile-trigger {
     width: 100% !important;
     justify-content: center !important;
+  }
+  .header .profile-dropdown-container,
+  .header .profile-trigger {
+    width: auto !important;
+    justify-content: flex-end !important;
   }
   .profile-modal-card, .payment-modal-card, .premium-modal, .incoming-call-card {
     width: 95% !important;
@@ -2390,10 +2423,43 @@ img, video {
   .container { padding: 10px !important; }
   h1 { font-size: 2.5rem !important; }
   h2 { font-size: 1.8rem !important; }
-  .header { flex-direction: column !important; padding: 15px !important; gap: 15px !important; text-align: center !important; }
-  .brand-group { justify-content: center !important; }
-  .header-nav { display: none !important; } /* Hide secondary nav links on mobile header if they clutter */
-  .header-actions { width: 100% !important; justify-content: center !important; flex-wrap: wrap !important; }
+  .header {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding: 8px 10px !important;
+    gap: 6px !important;
+    text-align: left !important;
+    overflow-x: auto !important;
+    scrollbar-width: none;
+  }
+  .header::-webkit-scrollbar { display: none; }
+  .brand-group {
+    flex: 0 1 auto;
+    min-width: 0;
+    justify-content: flex-start !important;
+    overflow: hidden;
+  }
+  .header-nav { display: none !important; }
+  .header-premium-badge {
+    flex-shrink: 0 !important;
+  }
+  .header-actions-group {
+    display: contents !important;
+  }
+  .header-profile-slot {
+    margin-left: auto !important;
+  }
+  .user-dashboard-row {
+    display: contents !important;
+  }
+  .header .profile-dropdown-container,
+  .header .profile-trigger {
+    width: auto !important;
+  }
+  .header-actions { width: auto !important; justify-content: flex-end !important; flex-wrap: nowrap !important; }
   .btn { width: 100% !important; justify-content: center !important; }
   .video-grid { grid-template-columns: 1fr !important; }
 

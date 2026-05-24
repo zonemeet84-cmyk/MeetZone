@@ -1327,8 +1327,11 @@ export default function Dashboard() {
             <span style={{ color: '#ffffff' }}>Zone</span>
             <span style={{ background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Meet</span>
           </h1>
-          {user?.premium && <span className="premium-badge">{user.planName || "PREMIUM"}</span>}
         </div>
+
+        {user?.premium && (
+          <span className="premium-badge header-premium-badge">{user.planName || "PREMIUM"}</span>
+        )}
 
         <nav className="header-nav">
           <div className="nav-link" onClick={() => router.push("/")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Home</div>
@@ -1358,37 +1361,34 @@ export default function Dashboard() {
             <span className="loading-dots">Verifying session...</span>
           </div>
         ) : user ? (
-          <div className="user-dashboard-row" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            {/* STREAK PILL */}
-            {user && (
-              <div
-                className="header-streak-pill"
-                onClick={() => setShowStreakModal(true)}
-                title={`${user.streak || 0} day login streak! Log in 7 days in a row for 100 free coins.`}
-              >
-                <span className="streak-fire">🔥</span>
-                <div className="streak-info">
-                  <span className="streak-count">{user.streak || 0}</span>
-                  <span className="streak-label">/ 7</span>
-                </div>
-                {/* Progress Bar */}
-                <div className="streak-bar-wrap">
-                  <div className="streak-bar-fill" style={{ width: `${Math.min(((user.streak || 0) / 7) * 100, 100)}%` }} />
-                </div>
+          <div className="header-actions-group">
+            <div
+              className="header-streak-pill"
+              onClick={() => setShowStreakModal(true)}
+              title={`${user.streak || 0} day login streak! Log in 7 days in a row for 100 free coins.`}
+            >
+              <span className="streak-fire">🔥</span>
+              <div className="streak-info">
+                <span className="streak-count">{user.streak || 0}</span>
+                <span className="streak-label">/ 7</span>
               </div>
-            )}
+              <div className="streak-bar-wrap">
+                <div className="streak-bar-fill" style={{ width: `${Math.min(((user.streak || 0) / 7) * 100, 100)}%` }} />
+              </div>
+            </div>
+
             <div className="header-coins-pill" onClick={() => document.getElementById("coins-section")?.scrollIntoView({ behavior: 'smooth' })}>
               <span className="coin-icon">💰</span>
               <span className="coin-count">{user.coins || 0}</span>
               <span className="plus-icon">+</span>
             </div>
 
-            <div className={`network-status-pill ${isOnline ? 'online' : 'offline'}`} style={{ marginLeft: '10px' }}>
+            <div className={`network-status-pill hide-mobile ${isOnline ? 'online' : 'offline'}`}>
               <span className="status-dot"></span>
               {isOnline ? 'Live' : 'Offline'}
             </div>
 
-            <div className="profile-dropdown-container">
+            <div className="profile-dropdown-container header-profile-slot">
               <div className="profile-trigger" onClick={() => setShowProfileDrop(!showProfileDrop)} style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
                 <span style={{ color: '#ffffff', fontWeight: '500', fontSize: '1rem' }}>
                   {user.name} {user.email === "ds9376314@gmail.com" && <span style={{ color: '#f59e0b', fontSize: '0.7rem', fontWeight: '800', border: '1px solid #f59e0b', padding: '1px 5px', borderRadius: '4px', marginLeft: '5px' }}>VIP</span>}
@@ -3573,6 +3573,22 @@ export default function Dashboard() {
             align-items: center;
           }
 
+          .header-premium-badge {
+            flex-shrink: 0;
+          }
+
+          .header-actions-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            margin-left: auto;
+          }
+
+          .header-profile-slot {
+            flex-shrink: 0;
+          }
+
           .nav-link:hover {
             color: #fff !important;
             transform: translateY(-2px);
@@ -4626,44 +4642,65 @@ export default function Dashboard() {
             }
 
             .header {
-              padding: 8px 10px !important;
+              display: flex !important;
               flex-direction: row !important;
-              justify-content: space-between !important;
+              flex-wrap: nowrap !important;
               align-items: center !important;
+              justify-content: flex-start !important;
+              padding: 8px 10px !important;
               gap: 6px !important;
               height: auto !important;
-              overflow: hidden !important;
+              overflow-x: auto !important;
+              overflow-y: hidden !important;
+              -webkit-overflow-scrolling: touch;
+              scrollbar-width: none;
+            }
+            .header::-webkit-scrollbar {
+              display: none;
             }
             .brand-group {
-              flex-shrink: 1 !important;
+              flex: 0 1 auto !important;
               min-width: 0 !important;
               overflow: hidden !important;
-              gap: 6px !important;
-            }
-            .logo-icon-wrapper svg {
-              width: 28px !important;
-              height: 28px !important;
-              flex-shrink: 0 !important;
-            }
-            .logo-text {
-              font-size: 1.05rem !important;
-              white-space: nowrap !important;
-            }
-            .premium-badge {
-              font-size: 0.55rem !important;
-              padding: 2px 5px !important;
-              flex-shrink: 0 !important;
-              white-space: nowrap !important;
+              gap: 5px !important;
             }
             .header-nav {
               display: none !important;
             }
-            .user-dashboard-row {
-              gap: 5px !important;
+            .logo-icon-wrapper svg {
+              width: 26px !important;
+              height: 26px !important;
               flex-shrink: 0 !important;
-              flex-wrap: nowrap !important;
-              justify-content: flex-end !important;
-              align-items: center !important;
+            }
+            .logo-text {
+              font-size: 0.95rem !important;
+              white-space: nowrap !important;
+            }
+            .header-premium-badge,
+            .premium-badge.header-premium-badge {
+              font-size: 0.5rem !important;
+              padding: 2px 5px !important;
+              flex-shrink: 0 !important;
+              white-space: nowrap !important;
+              max-width: 56px !important;
+              overflow: hidden !important;
+              text-overflow: ellipsis !important;
+            }
+            /* Flatten actions so order is: ZoneMeet → Premium → Streak → Coins → Profile */
+            .header-actions-group {
+              display: contents !important;
+            }
+            .header-streak-pill,
+            .header-coins-pill,
+            .header-profile-slot {
+              flex-shrink: 0 !important;
+            }
+            .header-profile-slot {
+              margin-left: auto !important;
+            }
+            .header .profile-dropdown-container,
+            .header .profile-trigger {
+              width: auto !important;
             }
             .header-coins-pill, .header-streak-pill {
               padding: 3px 7px !important;
