@@ -6,6 +6,7 @@ import axios from "axios";
 import { useSession, signOut } from "next-auth/react";
 import { Country, State } from "country-state-city";
 import io from "socket.io-client";
+import Swal from "sweetalert2";
 
 let socket;
 
@@ -1620,28 +1621,36 @@ export default function Dashboard() {
 
                       {/* Delete My Account */}
                       <button className="profile-more-btn" onClick={async () => {
-                        const result = await Swal.fire({
-                          title: 'Delete Account?',
-                          text: 'This will permanently delete your account and all data. This action cannot be undone!',
-                          icon: 'warning',
-                          showCancelButton: true,
-                          confirmButtonColor: '#ef4444',
-                          cancelButtonColor: '#6366f1',
-                          confirmButtonText: 'Yes, Delete My Account',
-                          cancelButtonText: 'Cancel',
-                          background: '#0f172a',
-                          color: '#fff'
-                        });
-                        if (!result.isConfirmed) return;
+                        let confirmed = false;
+                        try {
+                          const result = await Swal.fire({
+                            title: 'Delete Account?',
+                            text: 'This will permanently delete your account and all data. This action cannot be undone!',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#ef4444',
+                            cancelButtonColor: '#6366f1',
+                            confirmButtonText: 'Yes, Delete My Account',
+                            cancelButtonText: 'Cancel',
+                            background: '#0f172a',
+                            color: '#fff'
+                          });
+                          confirmed = result.isConfirmed;
+                        } catch (e) {
+                          confirmed = window.confirm('This will permanently delete your account and all data. Are you sure?');
+                        }
+                        if (!confirmed) return;
                         try {
                           const token = localStorage.getItem("token");
-                          await axios.delete("https://api.zonemeet.chat/api/user/delete-account", { headers: { Authorization: `Bearer ${token}` } });
-                          localStorage.clear();
-                          Swal.fire({ text: "Account deleted successfully. Goodbye!", icon: "success", background: "#0f172a", color: "#fff", confirmButtonColor: "#6366f1" }).then(() => {
-                            window.location.href = "/";
-                          });
+                          const res = await axios.delete("https://api.zonemeet.chat/api/user/delete-account", { headers: { Authorization: `Bearer ${token}` } });
+                          if (res.data.success) {
+                            localStorage.clear();
+                            try { await signOut({ redirect: false }); } catch(e) {}
+                            alert("Account deleted successfully. Goodbye!");
+                            window.location.href = "/login";
+                          }
                         } catch (err) {
-                          Swal.fire({ text: err.response?.data?.error || "Failed to delete account", icon: "error", background: "#0f172a", color: "#fff", confirmButtonColor: "#6366f1" });
+                          alert(err.response?.data?.error || err.response?.data?.message || "Failed to delete account. Please try again.");
                         }
                       }} style={{ color: '#ef4444', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}>
                         <div className="profile-detail-left">🗑️ Delete My Account</div>
