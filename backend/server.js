@@ -266,6 +266,96 @@ function normalizeUsers(targetUsers) {
   if (changed) saveUsers();
 }
 
+// --- Subscription & coin pack activation (exact day counts from purchase moment) ---
+const SUBSCRIPTION_PLANS = {
+  "Starter": { days: 7, bundledCoins: 50, tier: "starter" },
+  "Prime": { days: 30, bundledCoins: 150, tier: "prime" },
+  "Silver": { days: 90, bundledCoins: 500, tier: "silver" },
+  "Prime Silver": { days: 90, bundledCoins: 500, tier: "silver" },
+  "VIP Elite": { days: 30, bundledCoins: 400, tier: "elite" },
+};
+
+const COIN_PACKS = {
+  "100 Coins": { base: 100, bonus: 0 },
+  "200 Coins": { base: 200, bonus: 50 },
+  "500 Coins": { base: 500, bonus: 150 },
+  "1300 Coins": { base: 1300, bonus: 300 },
+};
+
+function addMsFromDays(days) {
+  return Date.now() + days * 24 * 60 * 60 * 1000;
+}
+
+function expireSubscriptionIfNeeded(user) {
+  if (!user) return false;
+  if (user.premium && !user.isPermanentPremium && user.planExpiry && Date.now() > user.planExpiry) {
+    user.premium = false;
+    user.planName = null;
+    user.planExpiry = null;
+    user.subscriptionTier = null;
+    user.unlockedFilters = ["None", "Smooth"];
+    delete user.twoFactorSecret;
+    return true;
+  }
+  return false;
+}
+
+function logCoinEarn(user, amount, description) {
+  if (!amount || !user?.email) return;
+  coinActivity.push({
+    email: user.email,
+    type: "earn",
+    amount,
+    description,
+    timestamp: Date.now(),
+  });
+}
+
+function applySubscriptionPurchase(user, planName) {
+  const cfg = SUBSCRIPTION_PLANS[planName];
+  if (!cfg) return { ok: false, message: "Unknown subscription plan" };
+  expireSubscriptionIfNeeded(user);
+  const normalizedName = planName === "Prime Silver" ? "Silver" : planName;
+  user.premium = true;
+  user.planName = normalizedName;
+  user.subscriptionTier = cfg.tier;
+  user.planStartedAt = Date.now();
+  user.planExpiry = addMsFromDays(cfg.days);
+  if (cfg.bundledCoins > 0) {
+    user.coins = (user.coins || 0) + cfg.bundledCoins;
+    logCoinEarn(user, cfg.bundledCoins, `${normalizedName} subscription bonus`);
+  }
+  return { ok: true, type: "subscription", planName: normalizedName, days: cfg.days, bundledCoins: cfg.bundledCoins };
+}
+
+function applyCoinPackPurchase(user, planName) {
+  const pack = COIN_PACKS[planName];
+  if (!pack) return { ok: false, message: "Unknown coin pack" };
+  const total = pack.base + pack.bonus;
+  user.coins = (user.coins || 0) + total;
+  logCoinEarn(
+    user,
+    total,
+    pack.bonus > 0 ? `Purchased ${planName} (+${pack.bonus} bonus)` : `Purchased ${planName}`
+  );
+  return { ok: true, type: "coins", total, base: pack.base, bonus: pack.bonus };
+}
+
+function processVerifiedPurchase(user, planName) {
+  if (!user || !planName) return { ok: false, message: "Invalid purchase" };
+  if (String(planName).includes("Coins")) {
+    return applyCoinPackPurchase(user, planName);
+  }
+  return applySubscriptionPurchase(user, planName);
+}
+
+function userPayloadAfterPurchase(user) {
+  return {
+    ...user,
+    coinActivity: coinActivity.filter((a) => a.email === user.email).slice(-10),
+  };
+}
+
 // PURGE COIN TRANSACTIONS ON START (As requested)
 transactions = transactions.filter(t => t.type !== "coins");
 saveTransactions();
@@ -672,12 +762,7 @@ app.post("/api/auth/session-login", (req, res) => {
     }
   }
 
-  // Subscription expiry check
-  if (user.premium && !user.isPermanentPremium && user.planExpiry && Date.now() > user.planExpiry) {
-    user.premium = false;
-    user.planName = null;
-    user.planExpiry = null;
-    delete user.twoFactorSecret;
+  if (expireSubscriptionIfNeeded(user)) {
     saveUsers();
   }
 
@@ -969,11 +1054,7 @@ app.post("/api/auth/login", async (req, res) => {
     return res.status(400).json({ message: "Invalid credentials" });
   }
 
-  // Check for subscription expiry
-  if (user.premium && !user.isPermanentPremium && user.planExpiry && Date.now() > user.planExpiry) {
-    user.premium = false;
-    user.planName = null;
-    user.planExpiry = null;
+  if (expireSubscriptionIfNeeded(user)) {
     saveUsers();
   }
 
@@ -1262,11 +1343,7 @@ app.get("/api/auth/verify", (req, res) => {
       return res.status(401).json({ valid: false, message: "Session expired or invalidated" });
     }
     // Check for subscription expiry
-    if (user.premium && !user.isPermanentPremium && user.planExpiry && Date.now() > user.planExpiry) {
-      user.premium = false;
-      user.planName = null;
-      user.planExpiry = null;
-      delete user.twoFactorSecret;
+    if (expireSubscriptionIfNeeded(user)) {
       saveUsers();
     }
 
@@ -1280,7 +1357,18 @@ app.get("/api/auth/verify", (req, res) => {
     console.log("Verify success for user:", user.email);
     user.coinActivity = coinActivity.filter(a => a.email === user.email).slice(-10);
     if (!user.unlockedFilters) user.unlockedFilters = ["None", "Smooth"];
-    res.json({ valid: true, user: { ...user, id: user.id, email: user.email, coinActivity: user.coinActivity, unlockedFilters: user.unlockedFilters } });
+    res.json({
+      valid: true,
+      user: {
+        ...user,
+        id: user.id,
+        email: user.email,
+        coinActivity: user.coinActivity,
+        unlockedFilters: user.unlockedFilters,
+        planExpiry: user.planExpiry,
+        subscriptionTier: user.subscriptionTier || null,
+      },
+    });
   } catch (err) {
     console.log("Verify failed: Token error", err.message);
     res.status(401).json({ valid: false, message: "Token expired or invalid" });
@@ -3255,57 +3343,28 @@ function endQuiz(roomId) {
             : users.find(u => u.email === userEmail);
 
           if (targetUser) {
-            const user = targetUser; // Reuse the variable name to minimize changes
-            // DETECT PRODUCT TYPE
-            const isCoinPurchase = planName.includes("Coins");
-
-            if (isCoinPurchase) {
-              // Credit base coins + bonus coins based on package
-              let coinsToAdd = parseInt(planName.split(" ")[0]); // base coins, e.g. "200 Coins" -> 200
-              let bonusCoins = planName.includes("200") ? 50 : planName.includes("500") ? 150 : planName.includes("1300") ? 300 : 0;
-              user.coins = (user.coins || 0) + coinsToAdd + bonusCoins;
-
-              transactions.push({
-                id: razorpay_payment_id,
-                userEmail,
-                planName,
-                amount: planName.includes("100") ? 79 : planName.includes("200") ? 149 : planName.includes("500") ? 299 : 699,
-                timestamp: Date.now(),
-                type: "coins"
-              });
-            } else {
-              user.premium = true;
-              user.planName = planName;
-              let days = 30;
-              let amount = 349;
-              let bundledCoins = 0;
-
-              if (planName === "Starter") { days = 7; amount = 149; bundledCoins = 50; }
-              else if (planName === "Silver") { days = 90; amount = 1599; bundledCoins = 500; }
-              else if (planName === "VIP Elite") { days = 30; amount = 999; bundledCoins = 400; }
-              else if (planName === "Prime") { days = 30; amount = 599; bundledCoins = 150; }
-
-              user.planExpiry = Date.now() + (days * 24 * 60 * 60 * 1000);
-              user.coins = (user.coins || 0) + bundledCoins;
-
-              transactions.push({
-                id: razorpay_payment_id,
-                userEmail,
-                planName,
-                amount,
-                timestamp: Date.now(),
-                type: "subscription",
-                bundledCoins
-              });
+            const user = targetUser;
+            const purchase = processVerifiedPurchase(user, planName);
+            if (!purchase.ok) {
+              return res.status(400).json({ success: false, message: purchase.message || "Purchase failed" });
             }
-
+            transactions.push({
+              id: razorpay_payment_id,
+              userEmail,
+              planName,
+              timestamp: Date.now(),
+              type: purchase.type,
+              ...(purchase.type === "subscription"
+                ? { bundledCoins: purchase.bundledCoins, planExpiry: user.planExpiry }
+                : { coinsAdded: purchase.total }),
+            });
             saveTransactions();
             saveUsers();
-            const updatedUser = {
-              ...user,
-              coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10)
-            };
-            return res.json({ success: true, message: "Transaction completed successfully", user: updatedUser });
+            return res.json({
+              success: true,
+              message: "Transaction completed successfully",
+              user: userPayloadAfterPurchase(user),
+            });
           }
           return res.status(404).json({ success: false, message: "User not found" });
         } else {
@@ -3360,22 +3419,13 @@ function endQuiz(roomId) {
         const user = users.find(u => u.email === targetEmail);
         if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-        let days = 30, bundledCoins = 0;
-        if (planName === "Starter") { days = 7; bundledCoins = 50; }
-        else if (planName === "Prime") { days = 30; bundledCoins = 150; }
-        else if (planName === "Silver") { days = 90; bundledCoins = 500; }
-        else if (planName === "VIP Elite") { days = 30; bundledCoins = 400; }
-        
-        user.planExpiry = Date.now() + (days * 24 * 60 * 60 * 1000);
-        user.premium = true;
-        user.planName = planName;
-        user.coins = (user.coins || 0) + bundledCoins;
+        const purchase = processVerifiedPurchase(user, planName);
+        if (!purchase.ok) return res.status(400).json({ success: false, message: purchase.message || "Purchase failed" });
 
-        transactions.push({ id: session.subscription, userEmail: targetEmail, planName, gateway: "stripe_subscription", timestamp: Date.now() });
-        saveTransactions(); saveUsers();
-        
-        const updatedUser = { ...user, coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10) };
-        res.json({ success: true, user: updatedUser });
+        transactions.push({ id: session.subscription, userEmail: targetEmail, planName, gateway: "stripe_subscription", timestamp: Date.now(), type: "subscription" });
+        saveTransactions();
+        saveUsers();
+        res.json({ success: true, user: userPayloadAfterPurchase(user) });
       } catch (err) {
         console.error("Stripe Verify Sub Error:", err);
         res.status(500).json({ success: false, message: "Verification failed" });
@@ -3409,26 +3459,12 @@ function endQuiz(roomId) {
         const user = users.find(u => u.email === (giftRecipientId || userEmail));
         if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-        const isCoinPurchase = planName.includes("Coins");
-        if (isCoinPurchase) {
-          const coinsToAdd = parseInt(planName.split(" ")[0]);
-          const bonusCoins = planName.includes("200") ? 50 : planName.includes("500") ? 150 : planName.includes("1300") ? 300 : 0;
-          user.coins = (user.coins || 0) + coinsToAdd + bonusCoins;
-        } else {
-          let days = 7, amount = 149, bundledCoins = 0;
-          if (planName === "Starter") { days = 7; amount = 149; bundledCoins = 50; }
-          else if (planName === "Prime") { days = 30; amount = 599; bundledCoins = 150; }
-          else if (planName === "Silver") { days = 90; amount = 1599; bundledCoins = 500; }
-          else if (planName === "VIP Elite") { days = 30; amount = 999; bundledCoins = 400; }
-          user.planExpiry = Date.now() + (days * 24 * 60 * 60 * 1000);
-          user.premium = true;
-          user.planName = planName;
-          user.coins = (user.coins || 0) + bundledCoins;
-        }
-        transactions.push({ id: paymentIntentId, userEmail, planName, gateway: "stripe", timestamp: Date.now() });
-        saveTransactions(); saveUsers();
-        const updatedUser = { ...user, coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10) };
-        res.json({ success: true, message: "Stripe payment verified", user: updatedUser });
+        const purchase = processVerifiedPurchase(user, planName);
+        if (!purchase.ok) return res.status(400).json({ success: false, message: purchase.message || "Purchase failed" });
+        transactions.push({ id: paymentIntentId, userEmail, planName, gateway: "stripe", timestamp: Date.now(), type: purchase.type });
+        saveTransactions();
+        saveUsers();
+        res.json({ success: true, message: "Stripe payment verified", user: userPayloadAfterPurchase(user) });
       } catch (err) {
         console.error("Stripe Verify Error:", err);
         res.status(500).json({ success: false, message: "Stripe verification failed" });
@@ -3483,26 +3519,12 @@ function endQuiz(roomId) {
         const user = users.find(u => u.email === (giftRecipientId || userEmail));
         if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-        const isCoinPurchase = planName.includes("Coins");
-        if (isCoinPurchase) {
-          const coinsToAdd = parseInt(planName.split(" ")[0]);
-          const bonusCoins = planName.includes("200") ? 50 : planName.includes("500") ? 150 : planName.includes("1300") ? 300 : 0;
-          user.coins = (user.coins || 0) + coinsToAdd + bonusCoins;
-        } else {
-          let days = 7, bundledCoins = 0;
-          if (planName === "Starter") { days = 7; bundledCoins = 50; }
-          else if (planName === "Prime") { days = 30; bundledCoins = 150; }
-          else if (planName === "Silver") { days = 90; bundledCoins = 500; }
-          else if (planName === "VIP Elite") { days = 30; bundledCoins = 400; }
-          user.planExpiry = Date.now() + (days * 24 * 60 * 60 * 1000);
-          user.premium = true;
-          user.planName = planName;
-          user.coins = (user.coins || 0) + bundledCoins;
-        }
-        transactions.push({ id: orderId, userEmail, planName, gateway: "paypal", timestamp: Date.now() });
-        saveTransactions(); saveUsers();
-        const updatedUser = { ...user, coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10) };
-        res.json({ success: true, message: "PayPal payment captured", user: updatedUser });
+        const purchase = processVerifiedPurchase(user, planName);
+        if (!purchase.ok) return res.status(400).json({ success: false, message: purchase.message || "Purchase failed" });
+        transactions.push({ id: orderId, userEmail, planName, gateway: "paypal", timestamp: Date.now(), type: purchase.type });
+        saveTransactions();
+        saveUsers();
+        res.json({ success: true, message: "PayPal payment captured", user: userPayloadAfterPurchase(user) });
       } catch (err) {
         console.error("PayPal Capture Error:", err);
         res.status(500).json({ success: false, message: "PayPal capture failed" });
@@ -3629,26 +3651,12 @@ function endQuiz(roomId) {
         const user = users.find(u => u.email === (giftRecipientId || userEmail));
         if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-        const isCoinPurchase = planName.includes("Coins");
-        if (isCoinPurchase) {
-          const coinsToAdd = parseInt(planName.split(" ")[0]);
-          const bonusCoins = planName.includes("200") ? 50 : planName.includes("500") ? 150 : planName.includes("1300") ? 300 : 0;
-          user.coins = (user.coins || 0) + coinsToAdd + bonusCoins;
-        } else {
-          let days = 7, bundledCoins = 0;
-          if (planName === "Starter") { days = 7; bundledCoins = 50; }
-          else if (planName === "Prime") { days = 30; bundledCoins = 150; }
-          else if (planName === "Silver") { days = 90; bundledCoins = 500; }
-          else if (planName === "VIP Elite") { days = 30; bundledCoins = 400; }
-          user.planExpiry = Date.now() + (days * 24 * 60 * 60 * 1000);
-          user.premium = true;
-          user.planName = planName;
-          user.coins = (user.coins || 0) + bundledCoins;
-        }
-        transactions.push({ id: orderId, userEmail, planName, gateway: "cashfree", timestamp: Date.now() });
-        saveTransactions(); saveUsers();
-        const updatedUser = { ...user, coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10) };
-        res.json({ success: true, message: "Cashfree payment verified", user: updatedUser });
+        const purchase = processVerifiedPurchase(user, planName);
+        if (!purchase.ok) return res.status(400).json({ success: false, message: purchase.message || "Purchase failed" });
+        transactions.push({ id: orderId, userEmail, planName, gateway: "cashfree", timestamp: Date.now(), type: purchase.type });
+        saveTransactions();
+        saveUsers();
+        res.json({ success: true, message: "Cashfree payment verified", user: userPayloadAfterPurchase(user) });
       } catch (err) {
         console.error("Cashfree Verify Error:", err);
         res.status(500).json({ success: false, message: "Cashfree verification failed" });

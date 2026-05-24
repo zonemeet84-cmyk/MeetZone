@@ -20,6 +20,40 @@ const GENDERS = [
 
 const AGES = ["All Ages", "18-24", "25-34", "35-44", "45-54", "55+"];
 
+function isPlanActive(user) {
+  if (!user) return false;
+  if (user.email === "ds9376314@gmail.com" || user.isPermanentPremium) return true;
+  if (!user.premium || !user.planName) return false;
+  if (user.planExpiry && Date.now() > Number(user.planExpiry)) return false;
+  return true;
+}
+
+function getPlanTier(user) {
+  if (!isPlanActive(user)) return "free";
+  if (user.planName === "VIP Elite") return "elite";
+  if (user.planName === "Silver" || user.planName === "Prime Silver") return "silver";
+  if (user.planName === "Prime") return "prime";
+  if (user.planName === "Starter") return "starter";
+  return "starter";
+}
+
+function hasIdentityToolkit(user) {
+  return user?.email === "ds9376314@gmail.com" || user?.planName === "VIP Elite" || !!user?.hasSecretIdentity;
+}
+
+function canUseGenderCountryFilters(user) {
+  return isPlanActive(user);
+}
+
+function canUsePrimeFilters(user) {
+  const tier = getPlanTier(user);
+  return tier === "prime" || tier === "silver" || tier === "elite";
+}
+
+function canUseEliteFilters(user) {
+  return getPlanTier(user) === "elite";
+}
+
 // Preload Filter Images
 let dogEarsImg, catEarsImg, animeEyesImg, glassesImg;
 if (typeof window !== "undefined") {
@@ -2773,9 +2807,8 @@ export default function Home() {
                 className="filter-settings-trigger-btn" 
                 onClick={async () => {
                   const isOwner = user?.email?.toLowerCase() === "ds9376314@gmail.com";
-                  const isPremium = user?.premium || isOwner;
 
-                  if (isPremium) {
+                  if (canUseGenderCountryFilters(user) || isOwner) {
                     setTempGender(gender);
                     setTempCountry(country);
                     setTempStateProv(stateProv);
@@ -2794,7 +2827,7 @@ export default function Home() {
                 </div>
               </button>
 
-              {!user?.premium && (
+              {!isPlanActive(user) && (
                 <div className="paywall-badge-v2" onClick={() => setShowPricingModal(true)} style={{ margin: 0 }}>
                   <span>✨ Unlock</span>
                 </div>
@@ -2871,7 +2904,7 @@ export default function Home() {
                               const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
                               const currentUser = user || storedUser;
                               const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
-                              if (g.id !== "all" && !currentUser?.premium && !isOwner) {
+                              if (g.id !== "all" && !canUseGenderCountryFilters(currentUser) && !isOwner) {
                                 setShowPricingModal(true);
                                 return;
                               }
@@ -2892,7 +2925,7 @@ export default function Home() {
                         const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
                         const currentUser = user || storedUser;
                         const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
-                        if (!currentUser?.premium && !isOwner) {
+                        if (!canUseGenderCountryFilters(currentUser) && !isOwner) {
                           setShowPricingModal(true);
                           return;
                         }
@@ -2951,8 +2984,7 @@ export default function Home() {
                         const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
                         const currentUser = user || storedUser;
                         const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
-                        const isElite = (currentUser?.premium && currentUser?.planName === "VIP Elite") || isOwner;
-                        if (!isElite) {
+                        if (!canUseEliteFilters(currentUser) && !isOwner) {
                           showToast("State / Province selection is exclusive to VIP Elite members!", "warning");
                           setShowPricingModal(true);
                           return;
@@ -2999,8 +3031,7 @@ export default function Home() {
                         const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
                         const currentUser = user || storedUser;
                         const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
-                        const isElite = (currentUser?.premium && currentUser?.planName === "VIP Elite") || isOwner;
-                        if (!isElite) {
+                        if (!canUseEliteFilters(currentUser) && !isOwner) {
                           showToast("Age Group selection is exclusive to VIP Elite members!", "warning");
                           setShowPricingModal(true);
                           return;
@@ -3045,26 +3076,25 @@ export default function Home() {
                       const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
                       const currentUser = user || storedUser;
                       const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
-                      const isElite = (currentUser?.premium && currentUser?.planName === "VIP Elite") || isOwner;
 
                       // 1. Gender Selection Gating (must be premium for Male or Female)
-                      if (tempGender !== "all" && !currentUser?.premium && !isOwner) {
+                      if (tempGender !== "all" && !canUseGenderCountryFilters(currentUser) && !isOwner) {
                         setShowPricingModal(true);
                         return;
                       }
                       // 2. Country Selection Gating (must be premium for non-Worldwide)
-                      if (tempCountry !== "all" && !currentUser?.premium && !isOwner) {
+                      if (tempCountry !== "all" && !canUseGenderCountryFilters(currentUser) && !isOwner) {
                         setShowPricingModal(true);
                         return;
                       }
                       // 3. State Selection Gating (must be VIP Elite)
-                      if (tempStateProv !== "All States" && !isElite) {
+                      if (tempStateProv !== "All States" && !canUseEliteFilters(currentUser) && !isOwner) {
                         showToast("State selection is exclusive to VIP Elite members!", "warning");
                         setShowPricingModal(true);
                         return;
                       }
                       // 4. Age Group Selection Gating (must be VIP Elite)
-                      if (tempAge !== "all" && !isElite) {
+                      if (tempAge !== "all" && !canUseEliteFilters(currentUser) && !isOwner) {
                         showToast("Age selection is exclusive to VIP Elite members!", "warning");
                         setShowPricingModal(true);
                         return;
@@ -3898,12 +3928,17 @@ export default function Home() {
               <button 
                 className="gift-trigger-btn" 
                 onClick={() => {
+                  const toolkit = hasIdentityToolkit(user);
                   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-                  const isSubscribed = user?.email === "ds9376314@gmail.com" || user?.planName === "VIP Elite" || user?.hasSecretIdentity;
-                  if (isSubscribed && !isMobile) {
+                  setShowGiftPanel(true);
+                  if (toolkit && isMobile) {
+                    setShowPremiumMiniBar(true);
+                  } else if (toolkit && !isMobile) {
                     setShowPremiumMiniBar(!showPremiumMiniBar);
+                    setShowGiftPanel(false);
                   } else {
-                    setShowGiftPanel(!showGiftPanel);
+                    setShowPremiumMiniBar(false);
+                    setActiveIdentityMenu(null);
                   }
                 }}
               >
@@ -3916,7 +3951,35 @@ export default function Home() {
             <button className="next-btn" onClick={nextPartner} disabled={quizState !== "idle"}>
               <span className="icon">⏭️</span> <span className="text">Skip</span>
             </button>
+            <button
+              type="button"
+              className="filter-settings-trigger-btn mobile-filter-btn"
+              onClick={() => {
+                const isOwner = user?.email?.toLowerCase() === "ds9376314@gmail.com";
+                if (canUseGenderCountryFilters(user) || isOwner) {
+                  setTempGender(gender);
+                  setTempCountry(country);
+                  setTempStateProv(stateProv);
+                  setTempAge(age);
+                  setShowFilterModal(true);
+                } else {
+                  showToast("Matchmaking preferences are a subscription feature! Please unlock Premium to use.", "warning");
+                  setShowPricingModal(true);
+                }
+              }}
+            >
+              <span className="icon">⚙️</span>
+              <span className="text">All</span>
+            </button>
           </div>
+          {showGiftPanel && hasIdentityToolkit(user) && (
+            <div className="mobile-identity-toolbar">
+              <button type="button" className={`tool-btn ${activeIdentityMenu === 'avatars' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'avatars' ? null : 'avatars')}>👤</button>
+              <button type="button" className={`tool-btn ${activeIdentityMenu === 'voice' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'voice' ? null : 'voice')}>🎙</button>
+              <button type="button" className={`tool-btn ${activeIdentityMenu === 'privacy' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'privacy' ? null : 'privacy')}>🌫</button>
+              <button type="button" className="tool-btn active" onClick={() => setShowGiftPanel(true)}>🎁</button>
+            </div>
+          )}
         </div>
 
         <div className={`chat-column ${isMobileChatOpen ? 'mobile-chat-open' : 'mobile-chat-closed'}`}>
@@ -7052,10 +7115,9 @@ export default function Home() {
             background: rgba(239, 68, 68, 0.2) !important;
             border-color: rgba(239, 68, 68, 0.35) !important;
           }
-          .bottom-actions .next-btn {
+          .bottom-actions .next-btn,
+          .bottom-actions .mobile-filter-btn {
             position: absolute !important;
-            top: 40px !important;
-            bottom: auto !important;
             right: 15px !important;
             left: auto !important;
             width: 42px !important;
@@ -7073,8 +7135,46 @@ export default function Home() {
             z-index: 100 !important;
             pointer-events: auto !important;
           }
-          .bottom-actions .next-btn .text {
+          .bottom-actions .next-btn {
+            top: 40px !important;
+            bottom: auto !important;
+          }
+          .bottom-actions .mobile-filter-btn {
+            top: 90px !important;
+            bottom: auto !important;
+          }
+          .bottom-actions .next-btn .text,
+          .bottom-actions .mobile-filter-btn .text {
             display: none !important;
+          }
+          .bottom-actions .mobile-filter-btn .icon {
+            font-size: 1.05rem !important;
+          }
+          .header-actions .filters-row-v2 {
+            display: none !important;
+          }
+          .mobile-identity-toolbar {
+            position: absolute !important;
+            right: 15px !important;
+            bottom: 200px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 10px !important;
+            z-index: 120 !important;
+            pointer-events: auto !important;
+          }
+          .mobile-identity-toolbar .tool-btn {
+            width: 42px !important;
+            height: 42px !important;
+            min-width: 42px !important;
+            border-radius: 50% !important;
+            padding: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: rgba(0,0,0,0.55) !important;
+            border: 1px solid rgba(255,255,255,0.22) !important;
+            font-size: 1.05rem !important;
           }
 
           /* Inline Report Button */
