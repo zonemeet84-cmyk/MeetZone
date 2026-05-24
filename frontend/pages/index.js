@@ -3615,7 +3615,7 @@ export default function Dashboard() {
 
           .header-nav {
             display: flex;
-            gap: 24px;
+            gap: 30px;
             align-items: center;
           }
 
@@ -3649,7 +3649,7 @@ export default function Dashboard() {
               justify-content: center;
               justify-self: center;
               flex-wrap: wrap;
-              gap: clamp(10px, 1.1vw, 22px);
+              gap: clamp(16px, 1.35vw, 32px);
               max-width: 100%;
               min-width: 0;
               white-space: normal;
@@ -3668,7 +3668,7 @@ export default function Dashboard() {
 
           @media (min-width: 769px) and (max-width: 1180px) {
             .header-nav {
-              gap: 10px;
+              gap: 16px;
             }
             .header-nav .nav-link {
               font-size: 0.82rem !important;
