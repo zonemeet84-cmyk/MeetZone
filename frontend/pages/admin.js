@@ -24,6 +24,9 @@ export default function AdminDashboard() {
   const [bannedUsers, setBannedUsers] = useState([]);
   const [contactMessages, setContactMessages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [news, setNews] = useState([]);
+  const [newNewsTitle, setNewNewsTitle] = useState("");
+  const [newNewsContent, setNewNewsContent] = useState("");
   const [timeframe, setTimeframe] = useState("Year");
   const [searchTerm, setSearchTerm] = useState("");
   
@@ -124,14 +127,15 @@ export default function AdminDashboard() {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       
       try {
-        const [statsRes, reportsRes, liveRes, usersRes, bannedRes, analyticsRes, msgsRes] = await Promise.all([
+        const [statsRes, reportsRes, liveRes, usersRes, bannedRes, analyticsRes, msgsRes, newsRes] = await Promise.all([
           axios.get("https://api.zonemeet.chat/api/admin/stats", config),
           axios.get("https://api.zonemeet.chat/api/admin/reports", config),
           axios.get("https://api.zonemeet.chat/api/admin/live-users", config),
           axios.get("https://api.zonemeet.chat/api/admin/all-users", config),
           axios.get("https://api.zonemeet.chat/api/admin/banned-users", config),
           axios.get("https://api.zonemeet.chat/api/admin/analytics", config),
-          axios.get("https://api.zonemeet.chat/api/admin/messages", config)
+          axios.get("https://api.zonemeet.chat/api/admin/messages", config),
+          axios.get("https://api.zonemeet.chat/api/news")
         ]);
 
         setStats(statsRes.data);
@@ -141,6 +145,7 @@ export default function AdminDashboard() {
         setBannedUsers(bannedRes.data);
         setAnalytics(analyticsRes.data);
         setContactMessages(msgsRes.data.reverse());
+        setNews(newsRes.data);
         setLoading(false);
       } catch (innerErr) {
         if (innerErr.response?.status === 401) {
@@ -298,6 +303,34 @@ export default function AdminDashboard() {
     );
   }
 
+  const handleAddNews = async () => {
+    if (!newNewsTitle || !newNewsContent) {
+      alert("Title and content are required");
+      return;
+    }
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post("https://api.zonemeet.chat/api/admin/news", { title: newNewsTitle, content: newNewsContent }, { headers: { Authorization: `Bearer ${token}` } });
+      setNewNewsTitle("");
+      setNewNewsContent("");
+      fetchData();
+    } catch (e) {
+      console.error(e);
+      alert("Failed to add news");
+    }
+  };
+
+  const handleDeleteNews = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`https://api.zonemeet.chat/api/admin/news/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      fetchData();
+    } catch (e) {
+      console.error(e);
+      alert("Failed to delete news");
+    }
+  };
+
   if (loading) return (
     <div className="loading-container">
       <div className="loader-glow"></div>
@@ -345,7 +378,8 @@ export default function AdminDashboard() {
             { id: 'messages', icon: 'fa-envelope', label: 'Messages' },
             { id: 'reports', icon: 'fa-flag', label: 'Reports' },
             { id: 'user-management', icon: 'fa-user-cog', label: 'User Management' },
-{ id: 'banned', icon: 'fa-user-slash', label: 'Banned' }
+            { id: 'banned', icon: 'fa-user-slash', label: 'Banned' },
+            { id: 'news', icon: 'fa-bullhorn', label: 'News & Announcements' }
           ].map(item => (
             <div 
               key={item.id}
@@ -802,6 +836,38 @@ export default function AdminDashboard() {
                         </div>
                      </div>
                    ))}
+                </div>
+             </div>
+           )}
+
+           {activeTab === "news" && (
+             <div className="glass-card fade-in">
+                <h3>Manage News & Announcements</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '25px', background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '16px' }}>
+                  <input type="text" placeholder="Announcement Title" value={newNewsTitle} onChange={e => setNewNewsTitle(e.target.value)} style={{ padding: '10px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+                  <textarea placeholder="Announcement Content" value={newNewsContent} onChange={e => setNewNewsContent(e.target.value)} rows="3" style={{ padding: '10px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', resize: 'vertical' }}></textarea>
+                  <button onClick={handleAddNews} style={{ background: '#10b981', color: 'white', border: 'none', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Publish Announcement</button>
+                </div>
+                <div className="reports-masonry">
+                   {news.map(n => (
+                     <div className="report-card" key={n.id}>
+                        <div className="r-top">
+                           <span className="r-target">{n.title}</span>
+                           <span className="pill gold">{new Date(n.date).toLocaleDateString()}</span>
+                        </div>
+                        <p>{n.content}</p>
+                        <div className="r-actions" style={{ marginTop: '15px' }}>
+                            <button 
+                               onClick={() => handleDeleteNews(n.id)}
+                               className="ban-cta" 
+                               style={{ background: '#ef4444', color: 'white', border: 'none', padding: '10px', borderRadius: '8px', cursor: 'pointer', display: 'block', width: '100%' }}
+                            >
+                               Delete Announcement
+                            </button>
+                        </div>
+                     </div>
+                   ))}
+                   {news.length === 0 && <p style={{ color: 'var(--text-dim)' }}>No announcements yet.</p>}
                 </div>
              </div>
            )}

@@ -130,6 +130,7 @@ const COIN_ACTIVITY_FILE = path.join(__dirname, "coin_activity.json");
 const REPORTS_FILE = path.join(__dirname, "reports.json");
 const TRANSACTIONS_FILE = path.join(__dirname, "transactions.json");
 const MESSAGES_FILE = path.join(__dirname, "messages.json");
+const NEWS_FILE = path.join(__dirname, "news.json");
 
 // ========= FIREBASE ADMIN CONFIG =========
 const serviceAccountPath = path.join(__dirname, "serviceAccountKey.json");
@@ -209,6 +210,15 @@ if (fs.existsSync(MESSAGES_FILE)) {
 function saveMessages() {
   try { fs.writeFileSync(MESSAGES_FILE, JSON.stringify(contactMessages, null, 2)); } catch (e) { }
   if (db) db.collection("appData").updateOne({ _id: "contactMessages" }, { $set: { data: contactMessages } }, { upsert: true }).catch(console.error);
+}
+
+let news = [];
+if (fs.existsSync(NEWS_FILE)) {
+  try { news = JSON.parse(fs.readFileSync(NEWS_FILE, "utf-8")); } catch (err) { news = []; }
+}
+function saveNews() {
+  try { fs.writeFileSync(NEWS_FILE, JSON.stringify(news, null, 2)); } catch (e) { }
+  if (db) db.collection("appData").updateOne({ _id: "news" }, { $set: { data: news } }, { upsert: true }).catch(console.error);
 }
 
 // Generate unique referral code from name + random suffix
@@ -4321,6 +4331,26 @@ function endQuiz(roomId) {
     // ========= KEEP ALIVE LOGIC =========
     app.get("/api/ping", (req, res) => {
       res.json({ status: "alive", timestamp: Date.now() });
+    });
+
+    // --- News Endpoints ---
+    app.get("/api/news", (req, res) => {
+      res.json(news);
+    });
+
+    app.post("/api/admin/news", authenticateAdmin, (req, res) => {
+      const { title, content } = req.body;
+      if (!title || !content) return res.status(400).json({ message: "Title and content required" });
+      const newItem = { id: Date.now().toString(), title, content, date: new Date().toISOString() };
+      news.unshift(newItem);
+      saveNews();
+      res.json({ message: "News added successfully", news });
+    });
+
+    app.delete("/api/admin/news/:id", authenticateAdmin, (req, res) => {
+      news = news.filter(n => n.id !== req.params.id);
+      saveNews();
+      res.json({ message: "News deleted successfully", news });
     });
 
     // ========= PUBLIC ONLINE USERS COUNT =========

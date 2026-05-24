@@ -120,6 +120,7 @@ export default function Dashboard() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [paymentStep, setPaymentStep] = useState("methods");
   const [showProfileDrop, setShowProfileDrop] = useState(false);
+  const [news, setNews] = useState([]);
   const [dailyStatus, setDailyStatus] = useState(null);
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [showDailyModal, setShowDailyModal] = useState(false);
@@ -129,6 +130,14 @@ export default function Dashboard() {
     const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (showProfileDrop && news.length === 0) {
+      axios.get("https://api.zonemeet.chat/api/news")
+        .then(res => setNews(res.data))
+        .catch(err => console.error("Failed to load news", err));
+    }
+  }, [showProfileDrop]);
 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showCoinPopup, setShowCoinPopup] = useState(false);
@@ -1539,6 +1548,26 @@ export default function Dashboard() {
                             )}
                           </div>
                         </div>
+                      </div>
+
+                      {/* Latest News */}
+                      <div className="profile-latest-news" style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.2)', borderRadius: '16px', padding: '15px', marginBottom: '1.5rem' }}>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>📰 Latest News & Updates</span>
+                        </div>
+                        {news.length === 0 ? (
+                          <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>No recent announcements.</div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '150px', overflowY: 'auto', paddingRight: '5px' }}>
+                            {news.map(n => (
+                              <div key={n.id} style={{ background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '12px' }}>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#e2e8f0', marginBottom: '4px' }}>{n.title}</div>
+                                <div style={{ fontSize: '0.75rem', color: '#cbd5e1', lineHeight: '1.4' }}>{n.content}</div>
+                                <div style={{ fontSize: '0.65rem', color: '#64748b', marginTop: '6px' }}>{new Date(n.date).toLocaleDateString()}</div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
 
                       {/* Details List */}
