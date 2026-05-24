@@ -6485,6 +6485,10 @@ export default function Home() {
           display: none;
         }
 
+        .bottom-actions .mobile-filter-btn {
+          display: none;
+        }
+
         .filter-settings-trigger-btn {
           display: inline-flex;
           align-items: center;
