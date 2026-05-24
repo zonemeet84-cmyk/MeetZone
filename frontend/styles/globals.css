@@ -2050,34 +2050,9 @@ img, video {
   75% { transform: translateX(6px); }
 }
 
-/* QUIZ DUEL PIP MODE */
-.quiz-pip-mode {
-  position: absolute !important;
-  top: 20px !important;
-  right: 20px !important;
-  width: 350px !important;
-  height: 220px !important;
-  z-index: 5000 !important;
-  display: flex !important;
-  gap: 10px !important;
-  background: transparent !important;
-  pointer-events: none !important;
-  border: none !important;
-}
-
-.quiz-pip-mode .video-wrapper,
-.quiz-pip-mode .video-card {
-  width: 50% !important;
-  height: 100% !important;
-  border-radius: 12px !important;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
-  overflow: hidden !important;
-}
-
-.quiz-pip-mode video {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
+/* QUIZ DUEL HIDDEN MODE */
+.quiz-hidden-mode {
+  display: none !important;
 }
 
 /* Premium Modal Desktop and Mobile styling */
@@ -2408,3 +2383,4 @@ img, video {
     flex-shrink: 0 !important;
   }
 }
+`n/* --- MOBILE RESPONSIVE BOOSTER --- */`n@media (max-width: 768px) {`n  html, body { overflow-x: hidden !important; width: 100% !important; }`n  .container { padding: 10px !important; }`n  h1 { font-size: 2.5rem !important; }`n  h2 { font-size: 1.8rem !important; }`n  .header { flex-direction: column !important; padding: 15px !important; gap: 15px !important; text-align: center !important; }`n  .brand-group { justify-content: center !important; }`n  .header-nav { display: none !important; } /* Hide secondary nav links on mobile header if they clutter */`n  .header-actions { width: 100% !important; justify-content: center !important; flex-wrap: wrap !important; }`n  .btn { width: 100% !important; justify-content: center !important; }`n  .video-grid { grid-template-columns: 1fr !important; }`n  .footer-links { flex-direction: column !important; gap: 10px !important; }`n}
