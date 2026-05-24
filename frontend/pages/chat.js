@@ -23,7 +23,7 @@ const AGES = ["All Ages", "18-24", "25-34", "35-44", "45-54", "55+"];
 function isPlanActive(user) {
   if (!user) return false;
   if (user.email === "ds9376314@gmail.com" || user.isPermanentPremium) return true;
-  if (!user.premium || !user.planName) return false;
+  if (!user.premium || (!user.planName && !user.subscriptionTier)) return false;
   if (user.planExpiry && Date.now() > Number(user.planExpiry)) return false;
   return true;
 }
@@ -37,8 +37,27 @@ function getPlanTier(user) {
   return "starter";
 }
 
+function getChatUser(stateUser) {
+  if (stateUser?.email) return stateUser;
+  if (typeof window === "undefined") return stateUser || null;
+  try {
+    const raw = localStorage.getItem("user");
+    return raw ? JSON.parse(raw) : stateUser || null;
+  } catch {
+    return stateUser || null;
+  }
+}
+
 function hasIdentityToolkit(user) {
-  return user?.email === "ds9376314@gmail.com" || user?.planName === "VIP Elite" || !!user?.hasSecretIdentity;
+  const u = getChatUser(user);
+  if (!u) return false;
+  if (u.email === "ds9376314@gmail.com") return true;
+  if (u.hasSecretIdentity) return true;
+  if (!isPlanActive(u)) return false;
+  if (getPlanTier(u) === "elite") return true;
+  if (u.subscriptionTier === "elite") return true;
+  const plan = String(u.planName || "").toLowerCase();
+  return plan.includes("elite") || plan.includes("vip elite");
 }
 
 function canUseGenderCountryFilters(user) {
@@ -3794,7 +3813,7 @@ export default function Home() {
           {/* BOTTOM IDENTITY TOOLS & POPUPS */}
           <div className="identity-container">
               {/* Floating Popup */}
-              {activeIdentityMenu && (user?.email === "ds9376314@gmail.com" || user?.planName === "VIP Elite" || user?.hasSecretIdentity) && (
+              {activeIdentityMenu && hasIdentityToolkit(user) && (
                 <div className="identity-popup-bubble">
                   <div className="popup-arrow" />
                   <div className="popup-header">
@@ -3872,9 +3891,34 @@ export default function Home() {
               {showGiftPanel && (
                 <div className="identity-popup-bubble gift-bubble">
                   <div className="popup-arrow" />
+                  {hasIdentityToolkit(user) && (
+                    <div className="elite-gift-tools">
+                      <button
+                        type="button"
+                        className={`tool-btn ${activeIdentityMenu === "avatars" ? "active" : ""}`}
+                        onClick={() => setActiveIdentityMenu(activeIdentityMenu === "avatars" ? null : "avatars")}
+                      >
+                        👤 Avatars
+                      </button>
+                      <button
+                        type="button"
+                        className={`tool-btn ${activeIdentityMenu === "voice" ? "active" : ""}`}
+                        onClick={() => setActiveIdentityMenu(activeIdentityMenu === "voice" ? null : "voice")}
+                      >
+                        🎙 Voice
+                      </button>
+                      <button
+                        type="button"
+                        className={`tool-btn ${activeIdentityMenu === "privacy" ? "active" : ""}`}
+                        onClick={() => setActiveIdentityMenu(activeIdentityMenu === "privacy" ? null : "privacy")}
+                      >
+                        🌫 Privacy
+                      </button>
+                    </div>
+                  )}
                   <div className="popup-header">
                     <span>Send a Gift</span>
-                    <button onClick={() => setShowGiftPanel(false)}>×</button>
+                    <button type="button" onClick={() => { setShowGiftPanel(false); setActiveIdentityMenu(null); }}>×</button>
                   </div>
                   <div className="gift-grid">
                     {STICKERS.map(s => {
@@ -3895,7 +3939,7 @@ export default function Home() {
 
 
               {/* Bottom Mini Bar */}
-              {showPremiumMiniBar && (user?.email === "ds9376314@gmail.com" || user?.planName === "VIP Elite" || user?.hasSecretIdentity) && (
+              {showPremiumMiniBar && hasIdentityToolkit(user) && (
                 <div className="bottom-mini-bar">
                   <button className={`tool-btn ${activeIdentityMenu === 'avatars' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'avatars' ? null : 'avatars')}>
                     👤 Avatars
@@ -3936,18 +3980,14 @@ export default function Home() {
               <button 
                 className="gift-trigger-btn" 
                 onClick={() => {
-                  const toolkit = hasIdentityToolkit(user);
-                  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-                  setShowGiftPanel(true);
-                  if (toolkit && isMobile) {
-                    setShowPremiumMiniBar(true);
-                  } else if (toolkit && !isMobile) {
-                    setShowPremiumMiniBar(!showPremiumMiniBar);
-                    setShowGiftPanel(false);
-                  } else {
-                    setShowPremiumMiniBar(false);
-                    setActiveIdentityMenu(null);
-                  }
+                  setShowGiftPanel((prev) => {
+                    const next = !prev;
+                    if (!next) {
+                      setActiveIdentityMenu(null);
+                      setShowPremiumMiniBar(false);
+                    }
+                    return next;
+                  });
                 }}
               >
                 <span className="icon">🎁</span> <span className="text">Gifts</span>
@@ -3980,14 +4020,6 @@ export default function Home() {
               <span className="text">All</span>
             </button>
           </div>
-          {showGiftPanel && hasIdentityToolkit(user) && (
-            <div className="mobile-identity-toolbar">
-              <button type="button" className={`tool-btn ${activeIdentityMenu === 'avatars' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'avatars' ? null : 'avatars')}>👤</button>
-              <button type="button" className={`tool-btn ${activeIdentityMenu === 'voice' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'voice' ? null : 'voice')}>🎙</button>
-              <button type="button" className={`tool-btn ${activeIdentityMenu === 'privacy' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'privacy' ? null : 'privacy')}>🌫</button>
-              <button type="button" className="tool-btn active" onClick={() => setShowGiftPanel(true)}>🎁</button>
-            </div>
-          )}
         </div>
 
         <div className={`chat-column ${isMobileChatOpen ? 'mobile-chat-open' : 'mobile-chat-closed'}`}>
@@ -6319,6 +6351,26 @@ export default function Home() {
         }
 
         /* GIFTING STYLES */
+        .elite-gift-tools {
+          display: flex;
+          gap: 6px;
+          padding: 8px 10px 4px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+        .elite-gift-tools .tool-btn {
+          flex: 1;
+          min-width: 0;
+          font-size: 10px;
+          padding: 6px 4px;
+          white-space: nowrap;
+        }
+        .elite-gift-tools .tool-btn.active {
+          background: rgba(99, 102, 241, 0.35);
+          border-color: rgba(99, 102, 241, 0.6);
+        }
+
         .gift-bubble {
           bottom: 55px;
           left: 50%;
@@ -7161,28 +7213,21 @@ export default function Home() {
           .header-actions .filters-row-v2 {
             display: none !important;
           }
-          .mobile-identity-toolbar {
-            position: absolute !important;
-            right: 15px !important;
-            bottom: 200px !important;
+          .elite-gift-tools {
+            display: flex !important;
+          }
+          .identity-popup-bubble.gift-bubble {
             display: flex !important;
             flex-direction: column !important;
-            gap: 10px !important;
-            z-index: 120 !important;
-            pointer-events: auto !important;
           }
-          .mobile-identity-toolbar .tool-btn {
-            width: 42px !important;
-            height: 42px !important;
-            min-width: 42px !important;
-            border-radius: 50% !important;
-            padding: 0 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            background: rgba(0,0,0,0.55) !important;
-            border: 1px solid rgba(255,255,255,0.22) !important;
-            font-size: 1.05rem !important;
+          .identity-popup-bubble:not(.gift-bubble) {
+            position: fixed !important;
+            left: 50% !important;
+            bottom: 140px !important;
+            transform: translateX(-50%) !important;
+            width: 88% !important;
+            max-width: 300px !important;
+            z-index: 10002 !important;
           }
 
           /* Inline Report Button */
