@@ -7015,8 +7015,8 @@ export default function Home() {
             pointer-events: auto;
             position: absolute !important;
             border-radius: 50% !important;
-            width: 40px !important;
-            height: 40px !important;
+            width: 38px !important;
+            height: 38px !important;
             padding: 0 !important;
             display: flex !important;
             align-items: center !important;
@@ -7031,21 +7031,22 @@ export default function Home() {
             display: none !important;
           }
           .bottom-actions button .icon, .filters-row-v2 button .icon {
-            font-size: 1rem !important;
+            font-size: 0.95rem !important;
             display: inline-block !important;
           }
           
           .bottom-actions .next-btn {
             top: 40px !important;
             bottom: auto !important;
-            right: 20px !important;
+            right: 15px !important;
             left: auto !important;
-            width: 24px !important;
-            height: 24px !important;
+            width: 38px !important;
+            height: 38px !important;
             padding: 0 !important;
-            background: transparent !important;
-            box-shadow: none !important;
-            border: none !important;
+            background: rgba(0,0,0,0.6) !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            backdrop-filter: blur(4px) !important;
+            border-radius: 50% !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
@@ -7072,8 +7073,8 @@ export default function Home() {
             background: rgba(0,0,0,0.6) !important;
             border: 1px solid rgba(255,255,255,0.2) !important;
             backdrop-filter: blur(4px) !important;
-            width: 44px !important;
-            height: 44px !important;
+            width: 38px !important;
+            height: 38px !important;
           }
           
           /* Stop Button -> Bottom Right */
@@ -7090,7 +7091,7 @@ export default function Home() {
           
           /* Gift Button -> Above Quit */
           .gift-trigger-btn {
-            bottom: 80px !important;
+            bottom: 70px !important;
             right: 15px !important;
             left: auto !important;
             display: flex !important;
@@ -7107,7 +7108,7 @@ export default function Home() {
 
           /* Quiz Button -> Above Gift */
           .quiz-trigger-btn {
-            bottom: 140px !important;
+            bottom: 120px !important;
             right: 15px !important;
             left: auto !important;
           }
@@ -7127,6 +7128,47 @@ export default function Home() {
           .bottom-mini-bar {
             display: none !important;
           }
+          
+          /* Perfectly Center and Responsive Gift stickers modal on mobile */
+          .identity-popup-bubble.gift-bubble {
+            position: fixed !important;
+            left: 50% !important;
+            bottom: 85px !important;
+            transform: translateX(-50%) !important;
+            width: 85% !important;
+            max-width: 280px !important;
+            right: auto !important;
+            top: auto !important;
+            z-index: 9999 !important;
+            background: #111827 !important;
+            border: 1px solid rgba(255,255,255,0.15) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+            max-height: 50vh !important;
+            overflow-y: auto !important;
+          }
+          .identity-popup-bubble.gift-bubble .popup-arrow {
+            display: none !important;
+          }
+          .identity-popup-bubble.gift-bubble .gift-grid {
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 6px !important;
+            padding: 8px !important;
+          }
+          .identity-popup-bubble.gift-bubble .gift-item {
+            padding: 6px 3px !important;
+            border-radius: 8px !important;
+          }
+          .identity-popup-bubble.gift-bubble .gift-icon {
+            font-size: 1.4rem !important;
+          }
+          .identity-popup-bubble.gift-bubble .gift-label {
+            font-size: 0.6rem !important;
+          }
+          .identity-popup-bubble.gift-bubble .gift-price {
+            font-size: 0.55rem !important;
+          }
+
           .identity-popup-bubble {
             width: 250px !important;
             max-height: 50vh !important;
