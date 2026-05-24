@@ -4630,20 +4630,30 @@ export default function Dashboard() {
               flex-direction: row !important;
               justify-content: space-between !important;
               align-items: center !important;
-              gap: 4px !important;
+              gap: 6px !important;
               height: auto !important;
+              overflow: hidden !important;
+            }
+            .brand-group {
+              flex-shrink: 1 !important;
+              min-width: 0 !important;
+              overflow: hidden !important;
+              gap: 6px !important;
             }
             .logo-icon-wrapper svg {
-              width: 30px !important;
-              height: 30px !important;
+              width: 28px !important;
+              height: 28px !important;
+              flex-shrink: 0 !important;
             }
             .logo-text {
-              display: none !important; /* Hide ZoneMeet text on mobile to make room for all logged-in badges/coins/streak/avatar */
+              font-size: 1.05rem !important;
+              white-space: nowrap !important;
             }
             .premium-badge {
-              font-size: 0.65rem !important;
-              padding: 3px 8px !important;
+              font-size: 0.55rem !important;
+              padding: 2px 5px !important;
               flex-shrink: 0 !important;
+              white-space: nowrap !important;
             }
             .header-nav {
               display: none !important;
@@ -4653,22 +4663,29 @@ export default function Dashboard() {
               flex-shrink: 0 !important;
               flex-wrap: nowrap !important;
               justify-content: flex-end !important;
+              align-items: center !important;
             }
             .header-coins-pill, .header-streak-pill {
-              padding: 4px 8px !important;
-              gap: 4px !important;
+              padding: 3px 7px !important;
+              gap: 3px !important;
               flex-shrink: 0 !important;
             }
             .coin-icon, .streak-fire {
-              font-size: 0.9rem !important;
+              font-size: 0.85rem !important;
             }
             .coin-count, .streak-count {
-              font-size: 0.75rem !important;
+              font-size: 0.7rem !important;
+            }
+            .streak-label {
+              display: none !important;
+            }
+            .streak-bar-wrap {
+              display: none !important;
             }
             .plus-icon {
-              width: 12px !important;
-              height: 12px !important;
-              font-size: 9px !important;
+              width: 11px !important;
+              height: 11px !important;
+              font-size: 8px !important;
             }
             .network-status-pill {
               display: none !important;
@@ -4677,18 +4694,17 @@ export default function Dashboard() {
               flex-shrink: 0 !important;
             }
             .profile-avatar {
-              width: 30px !important;
-              height: 30px !important;
-              font-size: 0.9rem !important;
+              width: 28px !important;
+              height: 28px !important;
+              font-size: 0.85rem !important;
               flex-shrink: 0 !important;
+            }
+            .profile-trigger {
+              padding: 3px 6px !important;
+              gap: 0 !important;
             }
             .profile-trigger span {
               display: none !important;
-            }
-            .user-dashboard-row {
-              flex-wrap: nowrap !important;
-              justify-content: flex-end !important;
-              gap: 6px !important;
             }
             .nav-links {
               display: none; 
