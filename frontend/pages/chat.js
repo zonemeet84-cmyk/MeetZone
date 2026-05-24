@@ -1734,14 +1734,10 @@ export default function Home() {
       });
 
       socket.on("quiz-partner-disconnected", () => {
-        setQuizForfeitState(true);
-        setQuizState("finished");
-        setQuizFinalResult({
-          draw: false,
-          winnerId: (user?.id || (typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).id : "")),
-          forfeit: true,
-          message: "Opponent disconnected! You win 100 coins by forfeit!"
-        });
+        setQuizState("idle");
+        setQuizFinalResult(null);
+        setDareChoiceStep("none");
+        showToast("Opponent left the quiz! You win 100 coins.", "success");
         
         setUser(prev => {
           const updated = { ...prev, coins: (prev.coins || 0) + 100 };
