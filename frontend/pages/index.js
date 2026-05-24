@@ -23,6 +23,14 @@ const getFlagUrl = (countryInput) => {
   return `https://flagcdn.com/w20/${code.toLowerCase()}.png`;
 };
 
+function getHeaderSubscriptionLabel(user) {
+  if (!user?.premium) return null;
+  const planName = String(user.planName || "").trim();
+  if (!planName || planName.toLowerCase() === "free") return null;
+  if (user.planExpiry && !user.isPermanentPremium && Date.now() > Number(user.planExpiry)) return null;
+  return planName;
+}
+
 export default function Dashboard() {
   const router = useRouter();
   const { data: session } = useSession();
@@ -1242,6 +1250,8 @@ export default function Dashboard() {
   }
   // ====================================================
 
+  const headerSubscriptionLabel = getHeaderSubscriptionLabel(user);
+
   return (
     <div className="container">
       <Head>
@@ -1345,11 +1355,13 @@ export default function Dashboard() {
             <span style={{ color: '#ffffff' }}>Zone</span>
             <span style={{ background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Meet</span>
           </h1>
-          {user?.premium && <span className="premium-badge">{user.planName || "PREMIUM"}</span>}
+          {headerSubscriptionLabel && (
+            <span className="premium-badge header-sub-badge-desktop">{headerSubscriptionLabel}</span>
+          )}
         </div>
 
-        {user?.premium && (
-          <span className="premium-badge header-premium-badge header-premium-mobile-only">{user.planName || "PREMIUM"}</span>
+        {headerSubscriptionLabel && (
+          <span className="premium-badge header-premium-mobile-only">{headerSubscriptionLabel}</span>
         )}
 
         <nav className="header-nav">
@@ -3539,6 +3551,10 @@ export default function Dashboard() {
           .header-premium-mobile-only {
             display: none;
           }
+          .header-sub-badge-desktop {
+            display: inline-block;
+            flex-shrink: 0;
+          }
           @keyframes dropdownSlideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
           .profile-modal-card::-webkit-scrollbar { display: none; }
           .profile-modal-header { padding: 1.25rem 1.5rem; background: rgba(255,255,255,0.02); display: flex; justify-content: space-between; align-items: center; font-weight: 800; color: #64748b; font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 0; background: #0f172a; z-index: 10; }
@@ -4734,7 +4750,7 @@ export default function Dashboard() {
               font-size: 0.95rem !important;
               white-space: nowrap !important;
             }
-            .brand-group .premium-badge {
+            .brand-group .header-sub-badge-desktop {
               display: none !important;
             }
             .header-premium-mobile-only {
