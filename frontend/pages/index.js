@@ -3612,6 +3612,33 @@ export default function Dashboard() {
             align-items: center;
           }
 
+          /* Desktop: center Home–Contact in the middle of the header */
+          @media (min-width: 769px) {
+            .header {
+              justify-content: flex-start;
+            }
+            .header-nav {
+              position: absolute;
+              left: 50%;
+              top: 50%;
+              transform: translate(-50%, -50%);
+              z-index: 1;
+              white-space: nowrap;
+            }
+            .brand-group,
+            .user-dashboard-row,
+            .user-info,
+            .auth-buttons {
+              position: relative;
+              z-index: 2;
+            }
+            .user-dashboard-row,
+            .user-info,
+            .auth-buttons {
+              margin-left: auto;
+            }
+          }
+
           .user-dashboard-row {
             display: flex;
             align-items: center;
