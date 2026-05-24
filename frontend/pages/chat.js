@@ -3892,7 +3892,7 @@ export default function Home() {
                 <div className="identity-popup-bubble gift-bubble">
                   <div className="popup-arrow" />
                   {hasIdentityToolkit(user) && (
-                    <div className="elite-gift-tools">
+                    <div className="elite-gift-tools mobile-only-elite-tools">
                       <button
                         type="button"
                         className={`tool-btn ${activeIdentityMenu === "avatars" ? "active" : ""}`}
@@ -3980,14 +3980,28 @@ export default function Home() {
               <button 
                 className="gift-trigger-btn" 
                 onClick={() => {
-                  setShowGiftPanel((prev) => {
-                    const next = !prev;
-                    if (!next) {
-                      setActiveIdentityMenu(null);
-                      setShowPremiumMiniBar(false);
-                    }
-                    return next;
-                  });
+                  const toolkit = hasIdentityToolkit(user);
+                  const isMobile = typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches;
+                  if (isMobile) {
+                    setShowGiftPanel((prev) => {
+                      const next = !prev;
+                      if (!next) {
+                        setActiveIdentityMenu(null);
+                        setShowPremiumMiniBar(false);
+                      }
+                      return next;
+                    });
+                  } else if (toolkit) {
+                    setShowPremiumMiniBar((prev) => {
+                      if (prev) setActiveIdentityMenu(null);
+                      return !prev;
+                    });
+                    setShowGiftPanel(false);
+                  } else {
+                    setShowGiftPanel((prev) => !prev);
+                    setShowPremiumMiniBar(false);
+                    setActiveIdentityMenu(null);
+                  }
                 }}
               >
                 <span className="icon">🎁</span> <span className="text">Gifts</span>
@@ -6486,7 +6500,10 @@ export default function Home() {
         }
 
         .bottom-actions .mobile-filter-btn {
-          display: none;
+          display: none !important;
+        }
+        .mobile-only-elite-tools {
+          display: none !important;
         }
 
         .filter-settings-trigger-btn {
@@ -7217,7 +7234,7 @@ export default function Home() {
           .header-actions .filters-row-v2 {
             display: none !important;
           }
-          .elite-gift-tools {
+          .mobile-only-elite-tools {
             display: flex !important;
           }
           .identity-popup-bubble.gift-bubble {
@@ -7383,6 +7400,9 @@ export default function Home() {
           }
         }
         @media (min-width: 769px) {
+          .bottom-actions .mobile-filter-btn {
+            display: none !important;
+          }
           .mobile-action-stack {
             display: flex !important;
             flex-direction: row !important;
