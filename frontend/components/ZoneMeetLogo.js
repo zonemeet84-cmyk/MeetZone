@@ -21,7 +21,7 @@ export default function ZoneMeetLogo({ size = 40, className = "", gradientId = "
       <rect x="3" y="6" width="19" height="20" rx="5.5" fill={`url(#${gradientId})`} />
       <path d="M22 10.5L28.5 8V24L22 21.5V10.5Z" fill={`url(#${gradientId})`} />
       <path
-        d="M8.25 10.75H15.75M8.25 10.75L15.75 18.75M8.25 18.75H15.75"
+        d="M8.25 10.75H15.75M15.75 10.75L8.25 18.75M8.25 18.75H15.75"
         stroke="white"
         strokeWidth="2.7"
         strokeLinecap="round"
