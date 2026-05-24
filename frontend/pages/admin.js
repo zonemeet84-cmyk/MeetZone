@@ -178,6 +178,34 @@ export default function AdminDashboard() {
     }
   };
 
+  // Delete a report (admin only)
+  const handleDeleteReport = async (reportId) => {
+    const result = await Swal.fire({ text: "Are you sure you want to delete this report?", icon: "warning", showCancelButton: true, confirmButtonColor: "#6366f1", cancelButtonColor: "#ef4444", background: "#0f172a", color: "#fff" });
+    if (!result.isConfirmed) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`https://api.zonemeet.chat/api/admin/reports/${reportId}`, { headers: { Authorization: `Bearer ${token}` } });
+      Swal.fire({ text: "Report deleted successfully", icon: "success", background: "#0f172a", color: "#fff", confirmButtonColor: "#6366f1" });
+      fetchData();
+    } catch (err) {
+      Swal.fire({ text: err.response?.data?.error || "Failed to delete report", icon: "error", background: "#0f172a", color: "#fff", confirmButtonColor: "#6366f1" });
+    }
+  };
+
+  // Delete a user permanently (admin only)
+  const handleDeleteUser = async (userId, userEmail) => {
+    const result = await Swal.fire({ text: `Are you sure you want to PERMANENTLY delete user ${userEmail}? This cannot be undone!`, icon: "warning", showCancelButton: true, confirmButtonColor: "#ef4444", cancelButtonColor: "#6366f1", background: "#0f172a", color: "#fff" });
+    if (!result.isConfirmed) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`https://api.zonemeet.chat/api/admin/users/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
+      Swal.fire({ text: `User ${userEmail} deleted permanently`, icon: "success", background: "#0f172a", color: "#fff", confirmButtonColor: "#6366f1" });
+      fetchData();
+    } catch (err) {
+      Swal.fire({ text: err.response?.data?.error || "Failed to delete user", icon: "error", background: "#0f172a", color: "#fff", confirmButtonColor: "#6366f1" });
+    }
+  };
+
   if (!isVerified) {
     return (
       <div className="login-container-sec">
@@ -316,7 +344,8 @@ export default function AdminDashboard() {
             { id: 'active-premium', icon: 'fa-crown', label: 'Premium' },
             { id: 'messages', icon: 'fa-envelope', label: 'Messages' },
             { id: 'reports', icon: 'fa-flag', label: 'Reports' },
-            { id: 'banned', icon: 'fa-user-slash', label: 'Banned' }
+            { id: 'user-management', icon: 'fa-user-cog', label: 'User Management' },
+{ id: 'banned', icon: 'fa-user-slash', label: 'Banned' }
           ].map(item => (
             <div 
               key={item.id}
@@ -742,6 +771,34 @@ export default function AdminDashboard() {
                         {r.evidence && <img src={r.evidence} className="evidence-img" onClick={() => window.open(r.evidence)} />}
                         <div className="r-actions">
                            <button className="ban-cta" onClick={() => handleAction("ban", { email: r.targetEmail }, `terminate ${r.targetEmail}`)}>Terminate Profile</button>
+<button className="delete-cta" onClick={() => handleDeleteReport(r.id)}>Delete Report</button>
+                        </div>
+                     </div>
+                   ))}
+                </div>
+             </div>
+           )}
+
+           {activeTab === "user-management" && (
+             <div className="glass-card fade-in">
+                <h3>User Management — Permanent Delete</h3>
+                <div className="reports-masonry">
+                   {allUsers.filter(u => {
+                     if (!searchTerm) return true;
+                     const s = searchTerm.toLowerCase();
+                     return (u.email && u.email.toLowerCase().includes(s)) || (u.name && u.name.toLowerCase().includes(s)) || (u.phone && u.phone.includes(s));
+                   }).map(u => (
+                     <div className="report-card" key={u.id}>
+                        <div className="r-top">
+                           <span className="r-target">{u.name || "No Name"}</span>
+                           <span className="pill gold">{u.planName || "Free"}</span>
+                        </div>
+                        <p style={{ color: '#6366f1', fontSize: '12px', marginBottom: '5px' }}>{u.email || u.phone || "N/A"}</p>
+                        <p style={{ fontSize: '12px', color: '#94a3b8' }}>Coins: {u.coins || 0} | Country: {u.country || "N/A"}</p>
+                        <div className="r-actions" style={{ marginTop: '10px' }}>
+                           <button className="delete-cta" onClick={() => handleDeleteUser(u.id, u.email || u.phone)}>
+                              <i className="fa fa-trash"></i> Delete User Permanently
+                           </button>
                         </div>
                      </div>
                    ))}
@@ -955,6 +1012,8 @@ export default function AdminDashboard() {
         .evidence-img { width: 100%; border-radius: 16px; margin: 15px 0; cursor: pointer; border: 1px solid var(--border); }
         .ban-cta { width: 100%; background: #ef4444; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 900; cursor: pointer; transition: 0.3s; }
         .ban-cta:hover { background: #dc2626; box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+        .delete-cta { width: 100%; background: linear-gradient(135deg, #7c3aed, #ec4899); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 900; cursor: pointer; transition: 0.3s; margin-top: 8px; }
+        .delete-cta:hover { background: linear-gradient(135deg, #6d28d9, #db2777); box-shadow: 0 0 20px rgba(124, 58, 237, 0.4); transform: translateY(-1px); }
 
         /* MODAL */
         .command-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 2000; display: flex; align-items: center; justify-content: center; }

@@ -1589,6 +1589,36 @@ export default function Dashboard() {
                         <span>›</span>
                       </button>
 
+                      {/* Delete My Account */}
+                      <button className="profile-more-btn" onClick={async () => {
+                        const result = await Swal.fire({
+                          title: 'Delete Account?',
+                          text: 'This will permanently delete your account and all data. This action cannot be undone!',
+                          icon: 'warning',
+                          showCancelButton: true,
+                          confirmButtonColor: '#ef4444',
+                          cancelButtonColor: '#6366f1',
+                          confirmButtonText: 'Yes, Delete My Account',
+                          cancelButtonText: 'Cancel',
+                          background: '#0f172a',
+                          color: '#fff'
+                        });
+                        if (!result.isConfirmed) return;
+                        try {
+                          const token = localStorage.getItem("token");
+                          await axios.delete("https://api.zonemeet.chat/api/user/delete-account", { headers: { Authorization: `Bearer ${token}` } });
+                          localStorage.clear();
+                          Swal.fire({ text: "Account deleted successfully. Goodbye!", icon: "success", background: "#0f172a", color: "#fff", confirmButtonColor: "#6366f1" }).then(() => {
+                            window.location.href = "/";
+                          });
+                        } catch (err) {
+                          Swal.fire({ text: err.response?.data?.error || "Failed to delete account", icon: "error", background: "#0f172a", color: "#fff", confirmButtonColor: "#6366f1" });
+                        }
+                      }} style={{ color: '#ef4444', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}>
+                        <div className="profile-detail-left">🗑️ Delete My Account</div>
+                        <span>›</span>
+                      </button>
+
                       {/* Logout */}
                       <button className="profile-more-btn" onClick={logout} style={{ color: '#ef4444' }}>
                         <div className="profile-detail-left">🚪 Logout</div>

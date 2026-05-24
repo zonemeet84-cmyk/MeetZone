@@ -4160,6 +4160,39 @@ function endQuiz(roomId) {
     });
 
 
+    // ========= DELETE ENDPOINTS =========
+
+    // DELETE a specific admin report (admin only)
+    app.delete("/api/admin/reports/:id", authenticateAdmin, (req, res) => {
+      const reportId = req.params.id;
+      const index = reports.findIndex(r => r.id === reportId);
+      if (index === -1) return res.status(404).json({ error: "Report not found" });
+      reports.splice(index, 1);
+      saveReports();
+      res.json({ success: true });
+    });
+
+    // DELETE a user permanently (admin only)
+    app.delete("/api/admin/users/:id", authenticateAdmin, (req, res) => {
+      if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
+      const userId = req.params.id;
+      const index = users.findIndex(u => u.id === userId);
+      if (index === -1) return res.status(404).json({ error: "User not found" });
+      users.splice(index, 1);
+      saveUsers();
+      res.json({ success: true });
+    });
+
+    // DELETE own user account (any authenticated user)
+    app.delete("/api/user/delete-account", authenticateToken, (req, res) => {
+      const userId = req.user.id;
+      const index = users.findIndex(u => u.id === userId);
+      if (index === -1) return res.status(404).json({ error: "User not found" });
+      users.splice(index, 1);
+      saveUsers();
+      res.json({ success: true });
+    });
+
     // ========= LEADERBOARD LOGIC =========
     const SYSTEM_CONFIG_FILE = path.join(__dirname, "system_config.json");
     let systemConfig = { lastResetMonth: new Date().getMonth(), lastResetYear: new Date().getFullYear() };

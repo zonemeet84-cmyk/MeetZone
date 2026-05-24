@@ -2396,5 +2396,57 @@ img, video {
   .header-actions { width: 100% !important; justify-content: center !important; flex-wrap: wrap !important; }
   .btn { width: 100% !important; justify-content: center !important; }
   .video-grid { grid-template-columns: 1fr !important; }
+
+/* Mobile responsive adjustments for popups, modals, and buttons */
+.tool-btn {
+  min-height: 44px;
+  font-size: 0.9rem;
+  padding: 0.6rem 1rem;
+}
+.identity-popup-bubble {
+  width: 90vw;
+  max-width: 320px;
+  bottom: 60px;
+  padding: 12px;
+  font-size: 0.85rem;
+}
+.popup-arrow {
+  bottom: -6px;
+  border-top-width: 6px;
+  border-left-width: 6px;
+  border-right-width: 6px;
+}
+.filter-modal-overlay,
+.payment-overlay {
+  align-items: flex-end;
+}
+.filter-modal-card,
+.premium-modal {
+  width: 95vw;
+  max-width: 350px;
+  border-radius: 20px;
+  padding: 1.5rem;
+}
+.filter-modal-header,
+.filter-modal-footer {
+  padding: 0.5rem 0;
+}
+.filter-modal-body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.history-modal-v2 {
+  max-width: 95vw;
+  padding: 0.5rem;
+}
+.gift-item {
+  padding: 12px 6px;
+}
+.gift-icon {
+  font-size: 2rem;
+}
+.gift-price {
+  font-size: 0.7rem;
+}
   .footer-links { flex-direction: column !important; gap: 10px !important; }
 }
