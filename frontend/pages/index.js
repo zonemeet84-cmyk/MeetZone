@@ -1,4 +1,5 @@
 import PremiumModal from "../components/PremiumModal";
+import ZoneMeetLogo from "../components/ZoneMeetLogo";
 import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import Head from "next/head";
@@ -1338,18 +1339,7 @@ export default function Dashboard() {
       <div className="header">
         <div className="brand-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }} onClick={() => router.push("/")}>
           <div className="logo-icon-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <svg viewBox="0 0 32 32" width="40" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="2" y="5" width="20" height="22" rx="6" fill="url(#brand-grad)" />
-              <path d="M22 11L28 7V25L22 21V11Z" fill="url(#brand-grad)" />
-              <path d="M9 11H15L9 19H15" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              <defs>
-                <linearGradient id="brand-grad" x1="2" y1="5" x2="28" y2="27" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#2563eb" />
-                  <stop offset="0.5" stopColor="#a855f7" />
-                  <stop offset="1" stopColor="#ec4899" />
-                </linearGradient>
-              </defs>
-            </svg>
+            <ZoneMeetLogo size={40} gradientId="home-zonemeet-logo-grad" />
           </div>
           <h1 className="logo-text" style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900', display: 'flex', alignItems: 'center', letterSpacing: '-0.03em' }}>
             <span style={{ color: '#ffffff' }}>Zone</span>
@@ -5841,17 +5831,20 @@ export default function Dashboard() {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 38px;
-            height: 38px;
-            background: linear-gradient(135deg, #3b82f6, #ec4899);
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
             flex-shrink: 0;
-            transition: all 0.3s ease;
+            background: transparent;
+            border-radius: 0;
+            box-shadow: none;
+            transition: transform 0.3s ease;
+          }
+          .logo-icon-wrapper svg {
+            filter: drop-shadow(0 3px 10px rgba(99, 102, 241, 0.45));
           }
           .logo-icon-wrapper:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
+            transform: scale(1.06);
+          }
+          .logo-icon-wrapper:hover svg {
+            filter: drop-shadow(0 4px 14px rgba(168, 85, 247, 0.55));
           }
           .avatar-small {
             width: 24px;
