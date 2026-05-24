@@ -3884,8 +3884,10 @@ export default function Home() {
             <div style={{ flex: 1, textAlign: 'center', fontSize: '0.75rem', color: '#94a3b8' }}>
               By continuing with Camera/Mic, you agree to our <a href="/terms" target="_blank" style={{ color: '#6366f1' }}>Terms</a> and <a href="/guidelines" target="_blank" style={{ color: '#6366f1' }}>Community Guidelines</a>.
             </div>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              {/* Chat toggle removed per user request */}
+            <div className="mobile-action-stack">
+              <button className="stop-btn" onClick={() => router.push("/")}>
+                <span className="icon">🛑</span> <span className="text">Quit</span>
+              </button>
               <button 
                 className={`quiz-trigger-btn ${quizState === "queued" ? "cancel" : ""}`} 
                 onClick={handleBrainClashClick}
@@ -3907,16 +3909,13 @@ export default function Home() {
               >
                 <span className="icon">🎁</span> <span className="text">Gifts</span>
               </button>
-              <button className="stop-btn" onClick={() => router.push("/")}>
-                <span className="icon">🛑</span> <span className="text">Quit</span>
-              </button>
               <button className="report-trigger-btn" onClick={openReport}>
                 <span className="icon">🚨</span> <span className="text">Report</span>
               </button>
-              <button className="next-btn" onClick={nextPartner} disabled={quizState !== "idle"}>
-                <span className="icon">⏭️</span> <span className="text">Skip</span>
-              </button>
             </div>
+            <button className="next-btn" onClick={nextPartner} disabled={quizState !== "idle"}>
+              <span className="icon">⏭️</span> <span className="text">Skip</span>
+            </button>
           </div>
         </div>
 
@@ -7006,52 +7005,76 @@ export default function Home() {
             padding: 0 !important; margin: 0 !important;
           }
           .bottom-actions > div { display: none !important; }
-          .bottom-actions > div:nth-child(3) {
-            display: block !important;
-            width: 100% !important;
-            height: 100% !important;
-          }
-          
-          .bottom-actions button, .filters-row-v2 button {
-            pointer-events: auto;
+          .bottom-actions .mobile-action-stack {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 12px !important;
             position: absolute !important;
+            right: 15px !important;
+            bottom: 72px !important;
+            width: auto !important;
+            height: auto !important;
+            pointer-events: none !important;
+          }
+          .bottom-actions .mobile-action-stack button {
+            pointer-events: auto !important;
+            position: static !important;
             border-radius: 50% !important;
-            width: 38px !important;
-            height: 38px !important;
+            width: 42px !important;
+            height: 42px !important;
+            min-width: 42px !important;
+            max-width: 42px !important;
             padding: 0 !important;
+            margin: 0 !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            background: transparent !important;
-            border: none !important;
+            background: rgba(0, 0, 0, 0.55) !important;
+            border: 1px solid rgba(255, 255, 255, 0.22) !important;
             box-shadow: none !important;
-            backdrop-filter: none !important;
+            backdrop-filter: blur(6px) !important;
+            flex: 0 0 auto !important;
           }
-          
-          .bottom-actions button .text, .filters-row-v2 button .text {
+          .bottom-actions .mobile-action-stack button .text {
             display: none !important;
           }
-          .bottom-actions button .icon, .filters-row-v2 button .icon {
-            font-size: 0.95rem !important;
+          .bottom-actions .mobile-action-stack button .icon {
+            font-size: 1.05rem !important;
             display: inline-block !important;
+            line-height: 1 !important;
           }
-          
+          .bottom-actions .mobile-action-stack .gift-trigger-btn {
+            background: rgba(0, 0, 0, 0.55) !important;
+            border: 1px solid rgba(255, 255, 255, 0.22) !important;
+          }
+          .bottom-actions .mobile-action-stack .quiz-trigger-btn.cancel {
+            background: rgba(239, 68, 68, 0.2) !important;
+            border-color: rgba(239, 68, 68, 0.35) !important;
+          }
           .bottom-actions .next-btn {
+            position: absolute !important;
             top: 40px !important;
             bottom: auto !important;
             right: 15px !important;
             left: auto !important;
-            width: 38px !important;
-            height: 38px !important;
+            width: 42px !important;
+            height: 42px !important;
+            min-width: 42px !important;
+            max-width: 42px !important;
             padding: 0 !important;
-            background: rgba(0,0,0,0.6) !important;
-            border: 1px solid rgba(255,255,255,0.2) !important;
-            backdrop-filter: blur(4px) !important;
+            background: rgba(0,0,0,0.55) !important;
+            border: 1px solid rgba(255,255,255,0.22) !important;
+            backdrop-filter: blur(6px) !important;
             border-radius: 50% !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
             z-index: 100 !important;
+            pointer-events: auto !important;
+          }
+          .bottom-actions .next-btn .text {
+            display: none !important;
           }
 
           /* Inline Report Button */
@@ -7069,38 +7092,12 @@ export default function Home() {
             display: none !important;
           }
           
-          /* Circle Backgrounds for all mobile buttons */
-          .bottom-actions button, .filters-row-v2 button {
-            background: rgba(0,0,0,0.6) !important;
-            border: 1px solid rgba(255,255,255,0.2) !important;
-            backdrop-filter: blur(4px) !important;
-            width: 38px !important;
-            height: 38px !important;
-          }
-          
-          /* Stop Button -> Bottom Right */
-          .stop-btn {
-            bottom: 20px !important;
-            right: 15px !important;
-            left: auto !important;
-          }
-          
           /* Report Button -> HIDDEN (Now inline) */
           .bottom-actions .report-trigger-btn {
             display: none !important;
           }
           
-          /* Gift Button -> Above Quit */
-          .gift-trigger-btn {
-            bottom: 70px !important;
-            right: 15px !important;
-            left: auto !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-          }
-          
-          /* Tools Button -> Bottom Right, at the very bottom */
+          /* Tools Button */
           .tools-trigger-btn {
             bottom: 45px !important;
             right: 15px !important;
@@ -7109,11 +7106,19 @@ export default function Home() {
             position: absolute !important;
           }
 
-          /* Quiz Button -> Above Gift */
-          .quiz-trigger-btn {
-            bottom: 120px !important;
-            right: 15px !important;
-            left: auto !important;
+          .filters-row-v2 button {
+            pointer-events: auto;
+            position: absolute !important;
+            border-radius: 50% !important;
+            width: 38px !important;
+            height: 38px !important;
+            padding: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: rgba(0,0,0,0.6) !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            backdrop-filter: blur(4px) !important;
           }
           
           /* Hide bottom-mini-bar */
@@ -7221,6 +7226,25 @@ export default function Home() {
           }
         }
         @media (min-width: 769px) {
+          .mobile-action-stack {
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 10px !important;
+            position: static !important;
+            align-items: center !important;
+          }
+          .mobile-action-stack button {
+            position: static !important;
+            width: auto !important;
+            height: auto !important;
+            min-width: 0 !important;
+            max-width: none !important;
+            border-radius: 10px !important;
+            padding: 8px 12px !important;
+          }
+          .mobile-action-stack button .text {
+            display: inline !important;
+          }
           .video-grid-v2 {
             height: 100% !important;
             min-height: 0 !important;
