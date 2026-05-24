@@ -3896,8 +3896,9 @@ export default function Home() {
               <button 
                 className="gift-trigger-btn" 
                 onClick={() => {
+                  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
                   const isSubscribed = user?.email === "ds9376314@gmail.com" || user?.planName === "VIP Elite" || user?.hasSecretIdentity;
-                  if (isSubscribed) {
+                  if (isSubscribed && !isMobile) {
                     setShowPremiumMiniBar(!showPremiumMiniBar);
                   } else {
                     setShowGiftPanel(!showGiftPanel);
@@ -7095,6 +7096,8 @@ export default function Home() {
             right: 15px !important;
             left: auto !important;
             display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
           }
           
           /* Tools Button -> Bottom Right, at the very bottom */
