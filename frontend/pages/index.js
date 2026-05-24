@@ -4638,21 +4638,26 @@ export default function Dashboard() {
               height: 30px !important;
             }
             .logo-text {
-              font-size: 1.15rem !important;
+              display: none !important; /* Hide ZoneMeet text on mobile to make room for all logged-in badges/coins/streak/avatar */
             }
             .premium-badge {
-              font-size: 0.6rem !important;
-              padding: 2px 6px !important;
+              font-size: 0.65rem !important;
+              padding: 3px 8px !important;
+              flex-shrink: 0 !important;
             }
             .header-nav {
               display: none !important;
             }
             .user-dashboard-row {
-              gap: 6px !important;
+              gap: 5px !important;
+              flex-shrink: 0 !important;
+              flex-wrap: nowrap !important;
+              justify-content: flex-end !important;
             }
             .header-coins-pill, .header-streak-pill {
               padding: 4px 8px !important;
               gap: 4px !important;
+              flex-shrink: 0 !important;
             }
             .coin-icon, .streak-fire {
               font-size: 0.9rem !important;
@@ -4667,6 +4672,9 @@ export default function Dashboard() {
             }
             .network-status-pill {
               display: none !important;
+            }
+            .profile-dropdown-container {
+              flex-shrink: 0 !important;
             }
             .profile-avatar {
               width: 30px !important;
