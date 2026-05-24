@@ -1392,7 +1392,7 @@ export default function Dashboard() {
             <span className="loading-dots">Verifying session...</span>
           </div>
         ) : user ? (
-          <div className="user-dashboard-row" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div className="user-dashboard-row header-actions-group" style={{ display: 'flex', alignItems: 'center', gap: '20px', flexShrink: 0 }}>
             <div
               className="header-streak-pill"
               onClick={() => setShowStreakModal(true)}
@@ -3629,30 +3629,68 @@ export default function Dashboard() {
             align-items: center;
           }
 
-          /* Desktop: center Home–Contact in the middle of the header */
+          /* Desktop: 3-column grid — logo | nav (center) | streak/coins/profile */
           @media (min-width: 769px) {
             .header {
-              justify-content: flex-start;
+              display: grid !important;
+              grid-template-columns: auto minmax(0, 1fr) auto;
+              grid-template-areas: "brand nav actions";
+              align-items: center;
+              justify-content: stretch;
+              gap: 12px 20px;
+              padding: 1rem 1.5rem !important;
             }
-            .header-nav {
-              position: absolute;
-              left: 50%;
-              top: 50%;
-              transform: translate(-50%, -50%);
-              z-index: 1;
-              white-space: nowrap;
-            }
-            .brand-group,
-            .user-dashboard-row,
-            .user-info,
-            .auth-buttons {
+            .brand-group {
+              grid-area: brand;
               position: relative;
               z-index: 2;
+              min-width: 0;
+            }
+            .header-premium-mobile-only {
+              display: none !important;
+            }
+            .header-nav {
+              grid-area: nav;
+              position: static;
+              left: auto;
+              top: auto;
+              transform: none;
+              z-index: 1;
+              justify-content: center;
+              justify-self: center;
+              flex-wrap: wrap;
+              gap: clamp(10px, 1.1vw, 22px);
+              max-width: 100%;
+              min-width: 0;
+              white-space: normal;
             }
             .user-dashboard-row,
             .user-info,
             .auth-buttons {
-              margin-left: auto;
+              grid-area: actions;
+              position: relative;
+              z-index: 2;
+              margin-left: 0;
+              justify-self: end;
+              min-width: 0;
+            }
+          }
+
+          @media (min-width: 769px) and (max-width: 1180px) {
+            .header-nav {
+              gap: 10px;
+            }
+            .header-nav .nav-link {
+              font-size: 0.82rem !important;
+            }
+            .profile-trigger-name {
+              display: none !important;
+            }
+            .user-dashboard-row {
+              gap: 10px !important;
+            }
+            .network-status-pill {
+              display: none !important;
             }
           }
 
@@ -4031,6 +4069,12 @@ export default function Dashboard() {
             backdrop-filter: blur(10px);
             position: relative;
             overflow: hidden;
+            flex-shrink: 0;
+          }
+          .header-coins-pill,
+          .network-status-pill,
+          .profile-dropdown-container {
+            flex-shrink: 0;
           }
           .header-streak-pill:hover {
             background: rgba(255, 69, 0, 0.15);
