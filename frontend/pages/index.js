@@ -283,8 +283,8 @@ export default function Dashboard() {
         },
         vip: {
           keywords: ['vip', 'premium', 'elite', 'plan', 'membership', 'filter', 'gender', 'country', 'age', 'pricing', 'starter', 'prime', 'silver', 'price', 'kharch', 'subscription'],
-          en: "Our Premium Plans are designed for the best experience: \n\n✨ **Starter (₹149):** Filters + 50 Coins.\n🚀 **Prime (₹599):** ALL Filters + 150 Coins.\n💎 **Silver (₹1599):** 90 Days + 500 Coins.\n👑 **VIP Elite (₹999):** Age Filter + 400 Coins. \n\nCheck the 'Pricing' section for full details!",
-          hi: "Humare VIP plans aapko best filters dete hain: \n\n✨ **Starter (₹149):** Filters + 50 Coins.\n🚀 **Prime (₹599):** Saare Filters + 150 Coins.\n💎 **Silver (₹1599):** 90 Din + 500 Coins.\n👑 **VIP Elite (₹999):** Age Filter + 400 Coins. \n\n'Pricing' section mein saari details dekh sakte hain!"
+          en: "Our Premium Plans are designed for the best experience: \n\n✨ **Starter (₹149 / 7 days):** Gender & Country filters, priority matching, unlimited friends, 50 coins.\n🚀 **Prime (₹599 / 30 days):** Same filters + auto-translate, stronger priority, 150 coins.\n💎 **Silver (₹1599 / 90 days):** All Prime perks + badge, 500 coins.\n👑 **VIP Elite (₹999 / 30 days):** Gender, Country, State & Age filters + avatars/voice/privacy tools, 400 coins. \n\nCheck the 'Pricing' section for full details!",
+          hi: "Humare VIP plans: \n\n✨ **Starter (₹149 / 7 din):** Gender & Country filter, priority matching, unlimited friends, 50 coins.\n🚀 **Prime (₹599 / 30 din):** Wahi filters + auto-translate, zyada priority, 150 coins.\n💎 **Silver (₹1599 / 90 din):** Prime ke saare fayde + badge, 500 coins.\n👑 **VIP Elite (₹999 / 30 din):** Gender, Country, State & Age + elite tools, 400 coins. \n\nPoori detail 'Pricing' section mein hai!"
         },
         mystery: {
           keywords: ['box', 'mystery', 'gift', 'dabba', 'reward', 'win', 'bronze', 'silver', 'gold', 'luck', 'chest'],
@@ -1984,7 +1984,7 @@ export default function Dashboard() {
               <div className="savings">~6% OFF</div>
             </div>
             <ul className="premium-features">
-              <li><span>✓</span> All Gender & Country Filters</li>
+              <li><span>✓</span> Gender & Country Filters</li>
               <li><span>✓</span> Instant Priority Matching</li>
               <li><span>✓</span> Unlimited Friend Requests</li>
               <li><span>🌐</span> Auto-Translate Chats & Live Subtitles</li>
@@ -2011,9 +2011,10 @@ export default function Dashboard() {
               <div className="savings">~16.5% OFF</div>
             </div>
             <ul className="premium-features">
-              <li><span>✓</span> Season-Long Pro Access</li>
+              <li><span>✓</span> Season-Long Pro Access (90 Days)</li>
+              <li><span>✓</span> Gender & Country Filters (Prime jaisa)</li>
               <li><span>✓</span> Elite Identity Badge</li>
-              <li><span>✓</span> All Prime Subscription Benefits</li>
+              <li><span>✓</span> All Prime Benefits (Translate, Priority, Friends)</li>
               <li><span>🌐</span> Auto-Translate Chats & Live Subtitles</li>
               <li><span>★</span> 500 ZoneMeet Coins (Free)</li>
               <li className="feature-coming-soon"><span>🕒</span> Ad-Free Experience <em>(Coming Soon)</em></li>

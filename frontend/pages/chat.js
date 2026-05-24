@@ -2811,8 +2811,13 @@ export default function Home() {
                   if (canUseGenderCountryFilters(user) || isOwner) {
                     setTempGender(gender);
                     setTempCountry(country);
-                    setTempStateProv(stateProv);
-                    setTempAge(age);
+                    if (canUseEliteFilters(user) || isOwner) {
+                      setTempStateProv(stateProv);
+                      setTempAge(age);
+                    } else {
+                      setTempStateProv("All States");
+                      setTempAge("all");
+                    }
                     setShowFilterModal(true);
                   } else {
                     showToast("Matchmaking preferences are a subscription feature! Please unlock Premium to use.", "warning");
@@ -2977,7 +2982,8 @@ export default function Home() {
                       )}
                     </div>
 
-                    {/* 3. STATE / PROVINCE SELECTION */}
+                    {/* State & Age — VIP Elite only */}
+                    {(canUseEliteFilters(user) || user?.email?.toLowerCase() === "ds9376314@gmail.com") && (
                     <div className="filter-section-group">
                       <label className="section-label">State / Province (VIP Elite Premium Feature)</label>
                       <div className="select-dropdown-trigger" onClick={(e) => {
@@ -3023,8 +3029,9 @@ export default function Home() {
                         </div>
                       )}
                     </div>
+                    )}
 
-                    {/* 4. AGE SELECTION */}
+                    {(canUseEliteFilters(user) || user?.email?.toLowerCase() === "ds9376314@gmail.com") && (
                     <div className="filter-section-group">
                       <label className="section-label">Age Group (VIP Elite Premium Feature)</label>
                       <div className="select-dropdown-trigger" onClick={(e) => {
@@ -3069,6 +3076,7 @@ export default function Home() {
                         </div>
                       )}
                     </div>
+                    )}
                   </div>
 
                   <div className="filter-modal-footer">
@@ -3987,7 +3995,7 @@ export default function Home() {
             <div className="chat-box-header">
               <h3>Live Chat</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                {user?.premium && (
+                {canUsePrimeFilters(user) && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '8px' }}>
                     <button 
                       onClick={toggleTranslate}
