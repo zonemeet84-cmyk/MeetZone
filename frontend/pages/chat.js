@@ -1941,10 +1941,16 @@ export default function Home() {
       });
 
       socket.on("receive-subtitle", ({ text }) => {
-        setCurrentSubtitle(text);
-        setTimeout(() => {
-          setCurrentSubtitle(prev => prev === text ? "" : prev);
-        }, 5000);
+        const u = userRef.current;
+        const isPremium = u?.premium || u?.email === "ds9376314@gmail.com";
+        const isStarter = u?.planName === "Starter" || u?.planName === "Starter Pack";
+        
+        if (isPremium && !isStarter) {
+          setCurrentSubtitle(text);
+          setTimeout(() => {
+            setCurrentSubtitle(prev => prev === text ? "" : prev);
+          }, 5000);
+        }
       });
 
       socket.on("partner-request-subtitles", ({ enabled }) => {
@@ -3868,7 +3874,7 @@ export default function Home() {
 
               <div className="card-controls-wrapper partner-controls">
                 <div className="card-controls">
-                  {user?.premium && partnerId && (
+                  {user?.premium && user?.planName !== "Starter" && user?.planName !== "Starter Pack" && partnerId && (
                     <button className={`ctrl-btn ${subtitlesOn ? 'active' : ''}`} onClick={() => setSubtitlesOn(!subtitlesOn)} title="Live Subtitles (CC)" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}>
                       {subtitlesOn ? "CC: ON" : "CC: OFF"}
                     </button>
