@@ -350,26 +350,160 @@ export default function Home() {
   // Mobile Gift Popup component
   const MobileGiftPopup = () => {
     if (!showMobileGiftPopup) return null;
+
+    const toolkit = hasIdentityToolkit(getChatUser(user));
+    const activeTab = toolkit ? mobileGiftActiveTab : "gifts";
+
+    // Subcomponents
+    const AvatarOptions = () => {
+      const avatarsList = ["None", "Robot", "Anime", "Girl", "Ninja", "Hero", "Cat", "Cyber"];
+      return (
+        <div className="mobile-popup-options-grid">
+          {avatarsList.map((a) => {
+            const isSelected = selectedTempAvatar === a || activeAvatar === a;
+            return (
+              <div
+                key={a}
+                className={`mobile-option-card ${isSelected ? "selected" : ""}`}
+                onClick={() => {
+                  setSelectedTempAvatar(a);
+                  setActiveAvatar(a);
+                }}
+              >
+                <div className="card-media">
+                  {a === "None" ? (
+                    <span style={{ fontSize: '18px' }}>🚫</span>
+                  ) : (
+                    <img 
+                      src={getAvatarUrl(a)} 
+                      alt={a} 
+                      style={{ width: '24px', height: '24px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)' }} 
+                    />
+                  )}
+                </div>
+                <span className="card-title">{a}</span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    };
+
+    const VoiceOptions = () => {
+      const voicesList = [
+        "Normal",
+        "Baby Voice",
+        "Girl Voice",
+        "Anime Voice",
+        "Ghost Whisper",
+        "Cartoon Voice",
+        "AI Girl Voice",
+        "Sigma deep voice",
+      ];
+      return (
+        <div className="mobile-popup-options-grid">
+          {voicesList.map((v) => {
+            const isSelected = selectedTempVoice === v || activeVoice === v;
+            return (
+              <div
+                key={v}
+                className={`mobile-option-card ${isSelected ? "selected" : ""}`}
+                onClick={() => {
+                  setSelectedTempVoice(v);
+                  setActiveVoice(v);
+                }}
+              >
+                <div className="card-media">
+                  <span style={{ fontSize: '18px' }}>{v === "Normal" ? "⏺️" : "🎙️"}</span>
+                </div>
+                <span className="card-title">{v}</span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    };
+
+    const PrivacyOptions = () => {
+      return (
+        <div className="mobile-privacy-container">
+          <div
+            className={`mobile-privacy-toggle ${isFaceBlurred ? "active" : ""}`}
+            onClick={() => setIsFaceBlurred(!isFaceBlurred)}
+          >
+            <div className="toggle-info">
+              <span className="toggle-icon">🌫️</span>
+              <div className="toggle-text">
+                <span className="toggle-title">Face Blur</span>
+                <span className="toggle-status">{isFaceBlurred ? "Blur is ON" : "Blur is OFF"}</span>
+              </div>
+            </div>
+            <div className={`toggle-switch-ui ${isFaceBlurred ? "on" : "off"}`}>
+              <div className="switch-knob" />
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const GiftGrid = () => {
+      return (
+        <div className="mobile-popup-options-grid stickers-grid">
+          {STICKERS.map((s) => {
+            const freeCount = user?.stickers ? user.stickers.filter((id) => id === s.id).length : 0;
+            return (
+              <div
+                key={s.id}
+                className="mobile-option-card gift-card"
+                onClick={() => {
+                  handleSendGift(s);
+                  setShowMobileGiftPopup(false);
+                }}
+              >
+                {freeCount > 0 && <div className="mobile-free-badge">{freeCount} Free</div>}
+                <div className="card-media">
+                  <span style={{ fontSize: '20px' }}>{s.icon}</span>
+                </div>
+                <span className="card-title">{s.label}</span>
+                <span className="gift-price-tag">{freeCount > 0 ? "Free" : `${s.price}c`}</span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    };
+
     return (
       <div className="mobile-gift-popup-box" ref={mobilePopupRef} role="dialog" aria-label="Gift options">
         <div className="mobile-gift-header">
+          <span className="popup-title">{toolkit ? "Identity Tools" : "Send Gift"}</span>
           <button className="close-btn" onClick={() => setShowMobileGiftPopup(false)} aria-label="Close">✕</button>
         </div>
-        <div className="mobile-gift-tabs">
-          {"avatars voice privacy gifts".split(" ").map(tab => (
-            <button
-              key={tab}
-              className={mobileGiftActiveTab===tab ? "tab active" : "tab"}
-              onClick={() => setMobileGiftActiveTab(tab)}
-              aria-selected={mobileGiftActiveTab===tab}
-            >{tab.charAt(0).toUpperCase()+tab.slice(1)}</button>
-          ))}
-        </div>
+        {toolkit && (
+          <div className="mobile-gift-tabs">
+            {[
+              { id: "avatars", label: "Avatar", icon: "👤" },
+              { id: "voice", label: "Voice", icon: "🎙️" },
+              { id: "privacy", label: "Privacy", icon: "🌫️" },
+              { id: "gifts", label: "Stickers", icon: "🎁" }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                className={activeTab === tab.id ? "tab active" : "tab"}
+                onClick={() => setMobileGiftActiveTab(tab.id)}
+                aria-selected={activeTab === tab.id}
+              >
+                <span className="tab-icon">{tab.icon}</span>
+                <span className="tab-label">{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
         <div className="mobile-gift-content">
-          {mobileGiftActiveTab==="avatars" && <AvatarOptions />}
-          {mobileGiftActiveTab==="voice" && <VoiceOptions />}
-          {mobileGiftActiveTab==="privacy" && <PrivacyOptions />}
-          {mobileGiftActiveTab==="gifts" && <GiftGrid />}
+          {activeTab === "avatars" && <AvatarOptions />}
+          {activeTab === "voice" && <VoiceOptions />}
+          {activeTab === "privacy" && <PrivacyOptions />}
+          {activeTab === "gifts" && <GiftGrid />}
         </div>
       </div>
     );
@@ -1289,6 +1423,21 @@ export default function Home() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [activeIdentityMenu]);
+
+  // Mobile gift popup outside click and tap handler
+  useEffect(() => {
+    const handleMobileOutsideClick = (event) => {
+      if (showMobileGiftPopup && mobilePopupRef.current && !mobilePopupRef.current.contains(event.target) && !event.target.closest(".gift-trigger-btn")) {
+        setShowMobileGiftPopup(false);
+      }
+    };
+    document.addEventListener("mousedown", handleMobileOutsideClick);
+    document.addEventListener("touchstart", handleMobileOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleMobileOutsideClick);
+      document.removeEventListener("touchstart", handleMobileOutsideClick);
+    };
+  }, [showMobileGiftPopup]);
 
   const [iceServers, setIceServers] = useState([
     { urls: "stun:stun.l.google.com:19302" },
@@ -4227,23 +4376,8 @@ export default function Home() {
                 className="gift-trigger-btn" 
                 onClick={() => {
                   const toolkit = hasIdentityToolkit(getChatUser(user));
-                  if (toolkit) {
-                    setShowIdentityToolbar((prev) => {
-                      const next = !prev;
-                      if (!next) {
-                        setActiveIdentityMenu(null);
-                        setShowGiftStickers(false);
-                      }
-                      return next;
-                    });
-                    setShowGiftPanel(false);
-                    setShowPremiumMiniBar(false);
-                  } else {
-                    setShowGiftPanel((prev) => !prev);
-                    setShowGiftStickers((prev) => !prev);
-                    setShowIdentityToolbar(false);
-                    setActiveIdentityMenu(null);
-                  }
+                  setMobileGiftActiveTab(toolkit ? "avatars" : "gifts");
+                  setShowMobileGiftPopup(true);
                 }}
               >
                 <span className="icon">🎁</span> <span className="text">Gifts</span>
@@ -4798,6 +4932,8 @@ export default function Home() {
 
 
 
+      <MobileGiftPopup />
+
       <style jsx global>{`
         .chat-page-v2 {
           max-width: 100% !important;
@@ -4810,19 +4946,20 @@ export default function Home() {
           user-select: none; /* Prevent text selection */
           -webkit-user-drag: none; /* Prevent dragging elements */
         }
-        }
 
         .mobile-gift-popup-box {
           position: fixed;
-          bottom: 20px;
-          right: 20px;
-          width: 280px;
-          height: 320px;
-          background: rgba(15, 23, 42, 0.95);
-          backdrop-filter: blur(15px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          bottom: 85px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 92%;
+          max-width: 320px;
+          height: 215px;
+          background: rgba(15, 23, 42, 0.96);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.15);
           border-radius: 16px;
-          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
           z-index: 99999;
           display: flex;
           flex-direction: column;
@@ -4830,23 +4967,31 @@ export default function Home() {
           animation: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
         @keyframes slideUpFade {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+          from { opacity: 0; transform: translate(-50%, 20px); }
+          to { opacity: 1; transform: translate(-50%, 0); }
         }
         .mobile-gift-header {
-          position: absolute;
-          top: 6px;
-          right: 6px;
-          z-index: 2;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 8px 12px 6px 12px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(0,0,0,0.3);
+        }
+        .mobile-gift-header .popup-title {
+          font-size: 10px;
+          font-weight: 800;
+          color: #f1f5f9;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
         }
         .mobile-gift-header .close-btn {
           background: rgba(255, 255, 255, 0.1);
           border: none;
           color: #fff;
-          font-size: 12px;
-          font-weight: bold;
-          width: 22px;
-          height: 22px;
+          font-size: 10px;
+          width: 18px;
+          height: 18px;
           border-radius: 50%;
           cursor: pointer;
           display: flex;
@@ -4859,40 +5004,186 @@ export default function Home() {
         }
         .mobile-gift-tabs {
           display: flex;
-          background: rgba(0,0,0,0.3);
-          padding: 8px;
-          padding-right: 36px;
-          gap: 4px;
+          background: rgba(0,0,0,0.4);
+          padding: 4px 6px;
+          gap: 3px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
         .mobile-gift-tabs .tab {
           flex: 1;
           background: transparent;
           border: none;
           color: #94a3b8;
-          font-size: 10px;
+          font-size: 8px;
           font-weight: 700;
-          padding: 6px 2px;
-          border-radius: 8px;
+          padding: 4px 2px;
+          border-radius: 6px;
           cursor: pointer;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 1px;
+          transition: all 0.2s;
+        }
+        .mobile-gift-tabs .tab .tab-icon {
+          font-size: 10px;
+        }
+        .mobile-gift-tabs .tab .tab-label {
+          font-size: 7px;
           text-transform: uppercase;
-          transition: 0.2s;
+          letter-spacing: 0.02em;
         }
         .mobile-gift-tabs .tab.active {
-          background: #6366f1;
+          background: linear-gradient(135deg, #6366f1, #4f46e5);
           color: #fff;
-          box-shadow: 0 2px 10px rgba(99,102,241,0.3);
+          box-shadow: 0 2px 6px rgba(99,102,241,0.3);
         }
         .mobile-gift-content {
           flex: 1;
           overflow-y: auto;
-          padding: 10px;
+          padding: 8px;
         }
         .mobile-gift-content::-webkit-scrollbar {
-          width: 4px;
+          width: 3px;
         }
         .mobile-gift-content::-webkit-scrollbar-thumb {
           background: rgba(255,255,255,0.1);
+          border-radius: 3px;
+        }
+        .mobile-popup-options-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 5px;
+          padding: 2px 0;
+        }
+        .mobile-option-card {
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 8px;
+          padding: 4px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+          position: relative;
+          min-height: 48px;
+        }
+        .mobile-option-card:active {
+          transform: scale(0.95);
+        }
+        .mobile-option-card.selected {
+          border-color: #6366f1;
+          background: rgba(99, 102, 241, 0.15);
+          box-shadow: 0 0 8px rgba(99,102,241,0.25);
+        }
+        .mobile-option-card .card-media {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 24px;
+          margin-bottom: 2px;
+        }
+        .mobile-option-card .card-title {
+          font-size: 7px;
+          font-weight: 700;
+          color: #cbd5e1;
+          text-align: center;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          width: 100%;
+        }
+        .mobile-option-card.gift-card {
+          min-height: 52px;
+        }
+        .mobile-option-card.gift-card:active {
+          border-color: #ec4899;
+          background: rgba(236, 72, 153, 0.15);
+        }
+        .mobile-option-card .gift-price-tag {
+          font-size: 6px;
+          font-weight: 800;
+          color: #f472b6;
+          margin-top: 1px;
+        }
+        .mobile-free-badge {
+          position: absolute;
+          top: -2px;
+          right: -2px;
+          background: #22c55e;
+          color: #fff;
+          font-size: 5px;
+          font-weight: 900;
+          padding: 1px 3px;
           border-radius: 4px;
+          text-transform: uppercase;
+        }
+        .mobile-privacy-container {
+          padding: 12px 4px;
+        }
+        .mobile-privacy-toggle {
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 10px;
+          padding: 10px 12px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .mobile-privacy-toggle.active {
+          border-color: #6366f1;
+          background: rgba(99, 102, 241, 0.1);
+        }
+        .mobile-privacy-toggle .toggle-info {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .mobile-privacy-toggle .toggle-icon {
+          font-size: 18px;
+        }
+        .mobile-privacy-toggle .toggle-text {
+          display: flex;
+          flex-direction: column;
+        }
+        .mobile-privacy-toggle .toggle-title {
+          font-size: 10px;
+          font-weight: 800;
+          color: #f1f5f9;
+        }
+        .mobile-privacy-toggle .toggle-status {
+          font-size: 8px;
+          color: #94a3b8;
+          margin-top: 1px;
+        }
+        .mobile-privacy-toggle .toggle-switch-ui {
+          width: 32px;
+          height: 18px;
+          border-radius: 10px;
+          background: #475569;
+          position: relative;
+          transition: background 0.2s;
+        }
+        .mobile-privacy-toggle .toggle-switch-ui.on {
+          background: #6366f1;
+        }
+        .mobile-privacy-toggle .switch-knob {
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background: #fff;
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          transition: left 0.2s;
+        }
+        .mobile-privacy-toggle .toggle-switch-ui.on .switch-knob {
+          left: 16px;
         }
 
         /* FILTERS ROW V2 */
