@@ -338,25 +338,26 @@ export default function Home() {
   const [selectedTempVoice, setSelectedTempVoice] = useState("Normal");
   const [unlockedFilters, setUnlockedFilters] = useState(["None"]); // Basic filters unlocked by default
   const [showGiftPanel, setShowGiftPanel] = useState(false);
+  const [showIdentityToolbar, setShowIdentityToolbar] = useState(false);
+  const [showGiftStickers, setShowGiftStickers] = useState(false);
   const [receivedGift, setReceivedGift] = useState(null);
   const [incomingCall, setIncomingCall] = useState(null);
 
 
-  /** Free face masks — MediaPipe Face Mesh + canvas (VIP Elite & Secret Identity only, no DeepAR) */
+  /** Glow masks (VIP Elite & Secret Identity). Rest are Coming Soon placeholders. */
   const ELITE_FACE_MASKS = [
-    { id: "None", name: "No Mask", icon: "🚫" },
-    { id: "Dog", name: "Dog Ears", icon: "🐶" },
-    { id: "Cat", name: "Cat Face", icon: "🐱" },
-    { id: "Glasses", name: "Cool Glasses", icon: "🕶️" },
-    { id: "Devil", name: "Devil Horns", icon: "😈" },
-    { id: "Crown", name: "Gold Crown", icon: "👑" },
-    { id: "Angel", name: "Angel Halo", icon: "😇" },
-    { id: "Ghost", name: "Ghost", icon: "👻" },
-    { id: "Neon", name: "Neon Glow", icon: "⚡" },
-    { id: "Anime", name: "Anime Eyes", icon: "🎎" },
-    { id: "Cloth", name: "Cloth Mask", icon: "😷" },
-    { id: "Smooth", name: "Skin Smooth", icon: "✨" },
-    { id: "Glow", name: "Soft Glow", icon: "🌟" },
+    { id: "None", name: "No Effect", icon: "🚫", available: true },
+    { id: "Glow", name: "Soft Glow", icon: "🌟", available: true },
+    { id: "DreamGlow", name: "Dream Glow", icon: "✨", available: true },
+    { id: "RoseGlow", name: "Rose Glow", icon: "🌸", available: true },
+    { id: "MoonGlow", name: "Moon Glow", icon: "🌙", available: true },
+    { id: "soon-1", name: "Coming Soon", icon: "🔒", available: false },
+    { id: "soon-2", name: "Coming Soon", icon: "🔒", available: false },
+    { id: "soon-3", name: "Coming Soon", icon: "🔒", available: false },
+    { id: "soon-4", name: "Coming Soon", icon: "🔒", available: false },
+    { id: "soon-5", name: "Coming Soon", icon: "🔒", available: false },
+    { id: "soon-6", name: "Coming Soon", icon: "🔒", available: false },
+    { id: "soon-7", name: "Coming Soon", icon: "🔒", available: false },
   ];
 
   const FILTERS_DATA = [
@@ -587,6 +588,9 @@ export default function Home() {
           case "Angel": drawAngelMask(ctx, landmarks, w, h, centerX, centerY, faceWidth, angle); break;
           case "Ghost": drawGhostMask(ctx, landmarks, w, h, centerX, centerY, faceWidth, angle); break;
           case "Glow": applyGlowEffect(ctx, w, h); break;
+          case "DreamGlow": applyDreamGlowEffect(ctx, w, h); break;
+          case "RoseGlow": applyRoseGlowEffect(ctx, w, h); break;
+          case "MoonGlow": applyMoonGlowEffect(ctx, w, h); break;
           case "Whitening": applyWhiteningEffect(ctx, w, h); break;
           case "Smooth": applySmoothingEffect(ctx, w, h); break;
           case "Anime": drawAnimeFilter(ctx, landmarks, w, h, centerX, centerY, faceWidth, angle); break;
@@ -719,6 +723,39 @@ export default function Home() {
     ctx.globalAlpha = 0.3;
     const gradient = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
     gradient.addColorStop(0, "rgba(255, 255, 255, 0.4)");
+    gradient.addColorStop(1, "transparent");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, w, h);
+    ctx.restore();
+  };
+
+  const applyDreamGlowEffect = (ctx, w, h) => {
+    ctx.save();
+    ctx.globalAlpha = 0.28;
+    const gradient = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 1.8);
+    gradient.addColorStop(0, "rgba(167, 139, 250, 0.55)");
+    gradient.addColorStop(1, "transparent");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, w, h);
+    ctx.restore();
+  };
+
+  const applyRoseGlowEffect = (ctx, w, h) => {
+    ctx.save();
+    ctx.globalAlpha = 0.26;
+    const gradient = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 1.9);
+    gradient.addColorStop(0, "rgba(244, 114, 182, 0.5)");
+    gradient.addColorStop(1, "transparent");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, w, h);
+    ctx.restore();
+  };
+
+  const applyMoonGlowEffect = (ctx, w, h) => {
+    ctx.save();
+    ctx.globalAlpha = 0.25;
+    const gradient = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
+    gradient.addColorStop(0, "rgba(147, 197, 253, 0.45)");
     gradient.addColorStop(1, "transparent");
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, w, h);
@@ -1082,6 +1119,12 @@ export default function Home() {
         filters.push('contrast(1.03) saturate(1.02) brightness(1.02) blur(0.3px)');
       } else if (activeMediaPipeFilter === "Glow") {
         filters.push('brightness(1.15) contrast(1.05) saturate(1.1)');
+      } else if (activeMediaPipeFilter === "DreamGlow") {
+        filters.push('brightness(1.12) saturate(1.2) hue-rotate(250deg)');
+      } else if (activeMediaPipeFilter === "RoseGlow") {
+        filters.push('brightness(1.1) saturate(1.25) hue-rotate(320deg)');
+      } else if (activeMediaPipeFilter === "MoonGlow") {
+        filters.push('brightness(1.14) saturate(1.05) hue-rotate(200deg)');
       } else if (activeMediaPipeFilter === "Whitening") {
         filters.push('brightness(1.22) contrast(0.95)');
       } else if (activeMediaPipeFilter === "Beauty") {
@@ -1106,6 +1149,12 @@ export default function Home() {
         filters.push('contrast(1.03) saturate(1.02) brightness(1.02) blur(0.3px)');
       } else if (partnerFilter === "Glow") {
         filters.push('brightness(1.15) contrast(1.05) saturate(1.1)');
+      } else if (partnerFilter === "DreamGlow") {
+        filters.push('brightness(1.12) saturate(1.2) hue-rotate(250deg)');
+      } else if (partnerFilter === "RoseGlow") {
+        filters.push('brightness(1.1) saturate(1.25) hue-rotate(320deg)');
+      } else if (partnerFilter === "MoonGlow") {
+        filters.push('brightness(1.14) saturate(1.05) hue-rotate(200deg)');
       } else if (partnerFilter === "Whitening") {
         filters.push('brightness(1.22) contrast(0.95)');
       } else if (partnerFilter === "Beauty") {
@@ -1186,7 +1235,7 @@ export default function Home() {
     if (activeIdentityMenu === 'filters' || activeIdentityMenu === 'masks') {
       applyFilterAndMask(activeIdentityMenu === 'masks' ? selectedTempMask : selectedTempFilter);
       if (activeIdentityMenu === 'masks' && selectedTempMask !== 'None') {
-        showToast("Mask applied! Face camera ki taraf dekho — 1-2 sec me dikhega.", "success", 3500);
+        showToast("Effect applied. Look at your camera — it may take a moment to appear.", "success", 3500);
       }
     } else if (activeIdentityMenu === 'avatars') {
       setActiveAvatar(selectedTempAvatar);
@@ -1194,7 +1243,7 @@ export default function Home() {
       applyVoiceFilter(selectedTempVoice);
     }
     setActiveIdentityMenu(null);
-    setShowGiftPanel(false);
+    setShowGiftStickers(false);
   };
 
   // Audio processing refs
@@ -1217,10 +1266,12 @@ export default function Home() {
       if (activeIdentityMenu) {
         if (
           !event.target.closest(".identity-popup-bubble") &&
+          !event.target.closest(".identity-toolbar-bubble") &&
           !event.target.closest(".tool-btn") &&
           !event.target.closest(".gift-trigger-btn")
         ) {
           setActiveIdentityMenu(null);
+          setShowGiftStickers(false);
         }
       }
     };
@@ -3952,14 +4003,20 @@ export default function Home() {
                       ELITE_FACE_MASKS.map((m) => (
                         <div
                           key={m.id}
-                          className={`mini-option ${selectedTempMask === m.id ? "selected" : ""}`}
-                          onClick={() => setSelectedTempMask(m.id)}
+                          className={`mini-option ${!m.available ? "coming-soon" : ""} ${selectedTempMask === m.id ? "selected" : ""}`}
+                          onClick={() => m.available && setSelectedTempMask(m.id)}
                         >
                           <span className="filter-icon">{m.icon}</span>
                           <div className="filter-info">
                             <span className="filter-name">{m.name}</span>
-                            <span className="filter-cost" style={{ fontSize: "0.65rem", color: "#10b981" }}>
-                              Free · 3D AR
+                            <span
+                              className="filter-cost"
+                              style={{
+                                fontSize: "0.65rem",
+                                color: m.available ? "#10b981" : "#64748b",
+                              }}
+                            >
+                              {m.available ? "Free · Glow" : "Coming Soon"}
                             </span>
                           </div>
                         </div>
@@ -3987,7 +4044,7 @@ export default function Home() {
                         "Anime Voice",
                         "Ghost Whisper",
                         "Cartoon Voice",
-                        "AI girl voice",
+                        "AI Girl Voice",
                         "Sigma deep voice",
                       ].map((v) => (
                         <div
@@ -4010,17 +4067,80 @@ export default function Home() {
                       >
                         <span className="filter-icon">🌫️</span>
                         <div className="filter-info">
-                          <span className="filter-name">{isFaceBlurred ? "✅ Blur Enabled" : "🌫️ Blur Disabled"}</span>
+                          <span className="filter-name">{isFaceBlurred ? "Blur On" : "Blur Off"}</span>
                         </div>
                       </div>
                     )}
                   </>
                 );
 
+                const openTool = (menu) => {
+                  setShowGiftStickers(false);
+                  setActiveIdentityMenu((prev) => (prev === menu ? null : menu));
+                };
+
                 return (
                   <>
-              {/* Desktop mini-bar popup (gift panel closed) */}
-              {activeIdentityMenu && identityToolkit && !showGiftPanel && (
+              {/* Toolbar only — opens from main Gifts button (no stickers, no auto masks) */}
+              {showIdentityToolbar && identityToolkit && (
+                <div className="identity-toolbar-bubble">
+                  <div className="elite-gift-tools identity-toolbar-row">
+                    <button
+                      type="button"
+                      className={`tool-btn ${activeIdentityMenu === "masks" ? "active" : ""}`}
+                      onClick={() => openTool("masks")}
+                    >
+                      🎭 Masks
+                    </button>
+                    <button
+                      type="button"
+                      className={`tool-btn ${activeIdentityMenu === "avatars" ? "active" : ""}`}
+                      onClick={() => openTool("avatars")}
+                    >
+                      👤 Avatars
+                    </button>
+                    <button
+                      type="button"
+                      className={`tool-btn ${activeIdentityMenu === "voice" ? "active" : ""}`}
+                      onClick={() => openTool("voice")}
+                    >
+                      🎙 Voice
+                    </button>
+                    <button
+                      type="button"
+                      className={`tool-btn ${activeIdentityMenu === "privacy" ? "active" : ""}`}
+                      onClick={() => openTool("privacy")}
+                    >
+                      🌫 Privacy
+                    </button>
+                    <button
+                      type="button"
+                      className={`tool-btn ${showGiftStickers ? "active" : ""}`}
+                      onClick={() => {
+                        setShowGiftStickers((p) => !p);
+                        setActiveIdentityMenu(null);
+                      }}
+                      style={{ background: "rgba(236, 72, 153, 0.1)", color: "#ec4899", borderColor: "rgba(236, 72, 153, 0.3)" }}
+                    >
+                      🎁 Gifts
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    className="toolbar-close-btn"
+                    onClick={() => {
+                      setShowIdentityToolbar(false);
+                      setActiveIdentityMenu(null);
+                      setShowGiftStickers(false);
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+
+              {/* Tool picker (masks / avatars / voice / privacy) */}
+              {activeIdentityMenu && identityToolkit && !showGiftStickers && (
                 <div className="identity-popup-bubble identity-tools-popup">
                   <div className="popup-arrow" />
                   <div className="popup-header">
@@ -4038,92 +4158,45 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Gift Panel Bubble */}
-              {showGiftPanel && (
+              {/* Sticker gifts only — from toolbar Gifts button */}
+              {(showGiftStickers || (!identityToolkit && showGiftPanel)) && (
                 <div className="identity-popup-bubble gift-bubble">
                   <div className="popup-arrow" />
-                  {identityToolkit ? (
-                    <>
-                      <div className="elite-gift-tools">
-                        <button
-                          type="button"
-                          className={`tool-btn ${activeIdentityMenu === "masks" ? "active" : ""}`}
-                          onClick={() => setActiveIdentityMenu(activeIdentityMenu === "masks" ? null : "masks")}
-                        >
-                          🎭 Masks
-                        </button>
-                        <button
-                          type="button"
-                          className={`tool-btn ${activeIdentityMenu === "avatars" ? "active" : ""}`}
-                          onClick={() => setActiveIdentityMenu(activeIdentityMenu === "avatars" ? null : "avatars")}
-                        >
-                          👤 Avatars
-                        </button>
-                        <button
-                          type="button"
-                          className={`tool-btn ${activeIdentityMenu === "voice" ? "active" : ""}`}
-                          onClick={() => setActiveIdentityMenu(activeIdentityMenu === "voice" ? null : "voice")}
-                        >
-                          🎙 Voice
-                        </button>
-                        <button
-                          type="button"
-                          className={`tool-btn ${activeIdentityMenu === "privacy" ? "active" : ""}`}
-                          onClick={() => setActiveIdentityMenu(activeIdentityMenu === "privacy" ? null : "privacy")}
-                        >
-                          🌫 Privacy
-                        </button>
-                      </div>
-                      <p className="gift-tools-hint">🎭 Masks dabao → mask chuno → Apply dabao</p>
-                    </>
-                  ) : (
+                  {!identityToolkit && (
                     <div className="gift-unlock-banner">
-                      <span>🎭 Face Masks, Avatars & Voice</span>
-                      <p>VIP Elite plan ya homepage se <strong>Secret Identity (500 coins)</strong> lo.</p>
+                      <span>Secret Identity Tools</span>
+                      <p>Get VIP Elite or Secret Identity (500 coins) on the homepage to unlock masks, avatars, and voice.</p>
                       <button type="button" className="gift-unlock-btn" onClick={() => router.push("/")}>
                         Unlock on Homepage
                       </button>
                     </div>
                   )}
                   <div className="popup-header">
-                    <span>
-                      {identityToolkit
-                        ? activeIdentityMenu === "masks"
-                          ? "FACE MASKS"
-                          : activeIdentityMenu
-                            ? activeIdentityMenu.toUpperCase()
-                            : "Gifts & Secret Identity"
-                        : "Send a Gift"}
-                    </span>
-                    <button type="button" onClick={() => { setShowGiftPanel(false); setActiveIdentityMenu(null); }}>×</button>
+                    <span>Send a Gift</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowGiftStickers(false);
+                        setShowGiftPanel(false);
+                        setActiveIdentityMenu(null);
+                      }}
+                    >
+                      ×
+                    </button>
                   </div>
-
-                  {identityToolkit && activeIdentityMenu ? (
-                    <>
-                      <div className="popup-options-row gift-inline-tools">{renderIdentityPanelBody()}</div>
-                      {activeIdentityMenu !== "privacy" && (
-                        <div className="gift-apply-row">
-                          <button type="button" className="apply-effect-btn" onClick={handleApplyIdentityChanges}>
-                            Apply Selection
-                          </button>
+                  <div className="gift-grid">
+                    {STICKERS.map((s) => {
+                      const freeCount = user?.stickers ? user.stickers.filter((id) => id === s.id).length : 0;
+                      return (
+                        <div key={s.id} className="gift-item" onClick={() => handleSendGift(s)}>
+                          {freeCount > 0 && <div className="free-badge">{freeCount} Free</div>}
+                          <span className="gift-icon">{s.icon}</span>
+                          <span className="gift-label">{s.label}</span>
+                          <span className="gift-price">{freeCount > 0 ? "Free" : `${s.price} coins`}</span>
                         </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="gift-grid">
-                      {STICKERS.map((s) => {
-                        const freeCount = user?.stickers ? user.stickers.filter((id) => id === s.id).length : 0;
-                        return (
-                          <div key={s.id} className="gift-item" onClick={() => handleSendGift(s)}>
-                            {freeCount > 0 && <div className="free-badge">{freeCount} Free</div>}
-                            <span className="gift-icon">{s.icon}</span>
-                            <span className="gift-label">{s.label}</span>
-                            <span className="gift-price">{freeCount > 0 ? "🆓 Free" : `💰 ${s.price}`}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                      );
+                    })}
+                  </div>
                 </div>
               )}
                   </>
@@ -4131,26 +4204,6 @@ export default function Home() {
               })()}
 
 
-              {/* Bottom Mini Bar */}
-              {showPremiumMiniBar && hasIdentityToolkit(getChatUser(user)) && (
-                <div className="bottom-mini-bar">
-                  <button className={`tool-btn ${activeIdentityMenu === 'masks' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'masks' ? null : 'masks')}>
-                    🎭 Masks
-                  </button>
-                  <button className={`tool-btn ${activeIdentityMenu === 'avatars' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'avatars' ? null : 'avatars')}>
-                    👤 Avatars
-                  </button>
-                  <button className={`tool-btn ${activeIdentityMenu === 'voice' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'voice' ? null : 'voice')}>
-                    🎙 Voice
-                  </button>
-                  <button className={`tool-btn ${activeIdentityMenu === 'privacy' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'privacy' ? null : 'privacy')}>
-                    🌫 Privacy
-                  </button>
-                  <button className={`tool-btn ${showGiftPanel ? 'active' : ''}`} onClick={() => setShowGiftPanel(!showGiftPanel)} style={{ background: 'rgba(236, 72, 153, 0.1)', color: '#ec4899', borderColor: 'rgba(236, 72, 153, 0.3)' }}>
-                    🎁 Gifts
-                  </button>
-                </div>
-              )}
 
             </div>
 
@@ -4177,25 +4230,21 @@ export default function Home() {
                 className="gift-trigger-btn" 
                 onClick={() => {
                   const toolkit = hasIdentityToolkit(getChatUser(user));
-                  const isMobile = typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches;
-                  if (isMobile) {
-                    setShowGiftPanel((prev) => {
+                  if (toolkit) {
+                    setShowIdentityToolbar((prev) => {
                       const next = !prev;
                       if (!next) {
                         setActiveIdentityMenu(null);
-                        setShowPremiumMiniBar(false);
-                      } else if (toolkit) {
-                        setActiveIdentityMenu("masks");
+                        setShowGiftStickers(false);
                       }
                       return next;
                     });
-                  } else if (toolkit) {
-                    setShowGiftPanel(true);
-                    setShowPremiumMiniBar(true);
-                    setActiveIdentityMenu((prev) => (prev === "masks" ? null : "masks"));
+                    setShowGiftPanel(false);
+                    setShowPremiumMiniBar(false);
                   } else {
                     setShowGiftPanel((prev) => !prev);
-                    setShowPremiumMiniBar(false);
+                    setShowGiftStickers((prev) => !prev);
+                    setShowIdentityToolbar(false);
                     setActiveIdentityMenu(null);
                   }
                 }}
@@ -6580,13 +6629,42 @@ export default function Home() {
           background: rgba(99, 102, 241, 0.35);
           border-color: rgba(99, 102, 241, 0.6);
         }
-        .gift-tools-hint {
-          margin: 0;
-          padding: 4px 10px 6px;
-          font-size: 0.65rem;
+        .identity-toolbar-bubble {
+          position: absolute;
+          bottom: 75px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 10001;
+          background: #111827;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 14px;
+          padding: 8px 36px 8px 8px;
+          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+          min-width: 280px;
+          max-width: 95vw;
+        }
+        .identity-toolbar-row {
+          border-bottom: none !important;
+          padding: 0 !important;
+        }
+        .toolbar-close-btn {
+          position: absolute;
+          top: 6px;
+          right: 8px;
+          background: transparent;
+          border: none;
           color: #94a3b8;
-          text-align: center;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+          font-size: 1.1rem;
+          cursor: pointer;
+          line-height: 1;
+        }
+        .mini-option.coming-soon {
+          opacity: 0.45;
+          cursor: not-allowed;
+          pointer-events: none;
+        }
+        .mini-option.coming-soon .filter-name {
+          color: #64748b;
         }
         .gift-unlock-banner {
           padding: 10px 12px;
@@ -7483,10 +7561,19 @@ export default function Home() {
             display: flex !important;
             flex-direction: column !important;
           }
+          .identity-toolbar-bubble {
+            position: fixed !important;
+            left: 50% !important;
+            bottom: 95px !important;
+            transform: translateX(-50%) !important;
+            width: 92% !important;
+            max-width: 340px !important;
+            z-index: 10049 !important;
+          }
           .identity-popup-bubble:not(.gift-bubble) {
             position: fixed !important;
             left: 50% !important;
-            bottom: 140px !important;
+            bottom: 155px !important;
             transform: translateX(-50%) !important;
             width: 88% !important;
             max-width: 300px !important;
