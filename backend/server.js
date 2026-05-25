@@ -3402,7 +3402,11 @@ function endQuiz(roomId) {
               amount: { currency_code: currency, value: parseFloat(amount / 100).toFixed(2) },
               description: `ZoneMeet ${planName}`,
               custom_id: JSON.stringify({ userEmail, planName })
-            }]
+            }],
+            application_context: {
+              return_url: "https://zonemeet.chat/payment-success?paypal_order=true",
+              cancel_url: "https://zonemeet.chat/"
+            }
           })
         });
         const order = await response.json();
@@ -3479,6 +3483,14 @@ function endQuiz(roomId) {
         });
         const subscription = await subRes.json();
         
+        const user = users.find(u => u.email === userEmail);
+        if (user && subscription.id) {
+          user.subscriptionId = subscription.id;
+          user.subscriptionGateway = "paypal";
+          user.currentPlan = planName;
+          saveUsers();
+        }
+        
         const approveUrl = subscription.links.find(l => l.rel === "approve")?.href;
         res.json({ approveUrl, subscriptionId: subscription.id });
       } catch (err) {
@@ -3506,6 +3518,14 @@ function endQuiz(roomId) {
           body: JSON.stringify({ subscription_id: subId, plan_id: planId, customer_name: "Customer", customer_email: userEmail, customer_phone: "9999999999", return_url: `https://zonemeet.chat/payment-success?cf_sub=${subId}` })
         });
         const subscription = await subRes.json();
+        
+        const user = users.find(u => u.email === userEmail);
+        if (user) {
+          user.subscriptionId = subId;
+          user.subscriptionGateway = "cashfree";
+          user.currentPlan = planName;
+          saveUsers();
+        }
         
         res.json({ paymentSessionId: subscription.auth_link, orderId: subId });
       } catch (err) {
@@ -3549,21 +3569,43 @@ function endQuiz(roomId) {
     app.post("/api/payment/cashfree/verify", async (req, res) => {
       try {
         const { orderId, userEmail, planName, giftRecipientId } = req.body;
-        const response = await fetch(`${CASHFREE_BASE_URL}/orders/${orderId}`, {
-          headers: {
-            "x-client-id": process.env.CASHFREE_APP_ID || "YOUR_CASHFREE_APP_ID",
-            "x-client-secret": process.env.CASHFREE_SECRET_KEY || "YOUR_CASHFREE_SECRET",
-            "x-api-version": "2023-08-01"
+        let isPaid = false;
+        let purchaseOptions = {};
+
+        if (orderId && orderId.startsWith("CF_SUB_")) {
+          const response = await fetch(`${CASHFREE_BASE_URL}/subscriptions/${orderId}`, {
+            headers: {
+              "x-client-id": process.env.CASHFREE_APP_ID || "YOUR_CASHFREE_APP_ID",
+              "x-client-secret": process.env.CASHFREE_SECRET_KEY || "YOUR_CASHFREE_SECRET"
+            }
+          });
+          const subscription = await response.json();
+          if (subscription.status === "ACTIVE" || subscription.status === "CHARGED") {
+            isPaid = true;
+            purchaseOptions = { subscriptionId: orderId, gateway: "cashfree" };
           }
-        });
-        const order = await response.json();
-        if (order.order_status !== "PAID") {
- 	         return res.status(400).json({ success: false, message: "Cashfree payment not completed" });
+        } else {
+          const response = await fetch(`${CASHFREE_BASE_URL}/orders/${orderId}`, {
+            headers: {
+              "x-client-id": process.env.CASHFREE_APP_ID || "YOUR_CASHFREE_APP_ID",
+              "x-client-secret": process.env.CASHFREE_SECRET_KEY || "YOUR_CASHFREE_SECRET",
+              "x-api-version": "2023-08-01"
+            }
+          });
+          const order = await response.json();
+          if (order.order_status === "PAID") {
+            isPaid = true;
+          }
         }
+
+        if (!isPaid) {
+          return res.status(400).json({ success: false, message: "Cashfree payment not completed" });
+        }
+
         const user = users.find(u => u.email === (giftRecipientId || userEmail));
         if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-        const purchase = processVerifiedPurchase(user, planName);
+        const purchase = processVerifiedPurchase(user, planName, purchaseOptions);
         if (!purchase.ok) return res.status(400).json({ success: false, message: purchase.message || "Purchase failed" });
         transactions.push({ id: orderId, userEmail, planName, gateway: "cashfree", timestamp: Date.now(), type: purchase.type });
         saveTransactions();
@@ -3572,6 +3614,33 @@ function endQuiz(roomId) {
       } catch (err) {
         console.error("Cashfree Verify Error:", err);
         res.status(500).json({ success: false, message: "Cashfree verification failed" });
+      }
+    });
+
+    // PayPal - Verify Subscription
+    app.post("/api/payment/paypal/verify-subscription", async (req, res) => {
+      try {
+        const { subscriptionId, userEmail, planName } = req.body;
+        const accessToken = await getPayPalAccessToken();
+        const response = await fetch(`${PAYPAL_BASE_URL}/v1/billing/subscriptions/${subscriptionId}`, {
+          headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }
+        });
+        const sub = await response.json();
+        if (sub.status !== "ACTIVE" && sub.status !== "APPROVED") {
+          return res.status(400).json({ success: false, message: "PayPal subscription not active" });
+        }
+        const user = users.find(u => u.email === userEmail);
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+        const purchase = processVerifiedPurchase(user, planName, { subscriptionId, gateway: "paypal" });
+        if (!purchase.ok) return res.status(400).json({ success: false, message: purchase.message || "Purchase failed" });
+        transactions.push({ id: subscriptionId, userEmail, planName, gateway: "paypal", timestamp: Date.now(), type: purchase.type });
+        saveTransactions();
+        saveUsers();
+        res.json({ success: true, message: "PayPal subscription verified", user: userPayloadAfterPurchase(user) });
+      } catch (err) {
+        console.error("PayPal Sub Verify Error:", err);
+        res.status(500).json({ success: false, message: "PayPal subscription verification failed" });
       }
     });
 
