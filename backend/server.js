@@ -2232,52 +2232,23 @@ function matchUsers() {
     for (let j = i + 1; j < waitingUsers.length; j++) {
       const user2 = waitingUsers[j];
 
-      // Matching logic with filters
-      let u1WantsU2 = false;
-      const u1Pref = user1.filters?.gender || "all";
-      if (u1Pref === "all") {
-          // If no preference, mostly match with Males. Rare chance (2%) to match with Female.
-          if (user2.gender === "Female") {
-              u1WantsU2 = Math.random() < 0.02;
-          } else {
-              u1WantsU2 = true;
-          }
-      } else {
-          u1WantsU2 = (user2.gender === u1Pref);
-      }
+      const f1 = user1.filters || { gender: "all", country: "all", state: "All States", age: "All Ages" };
+      const f2 = user2.filters || { gender: "all", country: "all", state: "All States", age: "All Ages" };
 
-      let u2WantsU1 = false;
-      const u2Pref = user2.filters?.gender || "all";
-      if (u2Pref === "all") {
-          if (user1.gender === "Female") {
-              u2WantsU1 = Math.random() < 0.02;
-          } else {
-              u2WantsU1 = true;
-          }
-      } else {
-          u2WantsU1 = (user1.gender === u2Pref);
-      }
+      // Check User 1's preferences against User 2
+      const matchesGender1 = f1.gender === "all" || f1.gender === user2.gender;
+      const matchesCountry1 = f1.country === "all" || f1.country === user2.country;
+      const matchesState1 = !f1.state || f1.state === "All States" || f1.state === user2.state;
+      const matchesAge1 = !f1.age || f1.age === "All Ages" || f1.age === "all" || f1.age === user2.age;
 
-      const matchesGender = u1WantsU2 && u2WantsU1;
+      // Check User 2's preferences against User 1
+      const matchesGender2 = f2.gender === "all" || f2.gender === user1.gender;
+      const matchesCountry2 = f2.country === "all" || f2.country === user1.country;
+      const matchesState2 = !f2.state || f2.state === "All States" || f2.state === user1.state;
+      const matchesAge2 = !f2.age || f2.age === "All Ages" || f2.age === "all" || f2.age === user1.age;
 
-      const matchesCountry = (user1.filters?.country === "all" || user2.country === user1.filters?.country || !user1.filters?.country) &&
-        (user2.filters?.country === "all" || user1.country === user2.filters?.country || !user2.filters?.country);
-
-      const matchesState = (user1.filters?.state === "All States" || user2.state === user1.filters?.state || !user1.filters?.state) &&
-        (user2.filters?.state === "All States" || user1.state === user2.filters?.state || !user2.filters?.state);
-
-      const u1Plan = user1.planName || user1.currentPlan || "";
-      const u1VIP = u1Plan === "VIP Elite" || user1.email?.toLowerCase() === "ds9376314@gmail.com";
-      const u1AgePref = u1VIP ? (user1.filters?.age || "All Ages") : "All Ages";
-
-      const u2Plan = user2.planName || user2.currentPlan || "";
-      const u2VIP = u2Plan === "VIP Elite" || user2.email?.toLowerCase() === "ds9376314@gmail.com";
-      const u2AgePref = u2VIP ? (user2.filters?.age || "All Ages") : "All Ages";
-
-      const matchesAge = (u1AgePref === "All Ages" || user2.age === u1AgePref) &&
-        (u2AgePref === "All Ages" || user1.age === u2AgePref);
-
-      if (matchesGender && matchesCountry && matchesState && matchesAge) {
+      if (matchesGender1 && matchesCountry1 && matchesState1 && matchesAge1 &&
+          matchesGender2 && matchesCountry2 && matchesState2 && matchesAge2) {
         // Remove them from waiting list
         waitingUsers.splice(j, 1);
         waitingUsers.splice(i, 1);
