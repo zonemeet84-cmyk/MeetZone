@@ -7728,35 +7728,71 @@ export default function Home() {
           /* Perfectly Center and Responsive Gift stickers modal on mobile */
           .identity-popup-bubble.gift-bubble {
             position: fixed !important;
-            left: 50% !important;
-            bottom: 25px !important;
-            transform: translateX(-50%) !important;
-            width: 85% !important;
-            max-width: 280px !important;
-            right: auto !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
             top: auto !important;
-            z-index: 9999 !important;
-            background: #111827 !important;
-            border: 1px solid rgba(255,255,255,0.15) !important;
-            border-radius: 16px !important;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
-            max-height: 50vh !important;
+            transform: none !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            z-index: 10060 !important;
+            background: rgba(15, 23, 42, 0.98) !important;
+            border: none !important;
+            border-top: 1px solid rgba(255,255,255,0.12) !important;
+            border-radius: 20px 20px 0 0 !important;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6) !important;
+            max-height: 55vh !important;
             overflow-y: auto !important;
+            padding: 12px 10px 20px !important;
+            animation: slideUpGift 0.3s ease-out !important;
+          }
+          @keyframes slideUpGift {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
           }
           .identity-popup-bubble.gift-bubble .popup-arrow {
             display: none !important;
           }
-          .identity-popup-bubble.gift-bubble .gift-grid {
-            grid-template-columns: repeat(4, 1fr) !important;
-            gap: 6px !important;
-            padding: 8px !important;
+          .identity-popup-bubble.gift-bubble .popup-header {
+            padding: 0 6px 8px !important;
+            margin-bottom: 6px !important;
           }
-          .identity-popup-bubble.gift-bubble .gift-item {
-            padding: 6px 3px !important;
+          .identity-popup-bubble.gift-bubble .popup-header span {
+            font-size: 0.7rem !important;
+          }
+          .identity-popup-bubble.gift-bubble .popup-header button {
+            font-size: 1.3rem !important;
+            padding: 4px 8px !important;
+          }
+          .identity-popup-bubble.gift-bubble .gift-unlock-banner {
+            padding: 8px 10px !important;
+            margin: 0 4px 8px !important;
+            border-radius: 10px !important;
+          }
+          .identity-popup-bubble.gift-bubble .gift-unlock-banner span {
+            font-size: 0.7rem !important;
+          }
+          .identity-popup-bubble.gift-bubble .gift-unlock-banner p {
+            font-size: 0.6rem !important;
+            margin: 4px 0 6px !important;
+            line-height: 1.3 !important;
+          }
+          .identity-popup-bubble.gift-bubble .gift-unlock-btn {
+            padding: 6px !important;
+            font-size: 0.65rem !important;
             border-radius: 8px !important;
           }
+          .identity-popup-bubble.gift-bubble .gift-grid {
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 8px !important;
+            padding: 4px 6px !important;
+          }
+          .identity-popup-bubble.gift-bubble .gift-item {
+            padding: 8px 4px !important;
+            border-radius: 10px !important;
+          }
           .identity-popup-bubble.gift-bubble .gift-icon {
-            font-size: 1.4rem !important;
+            font-size: 1.6rem !important;
           }
           .identity-popup-bubble.gift-bubble .gift-label {
             font-size: 0.6rem !important;
