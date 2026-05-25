@@ -7484,10 +7484,14 @@ export default function Home() {
             background: #6366f1 !important;
             color: white !important;
             border-color: rgba(99, 102, 241, 0.2) !important;
+            margin-left: 18px !important;
           }
           .bottom-actions .next-btn:hover {
             background: #4f46e5 !important;
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+          }
+          .bottom-actions .report-trigger-btn {
+            margin-right: 4px !important;
           }
           .bottom-actions .gift-trigger-btn {
             background: rgba(236, 72, 153, 0.1) !important;
