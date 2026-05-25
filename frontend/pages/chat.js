@@ -3320,7 +3320,7 @@ export default function Home() {
                   </div>
                   <div className="filter-modal-body">
                     <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '1.2rem', textAlign: 'center' }}>
-                      Entry Fee: 50 Coins. Winner Takes: 100 Coins. 10 Questions, 15 seconds each!
+                      Entry Fee: {user?.email?.toLowerCase() === "ds9376314@gmail.com" ? "Free (Admin)" : "50 Coins"}. Winner Takes: 100 Coins. 10 Questions, 15 seconds each!
                     </p>
                     
                     <div className="quiz-grid-v2">
@@ -3700,7 +3700,7 @@ export default function Home() {
                     </div>
                     <h2>Brain Clash Matchmaking</h2>
                     <p>Searching for an intellectual opponent...</p>
-                    <div className="entry-badge">💰 Entry Fee: 50 Coins</div>
+                    <div className="entry-badge">💰 Entry Fee: {user?.email?.toLowerCase() === "ds9376314@gmail.com" ? "Free (Admin)" : "50 Coins"}</div>
                     <div className="pool-badge">🏆 Winner Prize: 100 Coins</div>
                     <button className="quiz-cancel-btn" onClick={() => socket?.emit("leave-quiz-queue")}>
                       ❌ Cancel Challenge
@@ -6277,7 +6277,7 @@ export default function Home() {
 
         .identity-popup-bubble {
           position: absolute;
-          bottom: 75px;
+          bottom: 70px;
           background: rgba(15, 23, 42, 0.95);
           backdrop-filter: blur(12px);
           padding: 10px;
@@ -6580,14 +6580,14 @@ export default function Home() {
         }
         .identity-toolbar-bubble {
           position: absolute;
-          bottom: 75px;
+          bottom: 15px;
           left: 50%;
           transform: translateX(-50%);
           z-index: 10001;
           background: #111827;
           border: 1px solid rgba(255, 255, 255, 0.12);
           border-radius: 14px;
-          padding: 8px 36px 8px 8px;
+          padding: 8px 32px 8px 8px;
           box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
           min-width: 280px;
           max-width: 95vw;
@@ -6598,8 +6598,9 @@ export default function Home() {
         }
         .toolbar-close-btn {
           position: absolute;
-          top: 6px;
+          top: 50%;
           right: 8px;
+          transform: translateY(-50%);
           background: transparent;
           border: none;
           color: #94a3b8;
@@ -6659,7 +6660,7 @@ export default function Home() {
         }
 
         .gift-bubble {
-          bottom: 55px;
+          bottom: 15px;
           left: 50%;
           transform: translateX(-50%);
           width: 270px !important;
@@ -7513,7 +7514,7 @@ export default function Home() {
           .identity-toolbar-bubble {
             position: fixed !important;
             left: 50% !important;
-            bottom: 95px !important;
+            bottom: 25px !important;
             transform: translateX(-50%) !important;
             width: 92% !important;
             max-width: 340px !important;
@@ -7522,7 +7523,7 @@ export default function Home() {
           .identity-popup-bubble:not(.gift-bubble) {
             position: fixed !important;
             left: 50% !important;
-            bottom: 155px !important;
+            bottom: 85px !important;
             transform: translateX(-50%) !important;
             width: 88% !important;
             max-width: 300px !important;
@@ -7596,7 +7597,7 @@ export default function Home() {
           .identity-popup-bubble.gift-bubble {
             position: fixed !important;
             left: 50% !important;
-            bottom: 85px !important;
+            bottom: 25px !important;
             transform: translateX(-50%) !important;
             width: 85% !important;
             max-width: 280px !important;

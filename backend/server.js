@@ -2404,13 +2404,13 @@ function endQuiz(roomId) {
       const randomDare = dares[Math.floor(Math.random() * dares.length)];
 
       if (isDraw) {
-        // Refund both 50 coins
-        if (u1) {
+        // Refund both 50 coins (skip if admin since it was free entry)
+        if (u1 && u1.email !== "ds9376314@gmail.com") {
           u1.coins = (u1.coins || 0) + 50;
           coinActivity.push({ email: u1.email, type: "earn", amount: 50, description: "Quiz Duel Draw Refund", timestamp: Date.now() });
           s1.emit("coins-updated", u1.coins);
         }
-        if (u2) {
+        if (u2 && u2.email !== "ds9376314@gmail.com") {
           u2.coins = (u2.coins || 0) + 50;
           coinActivity.push({ email: u2.email, type: "earn", amount: 50, description: "Quiz Duel Draw Refund", timestamp: Date.now() });
           s2.emit("coins-updated", u2.coins);
@@ -3020,17 +3020,20 @@ function endQuiz(roomId) {
         const index = waitingUsers.indexOf(socket);
         if (index !== -1) waitingUsers.splice(index, 1);
 
-        // If they were in quiz queue, remove them and refund
+        // If they were in quiz queue, remove them and refund (skip refund if admin since it's free)
         const quizIdx = waitingQuizUsers.indexOf(socket);
         if (quizIdx !== -1) {
           waitingQuizUsers.splice(quizIdx, 1);
           const u = users.find(usr => usr.id === socket.userId);
           if (u) {
-            u.coins = (u.coins || 0) + 50;
-            coinActivity.push({ email: u.email, type: "earn", amount: 50, description: "Quiz Duel Queue Left Refund", timestamp: Date.now() });
-            saveCoinActivity();
-            saveUsers();
-            socket.emit("coins-updated", u.coins);
+            const isAdmin = u.email === "ds9376314@gmail.com";
+            if (!isAdmin) {
+              u.coins = (u.coins || 0) + 50;
+              coinActivity.push({ email: u.email, type: "earn", amount: 50, description: "Quiz Duel Queue Left Refund", timestamp: Date.now() });
+              saveCoinActivity();
+              saveUsers();
+              socket.emit("coins-updated", u.coins);
+            }
           }
         }
 
@@ -3080,7 +3083,9 @@ function endQuiz(roomId) {
           return;
         }
 
-        if ((user.coins || 0) < 50) {
+        const isAdmin = user.email === "ds9376314@gmail.com";
+
+        if (!isAdmin && (user.coins || 0) < 50) {
           socket.emit("quiz-error", { message: "Insufficient Coins! Entry fee is 50 coins." });
           return;
         }
@@ -3090,19 +3095,21 @@ function endQuiz(roomId) {
           return;
         }
 
-        // Deduct 50 coins entry fee
-        user.coins = (user.coins || 0) - 50;
-        coinActivity.push({
-          email: user.email,
-          type: "spend",
-          amount: 50,
-          description: "Quiz Duel entry fee",
-          timestamp: Date.now()
-        });
-        saveCoinActivity();
-        saveUsers();
+        if (!isAdmin) {
+          // Deduct 50 coins entry fee
+          user.coins = (user.coins || 0) - 50;
+          coinActivity.push({
+            email: user.email,
+            type: "spend",
+            amount: 50,
+            description: "Quiz Duel entry fee",
+            timestamp: Date.now()
+          });
+          saveCoinActivity();
+          saveUsers();
+          socket.emit("coins-updated", user.coins);
+        }
 
-        socket.emit("coins-updated", user.coins);
         waitingQuizUsers.push(socket);
         socket.emit("quiz-queue-joined");
 
@@ -3117,20 +3124,23 @@ function endQuiz(roomId) {
         if (idx !== -1) {
           waitingQuizUsers.splice(idx, 1);
 
-          // Refund 50 coins
+          // Refund 50 coins (skip if admin since it was free entry)
           const user = users.find(u => u.id === socket.userId);
           if (user) {
-            user.coins = (user.coins || 0) + 50;
-            coinActivity.push({
-              email: user.email,
-              type: "earn",
-              amount: 50,
-              description: "Quiz Duel Leave refund",
-              timestamp: Date.now()
-            });
-            saveCoinActivity();
-            saveUsers();
-            socket.emit("coins-updated", user.coins);
+            const isAdmin = user.email === "ds9376314@gmail.com";
+            if (!isAdmin) {
+              user.coins = (user.coins || 0) + 50;
+              coinActivity.push({
+                email: user.email,
+                type: "earn",
+                amount: 50,
+                description: "Quiz Duel Leave refund",
+                timestamp: Date.now()
+              });
+              saveCoinActivity();
+              saveUsers();
+              socket.emit("coins-updated", user.coins);
+            }
           }
           socket.emit("quiz-queue-left");
         }
