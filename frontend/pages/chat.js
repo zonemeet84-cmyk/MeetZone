@@ -344,22 +344,6 @@ export default function Home() {
   const [incomingCall, setIncomingCall] = useState(null);
 
 
-  /** Glow masks (VIP Elite & Secret Identity). Rest are Coming Soon placeholders. */
-  const ELITE_FACE_MASKS = [
-    { id: "None", name: "No Effect", icon: "🚫", available: true },
-    { id: "Glow", name: "Soft Glow", icon: "🌟", available: true },
-    { id: "DreamGlow", name: "Dream Glow", icon: "✨", available: true },
-    { id: "RoseGlow", name: "Rose Glow", icon: "🌸", available: true },
-    { id: "MoonGlow", name: "Moon Glow", icon: "🌙", available: true },
-    { id: "soon-1", name: "Coming Soon", icon: "🔒", available: false },
-    { id: "soon-2", name: "Coming Soon", icon: "🔒", available: false },
-    { id: "soon-3", name: "Coming Soon", icon: "🔒", available: false },
-    { id: "soon-4", name: "Coming Soon", icon: "🔒", available: false },
-    { id: "soon-5", name: "Coming Soon", icon: "🔒", available: false },
-    { id: "soon-6", name: "Coming Soon", icon: "🔒", available: false },
-    { id: "soon-7", name: "Coming Soon", icon: "🔒", available: false },
-  ];
-
   const FILTERS_DATA = [
     { id: "None", name: "No Filter", icon: "🚫", cost: 0, category: "None" },
     // Beauty
@@ -1219,9 +1203,7 @@ export default function Home() {
 
   // Sync temporary selection states with active values when menu opens
   useEffect(() => {
-    if (activeIdentityMenu === 'masks') {
-      setSelectedTempMask(activeMediaPipeFilter);
-    } else if (activeIdentityMenu === 'filters') {
+    if (activeIdentityMenu === 'filters') {
       setSelectedTempFilter(activeMediaPipeFilter);
     } else if (activeIdentityMenu === 'avatars') {
       setSelectedTempAvatar(activeAvatar);
@@ -1232,11 +1214,8 @@ export default function Home() {
 
   // Handle two-stage Apply click
   const handleApplyIdentityChanges = () => {
-    if (activeIdentityMenu === 'filters' || activeIdentityMenu === 'masks') {
-      applyFilterAndMask(activeIdentityMenu === 'masks' ? selectedTempMask : selectedTempFilter);
-      if (activeIdentityMenu === 'masks' && selectedTempMask !== 'None') {
-        showToast("Effect applied. Look at your camera — it may take a moment to appear.", "success", 3500);
-      }
+    if (activeIdentityMenu === 'filters') {
+      applyFilterAndMask(selectedTempFilter);
     } else if (activeIdentityMenu === 'avatars') {
       setActiveAvatar(selectedTempAvatar);
     } else if (activeIdentityMenu === 'voice') {
@@ -3999,29 +3978,6 @@ export default function Home() {
                 const identityToolkit = hasIdentityToolkit(getChatUser(user));
                 const renderIdentityPanelBody = () => (
                   <>
-                    {activeIdentityMenu === "masks" &&
-                      ELITE_FACE_MASKS.map((m) => (
-                        <div
-                          key={m.id}
-                          className={`mini-option ${!m.available ? "coming-soon" : ""} ${selectedTempMask === m.id ? "selected" : ""}`}
-                          onClick={() => m.available && setSelectedTempMask(m.id)}
-                        >
-                          <span className="filter-icon">{m.icon}</span>
-                          <div className="filter-info">
-                            <span className="filter-name">{m.name}</span>
-                            <span
-                              className="filter-cost"
-                              style={{
-                                fontSize: "0.65rem",
-                                color: m.available ? "#10b981" : "#64748b",
-                              }}
-                            >
-                              {m.available ? "Free · Glow" : "Coming Soon"}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-
                     {activeIdentityMenu === "avatars" &&
                       ["None", "Robot", "Anime", "Girl", "Ninja", "Hero", "Cat", "Cyber"].map((a) => (
                         <div
@@ -4087,13 +4043,6 @@ export default function Home() {
                   <div className="elite-gift-tools identity-toolbar-row">
                     <button
                       type="button"
-                      className={`tool-btn ${activeIdentityMenu === "masks" ? "active" : ""}`}
-                      onClick={() => openTool("masks")}
-                    >
-                      🎭 Masks
-                    </button>
-                    <button
-                      type="button"
                       className={`tool-btn ${activeIdentityMenu === "avatars" ? "active" : ""}`}
                       onClick={() => openTool("avatars")}
                     >
@@ -4144,7 +4093,7 @@ export default function Home() {
                 <div className="identity-popup-bubble identity-tools-popup">
                   <div className="popup-arrow" />
                   <div className="popup-header">
-                    <span>{activeIdentityMenu === "masks" ? "FACE MASKS" : activeIdentityMenu.toUpperCase()}</span>
+                    <span>{activeIdentityMenu.toUpperCase()}</span>
                     <button type="button" onClick={() => setActiveIdentityMenu(null)}>×</button>
                   </div>
                   <div className="popup-options-row">{renderIdentityPanelBody()}</div>
@@ -4165,7 +4114,7 @@ export default function Home() {
                   {!identityToolkit && (
                     <div className="gift-unlock-banner">
                       <span>Secret Identity Tools</span>
-                      <p>Get VIP Elite or Secret Identity (500 coins) on the homepage to unlock masks, avatars, and voice.</p>
+                      <p>Get VIP Elite or Secret Identity (500 coins) on the homepage to unlock avatars and voice.</p>
                       <button type="button" className="gift-unlock-btn" onClick={() => router.push("/")}>
                         Unlock on Homepage
                       </button>
@@ -7813,17 +7762,18 @@ export default function Home() {
             color: white !important;
           }
           .bottom-actions .next-btn {
-            background: #6366f1 !important;
-            color: white !important;
+            background: rgba(99, 102, 241, 0.1) !important;
+            color: #6366f1 !important;
             border-color: rgba(99, 102, 241, 0.2) !important;
-            margin-left: 18px !important;
+            margin-left: 10px !important;
           }
           .bottom-actions .next-btn:hover {
-            background: #4f46e5 !important;
+            background: #6366f1 !important;
+            color: white !important;
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
           }
           .bottom-actions .report-trigger-btn {
-            margin-right: 4px !important;
+            margin-right: 0px !important;
           }
           .bottom-actions .gift-trigger-btn {
             background: rgba(236, 72, 153, 0.1) !important;
