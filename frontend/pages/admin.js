@@ -8,6 +8,8 @@ import axios from "axios";
 // Enable withCredentials globally for cookie security
 axios.defaults.withCredentials = true;
 
+const ADMIN_EMAIL = "ds9376314@gmail.com";
+
 export default function AdminDashboard() {
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
@@ -36,46 +38,51 @@ export default function AdminDashboard() {
 
   // Admin Secure Credentials and Verification States
   const [isVerified, setIsVerified] = useState(false);
-  const [authForm, setAuthForm] = useState({ email: "ds9376314@gmail.com", password: "", otp: "", secretRouteKey: "" });
+  const [adminToken, setAdminToken] = useState(null);
+  const [authForm, setAuthForm] = useState({ email: ADMIN_EMAIL, password: "", otp: "", secretRouteKey: "" });
   const [authLoading, setAuthLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [authError, setAuthError] = useState("");
 
+  const lockAdminPanel = () => {
+    setIsVerified(false);
+    setAdminToken(null);
+    setOtpSent(false);
+    setAuthForm({ email: ADMIN_EMAIL, password: "", otp: "", secretRouteKey: "" });
+    localStorage.removeItem("adminVerified");
+    sessionStorage.removeItem("adminToken");
+  };
+
+  const getAdminHeaders = () => {
+    if (!adminToken) return null;
+    return { headers: { Authorization: `Bearer ${adminToken}` }, withCredentials: true };
+  };
+
   useEffect(() => {
     if (sessionStatus === "loading") return;
+    localStorage.removeItem("adminVerified");
+    sessionStorage.removeItem("adminToken");
+    setAuthForm((prev) => ({ ...prev, email: ADMIN_EMAIL }));
+    setLoading(false);
+  }, [sessionStatus]);
 
-    // Check if already verified in this browser session
-    if (localStorage.getItem("adminVerified") === "true") {
-      setIsVerified(true);
-      fetchData();
-      const interval = setInterval(fetchData, 15000); 
-      return () => clearInterval(interval);
-    }
-
-    // Google Session check to auto-populate email
-    let emailVal = "ds9376314@gmail.com";
-    const isGoogleAdmin = session && session.user.email === "ds9376314@gmail.com";
-    if (isGoogleAdmin) {
-      emailVal = session.user.email;
-    } else {
-      const localUser = localStorage.getItem("user");
-      if (localUser) {
-        try {
-          const parsed = JSON.parse(localUser);
-          if (parsed.email) emailVal = parsed.email;
-        } catch (e) {}
-      }
-    }
-    setAuthForm(prev => ({ ...prev, email: emailVal }));
-    setLoading(false); // Stop general loading so they can see the Verification screen
-  }, [session, sessionStatus]);
+  useEffect(() => {
+    if (!isVerified || !adminToken) return;
+    fetchData();
+    const interval = setInterval(fetchData, 15000);
+    return () => clearInterval(interval);
+  }, [isVerified, adminToken]);
 
   const handleSend2FA = async () => {
     setOtpLoading(true);
     setAuthError("");
     try {
-      await axios.post("https://api.zonemeet.chat/api/admin/send-2fa", { email: authForm.email });
+      if (authForm.email !== ADMIN_EMAIL) {
+        setAuthError("Access Denied — admin email only");
+        return;
+      }
+      await axios.post("https://api.zonemeet.chat/api/admin/send-2fa", { email: ADMIN_EMAIL });
       setOtpSent(true);
       Swal.fire({ text: "2FA Verification Code sent to your email!", icon: "success", background: "#0f172a", color: "#fff", confirmButtonColor: "#6366f1" });
     } catch (err) {
@@ -87,16 +94,27 @@ export default function AdminDashboard() {
 
   const handleVerifyLogin = async (e) => {
     e.preventDefault();
+    if (authForm.email !== ADMIN_EMAIL) {
+      setAuthError("Access Denied — invalid admin email");
+      return;
+    }
+    if (!authForm.secretRouteKey?.trim() || !authForm.password?.trim() || !authForm.otp?.trim()) {
+      setAuthError("Secret key, password, and OTP are all required");
+      return;
+    }
     setAuthLoading(true);
     setAuthError("");
     try {
-      const res = await axios.post("https://api.zonemeet.chat/api/admin/verify-login", authForm);
-      if (res.data.success) {
-        localStorage.setItem("token", res.data.token); // Store token
-        localStorage.setItem("adminVerified", "true");
+      const res = await axios.post("https://api.zonemeet.chat/api/admin/verify-login", {
+        email: ADMIN_EMAIL,
+        password: authForm.password,
+        otp: authForm.otp,
+        secretRouteKey: authForm.secretRouteKey,
+      });
+      if (res.data.success && res.data.token) {
+        setAdminToken(res.data.token);
         setIsVerified(true);
         setLoading(true);
-        fetchData();
       }
     } catch (err) {
       setAuthError(err.response?.data?.message || "Verification failed");
@@ -106,75 +124,48 @@ export default function AdminDashboard() {
   };
 
   const fetchData = async () => {
+    const config = getAdminHeaders();
+    if (!config) {
+      lockAdminPanel();
+      return;
+    }
     try {
-      let token = localStorage.getItem("token");
-      
-      // If token is missing, attempt to sync from session
-      if (!token || token === "undefined") {
-        if (sessionStatus === "authenticated" && session?.user?.email === "ds9376314@gmail.com") {
-          const syncRes = await axios.post("https://api.zonemeet.chat/api/auth/session-login", {
-            email: session.user.email,
-            name: session.user.name
-          });
-          token = syncRes.data.token;
-          localStorage.setItem("token", token);
-        } else {
-          // No session and no token - can't fetch
-          return;
-        }
-      }
+      const [statsRes, reportsRes, liveRes, usersRes, bannedRes, analyticsRes, msgsRes, newsRes] = await Promise.all([
+        axios.get("https://api.zonemeet.chat/api/admin/stats", config),
+        axios.get("https://api.zonemeet.chat/api/admin/reports", config),
+        axios.get("https://api.zonemeet.chat/api/admin/live-users", config),
+        axios.get("https://api.zonemeet.chat/api/admin/all-users", config),
+        axios.get("https://api.zonemeet.chat/api/admin/banned-users", config),
+        axios.get("https://api.zonemeet.chat/api/admin/analytics", config),
+        axios.get("https://api.zonemeet.chat/api/admin/messages", config),
+        axios.get("https://api.zonemeet.chat/api/news")
+      ]);
 
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      
-      try {
-        const [statsRes, reportsRes, liveRes, usersRes, bannedRes, analyticsRes, msgsRes, newsRes] = await Promise.all([
-          axios.get("https://api.zonemeet.chat/api/admin/stats", config),
-          axios.get("https://api.zonemeet.chat/api/admin/reports", config),
-          axios.get("https://api.zonemeet.chat/api/admin/live-users", config),
-          axios.get("https://api.zonemeet.chat/api/admin/all-users", config),
-          axios.get("https://api.zonemeet.chat/api/admin/banned-users", config),
-          axios.get("https://api.zonemeet.chat/api/admin/analytics", config),
-          axios.get("https://api.zonemeet.chat/api/admin/messages", config),
-          axios.get("https://api.zonemeet.chat/api/news")
-        ]);
-
-        setStats(statsRes.data);
-        setReports(reportsRes.data.reverse());
-        setLiveUsers(liveRes.data);
-        setAllUsers(usersRes.data);
-        setBannedUsers(bannedRes.data);
-        setAnalytics(analyticsRes.data);
-        setContactMessages(msgsRes.data.reverse());
-        setNews(newsRes.data);
-        setLoading(false);
-      } catch (innerErr) {
-        if (innerErr.response?.status === 401) {
-          console.warn("Token expired, clearing and retrying...");
-          localStorage.removeItem("token");
-          // Re-sync immediately once if we have a session
-          if (sessionStatus === "authenticated" && session?.user?.email === "ds9376314@gmail.com") {
-             const syncRes = await axios.post("https://api.zonemeet.chat/api/auth/session-login", {
-               email: session.user.email,
-               name: session.user.name
-             });
-             localStorage.setItem("token", syncRes.data.token);
-          }
-        } else {
-          throw innerErr;
-        }
-      }
+      setStats(statsRes.data);
+      setReports(reportsRes.data.reverse());
+      setLiveUsers(liveRes.data);
+      setAllUsers(usersRes.data);
+      setBannedUsers(bannedRes.data);
+      setAnalytics(analyticsRes.data);
+      setContactMessages(msgsRes.data.reverse());
+      setNews(newsRes.data);
+      setLoading(false);
     } catch (err) {
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        lockAdminPanel();
+        setAuthError("Session expired. Enter secret key, password, and OTP again.");
+      }
       console.error("Admin Fetch Error:", err);
+      setLoading(false);
     }
   };
 
   const handleAction = async (endpoint, payload, msg) => {
     const result = await Swal.fire({ text: `Are you sure you want to ${msg}?`, icon: "question", showCancelButton: true, confirmButtonColor: "#6366f1", cancelButtonColor: "#ef4444", background: "#0f172a", color: "#fff" }); if (!result.isConfirmed) return;
     try {
-      const token = localStorage.getItem("token");
-      await axios.post(`https://api.zonemeet.chat/api/admin/${endpoint}`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const config = getAdminHeaders();
+      if (!config) { lockAdminPanel(); return; }
+      await axios.post(`https://api.zonemeet.chat/api/admin/${endpoint}`, payload, config);
       Swal.fire({ text: `Success: ${msg}`, icon: "info", confirmButtonColor: "#6366f1", background: "#0f172a", color: "#fff" });
       setEditingUser(null);
       fetchData();
@@ -188,8 +179,9 @@ export default function AdminDashboard() {
     const result = await Swal.fire({ text: "Are you sure you want to delete this report?", icon: "warning", showCancelButton: true, confirmButtonColor: "#6366f1", cancelButtonColor: "#ef4444", background: "#0f172a", color: "#fff" });
     if (!result.isConfirmed) return;
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`https://api.zonemeet.chat/api/admin/reports/${reportId}`, { headers: { Authorization: `Bearer ${token}` } });
+      const config = getAdminHeaders();
+      if (!config) { lockAdminPanel(); return; }
+      await axios.delete(`https://api.zonemeet.chat/api/admin/reports/${reportId}`, config);
       Swal.fire({ text: "Report deleted successfully", icon: "success", background: "#0f172a", color: "#fff", confirmButtonColor: "#6366f1" });
       fetchData();
     } catch (err) {
@@ -202,8 +194,9 @@ export default function AdminDashboard() {
     const result = await Swal.fire({ text: `Are you sure you want to PERMANENTLY delete user ${userEmail}? This cannot be undone!`, icon: "warning", showCancelButton: true, confirmButtonColor: "#ef4444", cancelButtonColor: "#6366f1", background: "#0f172a", color: "#fff" });
     if (!result.isConfirmed) return;
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`https://api.zonemeet.chat/api/admin/users/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
+      const config = getAdminHeaders();
+      if (!config) { lockAdminPanel(); return; }
+      await axios.delete(`https://api.zonemeet.chat/api/admin/users/${userId}`, config);
       Swal.fire({ text: `User ${userEmail} deleted permanently`, icon: "success", background: "#0f172a", color: "#fff", confirmButtonColor: "#6366f1" });
       fetchData();
     } catch (err) {
@@ -309,8 +302,9 @@ export default function AdminDashboard() {
       return;
     }
     try {
-      const token = localStorage.getItem("token");
-      await axios.post("https://api.zonemeet.chat/api/admin/news", { title: newNewsTitle, content: newNewsContent }, { headers: { Authorization: `Bearer ${token}` } });
+      const config = getAdminHeaders();
+      if (!config) { lockAdminPanel(); return; }
+      await axios.post("https://api.zonemeet.chat/api/admin/news", { title: newNewsTitle, content: newNewsContent }, config);
       setNewNewsTitle("");
       setNewNewsContent("");
       fetchData();
@@ -322,8 +316,9 @@ export default function AdminDashboard() {
 
   const handleDeleteNews = async (id) => {
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`https://api.zonemeet.chat/api/admin/news/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      const config = getAdminHeaders();
+      if (!config) { lockAdminPanel(); return; }
+      await axios.delete(`https://api.zonemeet.chat/api/admin/news/${id}`, config);
       fetchData();
     } catch (e) {
       console.error(e);
@@ -394,6 +389,24 @@ export default function AdminDashboard() {
         </nav>
 
         <div className="sidebar-footer">
+           <button
+             type="button"
+             onClick={lockAdminPanel}
+             style={{
+               width: "100%",
+               marginBottom: "12px",
+               padding: "10px",
+               borderRadius: "10px",
+               border: "1px solid rgba(239,68,68,0.35)",
+               background: "rgba(239,68,68,0.12)",
+               color: "#f87171",
+               fontWeight: 700,
+               cursor: "pointer",
+               fontSize: "0.8rem",
+             }}
+           >
+             🔒 Lock Admin
+           </button>
            <div className="sys-status">
               <div className="dot online"></div>
               <span>System Operational</span>
@@ -888,10 +901,9 @@ export default function AdminDashboard() {
                             <button 
                                onClick={() => {
                                   window.open(`https://mail.google.com/mail/u/0/?authuser=zonemeet84@gmail.com&view=cm&fs=1&to=${m.email}&su=RE: ${encodeURIComponent(m.subject)}&body=Hi ${encodeURIComponent(m.name)},%0A%0AThank you for contacting ZoneMeet Support.%0A%0A`, "_blank");
-                                 const token = localStorage.getItem("token");
-                                 axios.post("https://api.zonemeet.chat/api/admin/messages/delete", { id: m.id }, {
-                                   headers: { Authorization: `Bearer ${token}` }
-                                 }).then(() => {
+                                 const config = getAdminHeaders();
+                                 if (!config) { lockAdminPanel(); return; }
+                                 axios.post("https://api.zonemeet.chat/api/admin/messages/delete", { id: m.id }, config).then(() => {
                                    setContactMessages(contactMessages.filter(msg => msg.id !== m.id));
                                  }).catch(err => console.error("Error deleting message:", err));
                                }}

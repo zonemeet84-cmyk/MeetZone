@@ -3864,6 +3864,9 @@ function endQuiz(roomId) {
 
       try {
         const decoded = jwt.verify(token, JWT_SECRET);
+        if (decoded.purpose !== "admin") {
+          return res.status(403).json({ message: "Admin login required (secret key, password, and OTP)" });
+        }
         const user = users.find(u => u.id === decoded.id);
         if (!user || user.email !== "ds9376314@gmail.com") {
           return res.status(403).json({ message: "Unauthorized access" });
@@ -3954,7 +3957,7 @@ function endQuiz(roomId) {
       adminIpAllowlist.add(clientIp);
 
       // 5. Generate secure JWT and set httpOnly cookie
-      const token = jwt.sign({ id: user.id, ip: clientIp }, JWT_SECRET, { expiresIn: "1h" });
+      const token = jwt.sign({ id: user.id, ip: clientIp, purpose: "admin" }, JWT_SECRET, { expiresIn: "1h" });
 
       res.cookie("adminSession", token, {
         httpOnly: true,
