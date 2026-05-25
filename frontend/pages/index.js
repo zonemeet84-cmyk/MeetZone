@@ -294,8 +294,8 @@ export default function Dashboard() {
         },
         vip: {
           keywords: ['vip', 'premium', 'elite', 'plan', 'membership', 'filter', 'gender', 'country', 'age', 'pricing', 'starter', 'prime', 'silver', 'price', 'kharch', 'subscription'],
-          en: "Our Premium Plans are designed for the best experience: \n\n✨ **Starter (₹1 / 7 days):** Gender & Country filters, priority matching, unlimited friends, 50 coins.\n🚀 **Prime (₹599 / 30 days):** Same filters + auto-translate, stronger priority, 150 coins.\n💎 **Silver (₹1599 / 90 days):** All Prime perks + badge, 500 coins.\n👑 **VIP Elite (₹999 / 30 days):** Gender, Country, State & Age filters + avatars/voice/privacy tools, 400 coins. \n\nCheck the 'Pricing' section for full details!",
-          hi: "Humare VIP plans: \n\n✨ **Starter (₹1 / 7 din):** Gender & Country filter, priority matching, unlimited friends, 50 coins.\n🚀 **Prime (₹599 / 30 din):** Wahi filters + auto-translate, zyada priority, 150 coins.\n💎 **Silver (₹1599 / 90 din):** Prime ke saare fayde + badge, 500 coins.\n👑 **VIP Elite (₹999 / 30 din):** Gender, Country, State & Age + elite tools, 400 coins. \n\nPoori detail 'Pricing' section mein hai!"
+          en: "Our Premium Plans are designed for the best experience: \n\n✨ **Starter (₹149 / 7 days):** Gender & Country filters, priority matching, unlimited friends, 50 coins.\n🚀 **Prime (₹599 / 30 days):** Same filters + auto-translate, stronger priority, 150 coins.\n💎 **Silver (₹1599 / 90 days):** All Prime perks + badge, 500 coins.\n👑 **VIP Elite (₹999 / 30 days):** Gender, Country, State & Age filters + avatars/voice/privacy tools, 400 coins. \n\nCheck the 'Pricing' section for full details!",
+          hi: "Humare VIP plans: \n\n✨ **Starter (₹149 / 7 din):** Gender & Country filter, priority matching, unlimited friends, 50 coins.\n🚀 **Prime (₹599 / 30 din):** Wahi filters + auto-translate, zyada priority, 150 coins.\n💎 **Silver (₹1599 / 90 din):** Prime ke saare fayde + badge, 500 coins.\n👑 **VIP Elite (₹999 / 30 din):** Gender, Country, State & Age + elite tools, 400 coins. \n\nPoori detail 'Pricing' section mein hai!"
         },
         mystery: {
           keywords: ['box', 'mystery', 'gift', 'dabba', 'reward', 'win', 'bronze', 'silver', 'gold', 'luck', 'chest'],
@@ -993,7 +993,7 @@ export default function Dashboard() {
     }
     try {
       setPaymentStep("processing");
-      const amountInPaise = selectedPlan.name === "Starter" ? 100 : selectedPlan.name === "Prime" ? 59900 : selectedPlan.name === "Silver" ? 159900 : selectedPlan.name === "VIP Elite" ? 99900 : Math.round((parseFloat(selectedPlan.price?.replace(/[₹$]/g,'')) || 79) * 100);
+      const amountInPaise = selectedPlan.name === "Starter" ? 14900 : selectedPlan.name === "Prime" ? 59900 : selectedPlan.name === "Silver" ? 159900 : selectedPlan.name === "VIP Elite" ? 99900 : Math.round((parseFloat(selectedPlan.price?.replace(/[₹$]/g,'')) || 79) * 100);
       let endpoint = "https://api.zonemeet.chat/api/payment/cashfree/create-order";
       if (isAutoRenew && !selectedPlan.name.includes("Coins")) {
         endpoint = "https://api.zonemeet.chat/api/payment/cashfree/create-subscription";
@@ -1898,7 +1898,7 @@ export default function Dashboard() {
               <div className="duration">7 Days of Starter Access</div>
             </div>
             <div className="price-tag">
-              <span className="amount">{currency === "INR" ? "₹1" : "$1.75"}</span>
+              <span className="amount">{currency === "INR" ? "₹149" : "$1.75"}</span>
             </div>
             <ul className="premium-features">
               <li><span>✓</span> Gender & Country Filters</li>
@@ -1907,7 +1907,7 @@ export default function Dashboard() {
               <li><span>★</span> 50 ZoneMeet Coins (Free)</li>
             </ul>
             <button className="premium-btn" onClick={() => {
-              setSelectedPlan({ name: "Starter", price: currency === "INR" ? "₹1" : "$1.75" });
+              setSelectedPlan({ name: "Starter", price: currency === "INR" ? "₹149" : "$1.75" });
               setShowPaymentModal(true);
               setIsGifting(false);
               setGiftRecipientId("");
@@ -2269,7 +2269,7 @@ export default function Dashboard() {
 
         <div className="pricing-grid coins-grid">
           {[
-            { name: "100 Coins Pack", base: 100, bonus: 0,   price: 1,  usdPrice: 0.99, icon: "🪙", color: "#94a3b8", tag: "Starter"      },
+            { name: "100 Coins Pack", base: 100, bonus: 0,   price: 79,  usdPrice: 0.99, icon: "🪙", color: "#94a3b8", tag: "Starter"      },
             { name: "200 Coins Pack", base: 150, bonus: 50,  price: 149, usdPrice: 1.79, icon: "💰", color: "#fbbf24", tag: "⭐ Popular"   },
             { name: "500 Coins Pack", base: 350, bonus: 150, price: 299, usdPrice: 3.59, icon: "💎", color: "#6366f1", tag: "🔥 Best Deal" },
             { name: "1300 Coins Pack",base: 1000,bonus: 300, price: 699, usdPrice: 8.49, icon: "👑", color: "#ec4899", tag: "💎 Ultimate"  }
