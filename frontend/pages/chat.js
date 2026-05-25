@@ -8,7 +8,8 @@ import * as nsfwjs from "nsfwjs";
 import * as tf from "@tensorflow/tfjs";
 import { Country, State } from "country-state-city";
 import Script from "next/script";
-// MediaPipe will be loaded via next/script
+import { FaceMaskArEngine, is3dArMask } from "../lib/faceMaskAr";
+// MediaPipe + Three.js 3D AR (free stack, no DeepAR)
 
 let socket;
 
@@ -144,6 +145,8 @@ export default function Home() {
   const remoteVideo = useRef(null);
   const peerConnection = useRef(null);
   const canvasRef = useRef(null);
+  const arEngineRef = useRef(null);
+  const originalVideoTrackRef = useRef(null);
   const faceMeshRef = useRef(null);
   const onResultsRef = useRef(null);
   const nsfwModel = useRef(null);
@@ -457,15 +460,86 @@ export default function Home() {
     activeFilterRef.current = activeMediaPipeFilter;
   }, [activeMediaPipeFilter]);
 
+  const replaceOutboundVideoTrack = useCallback(async (track) => {
+    if (!peerConnection.current || !track) return;
+    try {
+      const senders = peerConnection.current.getSenders();
+      const videoSender = senders.find((s) => s.track && s.track.kind === "video");
+      if (videoSender) await videoSender.replaceTrack(track);
+    } catch (e) {
+      console.warn("[AR] replaceTrack failed:", e);
+    }
+  }, []);
+
+  // Init Three.js + Kalidokit AR engine (VIP Elite / Secret Identity)
+  useEffect(() => {
+    if (!hasIdentityToolkit(getChatUser(user))) return;
+    let cancelled = false;
+    let tries = 0;
+    const boot = () => {
+      if (cancelled || arEngineRef.current) return;
+      if (!localVideo.current || localVideo.current.readyState < 2) {
+        if (tries++ < 40) setTimeout(boot, 250);
+        return;
+      }
+      const engine = new FaceMaskArEngine();
+      engine.init(localVideo.current, canvasRef.current);
+      arEngineRef.current = engine;
+    };
+    boot();
+    return () => {
+      cancelled = true;
+      if (arEngineRef.current) {
+        arEngineRef.current.destroy();
+        arEngineRef.current = null;
+      }
+    };
+  }, [user]);
+
+  // Apply 3D mask + WebRTC canvas stream when mask changes
+  useEffect(() => {
+    const filter = activeMediaPipeFilter;
+    const toolkit = hasIdentityToolkit(getChatUser(user));
+    const engine = arEngineRef.current;
+
+    if (!toolkit || !engine?.ready) {
+      setUse3dAr(false);
+      return;
+    }
+
+    const is3d = is3dArMask(filter) && filter !== "None";
+    setUse3dAr(is3d);
+
+    if (is3d) {
+      engine.setMask(filter);
+      const arTrack = engine.getVideoTrack();
+      if (arTrack) replaceOutboundVideoTrack(arTrack);
+    } else {
+      engine.setMask("None");
+      if (originalVideoTrackRef.current) {
+        replaceOutboundVideoTrack(originalVideoTrackRef.current);
+      }
+    }
+  }, [activeMediaPipeFilter, user, replaceOutboundVideoTrack]);
+
   useEffect(() => {
 
     onResultsRef.current = (results) => {
-      const isDetected = !!(results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0 && activeFilterRef.current !== "None");
+      const currentFilter = activeFilterRef.current;
+      const isDetected = !!(results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0 && currentFilter !== "None");
       isFaceDetectedRef.current = isDetected;
 
       if (isDetected !== isTrackingFaceRef.current) {
         isTrackingFaceRef.current = isDetected;
         setIsTrackingFace(isDetected);
+      }
+
+      // 3D path: MediaPipe → Kalidokit → Three.js (full frame on canvas + captureStream for partner)
+      if (is3dArMask(currentFilter) && arEngineRef.current?.ready) {
+        if (results.multiFaceLandmarks?.[0]) {
+          arEngineRef.current.updateLandmarks(results.multiFaceLandmarks[0]);
+        }
+        return;
       }
 
       const cvs = canvasRef.current;
@@ -477,7 +551,6 @@ export default function Home() {
 
       ctx.clearRect(0, 0, w, h);
 
-      const currentFilter = activeFilterRef.current;
       if (currentFilter === "None") return;
 
       if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
@@ -950,6 +1023,7 @@ export default function Home() {
   const [activeAvatar, setActiveAvatar] = useState("None");
   const [isFaceBlurred, setIsFaceBlurred] = useState(false);
   const [isTrackingFace, setIsTrackingFace] = useState(false);
+  const [use3dAr, setUse3dAr] = useState(false);
   const isTrackingFaceRef = useRef(false);
   const [activeIdentityMenu, setActiveIdentityMenu] = useState(null); // 'filters', 'avatars', 'voice', 'privacy'
   const [partnerIsBlurred, setPartnerIsBlurred] = useState(false);
@@ -1299,6 +1373,8 @@ export default function Home() {
         });
         if (localVideo.current) {
           localVideo.current.srcObject = streamInstance;
+          const vt = streamInstance.getVideoTracks()[0];
+          if (vt) originalVideoTrackRef.current = vt;
         }
       } catch (err) {
         console.warn("Error accessing media devices with ideal constraints, trying standard fallback.", err);
@@ -1309,6 +1385,8 @@ export default function Home() {
           });
           if (localVideo.current) {
             localVideo.current.srcObject = streamInstance;
+            const vt = streamInstance.getVideoTracks()[0];
+            if (vt) originalVideoTrackRef.current = vt;
           }
         } catch (fbErr) {
           console.error("Camera access failed completely.", fbErr);
@@ -1989,6 +2067,10 @@ export default function Home() {
       if (peerConnection.current) {
         const senders = peerConnection.current.getSenders();
         const videoSender = senders.find(s => s.track && s.track.kind === "video");
+        if (use3dAr && arEngineRef.current) {
+          const arTrack = arEngineRef.current.getVideoTrack();
+          if (arTrack && videoSender) videoSender.replaceTrack(arTrack).catch(() => {});
+        }
         if (videoSender) {
           try {
             const parameters = videoSender.getParameters();
@@ -3267,7 +3349,7 @@ export default function Home() {
                   className="mirrored"
                   style={{
                     filter: getCssFilterString(),
-                    display: activeAvatar !== "None" ? 'none' : 'block'
+                    display: activeAvatar !== "None" || use3dAr ? "none" : "block",
                   }}
                 />
                 <canvas
@@ -3284,7 +3366,7 @@ export default function Home() {
                     objectFit: "cover",
                     pointerEvents: "none",
                     zIndex: 999,
-                    display: activeAvatar !== "None" ? 'none' : 'block'
+                    display: activeAvatar !== "None" ? "none" : use3dAr || activeMediaPipeFilter !== "None" ? "block" : "none",
                   }}
                 />
 
@@ -3871,7 +3953,7 @@ export default function Home() {
                         <span className="filter-icon">{m.icon}</span>
                         <div className="filter-info">
                           <span className="filter-name">{m.name}</span>
-                          <span className="filter-cost" style={{ fontSize: '0.65rem', color: '#10b981' }}>Free · MediaPipe</span>
+                          <span className="filter-cost" style={{ fontSize: '0.65rem', color: '#10b981' }}>Free · 3D AR</span>
                         </div>
                       </div>
                     ))}
