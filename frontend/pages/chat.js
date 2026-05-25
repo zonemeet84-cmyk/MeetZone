@@ -4062,6 +4062,15 @@ export default function Home() {
                   </>
                 );
 
+                const openGift = () => {
+                  if (window.innerWidth <= 768) {
+                    setShowMobileGiftPopup(true);
+                    setMobileGiftActiveTab('avatars');
+                  } else {
+                    setShowGiftStickers((p) => !p);
+                  }
+                  setActiveIdentityMenu(null);
+                };
                 const openTool = (menu) => {
                   setShowGiftStickers(false);
                   setActiveIdentityMenu((prev) => (prev === menu ? null : menu));
@@ -4097,10 +4106,7 @@ export default function Home() {
                     <button
                       type="button"
                       className={`tool-btn ${showGiftStickers ? "active" : ""}`}
-                      onClick={() => {
-                        setShowGiftStickers((p) => !p);
-                        setActiveIdentityMenu(null);
-                      }}
+                      onClick={openGift}
                       style={{ background: "rgba(236, 72, 153, 0.1)", color: "#ec4899", borderColor: "rgba(236, 72, 153, 0.3)" }}
                     >
                       🎁 Gifts
