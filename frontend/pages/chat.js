@@ -1941,13 +1941,10 @@ export default function Home() {
       });
 
       socket.on("receive-subtitle", ({ text }) => {
-        const u = userRef.current;
-        if (u?.premium || u?.email === "ds9376314@gmail.com" || u?.planName === "VIP Elite") {
-          setCurrentSubtitle(text);
-          setTimeout(() => {
-            setCurrentSubtitle(prev => prev === text ? "" : prev);
-          }, 5000);
-        }
+        setCurrentSubtitle(text);
+        setTimeout(() => {
+          setCurrentSubtitle(prev => prev === text ? "" : prev);
+        }, 5000);
       });
 
       socket.on("partner-request-subtitles", ({ enabled }) => {
@@ -2569,6 +2566,7 @@ export default function Home() {
     }
 
     if (voice === "Normal") {
+      processedAudioTrackRef.current = null;
       // Revert to original raw mic track for the remote peer
       if (peerConnection.current && localVideo.current?.srcObject) {
         const senders = peerConnection.current.getSenders();
@@ -2784,7 +2782,12 @@ export default function Home() {
       const senders = peerConnection.current.getSenders();
       const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
       if (audioSender) {
-        await audioSender.replaceTrack(dest.stream.getAudioTracks()[0]);
+        try {
+          await audioSender.replaceTrack(dest.stream.getAudioTracks()[0]);
+          console.log("Successfully replaced track with voice filter.");
+        } catch (err) {
+          console.error("Failed to replace audio track:", err);
+        }
       }
     }
   };
