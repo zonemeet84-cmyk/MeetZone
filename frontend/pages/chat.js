@@ -327,6 +327,7 @@ export default function Home() {
   const [activeMediaPipeFilter, setActiveMediaPipeFilter] = useState("None");
   const [isHDEnabled, setIsHDEnabled] = useState(false);
   const [selectedTempFilter, setSelectedTempFilter] = useState("None");
+  const [selectedTempMask, setSelectedTempMask] = useState("None");
   const [selectedTempAvatar, setSelectedTempAvatar] = useState("None");
   const [selectedTempVoice, setSelectedTempVoice] = useState("Normal");
   const [unlockedFilters, setUnlockedFilters] = useState(["None"]); // Basic filters unlocked by default
@@ -334,6 +335,23 @@ export default function Home() {
   const [receivedGift, setReceivedGift] = useState(null);
   const [incomingCall, setIncomingCall] = useState(null);
 
+
+  /** Free face masks — MediaPipe Face Mesh + canvas (VIP Elite & Secret Identity only, no DeepAR) */
+  const ELITE_FACE_MASKS = [
+    { id: "None", name: "No Mask", icon: "🚫" },
+    { id: "Dog", name: "Dog Ears", icon: "🐶" },
+    { id: "Cat", name: "Cat Face", icon: "🐱" },
+    { id: "Glasses", name: "Cool Glasses", icon: "🕶️" },
+    { id: "Devil", name: "Devil Horns", icon: "😈" },
+    { id: "Crown", name: "Gold Crown", icon: "👑" },
+    { id: "Angel", name: "Angel Halo", icon: "😇" },
+    { id: "Ghost", name: "Ghost", icon: "👻" },
+    { id: "Neon", name: "Neon Glow", icon: "⚡" },
+    { id: "Anime", name: "Anime Eyes", icon: "🎎" },
+    { id: "Cloth", name: "Cloth Mask", icon: "😷" },
+    { id: "Smooth", name: "Skin Smooth", icon: "✨" },
+    { id: "Glow", name: "Soft Glow", icon: "🌟" },
+  ];
 
   const FILTERS_DATA = [
     { id: "None", name: "No Filter", icon: "🚫", cost: 0, category: "None" },
@@ -496,6 +514,7 @@ export default function Home() {
           case "Whitening": applyWhiteningEffect(ctx, w, h); break;
           case "Smooth": applySmoothingEffect(ctx, w, h); break;
           case "Anime": drawAnimeFilter(ctx, landmarks, w, h, centerX, centerY, faceWidth, angle); break;
+          case "Cloth": drawClothMask(ctx, landmarks, w, h, centerX, centerY, faceWidth); break;
           case "Beauty":
             ctx.filter = "brightness(1.1) contrast(1.1) blur(1px) saturate(1.2)";
             ctx.drawImage(localVideo.current, 0, 0, w, h);
@@ -666,6 +685,21 @@ export default function Home() {
     }
 
     particles(ctx, centerX, centerY);
+  };
+
+  const drawClothMask = (ctx, landmarks, w, h, centerX, centerY, faceWidth) => {
+    const nose = landmarks[1];
+    const mouthY = (landmarks[13].y + landmarks[14].y) / 2 * h;
+    ctx.save();
+    ctx.globalAlpha = 0.82;
+    ctx.fillStyle = "#334155";
+    ctx.strokeStyle = "#94a3b8";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(centerX, (nose.y * h + mouthY) / 2 + faceWidth * 0.15, faceWidth * 0.95, faceWidth * 0.7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
   };
 
   const drawGlassesFilter = (ctx, landmarks, w, h) => {
@@ -1011,8 +1045,9 @@ export default function Home() {
   };
 
   const applyFilterAndMask = (filterId) => {
-    // Premium Gating: If not premium, block and open pricing modal
-    if (filterId !== "None") {
+    const toolkitUser = hasIdentityToolkit(getChatUser(user));
+    // Premium gating only for non–VIP Elite / non–Secret Identity users
+    if (filterId !== "None" && !toolkitUser) {
       const selectedFilterObj = FILTERS_DATA.find(f => f.id === filterId);
       const isPremiumFilter = selectedFilterObj && (
         selectedFilterObj.category === "Premium" ||
@@ -1049,6 +1084,8 @@ export default function Home() {
       setActiveMask("Glass");
     } else if (filterId === "Neon") {
       setActiveMask("Neon");
+    } else if (filterId === "Cloth") {
+      setActiveMask("Cloth");
     } else {
       setActiveMask("None");
     }
@@ -1056,7 +1093,9 @@ export default function Home() {
 
   // Sync temporary selection states with active values when menu opens
   useEffect(() => {
-    if (activeIdentityMenu === 'filters') {
+    if (activeIdentityMenu === 'masks') {
+      setSelectedTempMask(activeMediaPipeFilter);
+    } else if (activeIdentityMenu === 'filters') {
       setSelectedTempFilter(activeMediaPipeFilter);
     } else if (activeIdentityMenu === 'avatars') {
       setSelectedTempAvatar(activeAvatar);
@@ -1067,8 +1106,8 @@ export default function Home() {
 
   // Handle two-stage Apply click
   const handleApplyIdentityChanges = () => {
-    if (activeIdentityMenu === 'filters') {
-      applyFilterAndMask(selectedTempFilter);
+    if (activeIdentityMenu === 'filters' || activeIdentityMenu === 'masks') {
+      applyFilterAndMask(activeIdentityMenu === 'masks' ? selectedTempMask : selectedTempFilter);
     } else if (activeIdentityMenu === 'avatars') {
       setActiveAvatar(selectedTempAvatar);
     } else if (activeIdentityMenu === 'voice') {
@@ -3817,11 +3856,25 @@ export default function Home() {
                 <div className="identity-popup-bubble">
                   <div className="popup-arrow" />
                   <div className="popup-header">
-                    <span>{activeIdentityMenu.toUpperCase()}</span>
+                    <span>{activeIdentityMenu === "masks" ? "FACE MASKS" : activeIdentityMenu.toUpperCase()}</span>
                     <button onClick={() => setActiveIdentityMenu(null)}>×</button>
                   </div>
                   <div className="popup-options-row">
                     {/* Filters category section removed */}
+
+                    {activeIdentityMenu === 'masks' && ELITE_FACE_MASKS.map((m) => (
+                      <div
+                        key={m.id}
+                        className={`mini-option ${selectedTempMask === m.id ? 'selected' : ''}`}
+                        onClick={() => setSelectedTempMask(m.id)}
+                      >
+                        <span className="filter-icon">{m.icon}</span>
+                        <div className="filter-info">
+                          <span className="filter-name">{m.name}</span>
+                          <span className="filter-cost" style={{ fontSize: '0.65rem', color: '#10b981' }}>Free · MediaPipe</span>
+                        </div>
+                      </div>
+                    ))}
 
                     {activeIdentityMenu === 'avatars' && ['None', 'Robot', 'Anime', 'Girl', 'Ninja', 'Hero', 'Cat', 'Cyber'].map(a => (
                       <div
@@ -3860,6 +3913,9 @@ export default function Home() {
                         <div className="mini-option" onClick={() => setActiveIdentityMenu('privacy')}>
                           <span className="filter-icon">🌫</span> <span className="filter-name">Privacy</span>
                         </div>
+                        <div className="mini-option" onClick={() => setActiveIdentityMenu('masks')}>
+                          <span className="filter-icon">🎭</span> <span className="filter-name">Face Masks</span>
+                        </div>
                       </div>
                     )}
 
@@ -3892,7 +3948,14 @@ export default function Home() {
                 <div className="identity-popup-bubble gift-bubble">
                   <div className="popup-arrow" />
                   {hasIdentityToolkit(user) && (
-                    <div className="elite-gift-tools mobile-only-elite-tools">
+                    <div className="elite-gift-tools">
+                      <button
+                        type="button"
+                        className={`tool-btn ${activeIdentityMenu === "masks" ? "active" : ""}`}
+                        onClick={() => setActiveIdentityMenu(activeIdentityMenu === "masks" ? null : "masks")}
+                      >
+                        🎭 Masks
+                      </button>
                       <button
                         type="button"
                         className={`tool-btn ${activeIdentityMenu === "avatars" ? "active" : ""}`}
@@ -3917,7 +3980,7 @@ export default function Home() {
                     </div>
                   )}
                   <div className="popup-header">
-                    <span>Send a Gift</span>
+                    <span>{hasIdentityToolkit(user) ? "Gifts & Secret Identity" : "Send a Gift"}</span>
                     <button type="button" onClick={() => { setShowGiftPanel(false); setActiveIdentityMenu(null); }}>×</button>
                   </div>
                   <div className="gift-grid">
@@ -3941,6 +4004,9 @@ export default function Home() {
               {/* Bottom Mini Bar */}
               {showPremiumMiniBar && hasIdentityToolkit(user) && (
                 <div className="bottom-mini-bar">
+                  <button className={`tool-btn ${activeIdentityMenu === 'masks' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'masks' ? null : 'masks')}>
+                    🎭 Masks
+                  </button>
                   <button className={`tool-btn ${activeIdentityMenu === 'avatars' ? 'active' : ''}`} onClick={() => setActiveIdentityMenu(activeIdentityMenu === 'avatars' ? null : 'avatars')}>
                     👤 Avatars
                   </button>
@@ -3988,15 +4054,15 @@ export default function Home() {
                       if (!next) {
                         setActiveIdentityMenu(null);
                         setShowPremiumMiniBar(false);
+                      } else if (toolkit) {
+                        setActiveIdentityMenu(null);
                       }
                       return next;
                     });
                   } else if (toolkit) {
-                    setShowPremiumMiniBar((prev) => {
-                      if (prev) setActiveIdentityMenu(null);
-                      return !prev;
-                    });
-                    setShowGiftPanel(false);
+                    setShowGiftPanel(true);
+                    setShowPremiumMiniBar(true);
+                    setActiveIdentityMenu((prev) => (prev ? null : "masks"));
                   } else {
                     setShowGiftPanel((prev) => !prev);
                     setShowPremiumMiniBar(false);
@@ -6502,10 +6568,6 @@ export default function Home() {
         .bottom-actions .mobile-filter-btn {
           display: none !important;
         }
-        .mobile-only-elite-tools {
-          display: none !important;
-        }
-
         .filter-settings-trigger-btn {
           display: inline-flex;
           align-items: center;
@@ -7234,7 +7296,7 @@ export default function Home() {
           .header-actions .filters-row-v2 {
             display: none !important;
           }
-          .mobile-only-elite-tools {
+          .gift-bubble .elite-gift-tools {
             display: flex !important;
           }
           .identity-popup-bubble.gift-bubble {
