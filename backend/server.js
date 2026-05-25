@@ -271,15 +271,14 @@ const SUBSCRIPTION_PLANS = {
   "Starter": { days: 7, bundledCoins: 50, tier: "starter" },
   "Prime": { days: 30, bundledCoins: 150, tier: "prime" },
   "Silver": { days: 90, bundledCoins: 500, tier: "silver" },
-  "Prime Silver": { days: 90, bundledCoins: 500, tier: "silver" },
   "VIP Elite": { days: 30, bundledCoins: 400, tier: "elite" },
 };
 
 const COIN_PACKS = {
-  "100 Coins": { base: 100, bonus: 0 },
-  "200 Coins": { base: 200, bonus: 50 },
-  "500 Coins": { base: 500, bonus: 150 },
-  "1300 Coins": { base: 1300, bonus: 300 },
+  "100 Coins Pack": { base: 100, bonus: 0 },
+  "200 Coins Pack": { base: 150, bonus: 50 }, // 149 INR
+  "500 Coins Pack": { base: 350, bonus: 150 }, // 299 INR
+  "1300 Coins Pack": { base: 1000, bonus: 300 }, // 699 INR
 };
 
 function addMsFromDays(days) {
@@ -288,6 +287,10 @@ function addMsFromDays(days) {
 
 function expireSubscriptionIfNeeded(user) {
   if (!user) return false;
+  
+  let expired = false;
+
+  // Legacy Check
   if (user.premium && !user.isPermanentPremium && user.planExpiry && Date.now() > user.planExpiry) {
     user.premium = false;
     user.planName = null;
@@ -295,9 +298,21 @@ function expireSubscriptionIfNeeded(user) {
     user.subscriptionTier = null;
     user.unlockedFilters = ["None", "Smooth"];
     delete user.twoFactorSecret;
-    return true;
+    expired = true;
   }
-  return false;
+
+  // New Active Subscription Check
+  if (user.activeSubscription && user.subscriptionExpiry && Date.now() > user.subscriptionExpiry) {
+    user.activeSubscription = false;
+    user.currentPlan = "Free";
+    user.subscriptionExpiry = null;
+    user.userBadge = null;
+    user.premiumFeatures = [];
+    user.unlockedFilters = ["None", "Smooth"];
+    expired = true;
+  }
+
+  return expired;
 }
 
 function logCoinEarn(user, amount, description) {
@@ -315,17 +330,38 @@ function applySubscriptionPurchase(user, planName) {
   const cfg = SUBSCRIPTION_PLANS[planName];
   if (!cfg) return { ok: false, message: "Unknown subscription plan" };
   expireSubscriptionIfNeeded(user);
-  const normalizedName = planName === "Prime Silver" ? "Silver" : planName;
+  
+  // Legacy mappings for backwards compatibility
   user.premium = true;
-  user.planName = normalizedName;
+  user.planName = planName;
   user.subscriptionTier = cfg.tier;
   user.planStartedAt = Date.now();
   user.planExpiry = addMsFromDays(cfg.days);
+
+  // New Subscription Schema Mapping
+  user.activeSubscription = true;
+  user.currentPlan = planName;
+  user.subscriptionStartDate = Date.now();
+  user.subscriptionExpiry = addMsFromDays(cfg.days);
+  user.userBadge = planName; // Used for UI tags e.g., "Starter", "VIP Elite"
+  
+  user.premiumFeatures = [];
+  if (planName === "Starter") {
+     user.premiumFeatures = ["gender_filter", "country_filter", "priority_matching", "unlimited_requests"];
+  } else if (planName === "Prime") {
+     user.premiumFeatures = ["gender_filter", "country_filter", "instant_priority", "unlimited_requests", "auto_translate", "live_subtitles", "ad_free"];
+  } else if (planName === "Silver") {
+     user.premiumFeatures = ["elite_badge", "gender_filter", "country_filter", "priority_matching", "unlimited_requests", "auto_translate", "live_subtitles", "ad_free"];
+  } else if (planName === "VIP Elite") {
+     user.premiumFeatures = ["exact_age_filter", "instant_zero_wait", "all_face_filters", "voice_changer", "privacy_tools", "auto_translate", "live_subtitles", "ad_free"];
+     user.unlockedFilters = ["None", "Smooth", "Retro", "B&W", "Blur", "Neon", "Cyberpunk"];
+  }
+
   if (cfg.bundledCoins > 0) {
     user.coins = (user.coins || 0) + cfg.bundledCoins;
-    logCoinEarn(user, cfg.bundledCoins, `${normalizedName} subscription bonus`);
+    logCoinEarn(user, cfg.bundledCoins, `${planName} subscription bonus`);
   }
-  return { ok: true, type: "subscription", planName: normalizedName, days: cfg.days, bundledCoins: cfg.bundledCoins };
+  return { ok: true, type: "subscription", planName: planName, days: cfg.days, bundledCoins: cfg.bundledCoins };
 }
 
 function applyCoinPackPurchase(user, planName) {
@@ -2185,8 +2221,16 @@ function matchUsers() {
       const matchesState = (user1.filters?.state === "All States" || user2.state === user1.filters?.state || !user1.filters?.state) &&
         (user2.filters?.state === "All States" || user1.state === user2.filters?.state || !user2.filters?.state);
 
-      const matchesAge = (user1.filters?.age === "All Ages" || user2.age === user1.filters?.age || !user1.filters?.age) &&
-        (user2.filters?.age === "All Ages" || user1.age === user2.filters?.age || !user2.filters?.age);
+      const u1Plan = user1.planName || user1.currentPlan || "";
+      const u1VIP = u1Plan === "VIP Elite" || user1.email?.toLowerCase() === "ds9376314@gmail.com";
+      const u1AgePref = u1VIP ? (user1.filters?.age || "All Ages") : "All Ages";
+
+      const u2Plan = user2.planName || user2.currentPlan || "";
+      const u2VIP = u2Plan === "VIP Elite" || user2.email?.toLowerCase() === "ds9376314@gmail.com";
+      const u2AgePref = u2VIP ? (user2.filters?.age || "All Ages") : "All Ages";
+
+      const matchesAge = (u1AgePref === "All Ages" || user2.age === u1AgePref) &&
+        (u2AgePref === "All Ages" || user1.age === u2AgePref);
 
       if (matchesGender && matchesCountry && matchesState && matchesAge) {
         // Remove them from waiting list
@@ -2462,15 +2506,16 @@ function endQuiz(roomId) {
       if (socket.queueTimeout) clearTimeout(socket.queueTimeout);
 
       const isOwner = socket.email?.toLowerCase() === "ds9376314@gmail.com";
-      const plan = socket.planName?.toLowerCase() || "";
-      const isPremium = socket.premium || (plan !== "" && plan !== "free") || isOwner;
+      const plan = socket.planName || socket.currentPlan || "";
+      const isVIPElite = plan === "VIP Elite" || isOwner;
+      const isPriority = isOwner || plan === "Starter" || plan === "Prime" || plan === "Silver" || plan === "Prime Silver" || socket.premium;
 
-      // 5 seconds delay for free users, instant (0s) for subscription users
-      let delay = isPremium ? 0 : 5000;
+      // VIP Elite = 0 delay, priority = 1000ms delay, free = 5000ms delay
+      let delay = isVIPElite ? 0 : (isPriority ? 1000 : 5000);
 
       if (delay === 0) {
         if (!waitingUsers.includes(socket)) {
-          waitingUsers.push(socket);
+          waitingUsers.unshift(socket); // VIPs jump to FRONT of queue
         }
         matchUsers();
       } else {
@@ -2548,14 +2593,18 @@ function endQuiz(roomId) {
         const dbUser = users.find(u => u.email === profile.email);
         let isPremium = dbUser ? dbUser.premium : false;
         let pName = dbUser ? dbUser.planName : null;
+        let uBadge = dbUser ? dbUser.userBadge : null;
+        let actSub = dbUser ? dbUser.activeSubscription : false;
 
         // Hardcoded admin check
         if (profile.email === "ds9376314@gmail.com") {
           isPremium = true;
           pName = "VIP Elite";
+          uBadge = "Admin Elite";
+          actSub = true;
         }
 
-        socket.user = { ...profile, premium: isPremium, planName: pName };
+        socket.user = { ...profile, premium: isPremium, planName: pName, userBadge: uBadge, activeSubscription: actSub };
         socket.userId = dbUser ? dbUser.id : profile.id;
         socket.name = profile.name;
         socket.email = profile.email;
@@ -2565,6 +2614,8 @@ function endQuiz(roomId) {
         socket.age = profile.age || "18-24";
         socket.premium = isPremium;
         socket.planName = pName;
+        socket.userBadge = uBadge;
+        socket.activeSubscription = actSub;
 
         console.log(`User ${socket.id} profile set securely: ${profile.name} (${profile.email}), ${socket.premium ? "PREMIUM" : "FREE"}`);
 

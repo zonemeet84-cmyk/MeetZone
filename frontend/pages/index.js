@@ -128,6 +128,15 @@ export default function Dashboard() {
   };
 
   const [currency, setCurrency] = useState("INR");
+  useEffect(() => {
+    if (user?.country) {
+      if (user.country !== "India" && user.country !== "IN") {
+        setCurrency("USD");
+      } else {
+        setCurrency("INR");
+      }
+    }
+  }, [user?.country]);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [paymentStep, setPaymentStep] = useState("methods");
@@ -2317,10 +2326,10 @@ export default function Dashboard() {
 
         <div className="pricing-grid coins-grid">
           {[
-            { name: "100 Coins", base: 100, bonus: 0,   price: 79,  usdPrice: 0.99, icon: "🪙", color: "#94a3b8", tag: "Starter"      },
-            { name: "200 Coins", base: 200, bonus: 50,  price: 149, usdPrice: 1.79, icon: "💰", color: "#fbbf24", tag: "⭐ Popular"   },
-            { name: "500 Coins", base: 500, bonus: 150, price: 299, usdPrice: 3.59, icon: "💎", color: "#6366f1", tag: "🔥 Best Deal" },
-            { name: "1300 Coins",base: 1300,bonus: 300, price: 699, usdPrice: 8.49, icon: "👑", color: "#ec4899", tag: "💎 Ultimate"  }
+            { name: "100 Coins Pack", base: 100, bonus: 0,   price: 79,  usdPrice: 0.99, icon: "🪙", color: "#94a3b8", tag: "Starter"      },
+            { name: "200 Coins Pack", base: 150, bonus: 50,  price: 149, usdPrice: 1.79, icon: "💰", color: "#fbbf24", tag: "⭐ Popular"   },
+            { name: "500 Coins Pack", base: 350, bonus: 150, price: 299, usdPrice: 3.59, icon: "💎", color: "#6366f1", tag: "🔥 Best Deal" },
+            { name: "1300 Coins Pack",base: 1000,bonus: 300, price: 699, usdPrice: 8.49, icon: "👑", color: "#ec4899", tag: "💎 Ultimate"  }
           ].map((pkg, idx) => (
             <div className="coin-square-card" key={idx} style={{ borderTop: `4px solid ${pkg.color}` }} onClick={() => {
               setSelectedPlan({ name: pkg.name, price: currency === "INR" ? `₹${pkg.price}` : `$${pkg.usdPrice}` });

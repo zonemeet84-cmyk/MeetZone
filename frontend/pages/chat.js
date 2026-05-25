@@ -2995,6 +2995,11 @@ export default function Home() {
             <h1 className="logo-text" style={{ margin: 0, fontSize: '1.4rem', fontWeight: '800', display: 'flex', alignItems: 'center', letterSpacing: '-0.02em' }}>
               <span style={{ color: '#ffffff' }}>Zone</span>
               <span style={{ background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Meet</span>
+              {(user?.activeSubscription || user?.premium) && (user?.userBadge || user?.planName) && (
+                <span className="header-badge" style={{ marginLeft: '8px', fontSize: '0.7rem', background: 'rgba(59, 130, 246, 0.2)', border: '1px solid rgba(59, 130, 246, 0.5)', color: '#60a5fa', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
+                  {user.userBadge || user.planName}
+                </span>
+              )}
             </h1>
             <div className="eighteen-plus-badge" style={{
               background: 'rgba(239, 68, 68, 0.15)',
@@ -3063,9 +3068,14 @@ export default function Home() {
                 {user?.name?.charAt(0) || "?"}
               </div>
               <div className="user-details">
-                <span className="user-name">
+                <span className="user-name" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   {user?.name || "ZoneMeet User"}
                   {user?.email === "ds9376314@gmail.com" && <span className="vip-badge-inline">VIP</span>}
+                  {(user?.activeSubscription || user?.premium) && (user?.userBadge || user?.planName) && user?.email !== "ds9376314@gmail.com" && (
+                    <span className="pro-badge-v2" style={{ padding: '0.1rem 0.4rem', fontSize: '0.65rem', margin: 0 }}>
+                      🛡️ {user.userBadge || user.planName}
+                    </span>
+                  )}
                 </span>
                 <span className="user-sub">
                   {user?.gender || "Guest"} • {getFlagUrl(user?.country) && <img src={getFlagUrl(user?.country)} alt="" style={{ width: '14px', height: '10px', marginRight: '4px', verticalAlign: 'middle', borderRadius: '1px' }} />}
@@ -3664,9 +3674,9 @@ export default function Home() {
                     >
                       🚨
                     </button>
-                    {partnerInfo.premium && partnerInfo.planName && (
-                      <span className={partnerInfo.planName === "VIP Elite" ? "vip-crown-tag" : "pro-badge-v2"} style={{ margin: 0, padding: '0.15rem 0.6rem', fontSize: '0.65rem' }}>
-                        {partnerInfo.planName === "VIP Elite" ? "👑 VIP ELITE" : `🛡️ ${partnerInfo.planName}`}
+                    {(partnerInfo.activeSubscription || partnerInfo.premium) && (partnerInfo.userBadge || partnerInfo.planName) && (
+                      <span className={partnerInfo.userBadge === "VIP Elite" || partnerInfo.planName === "VIP Elite" ? "vip-crown-tag" : "pro-badge-v2"} style={{ margin: 0, padding: '0.15rem 0.6rem', fontSize: '0.65rem' }}>
+                        {partnerInfo.userBadge === "VIP Elite" || partnerInfo.planName === "VIP Elite" ? "👑 VIP ELITE" : `🛡️ ${partnerInfo.userBadge || partnerInfo.planName}`}
                       </span>
                     )}
                     {!partnerMicOn && (
