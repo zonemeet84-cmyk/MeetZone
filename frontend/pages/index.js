@@ -1009,7 +1009,7 @@ export default function Dashboard() {
       const cashfree = new window.Cashfree({ mode: process.env.NEXT_PUBLIC_CASHFREE_ENV === "production" ? "production" : "sandbox" });
       cashfree.checkout({
         paymentSessionId: orderRes.data.paymentSessionId,
-        returnUrl: `https://zonemeet.chat/?cf_order=${orderRes.data.orderId}&plan=${encodeURIComponent(selectedPlan.name)}&email=${encodeURIComponent(user.email)}`,
+        returnUrl: `https://zonemeet.chat/payment-success?cf_order=${orderRes.data.orderId}&plan=${encodeURIComponent(selectedPlan.name)}&email=${encodeURIComponent(user.email)}`,
       });
     } catch (err) { console.error(err); setPaymentStep("methods"); showModal({ message: "Cashfree error. Try another method.", type: "error" }); }
   };
@@ -1022,7 +1022,7 @@ export default function Dashboard() {
     }
     try {
       setPaymentStep("processing");
-      const planPriceUSD = selectedPlan.name === "Starter" ? 1.75 : selectedPlan.name === "Prime" ? 7.17 : selectedPlan.name === "Silver" ? 19.17 : selectedPlan.name === "VIP Elite" ? 11.99 : selectedPlan.name === "100 Coins" ? 0.99 : selectedPlan.name === "200 Coins" ? 1.79 : selectedPlan.name === "500 Coins" ? 3.59 : selectedPlan.name === "1300 Coins" ? 8.49 : (parseFloat(selectedPlan.price?.replace(/[₹$]/g,'')) || 5.00);
+      const planPriceUSD = selectedPlan.name === "Starter" ? 1.75 : selectedPlan.name === "Prime" ? 7.17 : selectedPlan.name === "Silver" ? 19.17 : selectedPlan.name === "VIP Elite" ? 11.99 : selectedPlan.name.includes("100 Coins") ? 0.99 : selectedPlan.name.includes("200 Coins") ? 1.79 : selectedPlan.name.includes("500 Coins") ? 3.59 : selectedPlan.name.includes("1300 Coins") ? 8.49 : (parseFloat(selectedPlan.price?.replace(/[₹$]/g,'')) || 5.00);
       const amountInCents = Math.round(planPriceUSD * 100);
       let endpoint = "https://api.zonemeet.chat/api/payment/paypal/create-order";
       if (isAutoRenew && !selectedPlan.name.includes("Coins")) {
@@ -2269,7 +2269,7 @@ export default function Dashboard() {
 
         <div className="pricing-grid coins-grid">
           {[
-            { name: "100 Coins Pack", base: 100, bonus: 0,   price: 79,  usdPrice: 0.99, icon: "🪙", color: "#94a3b8", tag: "Starter"      },
+            { name: "100 Coins Pack", base: 100, bonus: 0,   price: 1,  usdPrice: 0.99, icon: "🪙", color: "#94a3b8", tag: "Starter"      },
             { name: "200 Coins Pack", base: 150, bonus: 50,  price: 149, usdPrice: 1.79, icon: "💰", color: "#fbbf24", tag: "⭐ Popular"   },
             { name: "500 Coins Pack", base: 350, bonus: 150, price: 299, usdPrice: 3.59, icon: "💎", color: "#6366f1", tag: "🔥 Best Deal" },
             { name: "1300 Coins Pack",base: 1000,bonus: 300, price: 699, usdPrice: 8.49, icon: "👑", color: "#ec4899", tag: "💎 Ultimate"  }
