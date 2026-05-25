@@ -386,31 +386,7 @@ export default function Dashboard() {
     }
   }, []);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get("session_id");
-    if (sessionId && user) {
-      setPaymentStep("processing");
-      setShowPremiumModal(true);
-      axios.post("https://api.zonemeet.chat/api/payment/stripe/verify-subscription", { sessionId, userEmail: user.email })
-        .then(res => {
-          if (res.data.success) {
-            const updatedUser = { ...user, ...res.data.user };
-            setUser(updatedUser); localStorage.setItem("user", JSON.stringify(updatedUser));
-            setPaymentStep("success");
-            window.history.replaceState(null, '', window.location.pathname);
-          } else {
-            showModal({ message: "Subscription verification failed.", type: "error" });
-            setPaymentStep("methods");
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          setPaymentStep("methods");
-          showModal({ message: "Verification error.", type: "error" });
-        });
-    }
-  }, [user]);
+  // Stripe verify-subscription removed — Stripe gateway is no longer active.
 
   useEffect(() => {
     // Removed auto-success timer to prevent free subscriptions
@@ -1004,56 +980,9 @@ export default function Dashboard() {
   };
 
 
+  // Razorpay gateway removed — use Cashfree for INR payments
   const handleRazorpayPayment = async () => {
-    if (!user) {
-      showModal({ message: "Please login first", type: "info" });
-      return;
-    }
-
-    const RAZORPAY_KEY = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-    if (!RAZORPAY_KEY || RAZORPAY_KEY === "YOUR_RAZORPAY_LIVE_KEY_ID") {
-      showModal({ message: "⚠️ Payment gateway is being configured. Please try again in a few minutes or contact support@zonemeet.chat", type: "info" });
-      return;
-    }
-
-    try {
-      setPaymentStep("processing");
-      const amountInPaise = selectedPlan.name === "Starter" ? 14900 : selectedPlan.name === "Prime" ? 59900 : selectedPlan.name === "Silver" ? 159900 : selectedPlan.name === "VIP Elite" ? 99900 : Math.round((parseFloat(selectedPlan.price?.replace(/[₹$]/g,'')) || 79) * 100);
-      
-      let endpoint = "https://api.zonemeet.chat/api/payment/razorpay/order";
-      if (isAutoRenew && !selectedPlan.name.includes("Coins")) {
-        endpoint = "https://api.zonemeet.chat/api/payment/razorpay/create-subscription";
-      }
-      
-      const orderRes = await axios.post(endpoint, { amount: amountInPaise, currency: "INR", planName: selectedPlan.name, userEmail: user.email });
-      
-      const options = {
-        key: RAZORPAY_KEY, amount: orderRes.data.amount, currency: orderRes.data.currency,
-        name: "ZoneMeet Premium", description: `Upgrade to ${selectedPlan.name}`,
-        image: "https://zonemeet.chat/logo.png", order_id: orderRes.data.id,
-        handler: async (response) => {
-          try {
-            const verifyRes = await axios.post("https://api.zonemeet.chat/api/payment/razorpay/verify", { ...response, userEmail: user.email, planName: selectedPlan.name, giftRecipientId: isGifting ? giftRecipientId : null });
-            if (verifyRes.data.success) {
-              const updatedUser = { ...user, ...verifyRes.data.user };
-              setUser(updatedUser); localStorage.setItem("user", JSON.stringify(updatedUser));
-              setPaymentStep("success");
-            } else { showModal({ message: "Payment verification failed. Contact support@zonemeet.chat", type: "info" }); setPaymentStep("methods"); }
-          } catch (err) { console.error(err); showModal({ message: "Verification failed. Try again.", type: "error" }); setPaymentStep("methods"); }
-        },
-        prefill: { name: user.name, email: user.email },
-        theme: { color: "#6366f1" },
-        modal: { ondismiss: () => setPaymentStep("methods") }
-      };
-
-      if (isAutoRenew && !selectedPlan.name.includes("Coins")) {
-        options.subscription_id = orderRes.data.subscription_id;
-        delete options.order_id;
-      }
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (err) { console.error(err); setPaymentStep("methods"); showModal({ message: "⚠️ Could not connect to payment gateway. Please try again.", type: "info" }); }
+    showModal({ message: "⚠️ Razorpay is no longer available. Please use Cashfree for INR payments.", type: "info" });
   };
 
   const handleCashfreePayment = async () => {
@@ -1089,7 +1018,7 @@ export default function Dashboard() {
     if (!user) { showModal({ message: "Please login first", type: "info" }); return; }
     const PP_CLIENT = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
     if (!PP_CLIENT || PP_CLIENT === "YOUR_PAYPAL_CLIENT_ID") {
-      showModal({ message: "⚠️ PayPal gateway coming soon! Use Stripe for now.", type: "info" }); return;
+      showModal({ message: "⚠️ PayPal gateway is being configured. Please contact support.", type: "info" }); return;
     }
     try {
       setPaymentStep("processing");
@@ -1107,39 +1036,9 @@ export default function Dashboard() {
     } catch (err) { console.error(err); setPaymentStep("methods"); showModal({ message: "PayPal error. Try another method.", type: "error" }); }
   };
 
+  // Stripe gateway removed — Coming Soon
   const handleStripePayment = async () => {
-    if (!user) { showModal({ message: "Please login first", type: "info" }); return; }
-    const STRIPE_PUB = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-    if (!STRIPE_PUB || STRIPE_PUB === "YOUR_STRIPE_PUBLISHABLE_KEY") {
-      showModal({ message: "⚠️ Stripe gateway coming soon! Please contact support.", type: "info" }); return;
-    }
-    try {
-      setPaymentStep("processing");
-      const planPriceUSD = selectedPlan.name === "Starter" ? 1.75 : selectedPlan.name === "Prime" ? 7.17 : selectedPlan.name === "Silver" ? 19.17 : selectedPlan.name === "VIP Elite" ? 11.99 : selectedPlan.name === "100 Coins" ? 0.99 : selectedPlan.name === "200 Coins" ? 1.79 : selectedPlan.name === "500 Coins" ? 3.59 : selectedPlan.name === "1300 Coins" ? 8.49 : (parseFloat(selectedPlan.price?.replace(/[₹$]/g,'')) || 5.00);
-      const amountInCents = Math.round(planPriceUSD * 100);
-
-      if (isAutoRenew && !selectedPlan.name.includes("Coins")) {
-        const orderRes = await axios.post("https://api.zonemeet.chat/api/payment/stripe/create-subscription-checkout", { amount: amountInCents, currency: "usd", planName: selectedPlan.name, userEmail: user.email });
-        if (orderRes.data.checkoutUrl) {
-          window.location.href = orderRes.data.checkoutUrl;
-          return;
-        }
-      }
-
-      const intentRes = await axios.post("https://api.zonemeet.chat/api/payment/stripe/create-intent", { amount: amountInCents, currency: "usd", planName: selectedPlan.name, userEmail: user.email });
-      const { loadStripe } = await import("@stripe/stripe-js");
-      const stripeObj = await loadStripe(STRIPE_PUB);
-      const result = await stripeObj.confirmCardPayment(intentRes.data.clientSecret, {
-        payment_method: { card: { token: "tok_visa" }, billing_details: { name: user.name, email: user.email } }
-      });
-      if (result.error) throw new Error(result.error.message);
-      const verifyRes = await axios.post("https://api.zonemeet.chat/api/payment/stripe/verify", { paymentIntentId: intentRes.data.paymentIntentId, userEmail: user.email, planName: selectedPlan.name, giftRecipientId: isGifting ? giftRecipientId : null });
-      if (verifyRes.data.success) {
-        const updatedUser = { ...user, ...verifyRes.data.user };
-        setUser(updatedUser); localStorage.setItem("user", JSON.stringify(updatedUser));
-        setPaymentStep("success");
-      } else { showModal({ message: "Stripe verification failed.", type: "info" }); setPaymentStep("methods"); }
-    } catch (err) { console.error(err); setPaymentStep("methods"); showModal({ message: `Stripe error: ${err.message}`, type: "error" }); }
+    showModal({ message: "⚠️ Stripe / Card payments coming soon! Please use Cashfree (India) or PayPal (International) for now.", type: "info" });
   };
 
 
@@ -2544,10 +2443,10 @@ export default function Dashboard() {
                           <div className="pay-badge" style={{ background: 'rgba(0,112,192,0.15)', color: '#0070c0' }}>PayPal</div>
                           <div className="pay-arrow">›</div>
                         </button>
-                        <button className="pay-method-item" onClick={() => handleStripePayment()}>
+                        <button className="pay-method-item" onClick={() => handleStripePayment()} style={{ opacity: 0.6, position: 'relative' }}>
                           <div className="pay-icon-box">💳</div>
                           <div className="pay-details"><strong>Stripe / Card</strong><span>Visa, Mastercard, AMEX worldwide</span></div>
-                          <div className="pay-badge" style={{ background: 'rgba(99,91,255,0.15)', color: '#635bff' }}>Stripe</div>
+                          <div className="pay-badge" style={{ background: 'rgba(255,165,0,0.15)', color: '#ff9800' }}>Coming Soon</div>
                           <div className="pay-arrow">›</div>
                         </button>
                       </>

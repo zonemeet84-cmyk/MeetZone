@@ -72,30 +72,20 @@ const apiLimiter = rateLimit({
 });
 app.use("/api/", apiLimiter);
 
-// Global Logger for Debugging
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-  next();
-});
+// Global Logger for Debugging (disabled to reduce PM2 log spam)
+// app.use((req, res, next) => {
+//   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+//   next();
+// });
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const Razorpay = require("razorpay");
+// Razorpay & Stripe removed — only Cashfree (India) and PayPal (International) are active.
 const crypto = require("crypto");
-const Stripe = require("stripe");
 const speakeasy = require("speakeasy");
 const QRCode = require("qrcode");
 
 const onlineUsers = new Map(); // userId -> socket.id
-
-// RAZORPAY INITIALIZATION
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || "YOUR_KEY_ID",
-  key_secret: process.env.RAZORPAY_KEY_SECRET || "YOUR_KEY_SECRET",
-});
-
-// STRIPE INITIALIZATION
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY || "YOUR_STRIPE_SECRET_KEY");
 
 // PAYPAL CONFIG (LIVE)
 const PAYPAL_BASE_URL = process.env.PAYPAL_MODE === "sandbox"
@@ -132,16 +122,49 @@ const TRANSACTIONS_FILE = path.join(__dirname, "transactions.json");
 const MESSAGES_FILE = path.join(__dirname, "messages.json");
 const NEWS_FILE = path.join(__dirname, "news.json");
 
-// ========= FIREBASE ADMIN CONFIG =========
-const serviceAccountPath = path.join(__dirname, "serviceAccountKey.json");
-if (fs.existsSync(serviceAccountPath)) {
-  const serviceAccount = require(serviceAccountPath);
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-  });
-  console.log("Firebase Admin Initialized");
+// ========= STARTUP ENV VALIDATION =========
+const requiredEnvVars = ["CASHFREE_APP_ID", "CASHFREE_SECRET_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET"];
+const missingEnvVars = requiredEnvVars.filter(env => !process.env[env] || process.env[env].includes("YOUR_"));
+if (missingEnvVars.length > 0) {
+  console.warn(`\n[WARNING] Missing or placeholder environment variables: ${missingEnvVars.join(", ")}`);
+  console.warn(`[WARNING] Payment features using these gateways might fail!\n`);
 } else {
-  console.warn("⚠️ serviceAccountKey.json NOT FOUND. Firebase registration will fail.");
+  console.log("[INFO] Payment gateway environment variables configured properly.");
+}
+// =========================================
+
+// ========= FIREBASE ADMIN CONFIG =========
+let firebaseEnabled = false;
+const serviceAccountPath = path.join(__dirname, "serviceAccountKey.json");
+if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      })
+    });
+    firebaseEnabled = true;
+    console.log("Firebase Admin Initialized via Environment Variables");
+  } catch (err) {
+    console.warn("⚠️ Failed to initialize Firebase via ENV:", err.message);
+  }
+} else if (fs.existsSync(serviceAccountPath)) {
+  try {
+    const serviceAccount = require(serviceAccountPath);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    firebaseEnabled = true;
+    console.log("Firebase Admin Initialized via JSON file");
+  } catch (err) {
+    console.warn("⚠️ Failed to initialize Firebase via JSON:", err.message);
+  }
+} 
+
+if (!firebaseEnabled) {
+  console.warn("⚠️ Firebase credentials NOT FOUND. Firebase features (phone login) are gracefully disabled.");
 }
 // =========================================
 
@@ -517,7 +540,6 @@ function saveUsers() {
   try { fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2)); } catch (e) { }
   if (db) {
     db.collection("appData").updateOne({ _id: "users" }, { $set: { data: users } }, { upsert: true })
-      .then(() => console.log("[DB] Users saved successfully to MongoDB"))
       .catch(err => console.error("[DB] Error saving users:", err));
   }
 }
@@ -1301,6 +1323,10 @@ app.post("/api/auth/firebase-register", async (req, res) => {
   }
 
   try {
+    if (!firebaseEnabled) {
+      return res.status(503).json({ message: "Firebase authentication is currently disabled on this server." });
+    }
+
     // 1. Verify the ID Token from Firebase
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const firebasePhone = decodedToken.phone_number;
@@ -3351,205 +3377,11 @@ function endQuiz(roomId) {
       });
     });
 
-    // --- PAYMENT ENDPOINTS ---
-
-    // 1. Create Razorpay Order
-    app.post('/api/payment/razorpay/order', async (req, res) => {
-      try {
-        const { amount, currency } = req.body; // Amount in INR (e.g. 89)
-
-        const options = {
-          amount: amount * 100, // Razorpay works in paisa
-          currency: currency || "INR",
-          receipt: `receipt_${Date.now()}`,
-        };
-
-        const order = await razorpay.orders.create(options);
-        res.json({ success: true, order });
-      } catch (error) {
-        console.error("Razorpay Order Error:", error);
-        res.status(500).json({ success: false, message: "Could not create order" });
-      }
-    });
-
-    // 1.5 Create Razorpay Subscription
-    app.post('/api/payment/razorpay/create-subscription', async (req, res) => {
-      try {
-        const { amount, currency, planName, userEmail } = req.body;
-        const plan = await razorpay.plans.create({
-          period: "monthly",
-          interval: 1,
-          item: { name: `ZoneMeet ${planName}`, amount: Math.round(amount), currency: currency || "INR", description: `Premium ${planName}` }
-        });
-        const subscription = await razorpay.subscriptions.create({
-          plan_id: plan.id,
-          customer_notify: 1,
-          total_count: 120
-        });
-        res.json({ success: true, subscription_id: subscription.id, amount, currency });
-      } catch (error) {
-        console.error("Razorpay Sub Error:", error);
-        res.status(500).json({ success: false, message: "Could not create subscription" });
-      }
-    });
-
-    // 2. Verify Razorpay Payment
-    app.post('/api/payment/razorpay/verify', async (req, res) => {
-      try {
-        const {
-          razorpay_order_id,
-          razorpay_subscription_id,
-          razorpay_payment_id,
-          razorpay_signature,
-          userEmail,
-          planName,
-          giftRecipientId
-        } = req.body;
-
-        const body = razorpay_subscription_id 
-          ? razorpay_payment_id + "|" + razorpay_subscription_id 
-          : razorpay_order_id + "|" + razorpay_payment_id;
-        const expectedSignature = crypto
-          .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "YOUR_KEY_SECRET")
-          .update(body.toString())
-          .digest("hex");
-
-        const isAuthentic = expectedSignature === razorpay_signature;
-
-        if (isAuthentic) {
-          // If it's a gift, find the recipient. Otherwise find the payer.
-          const targetUser = giftRecipientId
-            ? users.find(u => u.id === giftRecipientId || u.email === giftRecipientId)
-            : users.find(u => u.email === userEmail);
-
-          if (targetUser) {
-            const user = targetUser;
-            const purchase = processVerifiedPurchase(user, planName);
-            if (!purchase.ok) {
-              return res.status(400).json({ success: false, message: purchase.message || "Purchase failed" });
-            }
-            transactions.push({
-              id: razorpay_payment_id,
-              userEmail,
-              planName,
-              timestamp: Date.now(),
-              type: purchase.type,
-              ...(purchase.type === "subscription"
-                ? { bundledCoins: purchase.bundledCoins, planExpiry: user.planExpiry }
-                : { coinsAdded: purchase.total }),
-            });
-            saveTransactions();
-            saveUsers();
-            return res.json({
-              success: true,
-              message: "Transaction completed successfully",
-              user: userPayloadAfterPurchase(user),
-            });
-          }
-          return res.status(404).json({ success: false, message: "User not found" });
-        } else {
-          return res.status(400).json({ success: false, message: "Invalid signature, payment verification failed" });
-        }
-      } catch (error) {
-        console.error("Verification Error:", error);
-        res.status(500).json({ success: false, message: "Internal server error during verification" });
-      }
-    });
+    // --- COINS & HISTORY ENDPOINTS ---
 
     // --- COINS & HISTORY ENDPOINTS ---
 
-    // ========== STRIPE ROUTES ==========
-
-    // Stripe - Create Subscription Checkout
-    app.post("/api/payment/stripe/create-subscription-checkout", async (req, res) => {
-      try {
-        const { amount, currency = "usd", planName, userEmail } = req.body;
-        const session = await stripe.checkout.sessions.create({
-          payment_method_types: ['card'],
-          mode: 'subscription',
-          line_items: [{
-            price_data: {
-              currency,
-              recurring: { interval: 'month' },
-              product_data: { name: `ZoneMeet ${planName}` },
-              unit_amount: Math.round(amount)
-            },
-            quantity: 1,
-          }],
-          metadata: { planName, userEmail },
-          success_url: `https://zonemeet.chat/?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `https://zonemeet.chat/`,
-        });
-        res.json({ checkoutUrl: session.url });
-      } catch (err) {
-        console.error("Stripe Sub Error:", err);
-        res.status(500).json({ error: err.message });
-      }
-    });
-
-    // Stripe - Verify Subscription Checkout
-    app.post("/api/payment/stripe/verify-subscription", async (req, res) => {
-      try {
-        const { sessionId, userEmail } = req.body;
-        const session = await stripe.checkout.sessions.retrieve(sessionId);
-        if (session.payment_status !== "paid") return res.status(400).json({ success: false, message: "Not paid" });
-        
-        const planName = session.metadata.planName || "Unknown";
-        const targetEmail = session.metadata.userEmail || userEmail;
-        const user = users.find(u => u.email === targetEmail);
-        if (!user) return res.status(404).json({ success: false, message: "User not found" });
-
-        const purchase = processVerifiedPurchase(user, planName);
-        if (!purchase.ok) return res.status(400).json({ success: false, message: purchase.message || "Purchase failed" });
-
-        transactions.push({ id: session.subscription, userEmail: targetEmail, planName, gateway: "stripe_subscription", timestamp: Date.now(), type: "subscription" });
-        saveTransactions();
-        saveUsers();
-        res.json({ success: true, user: userPayloadAfterPurchase(user) });
-      } catch (err) {
-        console.error("Stripe Verify Sub Error:", err);
-        res.status(500).json({ success: false, message: "Verification failed" });
-      }
-    });
-
-    // Stripe - Create Payment Intent
-    app.post("/api/payment/stripe/create-intent", async (req, res) => {
-      try {
-        const { amount, currency = "inr", planName, userEmail } = req.body;
-        const paymentIntent = await stripe.paymentIntents.create({
-          amount: Math.round(amount), // already in paise/cents
-          currency,
-          metadata: { planName, userEmail }
-        });
-        res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
-      } catch (err) {
-        console.error("Stripe Intent Error:", err);
-        res.status(500).json({ error: err.message });
-      }
-    });
-
-    // Stripe - Verify & Activate Plan
-    app.post("/api/payment/stripe/verify", async (req, res) => {
-      try {
-        const { paymentIntentId, userEmail, planName, giftRecipientId } = req.body;
-        const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
-        if (intent.status !== "succeeded") {
-          return res.status(400).json({ success: false, message: "Payment not completed" });
-        }
-        const user = users.find(u => u.email === (giftRecipientId || userEmail));
-        if (!user) return res.status(404).json({ success: false, message: "User not found" });
-
-        const purchase = processVerifiedPurchase(user, planName);
-        if (!purchase.ok) return res.status(400).json({ success: false, message: purchase.message || "Purchase failed" });
-        transactions.push({ id: paymentIntentId, userEmail, planName, gateway: "stripe", timestamp: Date.now(), type: purchase.type });
-        saveTransactions();
-        saveUsers();
-        res.json({ success: true, message: "Stripe payment verified", user: userPayloadAfterPurchase(user) });
-      } catch (err) {
-        console.error("Stripe Verify Error:", err);
-        res.status(500).json({ success: false, message: "Stripe verification failed" });
-      }
-    });
+    // ========== PAYPAL ROUTES ==========
 
     // ========== PAYPAL ROUTES ==========
 
