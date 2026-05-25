@@ -326,24 +326,39 @@ function logCoinEarn(user, amount, description) {
   });
 }
 
-function applySubscriptionPurchase(user, planName) {
+function applySubscriptionPurchase(user, planName, options = {}) {
   const cfg = SUBSCRIPTION_PLANS[planName];
   if (!cfg) return { ok: false, message: "Unknown subscription plan" };
   expireSubscriptionIfNeeded(user);
   
+  const { isRenewal = false, subscriptionId = null, gateway = null } = options;
+
   // Legacy mappings for backwards compatibility
   user.premium = true;
   user.planName = planName;
   user.subscriptionTier = cfg.tier;
-  user.planStartedAt = Date.now();
-  user.planExpiry = addMsFromDays(cfg.days);
+  if (!user.planStartedAt || !isRenewal) user.planStartedAt = Date.now();
+  
+  const now = Date.now();
+  const currentExpiry = user.subscriptionExpiry || user.planExpiry || now;
+  const baseDate = (currentExpiry > now && isRenewal) ? currentExpiry : now;
+  
+  user.planExpiry = baseDate + (cfg.days * 24 * 60 * 60 * 1000);
 
   // New Subscription Schema Mapping
   user.activeSubscription = true;
   user.currentPlan = planName;
-  user.subscriptionStartDate = Date.now();
-  user.subscriptionExpiry = addMsFromDays(cfg.days);
+  if (!user.subscriptionStartDate || !isRenewal) user.subscriptionStartDate = now;
+  user.subscriptionExpiry = user.planExpiry;
   user.userBadge = planName; // Used for UI tags e.g., "Starter", "VIP Elite"
+  
+  // Auto-renewal tracking fields
+  if (subscriptionId) user.subscriptionId = subscriptionId;
+  if (gateway) user.subscriptionGateway = gateway;
+  user.autoRenewEnabled = true; 
+  user.renewalStatus = "active";
+  user.nextBillingDate = user.subscriptionExpiry;
+  if (!user.renewalHistory) user.renewalHistory = [];
   
   user.premiumFeatures = [];
   if (planName === "Starter") {
@@ -377,17 +392,21 @@ function applyCoinPackPurchase(user, planName) {
   return { ok: true, type: "coins", total, base: pack.base, bonus: pack.bonus };
 }
 
-function processVerifiedPurchase(user, planName) {
+function processVerifiedPurchase(user, planName, options = {}) {
   if (!user || !planName) return { ok: false, message: "Invalid purchase" };
   if (String(planName).includes("Coins")) {
     return applyCoinPackPurchase(user, planName);
   }
-  return applySubscriptionPurchase(user, planName);
+  return applySubscriptionPurchase(user, planName, options);
 }
 
 function userPayloadAfterPurchase(user) {
   return {
     ...user,
+    autoRenewEnabled: user.autoRenewEnabled || false,
+    subscriptionId: user.subscriptionId || null,
+    nextBillingDate: user.nextBillingDate || null,
+    renewalStatus: user.renewalStatus || "inactive",
     coinActivity: coinActivity.filter((a) => a.email === user.email).slice(-10),
   };
 }
@@ -3722,6 +3741,87 @@ function endQuiz(roomId) {
         console.error("Cashfree Verify Error:", err);
         res.status(500).json({ success: false, message: "Cashfree verification failed" });
       }
+    });
+
+    // Auto-Renewal Webhooks & Settings
+    app.post("/api/payment/cashfree/webhook", async (req, res) => {
+      try {
+        const eventType = req.body.type;
+        const data = req.body.data || {};
+        const subscriptionId = data.subscription?.subscription_id;
+        
+        if (!subscriptionId) return res.status(400).send("No subscription id");
+        
+        const user = users.find(u => u.subscriptionId === subscriptionId && u.subscriptionGateway === "cashfree");
+        if (!user) return res.status(404).send("User not found");
+
+        if (eventType === "SUBSCRIPTION_CHARGED") {
+          const paymentId = data.payment?.payment_id || `cf_sub_${Date.now()}`;
+          if (transactions.some(t => t.id === paymentId)) return res.status(200).send("Already processed");
+          
+          const purchase = processVerifiedPurchase(user, user.currentPlan, { isRenewal: true, subscriptionId, gateway: "cashfree" });
+          transactions.push({ id: paymentId, userEmail: user.email, planName: user.currentPlan, gateway: "cashfree", timestamp: Date.now(), type: purchase.type || "renewal" });
+          user.renewalHistory.push({ date: Date.now(), status: "success", paymentId });
+          
+          saveTransactions();
+          saveUsers();
+        } else if (eventType === "SUBSCRIPTION_FAILED" || eventType === "SUBSCRIPTION_CANCELLED") {
+          user.renewalStatus = eventType === "SUBSCRIPTION_CANCELLED" ? "cancelled" : "failed";
+          user.autoRenewEnabled = false;
+          user.renewalHistory.push({ date: Date.now(), status: user.renewalStatus });
+          saveUsers();
+        }
+        res.status(200).send("Webhook received");
+      } catch (err) {
+        console.error("Cashfree Webhook Error:", err);
+        res.status(500).send("Error processing webhook");
+      }
+    });
+
+    app.post("/api/payment/paypal/webhook", async (req, res) => {
+      try {
+        const eventType = req.body.event_type;
+        const resource = req.body.resource;
+        const subscriptionId = eventType.includes("SUBSCRIPTION") ? resource.id : resource.billing_agreement_id;
+        
+        if (!subscriptionId) return res.status(400).send("No subscription id");
+        
+        const user = users.find(u => u.subscriptionId === subscriptionId && u.subscriptionGateway === "paypal");
+        if (!user) return res.status(404).send("User not found");
+
+        if (eventType === "PAYMENT.SALE.COMPLETED" || eventType === "BILLING.SUBSCRIPTION.PAYMENT.COMPLETED") {
+          const paymentId = resource.id;
+          if (transactions.some(t => t.id === paymentId)) return res.status(200).send("Already processed");
+          
+          const purchase = processVerifiedPurchase(user, user.currentPlan, { isRenewal: true, subscriptionId, gateway: "paypal" });
+          transactions.push({ id: paymentId, userEmail: user.email, planName: user.currentPlan, gateway: "paypal", timestamp: Date.now(), type: purchase.type || "renewal" });
+          user.renewalHistory.push({ date: Date.now(), status: "success", paymentId });
+          
+          saveTransactions();
+          saveUsers();
+        } else if (eventType === "BILLING.SUBSCRIPTION.CANCELLED" || eventType === "BILLING.SUBSCRIPTION.SUSPENDED") {
+          user.renewalStatus = eventType === "BILLING.SUBSCRIPTION.CANCELLED" ? "cancelled" : "failed";
+          user.autoRenewEnabled = false;
+          user.renewalHistory.push({ date: Date.now(), status: user.renewalStatus });
+          saveUsers();
+        }
+        res.status(200).send("Webhook received");
+      } catch (err) {
+        console.error("PayPal Webhook Error:", err);
+        res.status(500).send("Error processing webhook");
+      }
+    });
+
+    app.post("/api/user/toggle-autorenew", authenticateToken, (req, res) => {
+      const { autoRenewEnabled } = req.body;
+      const user = req.user;
+      
+      if (!user.subscriptionId) return res.status(400).json({ success: false, message: "No active subscription found to manage" });
+
+      user.autoRenewEnabled = autoRenewEnabled;
+      user.renewalStatus = autoRenewEnabled ? "active" : "cancelled";
+      saveUsers();
+      res.json({ success: true, message: `Auto-renew turned ${autoRenewEnabled ? 'ON' : 'OFF'}`, autoRenewEnabled: user.autoRenewEnabled });
     });
 
     app.post("/api/user/reconnect-call", authenticateToken, (req, res) => {

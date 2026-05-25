@@ -1459,7 +1459,8 @@ export default function Dashboard() {
                       </div>
 
                       {/* Premium Section */}
-                      {!user.premium && (
+                      {/* Premium Section */}
+                      {!user.premium ? (
                         <div className="profile-premium-banner">
                           <div className="profile-premium-left">
                             <span style={{ fontSize: '2rem' }}>👑</span>
@@ -1472,6 +1473,49 @@ export default function Dashboard() {
                             setShowProfileDrop(false);
                             document.getElementById("pricing-section")?.scrollIntoView({ behavior: "smooth" });
                           }}>Join</button>
+                        </div>
+                      ) : (
+                        <div className="profile-premium-banner active-sub-banner" style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(236,72,153,0.1) 100%)', border: '1px solid rgba(99,102,241,0.2)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div className="profile-premium-left">
+                              <span style={{ fontSize: '1.5rem' }}>👑</span>
+                              <div className="profile-premium-text">
+                                <span className="profile-premium-title">{user.planName || "Premium"} Active</span>
+                                {user.nextBillingDate && (
+                                  <span className="profile-premium-sub" style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                                    {user.autoRenewEnabled ? 'Renews on ' : 'Expires on '}{new Date(user.nextBillingDate).toLocaleDateString()}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          {user.subscriptionId && (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '10px', marginTop: '5px' }}>
+                              <span style={{ fontSize: '0.8rem', color: '#cbd5e1', fontWeight: 600 }}>🔄 Auto-Renew</span>
+                              <label className="toggle-switch">
+                                <input 
+                                  type="checkbox" 
+                                  checked={user.autoRenewEnabled} 
+                                  onChange={async (e) => {
+                                    const checked = e.target.checked;
+                                    try {
+                                      const token = localStorage.getItem("token");
+                                      const res = await axios.post("https://api.zonemeet.chat/api/user/toggle-autorenew", { autoRenewEnabled: checked }, { headers: { Authorization: `Bearer ${token}` } });
+                                      if(res.data.success) {
+                                        const updated = { ...user, autoRenewEnabled: res.data.autoRenewEnabled };
+                                        setUser(updated);
+                                        localStorage.setItem("user", JSON.stringify(updated));
+                                      }
+                                    } catch(err) {
+                                      console.error(err);
+                                      showModal({ message: "Failed to update auto-renew toggle", type: "error" });
+                                    }
+                                  }} 
+                                />
+                                <span className="toggle-slider"></span>
+                              </label>
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -3569,6 +3613,14 @@ export default function Dashboard() {
           .profile-edit-btn { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); color: #6366f1; padding: 0.35rem 0.8rem; border-radius: 10px; font-size: 0.7rem; font-weight: 800; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; }
           .profile-edit-btn:hover { background: #6366f1; color: white; transform: scale(1.05); }
           .profile-premium-banner { background: linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(236,72,153,0.08) 100%); border: 1px solid rgba(99,102,241,0.2); padding: 1rem 1.25rem; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+          .active-sub-banner { box-shadow: 0 4px 15px rgba(99,102,241,0.15); }
+          .toggle-switch { position: relative; display: inline-block; width: 34px; height: 20px; }
+          .toggle-switch input { opacity: 0; width: 0; height: 0; }
+          .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 20px; }
+          .toggle-slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+          input:checked + .toggle-slider { background-color: #10b981; }
+          input:focus + .toggle-slider { box-shadow: 0 0 1px #10b981; }
+          input:checked + .toggle-slider:before { transform: translateX(14px); }
           .profile-premium-title { display: block; color: white; font-weight: 800; font-size: 0.95rem; }
           .profile-premium-sub { color: #64748b; font-size: 0.75rem; }
           .profile-premium-btn { background: #6366f1; color: white; border: none; padding: 0.5rem 1rem; border-radius: 12px; font-weight: 800; font-size: 0.75rem; cursor: pointer; }
