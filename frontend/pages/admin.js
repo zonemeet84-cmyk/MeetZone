@@ -4,15 +4,15 @@ import Head from "next/head";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import axios from "axios";
+import { ADMIN_EMAIL, isSiteAdmin } from "../lib/admin";
 
 // Enable withCredentials globally for cookie security
 axios.defaults.withCredentials = true;
 
-const ADMIN_EMAIL = "ds9376314@gmail.com";
-
 export default function AdminDashboard() {
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
+  const [isAllowedAdmin, setIsAllowedAdmin] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [stats, setStats] = useState({ totalUsers: 0, liveCalls: 0, premiumUsers: 0, totalReports: 0, onlineCount: 0 });
   const [analytics, setAnalytics] = useState({ 
@@ -61,11 +61,25 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (sessionStatus === "loading") return;
+
+    let email = session?.user?.email || "";
+    try {
+      const stored = JSON.parse(localStorage.getItem("user") || "{}");
+      if (stored?.email) email = stored.email;
+    } catch (_) {}
+
+    if (!isSiteAdmin(email)) {
+      setIsAllowedAdmin(false);
+      router.replace("/");
+      return;
+    }
+
+    setIsAllowedAdmin(true);
     localStorage.removeItem("adminVerified");
     sessionStorage.removeItem("adminToken");
     setAuthForm((prev) => ({ ...prev, email: ADMIN_EMAIL }));
     setLoading(false);
-  }, [sessionStatus]);
+  }, [sessionStatus, session, router]);
 
   useEffect(() => {
     if (!isVerified || !adminToken) return;
@@ -203,6 +217,15 @@ export default function AdminDashboard() {
       Swal.fire({ text: err.response?.data?.error || "Failed to delete user", icon: "error", background: "#0f172a", color: "#fff", confirmButtonColor: "#6366f1" });
     }
   };
+
+  if (isAllowedAdmin === false) return null;
+  if (isAllowedAdmin === null) {
+    return (
+      <div className="loading-container">
+        <p style={{ color: "#94a3b8" }}>Checking access...</p>
+      </div>
+    );
+  }
 
   if (!isVerified) {
     return (

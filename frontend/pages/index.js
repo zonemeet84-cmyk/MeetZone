@@ -9,6 +9,7 @@ import { useSession, signOut } from "next-auth/react";
 import { Country, State } from "country-state-city";
 import io from "socket.io-client";
 import Swal from "sweetalert2";
+import { isSiteAdmin } from "../lib/admin";
 
 let socket;
 
@@ -1627,7 +1628,7 @@ export default function Dashboard() {
                         <span>›</span>
                       </button>
 
-                      {user?.email === "ds9376314@gmail.com" && (
+                      {isSiteAdmin(user?.email) && (
                         <button className="profile-more-btn" onClick={() => router.push("/admin")} style={{ marginTop: '10px', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
                           <div className="profile-detail-left">⚡ Admin Dashboard</div>
                           <span>›</span>
