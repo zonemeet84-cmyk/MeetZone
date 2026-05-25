@@ -342,6 +342,38 @@ export default function Home() {
   const [showGiftStickers, setShowGiftStickers] = useState(false);
   const [receivedGift, setReceivedGift] = useState(null);
   const [incomingCall, setIncomingCall] = useState(null);
+  // Mobile Gift Popup state
+  const [showMobileGiftPopup, setShowMobileGiftPopup] = useState(false);
+  const [mobileGiftActiveTab, setMobileGiftActiveTab] = useState("avatars");
+  const mobilePopupRef = useRef(null);
+
+  // Mobile Gift Popup component
+  const MobileGiftPopup = () => {
+    if (!showMobileGiftPopup) return null;
+    return (
+      <div className="mobile-gift-popup-box" ref={mobilePopupRef} role="dialog" aria-label="Gift options">
+        <div className="mobile-gift-header">
+          <button className="close-btn" onClick={() => setShowMobileGiftPopup(false)} aria-label="Close">✕</button>
+        </div>
+        <div className="mobile-gift-tabs">
+          {"avatars voice privacy gifts".split(" ").map(tab => (
+            <button
+              key={tab}
+              className={mobileGiftActiveTab===tab ? "tab active" : "tab"}
+              onClick={() => setMobileGiftActiveTab(tab)}
+              aria-selected={mobileGiftActiveTab===tab}
+            >{tab.charAt(0).toUpperCase()+tab.slice(1)}</button>
+          ))}
+        </div>
+        <div className="mobile-gift-content">
+          {mobileGiftActiveTab==="avatars" && <AvatarOptions />}
+          {mobileGiftActiveTab==="voice" && <VoiceOptions />}
+          {mobileGiftActiveTab==="privacy" && <PrivacyOptions />}
+          {mobileGiftActiveTab==="gifts" && <GiftGrid />}
+        </div>
+      </div>
+    );
+  };
 
 
   const FILTERS_DATA = [
