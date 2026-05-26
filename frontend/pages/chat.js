@@ -1398,6 +1398,8 @@ export default function Home() {
   const destinationNode = useRef(null);
   const processedAudioTrackRef = useRef(null);
   const activeVoiceNodesRef = useRef([]);
+  const keepAliveGainRef = useRef(null);
+  const originalAudioTrackRef = useRef(null);
 
   useEffect(() => {
     if (chatEndRef.current) {
@@ -1597,6 +1599,8 @@ export default function Home() {
           localVideo.current.srcObject = streamInstance;
           const vt = streamInstance.getVideoTracks()[0];
           if (vt) originalVideoTrackRef.current = vt;
+          const at = streamInstance.getAudioTracks()[0];
+          if (at) originalAudioTrackRef.current = at;
         }
       } catch (err) {
         console.warn("Error accessing media devices with ideal constraints, trying standard fallback.", err);
@@ -1609,6 +1613,8 @@ export default function Home() {
             localVideo.current.srcObject = streamInstance;
             const vt = streamInstance.getVideoTracks()[0];
             if (vt) originalVideoTrackRef.current = vt;
+            const at = streamInstance.getAudioTracks()[0];
+            if (at) originalAudioTrackRef.current = at;
           }
         } catch (fbErr) {
           console.error("Camera access failed completely.", fbErr);
@@ -2559,10 +2565,19 @@ export default function Home() {
       activeVoiceNodesRef.current = [];
     }
 
+    // Disconnect keepAlive gain from previous voice
+    if (keepAliveGainRef.current) {
+      try { keepAliveGainRef.current.disconnect(); } catch(e) {}
+      keepAliveGainRef.current = null;
+    }
+
     if (sourceNode.current) {
       try { sourceNode.current.disconnect(); } catch(e) {}
       sourceNode.current = null;
     }
+
+    // Store destination ref for GC protection
+    destinationNode.current = null;
 
     if (!audioCtx.current) {
       audioCtx.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -2574,18 +2589,22 @@ export default function Home() {
     if (voice === "Normal") {
       processedAudioTrackRef.current = null;
       // Revert to original raw mic track for the remote peer
-      if (peerConnection.current && localVideo.current?.srcObject) {
+      const origTrack = originalAudioTrackRef.current || localVideo.current?.srcObject?.getAudioTracks()[0];
+      if (peerConnection.current && origTrack) {
         const senders = peerConnection.current.getSenders();
         const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
         if (audioSender) {
-          await audioSender.replaceTrack(localVideo.current.srcObject.getAudioTracks()[0]);
+          await audioSender.replaceTrack(origTrack);
         }
       }
       return;
     }
 
-    sourceNode.current = audioCtx.current.createMediaStreamSource(localVideo.current.srcObject);
+    // Use the original raw mic track as source (not the stream which may have been modified)
+    const rawStream = localVideo.current.srcObject;
+    sourceNode.current = audioCtx.current.createMediaStreamSource(rawStream);
     const dest = audioCtx.current.createMediaStreamDestination();
+    destinationNode.current = dest; // Prevent GC
     const nodesToCleanup = [];
 
     if (voice === "Baby Voice") {
@@ -2780,21 +2799,36 @@ export default function Home() {
       sourceNode.current.connect(dest);
     }
 
+    // CRITICAL FIX: Connect a zero-gain node to audioCtx.destination
+    // This forces ScriptProcessorNode.onaudioprocess to actually fire.
+    // Without this, the pitch shifting callback never runs and original voice passes through.
+    const keepAlive = audioCtx.current.createGain();
+    keepAlive.gain.value = 0; // silent — user won't hear echo
+    dest.connect(keepAlive);
+    keepAlive.connect(audioCtx.current.destination);
+    keepAliveGainRef.current = keepAlive;
+    nodesToCleanup.push(keepAlive);
+
     activeVoiceNodesRef.current = nodesToCleanup;
-    processedAudioTrackRef.current = dest.stream.getAudioTracks()[0];
+    const processedTrack = dest.stream.getAudioTracks()[0];
+    processedAudioTrackRef.current = processedTrack;
 
     // Replace audio track in WebRTC peer Connection
     if (peerConnection.current) {
       const senders = peerConnection.current.getSenders();
       const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
-      if (audioSender) {
+      if (audioSender && processedTrack) {
         try {
-          await audioSender.replaceTrack(dest.stream.getAudioTracks()[0]);
-          console.log("Successfully replaced track with voice filter.");
+          await audioSender.replaceTrack(processedTrack);
+          console.log("[VoiceChanger] Successfully replaced track with voice filter:", voice);
         } catch (err) {
-          console.error("Failed to replace audio track:", err);
+          console.error("[VoiceChanger] Failed to replace audio track:", err);
         }
+      } else {
+        console.log("[VoiceChanger] No audio sender found — track will be used when peer connects.");
       }
+    } else {
+      console.log("[VoiceChanger] No peer connection yet — processed track stored for next connection.");
     }
   };
 
