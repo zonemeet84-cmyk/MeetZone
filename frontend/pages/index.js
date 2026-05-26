@@ -3,6 +3,8 @@ import ZoneMeetLogo from "../components/ZoneMeetLogo";
 import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import Head from "next/head";
+import Image from "next/image";
+import Script from "next/script";
 import { useRouter } from "next/router";
 import axios from "axios";
 import { useSession, signOut } from "next-auth/react";
@@ -1072,7 +1074,8 @@ export default function Dashboard() {
           ))}
         </div>
         <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+          
+
           @keyframes float-ban {
             0%, 100% { transform: translateY(0px) scale(1); opacity: 0.3; }
             50% { transform: translateY(-30px) scale(1.2); opacity: 0.8; }
@@ -1168,8 +1171,8 @@ export default function Dashboard() {
         <title>ZoneMeet – Talk To New People Online</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <meta name="description" content="ZoneMeet lets you instantly connect with People worldwide through secure video chat. Meet new people, make friends, and enjoy live conversations online." />
-        <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
       </Head>
+      <Script src="https://sdk.cashfree.com/js/v3/cashfree.js" strategy="lazyOnload" />
 
       <div className="bg-gradient" />
 
@@ -1753,7 +1756,7 @@ export default function Dashboard() {
               transform: 'perspective(1000px) rotateY(-5deg)',
               border: '1px solid rgba(255,255,255,0.1)'
             }}>
-              <img src="/video_chat_experience_1_1778757946493.png" alt="Experience" style={{ width: '100%', height: 'auto' }} />
+              <Image src="/video_chat_experience_1_1778757946493.png" alt="Experience" width={800} height={600} style={{ width: '100%', height: 'auto' }} />
             </div>
             <div className="gallery-sub" style={{
               position: 'absolute',
@@ -1766,7 +1769,7 @@ export default function Dashboard() {
               border: '1px solid rgba(255,255,255,0.1)',
               zIndex: 2
             }}>
-              <img src="/global_connection_2_1778758015960.png" alt="Global" style={{ width: '100%', height: 'auto' }} />
+              <Image src="/global_connection_2_1778758015960.png" alt="Global" width={400} height={300} style={{ width: '100%', height: 'auto' }} />
             </div>
             <div className="gallery-sub" style={{
               position: 'absolute',
@@ -1779,7 +1782,7 @@ export default function Dashboard() {
               border: '1px solid rgba(255,255,255,0.1)',
               zIndex: 2
             }}>
-              <img src="/safe_video_chat_3_1778758050606.png" alt="Safe" style={{ width: '100%', height: 'auto' }} />
+              <Image src="/safe_video_chat_3_1778758050606.png" alt="Safe" width={400} height={300} style={{ width: '100%', height: 'auto' }} />
             </div>
           </div>
         </div>
@@ -1789,7 +1792,7 @@ export default function Dashboard() {
       <div className="friends-promo-section" style={{ padding: '80px 20px', maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '80px', alignItems: 'center' }}>
           <div className="friends-visual" style={{ position: 'relative' }}>
-            <img src="/global-friends.png" alt="Global Friends" style={{ width: '100%', borderRadius: '40px', boxShadow: '0 40px 100px rgba(99,102,241,0.2)' }} />
+            <Image src="/global-friends.png" alt="Global Friends" width={800} height={600} style={{ width: '100%', height: 'auto', borderRadius: '40px', boxShadow: '0 40px 100px rgba(99,102,241,0.2)' }} />
           </div>
           <div className="friends-text">
             <h2 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '20px', letterSpacing: '-1px' }}>Build your <span>Global Circle.</span></h2>
@@ -1818,7 +1821,7 @@ export default function Dashboard() {
       <section className="home-support-banner" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '50px' }}>
         <div className="support-banner-content">
           <div className="support-banner-visual">
-            <img src="/home-support-3d.png" alt="Safety Shield" className="floating-3d-shield" />
+            <Image src="/home-support-3d.png" alt="Safety Shield" width={400} height={400} className="floating-3d-shield" style={{ width: '100%', height: 'auto' }} />
             <div className="visual-glow" />
           </div>
           <div className="support-banner-text">

@@ -1,5 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import axios from "axios";
 
@@ -70,7 +71,7 @@ export default function Contact() {
           </div>
           <div className="hero-visual">
             <div className="visual-wrapper">
-              <img src="/support-3d.png" alt="Support Team" className="main-3d-img" />
+              <Image src="/support-3d.png" alt="Support Team" width={800} height={600} className="main-3d-img" style={{ width: '100%', height: 'auto' }} />
               <div className="floating-card c1">🚀 2hr Avg Response</div>
               <div className="floating-card c2">🛡️ Secured Channel</div>
             </div>

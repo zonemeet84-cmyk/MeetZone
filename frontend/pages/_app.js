@@ -1,4 +1,8 @@
 import '../styles/globals.css'
+import { Inter } from 'next/font/google'
+
+const inter = Inter({ subsets: ['latin'], display: 'swap' });
+
 import { SessionProvider } from "next-auth/react"
 import Head from 'next/head'
 import { useEffect } from 'react'
@@ -63,6 +67,11 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
 
   return (
     <SessionProvider session={session}>
+      <style jsx global>{`
+        html, body {
+          font-family: ${inter.style.fontFamily};
+        }
+      `}</style>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" href="/favicon.png" type="image/png" />

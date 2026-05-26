@@ -3231,7 +3231,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         </div>
 
         <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+          
           @keyframes float {
             0%, 100% { transform: translateY(0px) scale(1); opacity: 0.3; }
             50% { transform: translateY(-30px) scale(1.2); opacity: 0.8; }
@@ -3404,9 +3404,9 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         <Head>
           <title>Live Video Chat | ZoneMeet</title>
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js" crossorigin="anonymous"></script>
-          <script src="https://cdn.jsdelivr.net/npm/jeelizfacefilter/dist/jeelizFaceFilter.js" crossorigin="anonymous"></script>
         </Head>
+        <Script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js" strategy="lazyOnload" crossOrigin="anonymous" />
+        <Script src="https://cdn.jsdelivr.net/npm/jeelizfacefilter/dist/jeelizFaceFilter.js" strategy="lazyOnload" crossOrigin="anonymous" />
 
 
 
