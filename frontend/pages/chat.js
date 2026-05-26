@@ -1402,6 +1402,47 @@ export default function Home() {
   const originalAudioTrackRef = useRef(null);
   const pitchWorkletRegistered = useRef(false);
 
+  // Global AudioContext auto-resume helpers for mobile and desktop compatibility
+  useEffect(() => {
+    const resumeAudio = async () => {
+      if (audioCtx.current && audioCtx.current.state === 'suspended') {
+        try {
+          await audioCtx.current.resume();
+          console.log("[VoiceChanger] AudioContext resumed successfully via user interaction.");
+        } catch (err) {
+          console.warn("[VoiceChanger] Failed to resume AudioContext on user interaction:", err);
+        }
+      }
+    };
+
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible' && audioCtx.current) {
+        if (audioCtx.current.state === 'suspended') {
+          try {
+            await audioCtx.current.resume();
+            console.log("[VoiceChanger] AudioContext resumed on page visibility change.");
+          } catch (err) {
+            console.warn("[VoiceChanger] Failed to resume AudioContext on visibility change:", err);
+          }
+        }
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('click', resumeAudio);
+      window.addEventListener('touchstart', resumeAudio);
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('click', resumeAudio);
+        window.removeEventListener('touchstart', resumeAudio);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -1620,6 +1661,17 @@ export default function Home() {
         } catch (fbErr) {
           console.error("Camera access failed completely.", fbErr);
           setStatus("Please allow camera/mic access");
+          let errorMessage = "Camera/microphone access failed. Please enable permissions in your browser settings.";
+          if (fbErr.name === 'NotAllowedError' || fbErr.name === 'PermissionDeniedError') {
+            errorMessage = "Permission denied: Please allow camera and microphone access in your browser address bar/settings.";
+          } else if (fbErr.name === 'NotFoundError' || fbErr.name === 'DevicesNotFoundError') {
+            errorMessage = "No camera or microphone found. Please connect your hardware device and try again.";
+          } else if (fbErr.name === 'NotReadableError' || fbErr.name === 'TrackStartError') {
+            errorMessage = "Your camera or microphone is already in use by another app/tab. Please close it and refresh.";
+          } else if (fbErr.name === 'OverconstrainedError') {
+            errorMessage = "Camera constraints could not be satisfied. Please choose a different device or refresh.";
+          }
+          showToast(errorMessage, "error", 8000);
         }
       }
 
@@ -2191,6 +2243,15 @@ export default function Home() {
       if (streamInstance) {
         streamInstance.getTracks().forEach((track) => track.stop());
       }
+      if (audioCtx.current) {
+        try {
+          audioCtx.current.close();
+          console.log("[VoiceChanger] Closed AudioContext on unmount");
+        } catch(e) {
+          console.error("Error closing AudioContext:", e);
+        }
+        audioCtx.current = null;
+      }
       if (socket) socket.disconnect();
     };
   }, [session, sessionStatus]);
@@ -2272,6 +2333,25 @@ export default function Home() {
     peerConnection.current.ontrack = (event) => {
       if (remoteVideo.current) {
         remoteVideo.current.srcObject = event.streams[0];
+        
+        // Explicitly play and handle autoplay restrictions on mobile/desktop
+        const playPromise = remoteVideo.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.warn("[Autoplay] Playback was prevented by browser auto-play policies:", error);
+            const resumePlay = () => {
+              if (remoteVideo.current) {
+                remoteVideo.current.play().then(() => {
+                  document.removeEventListener('click', resumePlay);
+                  document.removeEventListener('touchstart', resumePlay);
+                }).catch(e => console.error("[Autoplay] User gesture play failed:", e));
+              }
+            };
+            document.addEventListener('click', resumePlay);
+            document.addEventListener('touchstart', resumePlay);
+          });
+        }
+
         // Short delay to ensure video is ready
         setTimeout(() => {
           setShowPartnerPreview(false);
@@ -2494,10 +2574,17 @@ export default function Home() {
     if (stream) {
       const audioTrack = stream.getAudioTracks()[0];
       if (audioTrack) {
-        audioTrack.enabled = !audioTrack.enabled;
-        setIsMicOn(audioTrack.enabled);
+        const newEnabled = !audioTrack.enabled;
+        audioTrack.enabled = newEnabled;
+        setIsMicOn(newEnabled);
+
+        // Sync state to the active processed track so the partner hears silence
+        if (processedAudioTrackRef.current) {
+          processedAudioTrackRef.current.enabled = newEnabled;
+        }
+
         if (socket) {
-          socket.emit("mic-state-change", { enabled: audioTrack.enabled });
+          socket.emit("mic-state-change", { enabled: newEnabled });
         }
       }
     }
@@ -2506,34 +2593,86 @@ export default function Home() {
   // Register AudioWorklet processor for pitch shifting (one-time per AudioContext)
   const registerPitchWorklet = async (ctx) => {
     if (pitchWorkletRegistered.current) return;
+    console.log('[VoiceChanger] Starting AudioWorklet registration...');
     const workletCode = `
 class PitchShifterProcessor extends AudioWorkletProcessor {
   constructor(options) {
     super();
     this.pitchRatio = options.processorOptions?.pitchRatio || 1.0;
-    this.bufSize = 16384;
+    
+    // Buffer parameters
+    this.bufSize = 8192;
     this.ringBuffer = new Float32Array(this.bufSize);
-    this.readPtr = 0;
     this.writePtr = 0;
+    
+    // Position of read pointer (start 2048 samples behind)
+    this.readPtr = 0.0;
+    
+    // Crossfade configuration to prevent clicking/popping
+    this.isCrossfading = false;
+    this.crossfadeLength = 256;
+    this.crossfadeIndex = 0;
+    this.crossfadeReadPtr = 0.0;
   }
+
   process(inputs, outputs) {
     const input = inputs[0]?.[0];
     const output = outputs[0]?.[0];
     if (!input || !output) return true;
-    for (let i = 0; i < input.length; i++) {
+
+    const inputLength = input.length;
+    for (let i = 0; i < inputLength; i++) {
+      // 1. Write incoming sample to ring buffer
       this.ringBuffer[this.writePtr] = input[i];
-      this.writePtr = (this.writePtr + 1) % this.bufSize;
+
+      // 2. Read shifted sample with linear interpolation
       const idx = Math.floor(this.readPtr);
-      const next = (idx + 1) % this.bufSize;
+      const nextIdx = (idx + 1) % this.bufSize;
       const frac = this.readPtr - idx;
-      output[i] = this.ringBuffer[idx] + frac * (this.ringBuffer[next] - this.ringBuffer[idx]);
-      this.readPtr += this.pitchRatio;
-      if (this.readPtr >= this.bufSize) this.readPtr -= this.bufSize;
-      const diff = (this.writePtr - this.readPtr + this.bufSize) % this.bufSize;
-      if (diff > 1536 || diff < 256) {
-        this.readPtr = (this.writePtr - 768 + this.bufSize) % this.bufSize;
+      let sample = this.ringBuffer[idx] + frac * (this.ringBuffer[nextIdx] - this.ringBuffer[idx]);
+
+      // 3. Handle crossfading if pointer jumped
+      if (this.isCrossfading) {
+        const oldIdx = Math.floor(this.crossfadeReadPtr);
+        const oldNextIdx = (oldIdx + 1) % this.bufSize;
+        const oldFrac = this.crossfadeReadPtr - oldIdx;
+        const oldSample = this.ringBuffer[oldIdx] + oldFrac * (this.ringBuffer[oldNextIdx] - this.ringBuffer[oldIdx]);
+
+        const alpha = this.crossfadeIndex / this.crossfadeLength;
+        sample = oldSample * (1.0 - alpha) + sample * alpha;
+
+        this.crossfadeReadPtr = (this.crossfadeReadPtr + this.pitchRatio) % this.bufSize;
+        this.crossfadeIndex++;
+
+        if (this.crossfadeIndex >= this.crossfadeLength) {
+          this.isCrossfading = false;
+        }
+      }
+
+      output[i] = sample;
+
+      // 4. Advance write pointer
+      this.writePtr = (this.writePtr + 1) % this.bufSize;
+
+      // 5. Advance primary read pointer
+      this.readPtr = (this.readPtr + this.pitchRatio) % this.bufSize;
+
+      // 6. Check pointer distance limits to prevent overflow/underflow
+      const distance = (this.writePtr - this.readPtr + this.bufSize) % this.bufSize;
+      const minDistance = 512;
+      const maxDistance = 4096;
+      const targetDistance = 2048;
+
+      if (distance < minDistance || distance > maxDistance) {
+        if (!this.isCrossfading) {
+          this.isCrossfading = true;
+          this.crossfadeIndex = 0;
+          this.crossfadeReadPtr = this.readPtr;
+        }
+        this.readPtr = (this.writePtr - targetDistance + this.bufSize) % this.bufSize;
       }
     }
+
     return true;
   }
 }
@@ -2560,17 +2699,25 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
   };
 
   const applyVoiceFilter = async (voice) => {
+    console.log(`[VoiceChanger] applyVoiceFilter called with: ${voice}`);
     setActiveVoice(voice);
-    if (!localVideo.current?.srcObject) return;
+    if (!localVideo.current?.srcObject) {
+      console.warn("[VoiceChanger] Cannot apply filter: localVideo stream is not active.");
+      return;
+    }
 
     // Stop previous processed track if any
     if (processedAudioTrackRef.current) {
-      try { processedAudioTrackRef.current.stop(); } catch(e) {}
+      try { 
+        processedAudioTrackRef.current.stop(); 
+        console.log("[VoiceChanger] Stopped previous processed track");
+      } catch(e) {}
       processedAudioTrackRef.current = null;
     }
 
     // Disconnect and stop all active nodes in the previous graph
     if (activeVoiceNodesRef.current) {
+      console.log("[VoiceChanger] Cleaning up previous audio graph nodes...");
       activeVoiceNodesRef.current.forEach(node => {
         try { node.disconnect(); } catch(e) {}
         try { node.stop?.(); } catch(e) {}
@@ -2590,13 +2737,6 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
 
     destinationNode.current = null;
 
-    if (!audioCtx.current) {
-      audioCtx.current = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioCtx.current.state === 'suspended') {
-      await audioCtx.current.resume();
-    }
-
     if (voice === "Normal") {
       processedAudioTrackRef.current = null;
       const origTrack = originalAudioTrackRef.current || localVideo.current?.srcObject?.getAudioTracks()[0];
@@ -2604,175 +2744,246 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         const senders = peerConnection.current.getSenders();
         const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
         if (audioSender) {
-          await audioSender.replaceTrack(origTrack);
-          console.log('[VoiceChanger] Reverted to original mic track');
+          try {
+            await audioSender.replaceTrack(origTrack);
+            console.log('[VoiceChanger] Reverted WebRTC sender to original mic track');
+          } catch (err) {
+            console.error('[VoiceChanger] Failed to replace WebRTC track on normal revert:', err);
+          }
         }
       }
       return;
     }
 
-    // Register AudioWorklet pitch processor (one-time)
-    await registerPitchWorklet(audioCtx.current);
-
-    const rawStream = localVideo.current.srcObject;
-    sourceNode.current = audioCtx.current.createMediaStreamSource(rawStream);
-    const dest = audioCtx.current.createMediaStreamDestination();
-    destinationNode.current = dest;
-
-    // Splitter GainNode: routes processed audio to both WebRTC dest and keepAlive
-    const splitter = audioCtx.current.createGain();
-    splitter.gain.value = 1.0;
-
-    // keepAlive: zero-gain path to speakers. Required to keep audio graph alive.
-    const keepAlive = audioCtx.current.createGain();
-    keepAlive.gain.value = 0;
-    splitter.connect(dest);
-    splitter.connect(keepAlive);
-    keepAlive.connect(audioCtx.current.destination);
-    keepAliveGainRef.current = keepAlive;
-
-    const nodesToCleanup = [splitter, keepAlive];
-
-    if (voice === "Baby Voice") {
-      const hp = audioCtx.current.createBiquadFilter();
-      hp.type = "highpass"; hp.frequency.value = 250;
-      nodesToCleanup.push(hp);
-      const peak = audioCtx.current.createBiquadFilter();
-      peak.type = "peaking"; peak.frequency.value = 3000; peak.Q.value = 1.5; peak.gain.value = 8;
-      nodesToCleanup.push(peak);
-      const pitch = createPitchShifterNode(audioCtx.current, 1.6);
-      nodesToCleanup.push(pitch);
-      sourceNode.current.connect(hp).connect(peak).connect(pitch).connect(splitter);
-
-    } else if (voice === "Girl Voice") {
-      const hp = audioCtx.current.createBiquadFilter();
-      hp.type = "highpass"; hp.frequency.value = 200;
-      nodesToCleanup.push(hp);
-      const peak = audioCtx.current.createBiquadFilter();
-      peak.type = "peaking"; peak.frequency.value = 2500; peak.Q.value = 1.2; peak.gain.value = 6;
-      nodesToCleanup.push(peak);
-      const pitch = createPitchShifterNode(audioCtx.current, 1.32);
-      nodesToCleanup.push(pitch);
-      sourceNode.current.connect(hp).connect(peak).connect(pitch).connect(splitter);
-
-    } else if (voice === "Anime Voice") {
-      const hp = audioCtx.current.createBiquadFilter();
-      hp.type = "highpass"; hp.frequency.value = 300;
-      nodesToCleanup.push(hp);
-      const peak = audioCtx.current.createBiquadFilter();
-      peak.type = "peaking"; peak.frequency.value = 3800; peak.Q.value = 2.0; peak.gain.value = 10;
-      nodesToCleanup.push(peak);
-      const pitch = createPitchShifterNode(audioCtx.current, 1.52);
-      nodesToCleanup.push(pitch);
-      sourceNode.current.connect(hp).connect(peak).connect(pitch).connect(splitter);
-
-    } else if (voice === "Ghost Whisper") {
-      const hp = audioCtx.current.createBiquadFilter();
-      hp.type = "highpass"; hp.frequency.value = 800;
-      nodesToCleanup.push(hp);
-      const pitch = createPitchShifterNode(audioCtx.current, 0.9);
-      nodesToCleanup.push(pitch);
-      const tremolo = audioCtx.current.createGain();
-      tremolo.gain.value = 0.6;
-      nodesToCleanup.push(tremolo);
-      const lfo = audioCtx.current.createOscillator();
-      lfo.frequency.value = 15;
-      nodesToCleanup.push(lfo);
-      const lfoGain = audioCtx.current.createGain();
-      lfoGain.gain.value = 0.3;
-      nodesToCleanup.push(lfoGain);
-      lfo.connect(lfoGain);
-      lfoGain.connect(tremolo.gain);
-      lfo.start();
-      const delay = audioCtx.current.createDelay(1.0);
-      delay.delayTime.value = 0.4;
-      nodesToCleanup.push(delay);
-      const feedback = audioCtx.current.createGain();
-      feedback.gain.value = 0.5;
-      nodesToCleanup.push(feedback);
-      sourceNode.current.connect(hp);
-      hp.connect(pitch);
-      pitch.connect(tremolo);
-      tremolo.connect(splitter);
-      tremolo.connect(delay);
-      delay.connect(feedback);
-      feedback.connect(delay);
-      feedback.connect(splitter);
-
-    } else if (voice === "Cartoon Voice") {
-      const hp = audioCtx.current.createBiquadFilter();
-      hp.type = "highpass"; hp.frequency.value = 220;
-      nodesToCleanup.push(hp);
-      const pitch = createPitchShifterNode(audioCtx.current, 1.45);
-      nodesToCleanup.push(pitch);
-      const vibratoDelay = audioCtx.current.createDelay(1.0);
-      vibratoDelay.delayTime.value = 0.005;
-      nodesToCleanup.push(vibratoDelay);
-      const lfo = audioCtx.current.createOscillator();
-      lfo.frequency.value = 8;
-      nodesToCleanup.push(lfo);
-      const lfoGain = audioCtx.current.createGain();
-      lfoGain.gain.value = 0.002;
-      nodesToCleanup.push(lfoGain);
-      lfo.connect(lfoGain);
-      lfoGain.connect(vibratoDelay.delayTime);
-      lfo.start();
-      sourceNode.current.connect(hp).connect(pitch).connect(vibratoDelay).connect(splitter);
-
-    } else if (voice === "AI girl voice") {
-      const hp = audioCtx.current.createBiquadFilter();
-      hp.type = "highpass"; hp.frequency.value = 180;
-      nodesToCleanup.push(hp);
-      const pitch = createPitchShifterNode(audioCtx.current, 1.35);
-      nodesToCleanup.push(pitch);
-      const combDelay = audioCtx.current.createDelay(1.0);
-      combDelay.delayTime.value = 0.0012;
-      nodesToCleanup.push(combDelay);
-      const combFeedback = audioCtx.current.createGain();
-      combFeedback.gain.value = 0.8;
-      nodesToCleanup.push(combFeedback);
-      sourceNode.current.connect(hp).connect(pitch).connect(splitter);
-      pitch.connect(combDelay);
-      combDelay.connect(combFeedback);
-      combFeedback.connect(combDelay);
-      combFeedback.connect(splitter);
-
-    } else if (voice === "Sigma deep voice") {
-      const peak = audioCtx.current.createBiquadFilter();
-      peak.type = "peaking"; peak.frequency.value = 85; peak.Q.value = 1.0; peak.gain.value = 12;
-      nodesToCleanup.push(peak);
-      const lp = audioCtx.current.createBiquadFilter();
-      lp.type = "lowpass"; lp.frequency.value = 1000;
-      nodesToCleanup.push(lp);
-      const pitch = createPitchShifterNode(audioCtx.current, 0.72);
-      nodesToCleanup.push(pitch);
-      sourceNode.current.connect(peak).connect(lp).connect(pitch).connect(splitter);
-
-    } else {
-      sourceNode.current.connect(splitter);
+    // Initialize and resume AudioContext
+    try {
+      if (!audioCtx.current) {
+        audioCtx.current = new (window.AudioContext || window.webkitAudioContext)();
+        console.log("[VoiceChanger] Created new AudioContext instance");
+      }
+      if (audioCtx.current.state === 'suspended') {
+        console.log("[VoiceChanger] AudioContext suspended, attempting to resume...");
+        await audioCtx.current.resume();
+        console.log("[VoiceChanger] AudioContext state after resume:", audioCtx.current.state);
+      }
+    } catch (err) {
+      console.error("[VoiceChanger] Failed to initialize AudioContext:", err);
+      showToast("Audio hardware issue. Reverting to normal voice.", "error");
+      return;
     }
 
-    activeVoiceNodesRef.current = nodesToCleanup;
-    const processedTrack = dest.stream.getAudioTracks()[0];
-    processedAudioTrackRef.current = processedTrack;
-    console.log('[VoiceChanger] Processed track created:', voice, processedTrack?.readyState);
+    // Check AudioWorklet availability (Fallback/Browser check)
+    const isWorkletSupported = !!(audioCtx.current.audioWorklet && typeof AudioWorkletNode !== 'undefined');
+    if (!isWorkletSupported) {
+      console.warn("[VoiceChanger] AudioWorklet is not supported in this browser environment.");
+      showToast("Voice effects are not supported on this browser version. Reverting to normal voice.", "warning");
+      return;
+    }
 
-    // Replace audio track in WebRTC peer connection
-    if (peerConnection.current) {
-      const senders = peerConnection.current.getSenders();
-      const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
-      if (audioSender && processedTrack) {
+    // Register AudioWorklet pitch processor (one-time per AudioContext context)
+    await registerPitchWorklet(audioCtx.current);
+
+    if (!pitchWorkletRegistered.current) {
+      console.warn("[VoiceChanger] AudioWorklet failed to register. Bypassing voice filter.");
+      showToast("Could not register voice changer engine. Reverting to normal voice.", "warning");
+      return;
+    }
+
+    const rawStream = localVideo.current.srcObject;
+    const rawTrack = rawStream.getAudioTracks()[0];
+    if (!rawTrack) {
+      console.error("[VoiceChanger] No active microphone track found in localVideo.srcObject.");
+      showToast("Microphone is not active. Please unmute or allow access.", "error");
+      return;
+    }
+
+    try {
+      sourceNode.current = audioCtx.current.createMediaStreamSource(rawStream);
+      const dest = audioCtx.current.createMediaStreamDestination();
+      destinationNode.current = dest;
+
+      // Splitter GainNode: routes processed audio to both WebRTC dest and keepAlive
+      const splitter = audioCtx.current.createGain();
+      splitter.gain.value = 1.0;
+
+      // keepAlive: zero-gain path to speakers. Required to prevent browser idling/disconnecting the graph
+      const keepAlive = audioCtx.current.createGain();
+      keepAlive.gain.value = 0.0;
+      splitter.connect(dest);
+      splitter.connect(keepAlive);
+      keepAlive.connect(audioCtx.current.destination);
+      keepAliveGainRef.current = keepAlive;
+
+      const nodesToCleanup = [splitter, keepAlive];
+
+      // Helper function to create pitch shifter safely with error handling
+      const createPitchShifterSafely = (ratio) => {
         try {
-          await audioSender.replaceTrack(processedTrack);
-          console.log('[VoiceChanger] Successfully replaced WebRTC audio track with:', voice);
-        } catch (err) {
-          console.error('[VoiceChanger] Failed to replace audio track:', err);
+          const node = createPitchShifterNode(audioCtx.current, ratio);
+          nodesToCleanup.push(node);
+          return node;
+        } catch (e) {
+          console.error(`[VoiceChanger] Failed to create AudioWorkletNode with pitchRatio ${ratio}:`, e);
+          throw e;
+        }
+      };
+
+      if (voice === "Baby Voice") {
+        const hp = audioCtx.current.createBiquadFilter();
+        hp.type = "highpass"; hp.frequency.value = 250;
+        nodesToCleanup.push(hp);
+        const peak = audioCtx.current.createBiquadFilter();
+        peak.type = "peaking"; peak.frequency.value = 3000; peak.Q.value = 1.5; peak.gain.value = 8;
+        nodesToCleanup.push(peak);
+        const pitch = createPitchShifterSafely(1.6);
+        sourceNode.current.connect(hp).connect(peak).connect(pitch).connect(splitter);
+
+      } else if (voice === "Girl Voice") {
+        const hp = audioCtx.current.createBiquadFilter();
+        hp.type = "highpass"; hp.frequency.value = 200;
+        nodesToCleanup.push(hp);
+        const peak = audioCtx.current.createBiquadFilter();
+        peak.type = "peaking"; peak.frequency.value = 2500; peak.Q.value = 1.2; peak.gain.value = 6;
+        nodesToCleanup.push(peak);
+        const pitch = createPitchShifterSafely(1.32);
+        sourceNode.current.connect(hp).connect(peak).connect(pitch).connect(splitter);
+
+      } else if (voice === "Anime Voice") {
+        const hp = audioCtx.current.createBiquadFilter();
+        hp.type = "highpass"; hp.frequency.value = 300;
+        nodesToCleanup.push(hp);
+        const peak = audioCtx.current.createBiquadFilter();
+        peak.type = "peaking"; peak.frequency.value = 3800; peak.Q.value = 2.0; peak.gain.value = 10;
+        nodesToCleanup.push(peak);
+        const pitch = createPitchShifterSafely(1.52);
+        sourceNode.current.connect(hp).connect(peak).connect(pitch).connect(splitter);
+
+      } else if (voice === "Ghost Whisper") {
+        const hp = audioCtx.current.createBiquadFilter();
+        hp.type = "highpass"; hp.frequency.value = 800;
+        nodesToCleanup.push(hp);
+        const pitch = createPitchShifterSafely(0.9);
+        const tremolo = audioCtx.current.createGain();
+        tremolo.gain.value = 0.6;
+        nodesToCleanup.push(tremolo);
+        const lfo = audioCtx.current.createOscillator();
+        lfo.frequency.value = 15;
+        nodesToCleanup.push(lfo);
+        const lfoGain = audioCtx.current.createGain();
+        lfoGain.gain.value = 0.3;
+        nodesToCleanup.push(lfoGain);
+        lfo.connect(lfoGain);
+        lfoGain.connect(tremolo.gain);
+        lfo.start();
+        const delay = audioCtx.current.createDelay(1.0);
+        delay.delayTime.value = 0.4;
+        nodesToCleanup.push(delay);
+        const feedback = audioCtx.current.createGain();
+        feedback.gain.value = 0.5;
+        nodesToCleanup.push(feedback);
+        sourceNode.current.connect(hp);
+        hp.connect(pitch);
+        pitch.connect(tremolo);
+        tremolo.connect(splitter);
+        tremolo.connect(delay);
+        delay.connect(feedback);
+        feedback.connect(delay);
+        feedback.connect(splitter);
+
+      } else if (voice === "Cartoon Voice") {
+        const hp = audioCtx.current.createBiquadFilter();
+        hp.type = "highpass"; hp.frequency.value = 220;
+        nodesToCleanup.push(hp);
+        const pitch = createPitchShifterSafely(1.45);
+        const vibratoDelay = audioCtx.current.createDelay(1.0);
+        vibratoDelay.delayTime.value = 0.005;
+        nodesToCleanup.push(vibratoDelay);
+        const lfo = audioCtx.current.createOscillator();
+        lfo.frequency.value = 8;
+        nodesToCleanup.push(lfo);
+        const lfoGain = audioCtx.current.createGain();
+        lfoGain.gain.value = 0.002;
+        nodesToCleanup.push(lfoGain);
+        lfo.connect(lfoGain);
+        lfoGain.connect(vibratoDelay.delayTime);
+        lfo.start();
+        sourceNode.current.connect(hp).connect(pitch).connect(vibratoDelay).connect(splitter);
+
+      } else if (voice === "AI girl voice") {
+        const hp = audioCtx.current.createBiquadFilter();
+        hp.type = "highpass"; hp.frequency.value = 180;
+        nodesToCleanup.push(hp);
+        const pitch = createPitchShifterSafely(1.35);
+        const combDelay = audioCtx.current.createDelay(1.0);
+        combDelay.delayTime.value = 0.0012;
+        nodesToCleanup.push(combDelay);
+        const combFeedback = audioCtx.current.createGain();
+        combFeedback.gain.value = 0.8;
+        nodesToCleanup.push(combFeedback);
+        sourceNode.current.connect(hp).connect(pitch).connect(splitter);
+        pitch.connect(combDelay);
+        combDelay.connect(combFeedback);
+        combFeedback.connect(combDelay);
+        combFeedback.connect(splitter);
+
+      } else if (voice === "Sigma deep voice") {
+        const peak = audioCtx.current.createBiquadFilter();
+        peak.type = "peaking"; peak.frequency.value = 85; peak.Q.value = 1.0; peak.gain.value = 12;
+        nodesToCleanup.push(peak);
+        const lp = audioCtx.current.createBiquadFilter();
+        lp.type = "lowpass"; lp.frequency.value = 1000;
+        nodesToCleanup.push(lp);
+        const pitch = createPitchShifterSafely(0.72);
+        sourceNode.current.connect(peak).connect(lp).connect(pitch).connect(splitter);
+
+      } else {
+        sourceNode.current.connect(splitter);
+      }
+
+      activeVoiceNodesRef.current = nodesToCleanup;
+      const processedTrack = dest.stream.getAudioTracks()[0];
+      processedAudioTrackRef.current = processedTrack;
+
+      // Keep track's enabled state synchronized with isMicOn
+      processedTrack.enabled = isMicOn;
+
+      console.log('[VoiceChanger] Processed track created successfully:', voice, 'Track readyState:', processedTrack?.readyState);
+
+      // Re-confirm AudioContext is active
+      if (audioCtx.current.state === 'suspended') {
+        await audioCtx.current.resume();
+      }
+
+      // Replace audio track in active peer connection
+      if (peerConnection.current) {
+        const senders = peerConnection.current.getSenders();
+        const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
+        if (audioSender && processedTrack) {
+          try {
+            await audioSender.replaceTrack(processedTrack);
+            console.log('[VoiceChanger] Replaced peerConnection audio track successfully.');
+          } catch (err) {
+            console.error('[VoiceChanger] Failed to hot-swap track on active peerConnection:', err);
+          }
+        } else {
+          console.log('[VoiceChanger] Active peerConnection exists, but no audio sender track found.');
         }
       } else {
-        console.log('[VoiceChanger] No audio sender — track stored for next peer connection');
+        console.log('[VoiceChanger] No active peerConnection yet. Processed track queued for next call.');
       }
-    } else {
-      console.log('[VoiceChanger] No peer connection — processed track stored for next connection');
+    } catch (err) {
+      console.error("[VoiceChanger] Audio graph connection failed:", err);
+      showToast("Failed to apply voice changer effect. Reverting to normal.", "error");
+      
+      // Revert WebRTC sender track back to normal to prevent call mute/crash
+      const origTrack = originalAudioTrackRef.current || localVideo.current?.srcObject?.getAudioTracks()[0];
+      if (peerConnection.current && origTrack) {
+        const senders = peerConnection.current.getSenders();
+        const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
+        if (audioSender) {
+          try { await audioSender.replaceTrack(origTrack); } catch (e) {}
+        }
+      }
     }
   };
 
