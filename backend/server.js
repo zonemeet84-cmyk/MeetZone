@@ -4096,15 +4096,29 @@ function endQuiz(roomId) {
       const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
+      const getAmount = (t) => {
+        if (t.amount) return t.amount;
+        if (!t.planName) return 0;
+        if (t.planName.includes("Starter")) return 149;
+        if (t.planName.includes("Prime")) return 599;
+        if (t.planName.includes("VIP Elite")) return 999;
+        if (t.planName.includes("Silver")) return 1599;
+        if (t.planName.includes("100 Coins")) return 79;
+        if (t.planName.includes("200 Coins")) return 149;
+        if (t.planName.includes("500 Coins")) return 299;
+        if (t.planName.includes("1300 Coins")) return 699;
+        return 0;
+      };
+
       const todayRevenue = transactions
         .filter(t => t.timestamp >= startOfDay)
-        .reduce((sum, t) => sum + (t.amount || 0), 0);
+        .reduce((sum, t) => sum + getAmount(t), 0);
 
       const monthlyRevenue = transactions
         .filter(t => t.timestamp >= startOfMonth)
-        .reduce((sum, t) => sum + (t.amount || 0), 0);
+        .reduce((sum, t) => sum + getAmount(t), 0);
 
-      const lifetimeRevenue = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+      const lifetimeRevenue = transactions.reduce((sum, t) => sum + getAmount(t), 0);
 
       // COIN SPECIFIC ANALYTICS
       const totalCoinsSold = transactions.reduce((sum, t) => {
@@ -4119,7 +4133,7 @@ function endQuiz(roomId) {
 
       const revenueFromCoins = transactions
         .filter(t => t.type === "coins")
-        .reduce((sum, t) => sum + (t.amount || 0), 0);
+        .reduce((sum, t) => sum + getAmount(t), 0);
 
       // Coins Spent Today
       let coinsSpentToday = 0;
@@ -4149,7 +4163,7 @@ function endQuiz(roomId) {
           lifetime: lifetimeRevenue,
           premiumSales: users.filter(u => u.premium).length,
           coinPurchases: transactions.filter(t => t.type === "coins").length,
-          history: transactions.slice(-20).reverse()
+          history: transactions.slice(-20).reverse().map(t => ({...t, amount: getAmount(t)}))
         },
         coins: {
           totalSold: totalCoinsSold,
@@ -4224,7 +4238,7 @@ function endQuiz(roomId) {
     // DELETE a specific admin report (admin only)
     app.delete("/api/admin/reports/:id", authenticateAdmin, (req, res) => {
       const reportId = req.params.id;
-      const index = reports.findIndex(r => r.id === reportId);
+      const index = reports.findIndex(r => r.id.toString() === reportId.toString());
       if (index === -1) return res.status(404).json({ error: "Report not found" });
       reports.splice(index, 1);
       saveReports();

@@ -471,7 +471,7 @@ export default function AdminDashboard() {
 
         {/* DYNAMIC VIEWS */}
         <div className="view-container">
-           {activeTab === "dashboard" && (
+           {(activeTab === "dashboard" || activeTab === "analytics") && (
              <div className="fade-in">
                 <div className="dashboard-header-flex">
                    <div className="guardian-status">
