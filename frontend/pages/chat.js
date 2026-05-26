@@ -2087,6 +2087,8 @@ export default function Home() {
       });
 
       // --- QUIZ DUEL / BRAIN CLASH EVENTS ---
+      socket.on("quiz-category-stats", setQuizCategoryStats);
+      
       socket.on("quiz-queue-joined", () => {
         setQuizState("queued");
         setQuizError(null);
