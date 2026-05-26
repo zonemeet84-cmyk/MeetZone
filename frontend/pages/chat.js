@@ -260,10 +260,23 @@ export default function Home() {
   const [translateLang, setTranslateLang] = useState("off");
   const [translateEnabled, setTranslateEnabled] = useState(false);
   const [subtitlesOn, setSubtitlesOn] = useState(false);
+  const [subtitlesLang, setSubtitlesLang] = useState("en-US");
   const [partnerWantsSubtitles, setPartnerWantsSubtitles] = useState(false);
   const [currentSubtitle, setCurrentSubtitle] = useState("");
   const recognitionRef = useRef(null);
+  const isRecognitionRunningRef = useRef(false);
+  const subtitleTimeoutRef = useRef(null);
+  const socketRef = useRef(null);
   const userRef = useRef(null);
+
+  const subtitlesOnRef = useRef(subtitlesOn);
+  const partnerWantsSubtitlesRef = useRef(partnerWantsSubtitles);
+  const subtitlesLangRef = useRef(subtitlesLang);
+
+  useEffect(() => { subtitlesOnRef.current = subtitlesOn; }, [subtitlesOn]);
+  useEffect(() => { partnerWantsSubtitlesRef.current = partnerWantsSubtitles; }, [partnerWantsSubtitles]);
+  useEffect(() => { subtitlesLangRef.current = subtitlesLang; }, [subtitlesLang]);
+  useEffect(() => { socketRef.current = socket; }, [socket]);
   useEffect(() => { userRef.current = user; }, [user]);
 
   useEffect(() => {
@@ -271,6 +284,9 @@ export default function Home() {
     const enabled = localStorage.getItem("translateEnabled") === "true";
     if (saved) setTranslateLang(saved);
     setTranslateEnabled(enabled);
+
+    const savedSubLang = localStorage.getItem("subtitlesLang");
+    if (savedSubLang) setSubtitlesLang(savedSubLang);
   }, []);
 
   const handleTranslateChange = (e) => {
@@ -1999,16 +2015,22 @@ export default function Home() {
         }
       });
 
-      socket.on("receive-subtitle", ({ text }) => {
+      socket.on("receive-subtitle", ({ text, isFinal }) => {
         const u = userRef.current;
         const isPremium = u?.premium || u?.email === "ds9376314@gmail.com";
         const isStarter = u?.planName === "Starter" || u?.planName === "Starter Pack";
         
         if (isPremium && !isStarter) {
           setCurrentSubtitle(text);
-          setTimeout(() => {
+          
+          if (subtitleTimeoutRef.current) {
+            clearTimeout(subtitleTimeoutRef.current);
+          }
+          
+          const delay = isFinal ? 4000 : 8000;
+          subtitleTimeoutRef.current = setTimeout(() => {
             setCurrentSubtitle(prev => prev === text ? "" : prev);
-          }, 5000);
+          }, delay);
         }
       });
 
@@ -2266,55 +2288,159 @@ export default function Home() {
     return () => clearInterval(timer);
   }, [quizState, quizTimeLeft, quizResult]);
 
-  // Speech Recognition for Live Subtitles
-  useEffect(() => {
-    if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = true;
-      recognitionRef.current.interimResults = false;
+  // Helper to start recognition safely without crashing or permission looping
+  const startSpeechRecognition = () => {
+    if (recognitionRef.current && !isRecognitionRunningRef.current) {
+      try {
+        recognitionRef.current.start();
+        isRecognitionRunningRef.current = true;
+        console.log("[Subtitles] Speech recognition started.");
+      } catch (e) {
+        console.error("[Subtitles] Failed to start speech recognition:", e);
+      }
+    }
+  };
 
-      recognitionRef.current.onresult = (event) => {
+  // Helper to stop recognition safely
+  const stopSpeechRecognition = () => {
+    if (recognitionRef.current && isRecognitionRunningRef.current) {
+      try {
+        recognitionRef.current.stop();
+        isRecognitionRunningRef.current = false;
+        console.log("[Subtitles] Speech recognition stopped.");
+      } catch (e) {
+        console.error("[Subtitles] Failed to stop speech recognition:", e);
+      }
+    }
+  };
+
+  // Speech Recognition for Live Subtitles Setup (runs once on mount)
+  useEffect(() => {
+    const isSupported = typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
+    
+    if (isSupported) {
+      console.log("[Subtitles] SpeechRecognition is supported. Initializing...");
+      const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const rec = new SpeechRecognitionClass();
+      
+      rec.continuous = true;
+      rec.interimResults = true; // Enabled for real-time updates as the user speaks
+      rec.lang = subtitlesLangRef.current;
+
+      rec.onstart = () => {
+        isRecognitionRunningRef.current = true;
+        console.log("[Subtitles] SpeechRecognition onstart event fired.");
+      };
+
+      rec.onresult = (event) => {
+        let interimTranscript = '';
         let finalTranscript = '';
+
         for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const transcript = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
           }
         }
-        if (finalTranscript.trim() && socket && partnerId) {
-          socket.emit("send-subtitle", { text: finalTranscript, to: partnerId });
+
+        const textToSend = finalTranscript || interimTranscript;
+        if (textToSend.trim() && socketRef.current && partnerIdRef.current) {
+          console.log("[Subtitles] Live transcript detected:", textToSend, "isFinal:", !!finalTranscript);
+          socketRef.current.emit("send-subtitle", { 
+            text: textToSend, 
+            to: partnerIdRef.current,
+            isFinal: !!finalTranscript
+          });
         }
       };
 
-      recognitionRef.current.onend = () => {
-        // Auto-restart if it was stopped unexpectedly while supposed to be on
-        if ((subtitlesOn || partnerWantsSubtitles) && partnerId) {
-          try { recognitionRef.current.start(); } catch(e) {}
+      rec.onerror = (event) => {
+        console.error("[Subtitles] Speech recognition error event:", event.error);
+        if (event.error === 'not-allowed') {
+          showToast("Microphone permission denied for Live Subtitles. Please enable microphone access.", "error", 6000);
+          setSubtitlesOn(false);
+        } else if (event.error === 'service-not-allowed') {
+          showToast("Speech recognition service is not allowed or restricted by your browser.", "error", 6000);
+          setSubtitlesOn(false);
+        } else if (event.error === 'network') {
+          console.warn("[Subtitles] Network error occurred during recognition.");
         }
       };
+
+      rec.onend = () => {
+        isRecognitionRunningRef.current = false;
+        console.log("[Subtitles] Speech recognition ended.");
+
+        // Safe auto-restart logic with 1-second delay to prevent prompt/crash loops
+        if ((subtitlesOnRef.current || partnerWantsSubtitlesRef.current) && partnerIdRef.current) {
+          console.log("[Subtitles] Auto-restarting speech engine in 1s...");
+          setTimeout(() => {
+            if ((subtitlesOnRef.current || partnerWantsSubtitlesRef.current) && partnerIdRef.current) {
+              startSpeechRecognition();
+            }
+          }, 1000);
+        }
+      };
+
+      recognitionRef.current = rec;
 
       return () => {
         if (recognitionRef.current) {
           try { recognitionRef.current.stop(); } catch(e) {}
+          recognitionRef.current = null;
         }
+        isRecognitionRunningRef.current = false;
       };
+    } else {
+      console.warn("[Subtitles] SpeechRecognition API not supported on this browser.");
     }
-  }, [partnerId, subtitlesOn, partnerWantsSubtitles]); // Re-bind when partner changes or state updates so callback has fresh variables
+  }, []); // Run exactly once
 
-  // Signal subtitles request to partner
+  // Handle language updates dynamically
+  useEffect(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.lang = subtitlesLang;
+      console.log(`[Subtitles] Updated recognition language model to: ${subtitlesLang}`);
+      
+      // Restart engine to apply the language change immediately if running
+      if (isRecognitionRunningRef.current) {
+        stopSpeechRecognition();
+        setTimeout(() => {
+          if (subtitlesOnRef.current || partnerWantsSubtitlesRef.current) {
+            startSpeechRecognition();
+          }
+        }, 300);
+      }
+    }
+  }, [subtitlesLang]);
+
+  // Signal subtitles request state to partner
   useEffect(() => {
     if (socket && partnerId) {
       socket.emit("request-subtitles", { enabled: subtitlesOn, to: partnerId });
     }
-  }, [subtitlesOn, partnerId]);
+  }, [subtitlesOn, partnerId, socket]);
 
+  // Toggle start/stop of speech recognition engine based on active states
   useEffect(() => {
-    if ((subtitlesOn || partnerWantsSubtitles) && partnerId && recognitionRef.current) {
-      try { recognitionRef.current.start(); } catch(e) {}
-    } else if (recognitionRef.current) {
-      try { recognitionRef.current.stop(); } catch(e) {}
+    if ((subtitlesOn || partnerWantsSubtitles) && partnerId) {
+      startSpeechRecognition();
+    } else {
+      stopSpeechRecognition();
     }
   }, [subtitlesOn, partnerWantsSubtitles, partnerId]);
+
+  // Toggle subtitles button handler
+  const handleToggleSubtitles = () => {
+    const isSupported = typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
+    if (!isSupported) {
+      showToast("Live Subtitles (Speech Recognition) is not supported in your browser. Please try Chrome, Edge, or Safari.", "warning", 6000);
+      return;
+    }
+    setSubtitlesOn(prev => !prev);
+  };
 
   const createPeer = (partner) => {
     peerConnection.current = new RTCPeerConnection(servers);
@@ -4064,9 +4190,43 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
               <div className="card-controls-wrapper partner-controls">
                 <div className="card-controls">
                   {user?.premium && user?.planName !== "Starter" && user?.planName !== "Starter Pack" && partnerId && (
-                    <button className={`ctrl-btn ${subtitlesOn ? 'active' : ''}`} onClick={() => setSubtitlesOn(!subtitlesOn)} title="Live Subtitles (CC)" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}>
-                      {subtitlesOn ? "CC: ON" : "CC: OFF"}
-                    </button>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                      <button className={`ctrl-btn ${subtitlesOn ? 'active' : ''}`} onClick={handleToggleSubtitles} title="Live Subtitles (CC)" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}>
+                        {subtitlesOn ? "CC: ON" : "CC: OFF"}
+                      </button>
+                      {subtitlesOn && (
+                        <select
+                          value={subtitlesLang}
+                          onChange={(e) => {
+                            const newLang = e.target.value;
+                            setSubtitlesLang(newLang);
+                            localStorage.setItem("subtitlesLang", newLang);
+                          }}
+                          style={{
+                            background: '#1e293b',
+                            color: '#fff',
+                            border: '1px solid #475569',
+                            borderRadius: '4px',
+                            padding: '0.2rem 0.4rem',
+                            fontSize: '0.8rem',
+                            cursor: 'pointer',
+                            outline: 'none',
+                            minWidth: '95px'
+                          }}
+                        >
+                          <option value="en-US">English</option>
+                          <option value="hi-IN">Hindi</option>
+                          <option value="es-ES">Spanish</option>
+                          <option value="fr-FR">French</option>
+                          <option value="de-DE">German</option>
+                          <option value="zh-CN">Chinese</option>
+                          <option value="ar-SA">Arabic</option>
+                          <option value="ru-RU">Russian</option>
+                          <option value="ja-JP">Japanese</option>
+                          <option value="pt-BR">Portuguese</option>
+                        </select>
+                      )}
+                    </div>
                   )}
                   {partnerId && (
                     <button className={`ctrl-btn ${friendReqStatus ? 'active' : ''}`} onClick={addFriend} disabled={friendReqStatus} title="Add Friend">
