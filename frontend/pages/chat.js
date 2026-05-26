@@ -2600,12 +2600,29 @@ export default function Home() {
       return;
     }
 
-    // Use the original raw mic track as source (not the stream which may have been modified)
+    // Architecture: source → filters/pitch → splitter → dest (WebRTC) 
+    //                                                  → keepAlive(gain=0) → speakers
+    // The keepAlive path (gain=0, so silent) is REQUIRED to force ScriptProcessorNode
+    // onaudioprocess to fire. Without a path to audioCtx.destination, the Web Audio
+    // engine skips processing and original voice passes through unchanged.
     const rawStream = localVideo.current.srcObject;
     sourceNode.current = audioCtx.current.createMediaStreamSource(rawStream);
     const dest = audioCtx.current.createMediaStreamDestination();
-    destinationNode.current = dest; // Prevent GC
-    const nodesToCleanup = [];
+    destinationNode.current = dest; // keep ref to prevent GC
+
+    // Splitter: collects final processed audio, routes to both WebRTC and speakers
+    const splitter = audioCtx.current.createGain();
+    splitter.gain.value = 1.0;
+
+    // Zero-gain node → speakers: forces ScriptProcessorNode to tick
+    const keepAlive = audioCtx.current.createGain();
+    keepAlive.gain.value = 0; // completely silent, no echo
+    splitter.connect(dest);
+    splitter.connect(keepAlive);
+    keepAlive.connect(audioCtx.current.destination);
+    keepAliveGainRef.current = keepAlive;
+
+    const nodesToCleanup = [splitter, keepAlive];
 
     if (voice === "Baby Voice") {
       const hp = audioCtx.current.createBiquadFilter();
@@ -2626,7 +2643,7 @@ export default function Home() {
       sourceNode.current.connect(hp);
       hp.connect(peak);
       peak.connect(pitch);
-      pitch.connect(dest);
+      pitch.connect(splitter);
 
     } else if (voice === "Girl Voice") {
       const hp = audioCtx.current.createBiquadFilter();
@@ -2647,7 +2664,7 @@ export default function Home() {
       sourceNode.current.connect(hp);
       hp.connect(peak);
       peak.connect(pitch);
-      pitch.connect(dest);
+      pitch.connect(splitter);
 
     } else if (voice === "Anime Voice") {
       const hp = audioCtx.current.createBiquadFilter();
@@ -2668,7 +2685,7 @@ export default function Home() {
       sourceNode.current.connect(hp);
       hp.connect(peak);
       peak.connect(pitch);
-      pitch.connect(dest);
+      pitch.connect(splitter);
 
     } else if (voice === "Ghost Whisper") {
       const hp = audioCtx.current.createBiquadFilter();
@@ -2706,13 +2723,13 @@ export default function Home() {
       sourceNode.current.connect(hp);
       hp.connect(pitch);
       pitch.connect(tremolo);
-      tremolo.connect(dest);
+      tremolo.connect(splitter);
 
       // Delay feedback loop
       tremolo.connect(delay);
       delay.connect(feedback);
       feedback.connect(delay);
-      feedback.connect(dest);
+      feedback.connect(splitter);
 
     } else if (voice === "Cartoon Voice") {
       const hp = audioCtx.current.createBiquadFilter();
@@ -2742,7 +2759,7 @@ export default function Home() {
       sourceNode.current.connect(hp);
       hp.connect(pitch);
       pitch.connect(vibratoDelay);
-      vibratoDelay.connect(dest);
+      vibratoDelay.connect(splitter);
 
     } else if (voice === "AI girl voice") {
       const hp = audioCtx.current.createBiquadFilter();
@@ -2753,7 +2770,6 @@ export default function Home() {
       const pitch = createPitchShifterNode(audioCtx.current, 1.35);
       nodesToCleanup.push(pitch);
 
-      // Metallic Comb filter
       const combDelay = audioCtx.current.createDelay(1.0);
       combDelay.delayTime.value = 0.0012;
       nodesToCleanup.push(combDelay);
@@ -2764,22 +2780,20 @@ export default function Home() {
 
       sourceNode.current.connect(hp);
       hp.connect(pitch);
-      
-      // Direct path
-      pitch.connect(dest);
+      pitch.connect(splitter);
 
-      // Feedback Comb Path
+      // Comb feedback loop
       pitch.connect(combDelay);
       combDelay.connect(combFeedback);
       combFeedback.connect(combDelay);
-      combFeedback.connect(dest);
+      combFeedback.connect(splitter);
 
     } else if (voice === "Sigma deep voice") {
       const peak = audioCtx.current.createBiquadFilter();
       peak.type = "peaking";
       peak.frequency.value = 85;
       peak.Q.value = 1.0;
-      peak.gain.value = 12; // deep rumble
+      peak.gain.value = 12;
       nodesToCleanup.push(peak);
 
       const lp = audioCtx.current.createBiquadFilter();
@@ -2793,21 +2807,11 @@ export default function Home() {
       sourceNode.current.connect(peak);
       peak.connect(lp);
       lp.connect(pitch);
-      pitch.connect(dest);
+      pitch.connect(splitter);
     } else {
-      // Fallback/Normal
-      sourceNode.current.connect(dest);
+      // Fallback: pass through
+      sourceNode.current.connect(splitter);
     }
-
-    // CRITICAL FIX: Connect a zero-gain node to audioCtx.destination
-    // This forces ScriptProcessorNode.onaudioprocess to actually fire.
-    // Without this, the pitch shifting callback never runs and original voice passes through.
-    const keepAlive = audioCtx.current.createGain();
-    keepAlive.gain.value = 0; // silent — user won't hear echo
-    dest.connect(keepAlive);
-    keepAlive.connect(audioCtx.current.destination);
-    keepAliveGainRef.current = keepAlive;
-    nodesToCleanup.push(keepAlive);
 
     activeVoiceNodesRef.current = nodesToCleanup;
     const processedTrack = dest.stream.getAudioTracks()[0];
