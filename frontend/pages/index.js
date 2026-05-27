@@ -1669,8 +1669,8 @@ export default function Dashboard() {
               </div>
 
               <h1 className="hero-explore-title">
-                Global Communication<br />
-                <span>& Networking Platform.</span>
+                Talk to New People Online<br />
+                <span>& Meet Strangers via Live Video Chat.</span>
               </h1>
 
               <p className="hero-explore-subtitle">
@@ -1719,6 +1719,13 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+
+      {/* SEO CONTENT SECTION */}
+      <section className="seo-content-section">
+        <p className="seo-paragraph">
+          ZoneMeet is the easiest way to <strong>talk to strangers</strong> and make genuine connections from the comfort of your home. Our <strong>live video chat</strong> platform brings people together from over 190 countries, making it simple to <strong>meet new people online</strong> every single day. Whether you're looking for meaningful conversations, cultural exchange, or just a friendly face, ZoneMeet is the <strong>online chat platform</strong> built for real human connection — safe, instant, and completely free to start.
+        </p>
+      </section>
 
       {/* ABOUT ZONEMEET EXPERIENCE SECTION */}
       <div className="experience-section" style={{ padding: '100px 20px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -5656,6 +5663,23 @@ export default function Dashboard() {
             font-weight: 400;
             margin-left: auto;
             margin-right: auto;
+          }
+          .seo-content-section {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 24px 0;
+            text-align: center;
+          }
+          .seo-paragraph {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #94a3b8;
+            font-weight: 400;
+            margin: 0;
+          }
+          .seo-paragraph strong {
+            color: #cbd5e1;
+            font-weight: 600;
           }
           .hero-interactive-graphic {
             position: relative;
