@@ -1171,6 +1171,36 @@ export default function Dashboard() {
         <title>ZoneMeet – Talk To New People Online</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <meta name="description" content="ZoneMeet lets you instantly connect with People worldwide through secure video chat. Meet new people, make friends, and enjoy live conversations online." />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "WebSite",
+                  "@id": "https://zonemeet.chat/#website",
+                  "url": "https://zonemeet.chat",
+                  "name": "ZoneMeet",
+                  "description": "Secure live video chat to talk to strangers and meet new people online.",
+                  "publisher": {
+                    "@id": "https://zonemeet.chat/#organization"
+                  }
+                },
+                {
+                  "@type": "Organization",
+                  "@id": "https://zonemeet.chat/#organization",
+                  "name": "ZoneMeet",
+                  "url": "https://zonemeet.chat",
+                  "logo": {
+                    "@type": "ImageObject",
+                    "url": "https://zonemeet.chat/favicon.ico"
+                  }
+                }
+              ]
+            })
+          }}
+        />
       </Head>
       <Script src="https://sdk.cashfree.com/js/v3/cashfree.js" strategy="lazyOnload" />
 
