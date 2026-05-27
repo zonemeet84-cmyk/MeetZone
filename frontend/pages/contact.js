@@ -71,7 +71,7 @@ export default function Contact() {
           </div>
           <div className="hero-visual">
             <div className="visual-wrapper">
-              <Image src="/support-3d.png" alt="Support Team" width={800} height={600} priority sizes="(max-width: 768px) 100vw, 50vw" className="main-3d-img" style={{ width: '100%', height: 'auto' }} />
+              <Image src="/support-3d.png" alt="ZoneMeet Customer Support and Help Center 3D illustration" width={800} height={600} priority sizes="(max-width: 768px) 100vw, 50vw" className="main-3d-img" style={{ width: '100%', height: 'auto' }} />
               <div className="floating-card c1">🚀 2hr Avg Response</div>
               <div className="floating-card c2">🛡️ Secured Channel</div>
             </div>

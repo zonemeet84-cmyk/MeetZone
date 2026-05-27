@@ -3553,7 +3553,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                   )}
                 </span>
                 <span className="user-sub">
-                  {user?.gender || "Guest"} • {getFlagUrl(user?.country) && <img src={getFlagUrl(user?.country)} alt="" style={{ width: '14px', height: '10px', marginRight: '4px', verticalAlign: 'middle', borderRadius: '1px' }} />}
+                  {user?.gender || "Guest"} • {getFlagUrl(user?.country) && <img src={getFlagUrl(user?.country)} alt={`${user?.country || "User Country"} flag`} style={{ width: '14px', height: '10px', marginRight: '4px', verticalAlign: 'middle', borderRadius: '1px' }} />}
                   {user?.country || "Earth"}
                 </span>
               </div>
@@ -4118,7 +4118,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                           {partnerInfo.gender === "Male" ? "♂️" : "♀️"} {partnerInfo.gender}
                         </span>
                         <span className="preview-country">
-                          {getFlagUrl(partnerInfo.country) && <img src={getFlagUrl(partnerInfo.country)} alt="" />}
+                          {getFlagUrl(partnerInfo.country) && <img src={getFlagUrl(partnerInfo.country)} alt={`${partnerInfo.country || "Partner Country"} flag`} />}
                           {getCountryName(partnerInfo.country)}
                         </span>
                       </div>

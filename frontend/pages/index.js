@@ -1562,7 +1562,7 @@ export default function Dashboard() {
                         <div className="profile-detail-item">
                           <div className="profile-detail-left">🌍 Location</div>
                           <div className="profile-detail-right" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            {getFlagUrl(user.country) && <img src={getFlagUrl(user.country)} alt="" style={{ width: '16px', height: '12px', borderRadius: '2px' }} />}
+                            {getFlagUrl(user.country) && <img src={getFlagUrl(user.country)} alt={`${user.country || "User Location"} flag`} style={{ width: '16px', height: '12px', borderRadius: '2px' }} />}
                             {user.state || user.country || "Earth"}
                           </div>
                         </div>
@@ -1763,7 +1763,7 @@ export default function Dashboard() {
               transform: 'perspective(1000px) rotateY(-5deg)',
               border: '1px solid rgba(255,255,255,0.1)'
             }}>
-              <Image src="/video_chat_experience_1_1778757946493.png" alt="Experience" width={800} height={600} priority sizes="(max-width: 768px) 100vw, 50vw" style={{ width: '100%', height: 'auto' }} />
+              <Image src="/video_chat_experience_1_1778757946493.png" alt="ZoneMeet Interactive Live Video Chat Experience illustration showing friendly online connections" width={800} height={600} priority sizes="(max-width: 768px) 100vw, 50vw" style={{ width: '100%', height: 'auto' }} />
             </div>
             <div className="gallery-sub" style={{
               position: 'absolute',
@@ -1776,7 +1776,7 @@ export default function Dashboard() {
               border: '1px solid rgba(255,255,255,0.1)',
               zIndex: 2
             }}>
-              <Image src="/global_connection_2_1778758015960.png" alt="Global" width={400} height={300} sizes="(max-width: 768px) 100vw, 50vw" style={{ width: '100%', height: 'auto' }} />
+              <Image src="/global_connection_2_1778758015960.png" alt="ZoneMeet global connections map showing users communicating worldwide" width={400} height={300} sizes="(max-width: 768px) 100vw, 50vw" style={{ width: '100%', height: 'auto' }} />
             </div>
             <div className="gallery-sub" style={{
               position: 'absolute',
@@ -1789,7 +1789,7 @@ export default function Dashboard() {
               border: '1px solid rgba(255,255,255,0.1)',
               zIndex: 2
             }}>
-              <Image src="/safe_video_chat_3_1778758050606.png" alt="Safe" width={400} height={300} sizes="(max-width: 768px) 100vw, 50vw" style={{ width: '100%', height: 'auto' }} />
+              <Image src="/safe_video_chat_3_1778758050606.png" alt="Secure online chat illustration representing safe and private video calling environment" width={400} height={300} sizes="(max-width: 768px) 100vw, 50vw" style={{ width: '100%', height: 'auto' }} />
             </div>
           </div>
         </div>
@@ -1799,7 +1799,7 @@ export default function Dashboard() {
       <div className="friends-promo-section" style={{ padding: '80px 20px', maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '80px', alignItems: 'center' }}>
           <div className="friends-visual" style={{ position: 'relative' }}>
-            <Image src="/global-friends.png" alt="Global Friends" width={800} height={600} sizes="(max-width: 768px) 100vw, 50vw" style={{ width: '100%', height: 'auto', borderRadius: '40px', boxShadow: '0 40px 100px rgba(99,102,241,0.2)' }} />
+            <Image src="/global-friends.png" alt="ZoneMeet Global Friends Network illustration showing user avatars connected across the globe" width={800} height={600} sizes="(max-width: 768px) 100vw, 50vw" style={{ width: '100%', height: 'auto', borderRadius: '40px', boxShadow: '0 40px 100px rgba(99,102,241,0.2)' }} />
           </div>
           <div className="friends-text">
             <h2 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '20px', letterSpacing: '-1px' }}>Build your <span>Global Circle.</span></h2>
@@ -1828,7 +1828,7 @@ export default function Dashboard() {
       <section className="home-support-banner" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '50px' }}>
         <div className="support-banner-content">
           <div className="support-banner-visual">
-            <Image src="/home-support-3d.png" alt="Safety Shield" width={400} height={400} sizes="(max-width: 768px) 100vw, 50vw" className="floating-3d-shield" style={{ width: '100%', height: 'auto' }} />
+            <Image src="/home-support-3d.png" alt="ZoneMeet AI Guardian and Safety Shield 3D illustration for fully moderated video chat" width={400} height={400} sizes="(max-width: 768px) 100vw, 50vw" className="floating-3d-shield" style={{ width: '100%', height: 'auto' }} />
             <div className="visual-glow" />
           </div>
           <div className="support-banner-text">
