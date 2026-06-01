@@ -8,6 +8,7 @@ import Head from 'next/head'
 import { useEffect } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
+import Script from 'next/script'
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }) {
   const router = useRouter();
@@ -60,13 +61,43 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
       return config;
     });
 
+    // Setup Google Analytics page tracking on route change
+    const handleRouteChange = (url) => {
+      if (window.gtag) {
+        window.gtag('config', 'G-31YSDTY29W', {
+          page_path: url,
+        });
+      }
+    };
+    router.events.on('routeChangeComplete', handleRouteChange);
+
     return () => {
       axios.interceptors.response.eject(interceptor);
+      router.events.off('routeChangeComplete', handleRouteChange);
     };
   }, [router]);
 
   return (
     <SessionProvider session={session}>
+      {/* Global Site Tag (gtag.js) - Google Analytics */}
+      <Script
+        strategy="afterInteractive"
+        src="https://www.googletagmanager.com/gtag/js?id=G-31YSDTY29W"
+      />
+      <Script
+        id="gtag-init"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-31YSDTY29W', {
+              page_path: window.location.pathname,
+            });
+          `,
+        }}
+      />
       <style jsx global>{`
         html, body {
           font-family: ${inter.style.fontFamily};
