@@ -8,21 +8,61 @@ import Script from "next/script";
 import { useRouter } from "next/router";
 import axios from "axios";
 import { useSession, signOut } from "next-auth/react";
-import { Country, State } from "country-state-city";
-import io from "socket.io-client";
-import Swal from "sweetalert2";
 import { isSiteAdmin } from "../lib/admin";
 
 let socket;
+
+// A lightweight static mapping of country names to ISO-2 codes
+const countryNameToCode = {
+  "afghanistan": "af", "albania": "al", "algeria": "dz", "american samoa": "as", "andorra": "ad",
+  "angola": "ao", "anguilla": "ai", "antarctica": "aq", "antigua and barbuda": "ag", "argentina": "ar",
+  "armenia": "am", "aruba": "aw", "australia": "au", "austria": "at", "azerbaijan": "az",
+  "bahamas": "bs", "bahrain": "bh", "bangladesh": "bd", "barbados": "bb", "belarus": "by",
+  "belgium": "be", "belize": "bz", "benin": "bj", "bermuda": "bm", "bhutan": "bt",
+  "bolivia": "bo", "bosnia and herzegovina": "ba", "botswana": "bw", "brazil": "br", "brunei": "bn",
+  "bulgaria": "bg", "burkina faso": "bf", "burundi": "bi", "cambodia": "kh", "cameroon": "cm",
+  "canada": "ca", "cape verde": "cv", "cayman islands": "ky", "central african republic": "cf", "chad": "td",
+  "chile": "cl", "china": "cn", "colombia": "co", "comoros": "km", "congo": "cg",
+  "costa rica": "cr", "croatia": "hr", "cuba": "cu", "cyprus": "cy", "czech republic": "cz",
+  "denmark": "dk", "djibouti": "dj", "dominica": "dm", "dominican republic": "do", "ecuador": "ec",
+  "egypt": "eg", "el salvador": "sv", "equatorial guinea": "gq", "eritrea": "er", "estonia": "ee",
+  "ethiopia": "et", "fiji": "fj", "finland": "fi", "france": "fr", "gabon": "ga",
+  "gambia": "gm", "georgia": "ge", "germany": "de", "ghana": "gh", "greece": "gr",
+  "grenada": "gd", "guatemala": "gt", "guinea": "gn", "guyana": "gy", "haiti": "ht",
+  "honduras": "hn", "hong kong": "hk", "hungary": "hu", "iceland": "is", "india": "in",
+  "indonesia": "id", "iran": "ir", "iraq": "iq", "ireland": "ie", "israel": "il",
+  "italy": "it", "jamaica": "jm", "japan": "jp", "jordan": "jo", "kazakhstan": "kz",
+  "kenya": "ke", "kiribati": "ki", "kuwait": "kw", "kyrgyzstan": "kg", "laos": "la",
+  "latvia": "lv", "lebanon": "lb", "lesotho": "ls", "liberia": "lr", "libya": "ly",
+  "liechtenstein": "li", "lithuania": "lt", "luxembourg": "lu", "macau": "mo", "macedonia": "mk",
+  "madagascar": "mg", "malawi": "mw", "malaysia": "my", "maldives": "mv", "mali": "ml",
+  "malta": "mt", "mauritania": "mr", "mauritius": "mu", "mexico": "mx", "micronesia": "fm",
+  "moldova": "md", "monaco": "mc", "mongolia": "mn", "montenegro": "me", "morocco": "ma",
+  "mozambique": "mz", "myanmar": "mm", "namibia": "na", "nepal": "np", "netherlands": "nl",
+  "new zealand": "nz", "nicaragua": "ni", "niger": "ne", "nigeria": "ng", "norway": "no",
+  "oman": "om", "pakistan": "pk", "palestine": "ps", "panama": "pa", "papua new guinea": "pg",
+  "paraguay": "py", "peru": "pe", "philippines": "ph", "poland": "pl", "portugal": "pt",
+  "puerto rico": "pr", "qatar": "qa", "romania": "ro", "russia": "ru", "rwanda": "rw",
+  "samoa": "ws", "san marino": "sm", "saudi arabia": "sa", "senegal": "sn", "serbia": "rs",
+  "seychelles": "sc", "sierra leone": "sl", "singapore": "sg", "slovakia": "sk", "slovenia": "si",
+  "somalia": "so", "south africa": "za", "spain": "es", "sri lanka": "lk", "sudan": "sd",
+  "suriname": "sr", "swaziland": "sz", "sweden": "se", "switzerland": "ch", "syria": "sy",
+  "taiwan": "tw", "tajikistan": "tj", "tanzania": "tz", "thailand": "th", "timor-leste": "tl",
+  "togo": "tg", "tonga": "to", "trinidad and tobago": "tt", "tunisia": "tn", "turkey": "tr",
+  "turkmenistan": "tm", "uganda": "ug", "ukraine": "ua", "united arab emirates": "ae",
+  "united kingdom": "gb", "united states": "us", "uruguay": "uy", "uzbekistan": "uz",
+  "vanuatu": "vu", "vatican": "va", "venezuela": "ve", "vietnam": "vn", "yemen": "ye",
+  "zambia": "zm", "zimbabwe": "zw"
+};
 
 // Helper to get Country Flag Image URL from name or ISO code
 const getFlagUrl = (countryInput) => {
   if (!countryInput) return null;
   let code = countryInput;
   if (countryInput.length !== 2) {
-    const found = Country.getAllCountries().find(c => c.name.toLowerCase() === countryInput.toLowerCase());
-    if (found) code = found.isoCode;
-    else return null;
+    const key = countryInput.toLowerCase();
+    code = countryNameToCode[key] || null;
+    if (!code) return null;
   }
   return `https://flagcdn.com/w20/${code.toLowerCase()}.png`;
 };
@@ -46,6 +86,8 @@ export default function Dashboard() {
     stateCode: "",
     age: "18-24"
   });
+  const [countriesList, setCountriesList] = useState([]);
+  const [statesList, setStatesList] = useState([]);
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
   const [banInfo, setBanInfo] = useState(null); // { reason, screenshot }
@@ -66,51 +108,62 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    if (!socket) {
-      socket = io("https://api.zonemeet.chat");
-    }
+    let active = true;
+    let registeredListeners = [];
 
-    const handleConnect = () => {
-      setIsSocketConnected(true);
-      if (user && user.id) socket.emit("register-user", user.id);
-      console.log("Global Socket Connected");
+    const initSocket = async () => {
+      const { default: io } = await import("socket.io-client");
+      if (!active) return;
+
+      if (!socket) {
+        socket = io("https://api.zonemeet.chat");
+      }
+
+      const handleConnect = () => {
+        setIsSocketConnected(true);
+        if (user && user.id) socket.emit("register-user", user.id);
+        console.log("Global Socket Connected");
+      };
+
+      const handleDisconnect = () => setIsSocketConnected(false);
+      const handleOnlineCount = (count) => setOnlineCount(count || 1);
+
+      const handleIncoming = (callInfo) => setIncomingCall(callInfo);
+      const handleAccepted = ({ roomId }) => router.push(`/chat?room=${roomId}`);
+      const handleRejected = () => alert("Call was declined.");
+
+      const handleBanned = (data) => {
+        const reason = typeof data === "object" ? (data.reason || "Your account has been banned for violating our safety terms.") : data;
+        const screenshot = typeof data === "object" ? (data.screenshot || null) : null;
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        setBanInfo({ reason, screenshot });
+      };
+
+      const addListener = (event, handler) => {
+        socket.on(event, handler);
+        registeredListeners.push({ event, handler });
+      };
+
+      addListener("connect", handleConnect);
+      addListener("disconnect", handleDisconnect);
+      addListener("global-online-count", handleOnlineCount);
+      
+      addListener("incoming-direct-call", handleIncoming);
+      addListener("direct-call-accepted", handleAccepted);
+      addListener("direct-call-rejected", handleRejected);
+      addListener("banned-alert", handleBanned);
+
+      if (socket.connected) handleConnect();
     };
 
-    const handleDisconnect = () => setIsSocketConnected(false);
-    const handleOnlineCount = (count) => setOnlineCount(count || 1);
-
-    const handleIncoming = (callInfo) => setIncomingCall(callInfo);
-    const handleAccepted = ({ roomId }) => router.push(`/chat?room=${roomId}`);
-    const handleRejected = () => alert("Call was declined.");
-
-    socket.on("connect", handleConnect);
-    socket.on("disconnect", handleDisconnect);
-    socket.on("global-online-count", handleOnlineCount);
-    
-    socket.on("incoming-direct-call", handleIncoming);
-    socket.on("direct-call-accepted", handleAccepted);
-    socket.on("direct-call-rejected", handleRejected);
-
-    // Ban alert handler
-    const handleBanned = (data) => {
-      const reason = typeof data === "object" ? (data.reason || "Your account has been banned for violating our safety terms.") : data;
-      const screenshot = typeof data === "object" ? (data.screenshot || null) : null;
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      setBanInfo({ reason, screenshot });
-    };
-    socket.on("banned-alert", handleBanned);
-
-    if (socket.connected) handleConnect();
+    initSocket();
 
     return () => {
-      socket.off("connect", handleConnect);
-      socket.off("disconnect", handleDisconnect);
-      socket.off("global-online-count", handleOnlineCount);
-      socket.off("incoming-direct-call", handleIncoming);
-      socket.off("direct-call-accepted", handleAccepted);
-      socket.off("direct-call-rejected", handleRejected);
-      socket.off("banned-alert", handleBanned);
+      active = false;
+      registeredListeners.forEach(({ event, handler }) => {
+        if (socket) socket.off(event, handler);
+      });
     };
   }, [user]);
 
@@ -520,6 +573,15 @@ export default function Dashboard() {
   }, [user, authLoading]);
 
   useEffect(() => {
+    if (showOnboarding && countriesList.length === 0) {
+      import("country-state-city").then(({ Country, State }) => {
+        setCountriesList(Country.getAllCountries());
+        setStatesList(State.getStatesOfCountry(onboardForm.countryCode || "IN"));
+      });
+    }
+  }, [showOnboarding]);
+
+  useEffect(() => {
     if (user && (user.email || user.phone) && !dailyStatus) {
       axios.post("https://api.zonemeet.chat/api/user/daily-check", { email: user.email, phone: user.phone })
         .then(res => {
@@ -804,7 +866,8 @@ export default function Dashboard() {
 
   const handleOnboardSubmit = async (e) => {
     e.preventDefault();
-      const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
+    const { Country, State } = await import("country-state-city");
     const selectedCountry = Country.getAllCountries().find(c => c.isoCode === onboardForm.countryCode);
     const selectedState = State.getStatesOfCountry(onboardForm.countryCode).find(s => s.isoCode === onboardForm.stateCode);
 
@@ -840,8 +903,9 @@ export default function Dashboard() {
     }
   };
 
-  const startEdit = () => {
+  const startEdit = async () => {
     // Find country and state codes for the form
+    const { Country, State } = await import("country-state-city");
     const currentCountry = Country.getAllCountries().find(c => c.name === user.country);
     const countryCode = currentCountry ? currentCountry.isoCode : "IN";
 
@@ -855,6 +919,8 @@ export default function Dashboard() {
       stateCode: stateCode,
       age: user.age || "18-24"
     });
+    setCountriesList(Country.getAllCountries());
+    setStatesList(states);
     setShowProfileDrop(false);
     setShowOnboarding(true);
   };
@@ -1631,6 +1697,7 @@ export default function Dashboard() {
                       <button className="profile-more-btn" onClick={async () => {
                         let confirmed = false;
                         try {
+                          const Swal = (await import('sweetalert2')).default;
                           const result = await Swal.fire({
                             title: 'Delete Account?',
                             text: 'This will permanently delete your account and all data. This action cannot be undone!',
@@ -2558,14 +2625,21 @@ export default function Dashboard() {
                     className="styled-select"
                     style={{ width: '100%', background: '#000', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem', borderRadius: '12px' }}
                     value={onboardForm.countryCode}
-                    onChange={(e) => {
-                      const states = State.getStatesOfCountry(e.target.value);
-                      setOnboardForm({ ...onboardForm, countryCode: e.target.value, stateCode: states.length > 0 ? states[0].isoCode : "" });
+                    onChange={async (e) => {
+                      const val = e.target.value;
+                      const { State } = await import("country-state-city");
+                      const states = State.getStatesOfCountry(val);
+                      setOnboardForm({ ...onboardForm, countryCode: val, stateCode: states.length > 0 ? states[0].isoCode : "" });
+                      setStatesList(states);
                     }}
                   >
-                    {Country.getAllCountries().map(c => (
-                      <option key={c.isoCode} value={c.isoCode}>{c.flag} {c.name}</option>
-                    ))}
+                    {countriesList.length === 0 ? (
+                      <option value="IN">🇮🇳 India</option>
+                    ) : (
+                      countriesList.map(c => (
+                        <option key={c.isoCode} value={c.isoCode}>{c.flag} {c.name}</option>
+                      ))
+                    )}
                   </select>
                 </div>
 
@@ -2594,8 +2668,8 @@ export default function Dashboard() {
                   value={onboardForm.stateCode}
                   onChange={(e) => setOnboardForm({ ...onboardForm, stateCode: e.target.value })}
                 >
-                  {State.getStatesOfCountry(onboardForm.countryCode).length > 0 ? (
-                    State.getStatesOfCountry(onboardForm.countryCode).map(s => (
+                  {statesList.length > 0 ? (
+                    statesList.map(s => (
                       <option key={s.isoCode} value={s.isoCode}>{s.name}</option>
                     ))
                   ) : (
