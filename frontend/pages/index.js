@@ -4437,9 +4437,23 @@ export default function Dashboard() {
           /* Day Cards Grid */
           .streak-days-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 12px;
             margin-bottom: 1.5rem;
+          }
+          .streak-day-card:nth-child(1) { grid-area: 1 / 1 / 2 / 2; }
+          .streak-day-card:nth-child(2) { grid-area: 1 / 2 / 2 / 3; }
+          .streak-day-card:nth-child(3) { grid-area: 1 / 3 / 2 / 4; }
+          .streak-day-card:nth-child(4) { grid-area: 2 / 1 / 3 / 2; }
+          .streak-day-card:nth-child(5) { grid-area: 2 / 2 / 3 / 3; }
+          .streak-day-card:nth-child(6) { grid-area: 2 / 3 / 3 / 4; }
+          .streak-day-card:nth-child(7) { 
+            grid-area: 1 / 4 / 3 / 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
           }
           .streak-day-card {
             background: rgba(255,255,255,0.03);
@@ -4468,6 +4482,16 @@ export default function Dashboard() {
           .streak-day-card.grand {
             background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(251,191,36,0.06));
             border-color: rgba(245,158,11,0.5);
+          }
+          .streak-day-card.grand .streak-day-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+          }
+          .streak-day-card.grand .streak-day-coins {
+            font-size: 0.85rem !important;
+          }
+          .streak-day-card.grand .streak-day-label {
+            font-size: 0.75rem !important;
           }
           .streak-day-card.grand.done {
             box-shadow: 0 0 20px rgba(245,158,11,0.35);
@@ -5167,9 +5191,10 @@ export default function Dashboard() {
               margin: auto !important;
             }
             .streak-days-grid {
-              gap: 3px !important;
+              gap: 6px !important;
               display: grid !important;
-              grid-template-columns: repeat(7, 1fr) !important;
+              grid-template-columns: repeat(4, 1fr) !important;
+              grid-template-rows: repeat(2, 1fr) !important;
               overflow-x: hidden !important;
               width: 100% !important;
               box-sizing: border-box !important;
@@ -5188,6 +5213,18 @@ export default function Dashboard() {
             }
             .streak-day-label {
               font-size: 0.5rem !important;
+            }
+            
+            /* Grand Card Mobile Overrides */
+            .streak-day-card.grand .streak-day-icon {
+              font-size: 1.8rem !important;
+              margin-bottom: 6px !important;
+            }
+            .streak-day-card.grand .streak-day-coins {
+              font-size: 0.75rem !important;
+            }
+            .streak-day-card.grand .streak-day-label {
+              font-size: 0.6rem !important;
             }
             .streak-stats-card {
               flex-direction: row !important;
