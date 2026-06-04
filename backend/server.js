@@ -261,9 +261,14 @@ function normalizeUsers(targetUsers) {
     if (u.streak === undefined) { u.streak = 0; changed = true; }
     if (u.lastLoginDate === undefined) { u.lastLoginDate = ""; changed = true; }
     if (u.bonusClaimedToday === undefined) { u.bonusClaimedToday = false; changed = true; }
-    // lastClaimDate: persist claim date so double-claim is blocked even after server restart
+    
+    // New Streak System Fields
+    if (u.streak_day === undefined) { u.streak_day = u.streak || 1; changed = true; }
+    if (u.last_claim_date === undefined) { u.last_claim_date = u.lastClaimDate || ""; changed = true; }
+    if (u.streak_broken === undefined) { u.streak_broken = false; changed = true; }
+    if (u.streak_protection_used === undefined) { u.streak_protection_used = false; changed = true; }
+
     if (u.lastClaimDate === undefined) {
-      // If they already claimed today (bonusClaimedToday), set to today so they can't claim again
       u.lastClaimDate = u.bonusClaimedToday ? new Date().toISOString().split('T')[0] : "";
       changed = true;
     }
@@ -1278,6 +1283,10 @@ app.post("/api/auth/register", async (req, res) => {
     lastLoginDate: "",
     lastClaimDate: "",
     bonusClaimedToday: false,
+    streak_day: 1,
+    last_claim_date: "",
+    streak_broken: false,
+    streak_protection_used: false,
     recentStrangers: [],
     boostExpiry: 0,
     unlockedFilters: ["None", "Smooth"],
@@ -1358,6 +1367,10 @@ app.post("/api/auth/firebase-register", async (req, res) => {
         streak: 0,
         lastLoginDate: "",
         bonusClaimedToday: false,
+        streak_day: 1,
+        last_claim_date: "",
+        streak_broken: false,
+        streak_protection_used: false,
         recentStrangers: [],
         boostExpiry: 0,
         unlockedFilters: ["None", "Smooth"]
@@ -1538,134 +1551,262 @@ app.post("/api/user/transfer-coins", (req, res) => {
 });
 
 // DAILY LOGIN & STREAK SYSTEM
-const DAILY_REWARDS = [5, 10, 15, 20, 25, 50, 100]; // Coins per day 1-7
+
+// Timezone Asia/Kolkata date format helpers
+function getKolkataDate(date = new Date()) {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(date); // YYYY-MM-DD
+}
+
+function getKolkataYesterdayDate(todayStr) {
+  const date = new Date(todayStr + 'T12:00:00'); // Use noon to avoid DST or boundary issues
+  date.setDate(date.getDate() - 1);
+  return getKolkataDate(date);
+}
+
+// Rewards Catalog
+const REWARDS = {
+  1: { type: "coins", value: 10, label: "10 Coins" },
+  2: { type: "coins", value: 20, label: "20 Coins" },
+  3: { type: "coins", value: 30, label: "30 Coins" },
+  4: { type: "boost", value: 10, label: "Profile Boost (10 min)" },
+  5: { type: "coins", value: 50, label: "50 Coins" },
+  6: { type: "coins", value: 75, label: "75 Coins" },
+  7: { type: "both", coins: 100, boost: 10, label: "100 Coins & Profile Boost (10 min)" }
+};
 
 app.post("/api/user/daily-check", (req, res) => {
   const { email, phone } = req.body;
   const user = users.find(u => (email && u.email === email) || (phone && u.phone === phone));
   if (!user) return res.json({ success: false, message: "User not found" });
 
-  const now = new Date();
-  const today = now.toISOString().split('T')[0];
-  // Calculate yesterday BEFORE mutating `now`
-  const yesterdayDate = new Date();
-  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-  const yesterday = yesterdayDate.toISOString().split('T')[0];
+  // Initialize missing fields
+  if (user.streak_day === undefined) user.streak_day = user.streak || 1;
+  if (user.last_claim_date === undefined) user.last_claim_date = user.lastClaimDate || "";
+  if (user.streak_broken === undefined) user.streak_broken = false;
+  if (user.streak_protection_used === undefined) user.streak_protection_used = false;
 
-  // Already checked today — just return current state
-  if (user.lastLoginDate === today) {
+  const today = getKolkataDate();
+  const yesterday = getKolkataYesterdayDate(today);
+
+  // If already claimed today
+  if (user.last_claim_date === today) {
     return res.json({
       success: true,
-      streak: user.streak,
+      streak_day: user.streak_day,
+      last_claim_date: user.last_claim_date,
+      streak_broken: false,
+      streak_protection_used: user.streak_protection_used,
+      coins: user.coins,
+      canCollect: false,
       status: "already_checked",
-      coins: user.coins,
-      canCollect: !user.bonusClaimedToday,
-      todayReward: DAILY_REWARDS[Math.min((user.streak || 1) - 1, 6)],
-      coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10)
+      coinActivity: coinActivity.filter(a => (user.email && a.email === user.email) || (user.phone && a.email === user.phone)).slice(-10)
     });
   }
 
-  // Consecutive login — increase streak
-  if (user.lastLoginDate === yesterday) {
-    user.streak = (user.streak || 0) + 1;
-    user.lastLoginDate = today;
-    user.bonusClaimedToday = false; // Fresh day — reward ready to collect
-    saveUsers();
-    const todayReward = DAILY_REWARDS[Math.min(user.streak - 1, 6)];
+  // Check if streak was broken (last claim was before yesterday, and was not empty)
+  const isMissed = user.last_claim_date && user.last_claim_date !== yesterday;
+  if (user.streak_broken || isMissed) {
+    const oldStreak = user.streak_day;
+    if (!user.streak_broken) {
+      user.streak_broken = true;
+      saveUsers();
+    }
     return res.json({
       success: true,
-      streak: user.streak,
-      status: user.streak >= 7 ? "streak_complete" : "streak_increased",
-      coins: user.coins,
-      canCollect: true,
-      todayReward,
-      coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10)
-    });
-  }
-
-  // Streak broken (missed a day or more)
-  const oldStreak = user.streak;
-  user.streak = 1;
-  user.lastLoginDate = today;
-  user.bonusClaimedToday = false;
-  saveUsers();
-
-  if (oldStreak > 1) {
-    return res.json({
-      success: true,
-      streak: 1,
+      streak_day: user.streak_day,
       oldStreak,
-      status: "streak_broken",
+      last_claim_date: user.last_claim_date,
+      streak_broken: true,
+      streak_protection_used: user.streak_protection_used,
       coins: user.coins,
-      canCollect: true,
-      todayReward: DAILY_REWARDS[0],
-      coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10)
+      canCollect: false,
+      status: "streak_broken",
+      coinActivity: coinActivity.filter(a => (user.email && a.email === user.email) || (user.phone && a.email === user.phone)).slice(-10)
     });
+  }
+
+  // Eligible to claim today: determine next reward day
+  let nextClaimDay = 1;
+  if (!user.last_claim_date) {
+    nextClaimDay = 1;
+  } else if (user.last_claim_date === yesterday) {
+    nextClaimDay = user.streak_day >= 7 ? 1 : user.streak_day + 1;
   }
 
   return res.json({
     success: true,
-    streak: 1,
-    status: "new_streak",
+    streak_day: nextClaimDay,
+    last_claim_date: user.last_claim_date,
+    streak_broken: false,
+    streak_protection_used: user.streak_protection_used,
     coins: user.coins,
     canCollect: true,
-    todayReward: DAILY_REWARDS[0],
-    coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10)
+    status: "eligible",
+    coinActivity: coinActivity.filter(a => (user.email && a.email === user.email) || (user.phone && a.email === user.phone)).slice(-10)
   });
 });
 
-// COLLECT DAILY REWARD — called when user clicks "Collect" button
 app.post("/api/user/collect-daily-reward", (req, res) => {
   const { email, phone } = req.body;
   const user = users.find(u => (email && u.email === email) || (phone && u.phone === phone));
   if (!user) return res.json({ success: false, message: "User not found" });
 
-  const today = new Date().toISOString().split('T')[0];
+  // Initialize missing fields
+  if (user.streak_day === undefined) user.streak_day = user.streak || 1;
+  if (user.last_claim_date === undefined) user.last_claim_date = user.lastClaimDate || "";
+  if (user.streak_broken === undefined) user.streak_broken = false;
+  if (user.streak_protection_used === undefined) user.streak_protection_used = false;
 
-  // Double-claim protection: block if already claimed today (using date, survives server restarts)
-  if (user.lastClaimDate === today) {
+  const today = getKolkataDate();
+  const yesterday = getKolkataYesterdayDate(today);
+
+  // Prevent multiple claims on same day
+  if (user.last_claim_date === today) {
     return res.json({ success: false, message: "Already collected today! Come back tomorrow." });
   }
 
-  // Also block via bonusClaimedToday (in-memory check)
-  if (user.bonusClaimedToday) {
-    return res.json({ success: false, message: "Already collected today!" });
+  if (user.streak_broken) {
+    return res.json({ success: false, message: "Please resolve your broken streak first!" });
   }
 
-  const dayIndex = Math.min((user.streak || 1) - 1, 6);
-  const reward = DAILY_REWARDS[dayIndex];
-
-  // Day 7 gives 100 coins and resets streak
-  if (user.streak >= 7) {
-    user.coins += 100;
-    user.bonusClaimedToday = true;
-    user.lastClaimDate = today;
-    user.streak = 0; // Reset for next cycle
+  // Calculate day index to claim
+  let claimDay = 1;
+  if (!user.last_claim_date) {
+    claimDay = 1;
+  } else if (user.last_claim_date === yesterday) {
+    claimDay = user.streak_day >= 7 ? 1 : user.streak_day + 1;
   } else {
-    user.coins += reward;
-    user.bonusClaimedToday = true;
-    user.lastClaimDate = today;
+    // If they missed the streak but somehow API is hit without saving, force Day 1
+    claimDay = 1;
   }
+
+  const reward = REWARDS[claimDay];
+  let rewardMessage = reward.label;
+
+  // Apply reward
+  if (reward.type === "coins") {
+    user.coins = (user.coins || 0) + reward.value;
+  } else if (reward.type === "boost") {
+    const currentExpiry = user.boostExpiry > Date.now() ? user.boostExpiry : Date.now();
+    user.boostExpiry = currentExpiry + (reward.value * 60 * 1000);
+  } else if (reward.type === "both") {
+    user.coins = (user.coins || 0) + reward.coins;
+    const currentExpiry = user.boostExpiry > Date.now() ? user.boostExpiry : Date.now();
+    user.boostExpiry = currentExpiry + (reward.boost * 60 * 1000);
+  }
+
+  // Record Coin Activity log if coins are earned
+  const earnedCoins = reward.type === "coins" ? reward.value : (reward.type === "both" ? reward.coins : 0);
+  if (earnedCoins > 0) {
+    const activity = {
+      id: "act" + Date.now(),
+      email: user.email || user.phone,
+      type: "earn",
+      amount: earnedCoins,
+      feature: `Day ${claimDay} Login Reward`,
+      timestamp: new Date().toISOString()
+    };
+    coinActivity.push(activity);
+    saveCoinActivity();
+  }
+
+  // Update user model (and keep legacy fields in sync)
+  user.streak_day = claimDay;
+  user.streak = claimDay; // Legacy sync
+  user.last_claim_date = today;
+  user.lastClaimDate = today; // Legacy sync
+  user.bonusClaimedToday = true; // Legacy sync
+  user.lastLoginDate = today; // Legacy sync
+  user.streak_broken = false;
+  user.streak_protection_used = false;
+
+  saveUsers();
+
+  res.json({
+    success: true,
+    coins: user.coins,
+    streak_day: user.streak_day,
+    streak: user.streak,
+    rewardGiven: rewardMessage,
+    message: `${rewardMessage} claimed!`,
+    coinActivity: coinActivity.filter(a => (user.email && a.email === user.email) || (user.phone && a.email === user.phone)).slice(-10)
+  });
+});
+
+app.post("/api/user/save-streak", (req, res) => {
+  const { email, phone } = req.body;
+  const user = users.find(u => (email && u.email === email) || (phone && u.phone === phone));
+  if (!user) return res.json({ success: false, message: "User not found" });
+
+  if (user.coins < 100) {
+    return res.json({ success: false, message: "Not enough coins to save streak!" });
+  }
+
+  // Initialize streak values if undefined
+  if (user.streak_day === undefined) user.streak_day = user.streak || 1;
+
+  user.coins -= 100;
+  user.streak_broken = false;
+  user.streak_protection_used = true;
+
+  // Set last_claim_date to yesterday, enabling immediate check-in for next day today
+  const today = getKolkataDate();
+  const yesterday = getKolkataYesterdayDate(today);
+  user.last_claim_date = yesterday;
+  user.lastClaimDate = yesterday;
 
   const activity = {
     id: "act" + Date.now(),
-    email: user.email,
-    type: "earn",
-    amount: reward,
-    feature: `Day ${dayIndex + 1} Login Bonus`,
+    email: user.email || user.phone,
+    type: "spend",
+    amount: 100,
+    feature: "Streak Savior (100 Coins)",
     timestamp: new Date().toISOString()
   };
   coinActivity.push(activity);
   saveCoinActivity();
   saveUsers();
 
+  const nextClaimDay = user.streak_day >= 7 ? 1 : user.streak_day + 1;
+
   res.json({
     success: true,
+    streak_day: nextClaimDay,
+    streak: user.streak_day,
     coins: user.coins,
-    streak: user.streak,
-    rewardGiven: reward,
-    message: `+${reward} Coins added!`,
-    coinActivity: coinActivity.filter(a => a.email === user.email).slice(-10)
+    streak_broken: false,
+    canCollect: true,
+    message: "Streak saved! You continue from where you left off.",
+    coinActivity: coinActivity.filter(a => (user.email && a.email === user.email) || (user.phone && a.email === user.phone)).slice(-10)
+  });
+});
+
+app.post("/api/user/reset-streak", (req, res) => {
+  const { email, phone } = req.body;
+  const user = users.find(u => (email && u.email === email) || (phone && u.phone === phone));
+  if (!user) return res.json({ success: false, message: "User not found" });
+
+  user.streak_day = 1;
+  user.streak = 1; // Legacy sync
+  user.last_claim_date = "";
+  user.lastClaimDate = ""; // Legacy sync
+  user.streak_broken = false;
+  user.streak_protection_used = false;
+  saveUsers();
+
+  res.json({
+    success: true,
+    streak_day: 1,
+    streak: 1,
+    coins: user.coins,
+    streak_broken: false,
+    canCollect: true,
+    message: "Streak reset to Day 1. Start claiming from today."
   });
 });
 
@@ -1689,34 +1830,6 @@ app.post("/api/user/collect-custom-reward", (req, res) => {
   saveUsers();
 
   res.json({ success: true, coins: user.coins, message: `+${coins} Coins added!` });
-});
-
-
-app.post("/api/user/save-streak", (req, res) => {
-  const { email, oldStreak } = req.body;
-  const user = users.find(u => u.email === email);
-  if (!user) return res.json({ success: false, message: "User not found" });
-
-  if (user.coins < 50) {
-    return res.json({ success: false, message: "Not enough coins to save streak!" });
-  }
-
-  user.coins -= 50;
-  user.streak = oldStreak;
-
-  const activity = {
-    id: "act" + Date.now(),
-    email: user.email,
-    type: "spend",
-    amount: 50,
-    feature: "Streak Savior",
-    timestamp: new Date().toISOString()
-  };
-  coinActivity.push(activity);
-  saveCoinActivity();
-  saveUsers();
-
-  res.json({ success: true, streak: user.streak, coins: user.coins });
 });
 
 // MYSTERY BOX SYSTEM

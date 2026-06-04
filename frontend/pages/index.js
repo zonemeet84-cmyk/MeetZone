@@ -579,17 +579,17 @@ export default function Dashboard() {
             setDailyStatus(res.data);
             if (
               res.data.status === "streak_broken" ||
-              res.data.status === "streak_increased" ||
-              res.data.status === "streak_complete" ||
-              res.data.status === "new_streak"
+              res.data.status === "eligible"
             ) {
               setShowStreakModal(true);
             }
-            if (res.data.coins !== user.coins || res.data.streak !== user.streak || res.data.coinActivity || res.data.canCollect !== !user.bonusClaimedToday) {
+            if (res.data.coins !== user.coins || res.data.streak_day !== user.streak_day || res.data.streak !== user.streak || res.data.coinActivity || res.data.canCollect !== !user.bonusClaimedToday) {
               const updated = { 
                 ...user, 
                 coins: res.data.coins, 
-                streak: res.data.streak, 
+                streak_day: res.data.streak_day || user.streak_day,
+                streak: res.data.streak_day || user.streak, 
+                streak_broken: res.data.streak_broken || false,
                 coinActivity: res.data.coinActivity || user.coinActivity,
                 bonusClaimedToday: !res.data.canCollect
               };
@@ -639,10 +639,17 @@ export default function Dashboard() {
     try {
       const res = await axios.post("https://api.zonemeet.chat/api/user/collect-daily-reward", { email: user.email, phone: user.phone });
       if (res.data.success) {
-        const updated = { ...user, coins: res.data.coins, streak: res.data.streak, bonusClaimedToday: true };
+        const updated = { 
+          ...user, 
+          coins: res.data.coins, 
+          streak_day: res.data.streak_day || res.data.streak,
+          streak: res.data.streak || res.data.streak_day, 
+          streak_broken: false,
+          bonusClaimedToday: true 
+        };
         setUser(updated);
         localStorage.setItem("user", JSON.stringify(updated));
-        setDailyStatus({ ...dailyStatus, canCollect: false });
+        setDailyStatus({ ...dailyStatus, canCollect: false, streak_day: res.data.streak_day || res.data.streak, streak_broken: false });
         setShowStreakModal(false);
         // Show a toast-style success
         showModal({
@@ -833,15 +840,30 @@ export default function Dashboard() {
     try {
       const res = await axios.post("https://api.zonemeet.chat/api/user/save-streak", {
         email: user.email,
-        oldStreak: dailyStatus.oldStreak
+        phone: user.phone
       });
       if (res.data.success) {
-        const updated = { ...user, coins: res.data.coins, streak: res.data.streak, coinActivity: res.data.coinActivity };
+        const updated = {
+          ...user,
+          coins: res.data.coins,
+          streak_day: res.data.streak_day,
+          streak: res.data.streak_day,
+          streak_broken: false,
+          streak_protection_used: true,
+          coinActivity: res.data.coinActivity || user.coinActivity
+        };
         setUser(updated);
         localStorage.setItem("user", JSON.stringify(updated));
-        setDailyStatus({ ...dailyStatus, status: "streak_saved", streak: res.data.streak, canCollect: true });
-        setShowStreakModal(false);
-        showModal({ message: `✅ Streak Restored! 50 coins deducted. You're back on a ${res.data.streak}-day streak.`, type: "success" });
+        setDailyStatus({
+          ...dailyStatus,
+          status: "eligible",
+          streak_day: res.data.streak_day,
+          coins: res.data.coins,
+          streak_broken: false,
+          streak_protection_used: true,
+          canCollect: true
+        });
+        showModal({ message: `✅ Streak Restored! 100 coins deducted. You continue from Day ${res.data.streak_day}.`, type: "success" });
       } else {
         showModal({ message: res.data.message || "Failed to save streak.", type: "info" });
       }
@@ -850,7 +872,41 @@ export default function Dashboard() {
     }
   };
 
-  // claimBonus is now handled by collectDailyReward for day 7 as well
+  const resetStreak = async () => {
+    try {
+      const res = await axios.post("https://api.zonemeet.chat/api/user/reset-streak", {
+        email: user.email,
+        phone: user.phone
+      });
+      if (res.data.success) {
+        const updated = {
+          ...user,
+          coins: res.data.coins,
+          streak_day: res.data.streak_day,
+          streak: res.data.streak_day,
+          streak_broken: false,
+          streak_protection_used: false
+        };
+        setUser(updated);
+        localStorage.setItem("user", JSON.stringify(updated));
+        setDailyStatus({
+          ...dailyStatus,
+          status: "eligible",
+          streak_day: 1,
+          coins: res.data.coins,
+          streak_broken: false,
+          streak_protection_used: false,
+          canCollect: true
+        });
+        showModal({ message: `🔥 Streak reset to Day 1. You can collect your Day 1 reward now!`, type: "success" });
+      } else {
+        showModal({ message: res.data.message || "Failed to reset streak.", type: "info" });
+      }
+    } catch (err) {
+      showModal({ message: err.response?.data?.message || "Failed to reset streak", type: "error" });
+    }
+  };
+
   const claimBonus = collectDailyReward;
 
 
@@ -1384,15 +1440,15 @@ export default function Dashboard() {
             <div
               className="header-streak-pill"
               onClick={() => setShowStreakModal(true)}
-              title={`${user.streak || 0} day login streak! Log in 7 days in a row for 100 free coins.`}
+              title={`${user.streak_day || user.streak || 0} day login streak! Log in 7 days in a row for 100 free coins.`}
             >
               <span className="streak-fire">🔥</span>
               <div className="streak-info">
-                <span className="streak-count">{user.streak || 0}</span>
+                <span className="streak-count">{user.streak_day || user.streak || 0}</span>
                 <span className="streak-label">/ 7</span>
               </div>
               <div className="streak-bar-wrap">
-                <div className="streak-bar-fill" style={{ width: `${Math.min(((user.streak || 0) / 7) * 100, 100)}%` }} />
+                <div className="streak-bar-fill" style={{ width: `${Math.min((((user.streak_day || user.streak || 0) % 8) / 7) * 100, 100)}%` }} />
               </div>
             </div>
 
@@ -1513,8 +1569,8 @@ export default function Dashboard() {
                           <span className="profile-balance-icon">💰</span> {user.coins || 0}
                         </div>
                         <div className="profile-balance-divider"></div>
-                        <div className="profile-balance-item" title="Daily Login Streak" style={{ color: user.streak > 0 ? '#ff4500' : 'inherit' }}>
-                          <span className="profile-balance-icon">🔥</span> {user.streak || 0}
+                        <div className="profile-balance-item" title="Daily Login Streak" style={{ color: (user.streak_day || user.streak) > 0 ? '#ff4500' : 'inherit' }}>
+                          <span className="profile-balance-icon">🔥</span> {user.streak_day || user.streak || 0}
                         </div>
                         <div className="profile-balance-divider"></div>
                         <div className="profile-balance-item" style={{ cursor: 'pointer', color: user.boostExpiry > currentTime ? '#10b981' : 'inherit' }} onClick={async () => {
@@ -2678,52 +2734,84 @@ export default function Dashboard() {
 
       {/* DAILY STREAK MODAL */}
       {showStreakModal && (() => {
-        const currentStreak = user?.streak || 0;
+        const currentStreak = dailyStatus?.streak_day || user?.streak_day || 1;
+        const coinsBalance = user?.coins || 0;
+        const isBroken = dailyStatus?.status === 'streak_broken' || user?.streak_broken;
+        const canCollect = dailyStatus?.canCollect && !isBroken;
+        const hasEnoughToSave = coinsBalance >= 100;
+
         const DAILY_REWARDS = [
-          { day: 1, coins: 5, icon: '🪙', label: 'Day 1' },
-          { day: 2, coins: 10, icon: '🪙', label: 'Day 2' },
-          { day: 3, coins: 15, icon: '💎', label: 'Day 3' },
-          { day: 4, coins: 20, icon: '💎', label: 'Day 4' },
-          { day: 5, coins: 25, icon: '⚡', label: 'Day 5' },
-          { day: 6, coins: 50, icon: '🔥', label: 'Day 6' },
-          { day: 7, coins: 100, icon: '👑', label: 'Day 7' },
+          { day: 1, text: "10 Coins", icon: "🪙", label: "Day 1" },
+          { day: 2, text: "20 Coins", icon: "🪙", label: "Day 2" },
+          { day: 3, text: "30 Coins", icon: "🪙", label: "Day 3" },
+          { day: 4, text: "10 Min Boost", icon: "🚀", label: "Day 4" },
+          { day: 5, text: "50 Coins", icon: "🪙", label: "Day 5" },
+          { day: 6, text: "75 Coins", icon: "🪙", label: "Day 6" },
+          { day: 7, text: "Grand Reward", icon: "👑", label: "Day 7" }
         ];
-        const isBroken = dailyStatus?.status === 'streak_broken';
-        const canCollect = dailyStatus?.canCollect && !user?.bonusClaimedToday;
-        const todayReward = dailyStatus?.todayReward || DAILY_REWARDS[Math.min(currentStreak, 6)]?.coins;
-        const isGrandDay = currentStreak >= 7;
+
+        const todayRewardText = DAILY_REWARDS[currentStreak - 1]?.text || "";
 
         return (
           <div className="payment-overlay" style={{ zIndex: 11000 }} onClick={() => setShowStreakModal(false)}>
             <div className="streak-reward-modal" onClick={e => e.stopPropagation()}>
               <button onClick={() => setShowStreakModal(false)} className="streak-modal-close">×</button>
+              
               <div className="streak-modal-top">
-                <div className="streak-big-fire">{isBroken ? '💔' : isGrandDay ? '👑' : '🔥'}</div>
+                <div className="streak-big-fire">{isBroken ? '💔' : currentStreak >= 7 ? '👑' : '🔥'}</div>
                 <h2 className="streak-modal-title">
-                  {isBroken ? 'Streak Broken!' : isGrandDay ? '🎉 Grand Prize Unlocked!' : 'Daily Login Reward'}
+                  {isBroken ? 'Streak Broken!' : currentStreak >= 7 && !canCollect ? '🎉 Cycle Complete!' : 'Daily Login Streak'}
                 </h2>
                 <p className="streak-modal-sub">
                   {isBroken
-                    ? `You missed a day! Your ${dailyStatus.oldStreak}-day streak broke.`
+                    ? `Your streak has been broken 🔥`
                     : canCollect
-                      ? `Collect your Day ${currentStreak} reward — +${todayReward} Coins!`
-                      : `Come back tomorrow for Day ${currentStreak + 1}'s reward!`}
+                      ? `Collect your Day ${currentStreak} reward today!`
+                      : `You claimed Day ${currentStreak} reward. Come back tomorrow!`}
                 </p>
+              </div>
+
+              {/* Mobile-first Reward Card Stats */}
+              <div className="streak-stats-card">
+                <div className="streak-stat-box">
+                  <span className="streak-stat-icon">🔥</span>
+                  <div className="streak-stat-info">
+                    <small>Streak</small>
+                    <strong>Day {isBroken ? (dailyStatus?.oldStreak || currentStreak) : currentStreak}</strong>
+                  </div>
+                </div>
+                <div className="streak-stat-box">
+                  <span className="streak-stat-icon">🎁</span>
+                  <div className="streak-stat-info">
+                    <small>Today's Reward</small>
+                    <strong style={{ fontSize: '0.75rem' }}>
+                      {isBroken ? 'Pending Savior' : (canCollect ? todayRewardText : 'Completed')}
+                    </strong>
+                  </div>
+                </div>
+                <div className="streak-stat-box">
+                  <span className="streak-stat-icon">💰</span>
+                  <div className="streak-stat-info">
+                    <small>Coins</small>
+                    <strong>{coinsBalance}</strong>
+                  </div>
+                </div>
               </div>
 
               {/* 7-Day Grid */}
               <div className="streak-days-grid">
-                {DAILY_REWARDS.map(({ day, coins, icon, label }) => {
-                  const done = currentStreak >= day;
-                  const isToday = currentStreak === day;
-                  const isNext = currentStreak + 1 === day;
+                {DAILY_REWARDS.map(({ day, text, icon, label }) => {
+                  const done = isBroken ? false : (day < currentStreak || (day === currentStreak && !canCollect));
+                  const isToday = !isBroken && (day === currentStreak && canCollect);
+                  const isLocked = isBroken ? true : (day > currentStreak);
                   const isGrand = day === 7;
+
                   return (
-                    <div key={day} className={`streak-day-card ${done ? 'done' : ''} ${isToday && canCollect ? 'today' : ''} ${isNext && !canCollect ? 'today' : ''} ${isGrand ? 'grand' : ''}`}>
-                      {done && !canCollect && <div className="streak-check">✓</div>}
-                      {done && canCollect && isToday && <div className="streak-check" style={{ background: '#f59e0b' }}>!</div>}
-                      <div className="streak-day-icon">{icon}</div>
-                      <div className="streak-day-coins">+{coins}</div>
+                    <div key={day} className={`streak-day-card ${done ? 'done' : ''} ${isToday ? 'today' : ''} ${isLocked ? 'locked' : ''} ${isGrand ? 'grand' : ''}`}>
+                      {done && <div className="streak-check">✓</div>}
+                      {isLocked && <div className="streak-lock-overlay">🔒</div>}
+                      <div className="streak-day-icon" style={{ filter: isLocked ? 'grayscale(100%)' : 'none' }}>{icon}</div>
+                      <div className="streak-day-coins" style={{ fontSize: '0.62rem', whiteSpace: 'nowrap' }}>{text}</div>
                       <div className="streak-day-label">{label}</div>
                     </div>
                   );
@@ -2731,28 +2819,65 @@ export default function Dashboard() {
               </div>
 
               {/* Progress bar */}
-              <div className="streak-progress-wrap">
-                <div className="streak-progress-fill" style={{ width: `${Math.min((currentStreak / 7) * 100, 100)}%` }} />
-                <span className="streak-progress-text">{currentStreak}/7 days completed</span>
-              </div>
+              {!isBroken && (
+                <div className="streak-progress-wrap" style={{ marginBottom: '1.5rem' }}>
+                  <div className="streak-progress-fill" style={{ width: `${Math.min(((canCollect ? currentStreak - 1 : currentStreak) / 7) * 100, 100)}%` }} />
+                  <span className="streak-progress-text">
+                    {canCollect ? currentStreak - 1 : currentStreak}/7 days completed
+                  </span>
+                </div>
+              )}
 
-              {/* Action Buttons */}
+              {/* Action Buttons / Broken Screen */}
               {isBroken ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  <button className="streak-cta-btn broken" onClick={saveStreak}>
-                    🛡️ Save Streak — 50 Coins
-                  </button>
-                  <button className="streak-skip-btn" onClick={() => setShowStreakModal(false)}>
-                    Start fresh from Day 1
-                  </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.15)', padding: '20px', borderRadius: '24px', textAlign: 'center' }}>
+                  <p style={{ margin: '0 0 15px 0', fontSize: '0.9rem', color: '#fca5a5', lineHeight: '1.5' }}>
+                    Spend <strong style={{ color: '#fff' }}>100 Coins</strong> to save your streak?
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <button 
+                      className="streak-cta-btn broken" 
+                      onClick={saveStreak}
+                      disabled={!hasEnoughToSave}
+                      style={{ 
+                        background: hasEnoughToSave ? 'linear-gradient(135deg, #fbbf24, #f59e0b)' : '#334155', 
+                        color: hasEnoughToSave ? '#000' : '#94a3b8',
+                        cursor: hasEnoughToSave ? 'pointer' : 'not-allowed',
+                        fontWeight: '800'
+                      }}
+                    >
+                      🛡️ Save Streak (100 Coins)
+                    </button>
+                    {!hasEnoughToSave && (
+                      <p style={{ margin: '0', fontSize: '0.75rem', color: '#f87171' }}>
+                        Insufficient coins to save streak.
+                      </p>
+                    )}
+                    <button 
+                      className="streak-skip-btn" 
+                      onClick={resetStreak}
+                      style={{ 
+                        background: 'rgba(255,255,255,0.05)', 
+                        border: '1px solid rgba(255,255,255,0.1)', 
+                        color: '#cbd5e1', 
+                        padding: '12px', 
+                        borderRadius: '16px',
+                        cursor: 'pointer',
+                        fontWeight: '700',
+                        fontSize: '0.85rem'
+                      }}
+                    >
+                      Reset Streak (Start fresh from Day 1)
+                    </button>
+                  </div>
                 </div>
               ) : canCollect ? (
-                <button className={`streak-cta-btn ${isGrandDay ? 'grand' : 'normal'}`} onClick={collectDailyReward}>
-                  {isGrandDay ? `👑 Claim Grand Prize — +100 Coins!` : `🎁 Collect Today's Reward — +${todayReward} Coins`}
+                <button className={`streak-cta-btn ${currentStreak >= 7 ? 'grand' : 'normal'}`} onClick={collectDailyReward}>
+                  {currentStreak >= 7 ? `👑 Claim Grand Prize — +100 Coins & Boost!` : `🎁 Collect Today's Reward — ${todayRewardText}`}
                 </button>
               ) : (
                 <button className="streak-cta-btn normal" style={{ opacity: 0.7, cursor: 'default' }} onClick={() => setShowStreakModal(false)}>
-                  ✅ Already Collected! Come back tomorrow
+                  ✅ Already Claimed Today! Come back tomorrow
                 </button>
               )}
             </div>
@@ -4335,12 +4460,24 @@ export default function Dashboard() {
             box-shadow: 0 0 16px rgba(255,100,0,0.2);
             transform: scale(1.08);
           }
+          .streak-day-card.locked {
+            background: rgba(255,255,255,0.01);
+            border-color: rgba(255,255,255,0.04);
+            opacity: 0.5;
+          }
           .streak-day-card.grand {
             background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(251,191,36,0.06));
             border-color: rgba(245,158,11,0.5);
           }
           .streak-day-card.grand.done {
             box-shadow: 0 0 20px rgba(245,158,11,0.35);
+          }
+          .streak-lock-overlay {
+            position: absolute; top: -5px; right: -5px;
+            font-size: 0.6rem;
+            width: 16px; height: 16px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(30,41,59,0.9); border-radius: 50%; border: 1px solid rgba(255,255,255,0.08);
           }
           .streak-check {
             position: absolute; top: -7px; right: -7px;
@@ -4353,6 +4490,32 @@ export default function Dashboard() {
           .streak-day-icon { font-size: 1.4rem; line-height: 1; margin-bottom: 4px; }
           .streak-day-coins { font-size: 0.65rem; font-weight: 900; color: #fbbf24; margin-bottom: 3px; }
           .streak-day-label { font-size: 0.58rem; color: #475569; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+          /* Streak Stats Card */
+          .streak-stats-card {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.25rem;
+            background: rgba(255,255,255,0.025);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 20px;
+            padding: 14px 16px;
+          }
+          .streak-stat-box {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 6px;
+          }
+          .streak-stat-box:not(:last-child) {
+            border-right: 1px solid rgba(255,255,255,0.06);
+            padding-right: 12px;
+          }
+          .streak-stat-icon { font-size: 1.3rem; flex-shrink: 0; }
+          .streak-stat-info { display: flex; flex-direction: column; }
+          .streak-stat-info small { font-size: 0.6rem; color: #475569; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+          .streak-stat-info strong { font-size: 0.9rem; color: #f8fafc; font-weight: 900; line-height: 1.2; }
 
           /* Progress Bar */
           .streak-progress-wrap {
@@ -4375,7 +4538,7 @@ export default function Dashboard() {
           .streak-cta-btn.normal:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(255,69,0,0.45); }
           .streak-cta-btn.grand { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #000; box-shadow: 0 10px 30px rgba(245,158,11,0.4); animation: shimmer 2s infinite; }
           .streak-cta-btn.grand:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(245,158,11,0.6); }
-          .streak-cta-btn.broken { background: linear-gradient(135deg, #6366f1, #a855f7); color: #fff; box-shadow: 0 10px 30px rgba(99,102,241,0.35); }
+          .streak-cta-btn.broken { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; box-shadow: 0 10px 30px rgba(251,191,36,0.35); }
           .streak-cta-btn.broken:hover { transform: translateY(-3px); }
           .streak-skip-btn { background: none; border: none; color: #475569; font-size: 0.85rem; font-weight: 600; cursor: pointer; width: 100%; padding: 0.5rem; transition: color 0.2s; }
           .streak-skip-btn:hover { color: #94a3b8; }
@@ -5019,6 +5182,46 @@ export default function Dashboard() {
             .streak-day-icon {
               font-size: 1.1rem !important;
               margin-bottom: 2px !important;
+            }
+            .streak-day-coins {
+              font-size: 0.55rem !important;
+            }
+            .streak-day-label {
+              font-size: 0.5rem !important;
+            }
+            .streak-stats-card {
+              flex-direction: row !important;
+              gap: 6px !important;
+              padding: 10px 10px !important;
+              border-radius: 16px !important;
+            }
+            .streak-stat-box {
+              gap: 6px !important;
+              padding: 0 4px !important;
+            }
+            .streak-stat-icon {
+              font-size: 1rem !important;
+            }
+            .streak-stat-info small {
+              font-size: 0.5rem !important;
+            }
+            .streak-stat-info strong {
+              font-size: 0.7rem !important;
+            }
+            .streak-lock-overlay {
+              width: 14px !important;
+              height: 14px !important;
+              font-size: 0.5rem !important;
+            }
+            .streak-modal-title {
+              font-size: 1.3rem !important;
+            }
+            .streak-modal-sub {
+              font-size: 0.8rem !important;
+            }
+            .streak-cta-btn {
+              padding: 12px !important;
+              font-size: 0.85rem !important;
             }
             /* Coin Usage Transparency - stacked grid */
             .stats-row {
