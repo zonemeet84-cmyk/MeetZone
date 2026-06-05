@@ -105,6 +105,9 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
       `}</style>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="preconnect" href="https://api.zonemeet.chat" />
+        <link rel="dns-prefetch" href="https://api.zonemeet.chat" />
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.png" type="image/png" />
       </Head>

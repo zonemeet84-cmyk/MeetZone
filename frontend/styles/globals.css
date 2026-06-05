@@ -2543,4 +2543,22 @@ img, video {
   font-size: 0.7rem;
 }
   .footer-links { flex-direction: column !important; gap: 10px !important; }
+
+  /* Mobile Performance Optimizations */
+  .bg-gradient {
+    filter: none !important;
+    animation: none !important;
+    background: radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.06) 0%, transparent 60%),
+                radial-gradient(circle at 90% 90%, rgba(236, 72, 153, 0.06) 0%, transparent 60%) !important;
+  }
+
+  .experience-section,
+  .friends-promo-section,
+  .home-support-banner,
+  .pricing-section,
+  .faq-premium-section,
+  footer {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 500px;
+  }
 }
