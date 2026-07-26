@@ -2391,15 +2391,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* LEADERBOARD BUTTON */}
-        {!isLeaderboardOpen && (
-          <div className="zonemeetbot-widget leaderboard-toggle-widget">
-            <button className="bot-toggle-btn" style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', boxShadow: '0 10px 30px rgba(245, 158, 11, 0.4)' }} onClick={() => { setIsLeaderboardOpen(true); fetchLeaderboard(); }}>
-              <span className="bot-icon">🏆</span>
-              <span className="bot-tooltip">Leaderboard</span>
-            </button>
-          </div>
-        )}
+
 
         {/* COIN UTILITY GUIDE */}
         <div className="coin-utility-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '40px', padding: '0 20px' }}>
@@ -3104,6 +3096,16 @@ export default function Dashboard() {
               }
             }}>Submit Report</button>
           </div>
+        </div>
+      )}
+
+      {/* LEADERBOARD BUTTON */}
+      {!isLeaderboardOpen && (
+        <div className="zonemeetbot-widget leaderboard-toggle-widget">
+          <button className="bot-toggle-btn" style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', boxShadow: '0 10px 30px rgba(245, 158, 11, 0.4)' }} onClick={() => { setIsLeaderboardOpen(true); fetchLeaderboard(); }}>
+            <span className="bot-icon">🏆</span>
+            <span className="bot-tooltip">Leaderboard</span>
+          </button>
         </div>
       )}
 
@@ -4597,10 +4599,16 @@ export default function Dashboard() {
             font-family: 'Inter', sans-serif;
           }
           .leaderboard-toggle-widget {
-            bottom: 100px;
+            position: fixed !important;
+            bottom: 95px !important;
+            right: 20px !important;
+            z-index: 10001 !important;
           }
           .bot-toggle-widget {
-            bottom: 20px;
+            position: fixed !important;
+            bottom: 20px !important;
+            right: 20px !important;
+            z-index: 10000 !important;
           }
           .bot-toggle-btn {
             background: linear-gradient(135deg, #6366f1, #a855f7);
@@ -5020,10 +5028,16 @@ export default function Dashboard() {
               right: 12px !important;
             }
             .leaderboard-toggle-widget {
+              position: fixed !important;
               bottom: 80px !important;
+              right: 12px !important;
+              z-index: 10001 !important;
             }
             .bot-toggle-widget {
-              bottom: 20px !important;
+              position: fixed !important;
+              bottom: 16px !important;
+              right: 12px !important;
+              z-index: 10000 !important;
             }
             .bot-toggle-btn {
               width: 50px !important;
