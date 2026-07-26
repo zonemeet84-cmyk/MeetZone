@@ -2364,7 +2364,7 @@ export default function Dashboard() {
       {showPaymentModal && (
         <div className="payment-overlay" onClick={() => setShowPaymentModal(false)}>
           <div className="premium-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close-btn" onClick={() => setShowPaymentModal(false)}>×</button>
+            <button type="button" className="modal-close-btn" onClick={(e) => { e.stopPropagation(); setShowPaymentModal(false); }} style={{ position: 'absolute', top: '14px', right: '14px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.18)', border: '1px solid rgba(255, 255, 255, 0.25)', color: '#ffffff', fontSize: '1.4rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0 }}>×</button>
 
             <div className="modal-header-premium">
               <div className="plan-pill">{selectedPlan?.name}</div>
@@ -2612,7 +2612,7 @@ export default function Dashboard() {
         return (
           <div className="payment-overlay" style={{ zIndex: 11000 }} onClick={() => setShowStreakModal(false)}>
             <div className="streak-reward-modal" onClick={e => e.stopPropagation()}>
-              <button type="button" onClick={(e) => { e.stopPropagation(); setShowStreakModal(false); }} className="streak-modal-close">×</button>
+              <button type="button" onClick={(e) => { e.stopPropagation(); setShowStreakModal(false); }} className="streak-modal-close" style={{ position: 'absolute', top: '14px', right: '14px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.18)', border: '1px solid rgba(255, 255, 255, 0.25)', color: '#ffffff', fontSize: '1.4rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0 }}>×</button>
               
               <div className="streak-modal-top">
                 <div className="streak-big-fire">{isBroken ? '💔' : currentStreak >= 7 ? '👑' : '🔥'}</div>
@@ -2949,7 +2949,7 @@ export default function Dashboard() {
           <div className="leaderboard-modal-card" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div style={{ padding: '15px 20px', position: 'relative', background: 'linear-gradient(180deg, rgba(251, 191, 36, 0.15) 0%, transparent 100%)', textAlign: 'center' }}>
-              <button type="button" className="leaderboard-modal-close" onClick={(e) => { e.stopPropagation(); setIsLeaderboardOpen(false); }}>×</button>
+              <button type="button" className="leaderboard-modal-close" onClick={(e) => { e.stopPropagation(); setIsLeaderboardOpen(false); }} style={{ position: 'absolute', top: '14px', right: '14px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.18)', border: '1px solid rgba(255, 255, 255, 0.25)', color: '#ffffff', fontSize: '1.4rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0 }}>×</button>
               <div style={{ fontSize: '1rem', color: '#fbbf24', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '5px' }}>HALL OF FAME</div>
               <h2 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 0 30px rgba(251,191,36,0.2)' }}>Top Spenders</h2>
               <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginTop: '5px' }}>
@@ -3305,8 +3305,8 @@ export default function Dashboard() {
       {showBoxInfo && (
         <div className="payment-overlay" style={{ zIndex: 20000, backdropFilter: 'blur(15px)' }} onClick={() => setShowBoxInfo(false)}>
           <div className="premium-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '580px', padding: '0', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <div style={{ background: 'linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%)', padding: '35px 30px 20px' }}>
-              <button className="modal-close-btn" onClick={() => setShowBoxInfo(false)}>×</button>
+            <div style={{ background: 'linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%)', padding: '35px 30px 20px', position: 'relative' }}>
+              <button type="button" className="modal-close-btn" onClick={(e) => { e.stopPropagation(); setShowBoxInfo(false); }} style={{ position: 'absolute', top: '14px', right: '14px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.18)', border: '1px solid rgba(255, 255, 255, 0.25)', color: '#ffffff', fontSize: '1.4rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0 }}>×</button>
               <h2 style={{ fontSize: '2.4rem', fontWeight: 900, letterSpacing: '-1px' }}>Prize <span>Catalog</span></h2>
               <p style={{ color: '#94a3b8', fontSize: '1rem', marginTop: '5px' }}>Discover the treasures hidden within each Mystery Box.</p>
             </div>
