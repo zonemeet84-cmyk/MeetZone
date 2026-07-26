@@ -2923,11 +2923,11 @@ export default function Dashboard() {
 
       {/* LEADERBOARD FULL-SCREEN OVERLAY */}
       {isLeaderboardOpen && (
-        <div className="payment-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', zIndex: 99999, backdropFilter: 'blur(25px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }} onClick={() => setIsLeaderboardOpen(false)}>
-          <div className="premium-modal leaderboard-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', width: '95%', height: '80vh', maxHeight: '600px', padding: '0', display: 'flex', flexDirection: 'column', background: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(251, 191, 36, 0.3)', boxShadow: '0 30px 60px rgba(0,0,0,0.8)', borderRadius: '24px', overflow: 'hidden' }}>
+        <div className="leaderboard-overlay-fullscreen" onClick={() => setIsLeaderboardOpen(false)}>
+          <div className="leaderboard-modal-card" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
-            <div style={{ padding: '15px', position: 'relative', background: 'linear-gradient(180deg, rgba(251, 191, 36, 0.15) 0%, transparent 100%)', textAlign: 'center' }}>
-              <button className="modal-close-btn" onClick={() => setIsLeaderboardOpen(false)} style={{ top: '15px', right: '15px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>×</button>
+            <div style={{ padding: '15px 20px', position: 'relative', background: 'linear-gradient(180deg, rgba(251, 191, 36, 0.15) 0%, transparent 100%)', textAlign: 'center' }}>
+              <button className="modal-close-btn" onClick={() => setIsLeaderboardOpen(false)} style={{ position: 'absolute', top: '15px', right: '15px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', color: '#fff', border: 'none', fontSize: '1.4rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>×</button>
               <div style={{ fontSize: '1rem', color: '#fbbf24', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '5px' }}>HALL OF FAME</div>
               <h2 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 0 30px rgba(251,191,36,0.2)' }}>Top Spenders</h2>
               <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginTop: '5px' }}>
@@ -4591,6 +4591,40 @@ export default function Dashboard() {
             z-index: 10000;
             font-family: 'Inter', sans-serif;
           }
+          .leaderboard-overlay-fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: rgba(2, 6, 23, 0.85) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            z-index: 999999 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 15px !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+          }
+          .leaderboard-modal-card {
+            width: 100% !important;
+            max-width: 520px !important;
+            height: 80vh !important;
+            max-height: 600px !important;
+            background: rgba(15, 23, 42, 0.96) !important;
+            border: 1px solid rgba(251, 191, 36, 0.3) !important;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8) !important;
+            border-radius: 28px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            margin: 0 !important;
+            position: relative !important;
+          }
           .leaderboard-toggle-widget {
             position: fixed !important;
             bottom: 95px !important;
@@ -5019,6 +5053,18 @@ export default function Dashboard() {
             }
             .zonemeetbot-widget {
               right: 12px !important;
+            }
+            .leaderboard-overlay-fullscreen {
+              padding: 10px !important;
+              align-items: center !important;
+              justify-content: center !important;
+            }
+            .leaderboard-modal-card {
+              width: 95% !important;
+              height: 75vh !important;
+              max-height: 520px !important;
+              margin: 0 auto !important;
+              border-radius: 24px !important;
             }
             .leaderboard-toggle-widget {
               position: fixed !important;
