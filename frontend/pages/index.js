@@ -2927,7 +2927,7 @@ export default function Dashboard() {
           <div className="leaderboard-modal-card" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div style={{ padding: '15px 20px', position: 'relative', background: 'linear-gradient(180deg, rgba(251, 191, 36, 0.15) 0%, transparent 100%)', textAlign: 'center' }}>
-              <button className="modal-close-btn" onClick={() => setIsLeaderboardOpen(false)} style={{ position: 'absolute', top: '15px', right: '15px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', color: '#fff', border: 'none', fontSize: '1.4rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>×</button>
+              <button className="leaderboard-modal-close" onClick={() => setIsLeaderboardOpen(false)}>×</button>
               <div style={{ fontSize: '1rem', color: '#fbbf24', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '5px' }}>HALL OF FAME</div>
               <h2 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 0 30px rgba(251,191,36,0.2)' }}>Top Spenders</h2>
               <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginTop: '5px' }}>
@@ -4625,6 +4625,29 @@ export default function Dashboard() {
             margin: 0 !important;
             position: relative !important;
           }
+          .leaderboard-modal-close {
+            position: absolute !important;
+            top: 14px !important;
+            right: 14px !important;
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 50% !important;
+            background: rgba(255, 255, 255, 0.15) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
+            font-size: 1.4rem !important;
+            line-height: 1 !important;
+            cursor: pointer !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 100 !important;
+            transition: all 0.2s ease !important;
+          }
+          .leaderboard-modal-close:hover {
+            background: rgba(255, 255, 255, 0.3) !important;
+            transform: scale(1.08) !important;
+          }
           .leaderboard-toggle-widget {
             position: fixed !important;
             bottom: 95px !important;
@@ -5065,6 +5088,15 @@ export default function Dashboard() {
               max-height: 520px !important;
               margin: 0 auto !important;
               border-radius: 24px !important;
+            }
+            .leaderboard-modal-close {
+              position: absolute !important;
+              top: 12px !important;
+              right: 12px !important;
+              width: 32px !important;
+              height: 32px !important;
+              font-size: 1.3rem !important;
+              z-index: 100 !important;
             }
             .leaderboard-toggle-widget {
               position: fixed !important;
