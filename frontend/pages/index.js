@@ -2612,7 +2612,7 @@ export default function Dashboard() {
         return (
           <div className="payment-overlay" style={{ zIndex: 11000 }} onClick={() => setShowStreakModal(false)}>
             <div className="streak-reward-modal" onClick={e => e.stopPropagation()}>
-              <button onClick={() => setShowStreakModal(false)} className="streak-modal-close">×</button>
+              <button type="button" onClick={(e) => { e.stopPropagation(); setShowStreakModal(false); }} className="streak-modal-close">×</button>
               
               <div className="streak-modal-top">
                 <div className="streak-big-fire">{isBroken ? '💔' : currentStreak >= 7 ? '👑' : '🔥'}</div>
@@ -2949,7 +2949,7 @@ export default function Dashboard() {
           <div className="leaderboard-modal-card" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div style={{ padding: '15px 20px', position: 'relative', background: 'linear-gradient(180deg, rgba(251, 191, 36, 0.15) 0%, transparent 100%)', textAlign: 'center' }}>
-              <button className="leaderboard-modal-close" onClick={() => setIsLeaderboardOpen(false)}>×</button>
+              <button type="button" className="leaderboard-modal-close" onClick={(e) => { e.stopPropagation(); setIsLeaderboardOpen(false); }}>×</button>
               <div style={{ fontSize: '1rem', color: '#fbbf24', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '5px' }}>HALL OF FAME</div>
               <h2 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 0 30px rgba(251,191,36,0.2)' }}>Top Spenders</h2>
               <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginTop: '5px' }}>
@@ -5523,17 +5523,24 @@ export default function Dashboard() {
             .streak-day-coins {
               font-size: 0.75rem !important;
             }
-            .streak-modal-close, .modal-close-btn, .history-close-btn, .profile-modal-close {
-              padding: 0 !important;
-              width: 32px !important;
-              height: 32px !important;
-              font-size: 1.5rem !important;
-              top: 10px !important;
-              right: 10px !important;
+            .streak-modal-close, .modal-close-btn, .history-close-btn, .profile-modal-close, .leaderboard-modal-close {
+              position: absolute !important;
+              top: 12px !important;
+              right: 12px !important;
+              width: 34px !important;
+              height: 34px !important;
+              font-size: 1.3rem !important;
+              font-weight: 700 !important;
+              border-radius: 50% !important;
+              background: rgba(255, 255, 255, 0.15) !important;
+              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+              color: #ffffff !important;
               display: flex !important;
               align-items: center !important;
               justify-content: center !important;
-              border-radius: 50% !important;
+              z-index: 1000 !important;
+              pointer-events: auto !important;
+              padding: 0 !important;
             }
             .bot-window {
               width: calc(100vw - 40px) !important;
