@@ -4669,31 +4669,31 @@ export default function Dashboard() {
             box-sizing: border-box !important;
           }
           .leaderboard-modal-card {
-            width: 100% !important;
-            max-width: 520px !important;
+            width: 94% !important;
+            max-width: 500px !important;
             height: 80vh !important;
             max-height: 600px !important;
             background: rgba(15, 23, 42, 0.96) !important;
             border: 1px solid rgba(251, 191, 36, 0.3) !important;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.8) !important;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.85) !important;
             border-radius: 28px !important;
             display: flex !important;
             flex-direction: column !important;
             overflow: hidden !important;
-            margin: 0 !important;
+            margin: 0 auto !important;
             position: relative !important;
           }
           .leaderboard-modal-close {
             position: absolute !important;
-            top: 16px !important;
-            right: 16px !important;
-            width: 38px !important;
-            height: 38px !important;
+            top: 14px !important;
+            right: 14px !important;
+            width: 36px !important;
+            height: 36px !important;
             border-radius: 50% !important;
             background: rgba(255, 255, 255, 0.15) !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
             color: #ffffff !important;
-            font-size: 1.5rem !important;
+            font-size: 1.4rem !important;
             font-weight: 700 !important;
             line-height: 1 !important;
             cursor: pointer !important;
@@ -5144,19 +5144,20 @@ export default function Dashboard() {
               justify-content: center !important;
             }
             .leaderboard-modal-card {
-              width: 95% !important;
-              height: 75vh !important;
-              max-height: 520px !important;
+              width: 94% !important;
+              max-width: 440px !important;
+              height: 78vh !important;
+              max-height: 540px !important;
               margin: 0 auto !important;
-              border-radius: 24px !important;
+              border-radius: 26px !important;
             }
             .leaderboard-modal-close {
               position: absolute !important;
-              top: 16px !important;
-              right: 16px !important;
-              width: 38px !important;
-              height: 38px !important;
-              font-size: 1.5rem !important;
+              top: 14px !important;
+              right: 14px !important;
+              width: 36px !important;
+              height: 36px !important;
+              font-size: 1.4rem !important;
               z-index: 100 !important;
             }
             .leaderboard-toggle-widget {
