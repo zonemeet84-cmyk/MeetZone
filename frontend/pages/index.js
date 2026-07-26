@@ -318,20 +318,28 @@ export default function Dashboard() {
 
   const hideModal = () => setPremiumModal(prev => ({ ...prev, isOpen: false }));
 
-  const handleBotSubmit = (e) => {
-    e.preventDefault();
-    if (!botInput.trim()) return;
-
-    const userMsg = botInput.trim();
-    setBotMessages(prev => [...prev, { text: userMsg, sender: "user" }]);
-    setBotInput("");
-
+  const processBotReply = (userMsg) => {
     setTimeout(() => {
       const lower = userMsg.toLowerCase();
-      const isHindi = /\b(bhai|kya|kaise|hai|hu|ka|ke|ki|aur|magar|lekin|dost|paisa|acha|thik|mera|aap|tum|karo|raha|rahi|tha|thi)\b/i.test(lower);
+      const isHindi = /\b(bhai|kya|kaise|hai|hu|ka|ke|ki|aur|magar|lekin|dost|paisa|acha|thik|mera|aap|tum|karo|raha|rahi|tha|thi|namaste|shukriya|dhanyawad)\b/i.test(lower);
       const matches = (keywords) => keywords.some(k => lower.includes(k));
 
       const KNOWLEDGE = {
+        greeting: {
+          keywords: ['hi', 'hello', 'hey', 'kaise ho', 'hlo', 'namaste', 'kaise ho aap', 'kaise ho bhai', 'how are you', 'wbu', 'wassup', 'good morning', 'good evening', 'good night'],
+          en: "Hello! 👋 I'm doing great! I'm ZoneMeet's AI Assistant. How can I help you today? You can ask me about Coins, VIP Plans, Safety, or Leaderboards!",
+          hi: "Namaste! 👋 Main ekdum mast hoon! Main ZoneMeet AI Assistant hoon. Aaj main aapki kya help karoon? Aap mujhse Coins, VIP Plans, Rules, ya Leaderboard ke baare me puch sakte hain!"
+        },
+        thanks: {
+          keywords: ['thanks', 'thank you', 'dhanyawad', 'shukriya', 'thx', 'shukriyaa', 'welcome', 'badiya', 'great', 'awesome', 'mast'],
+          en: "You're very welcome! 😊 Happy to help! Feel free to ask if you have any other questions.",
+          hi: "Aapka bahut bahut shukriya! 😊 Khushi hui madad karke. Agar koi aur sawaal ho toh zaroor batayein!"
+        },
+        whoareyou: {
+          keywords: ['who are you', 'kaun ho', 'tum kaun ho', 'what is zonemeet', 'website kya hai', 'about', 'kya kaam', 'kya kar sakte ho'],
+          en: "ZoneMeet is a next-gen video matching platform! 🚀 Connect with awesome people around the globe, make friends, play mystery boxes, and rank on our Hall of Fame!",
+          hi: "ZoneMeet ek next-gen video chat platform hai! 🚀 Yahaan aap poore world ke logon se connect ho sakte hain, dosti kar sakte hain, aur exciting prizes jeet sakte hain!"
+        },
         coins: {
           keywords: ['coin', 'paisa', 'money', 'balance', 'buy', 'kharid', 'token', 'recharge', 'store', 'kamaye', 'free'],
           en: "ZoneMeet Coins are the currency of our world! 🪙 You can earn them by: 1. Inviting friends (100 coins each), 2. Daily Login Streaks (up to 100 coins), 3. Buying bundles in the Store. Use them for Boosts, Mystery Boxes, or Reconnecting!",
@@ -393,7 +401,6 @@ export default function Dashboard() {
         ? "Main ZoneMeet AI hoon. Main aapki Coins, VIP, Mystery Boxes, Safety, ya Friends system mein help kar sakta hoon. Aap kya puchna chahte hain?"
         : "I am ZoneMeet AI. I can help you with Coins, VIP Plans, Mystery Boxes, Safety rules, or the Friends system. What would you like to know?";
 
-      // Iterate through knowledge base
       for (const key in KNOWLEDGE) {
         if (matches(KNOWLEDGE[key].keywords)) {
           reply = isHindi ? KNOWLEDGE[key].hi : KNOWLEDGE[key].en;
@@ -402,7 +409,22 @@ export default function Dashboard() {
       }
 
       setBotMessages(prev => [...prev, { text: reply, sender: "bot" }]);
-    }, 800);
+    }, 500);
+  };
+
+  const triggerBotQuery = (queryText) => {
+    if (!queryText) return;
+    setBotMessages(prev => [...prev, { text: queryText, sender: "user" }]);
+    processBotReply(queryText);
+  };
+
+  const handleBotSubmit = (e) => {
+    e.preventDefault();
+    if (!botInput.trim()) return;
+    const userMsg = botInput.trim();
+    setBotMessages(prev => [...prev, { text: userMsg, sender: "user" }]);
+    setBotInput("");
+    processBotReply(userMsg);
   };
 
   useEffect(() => {
@@ -3130,6 +3152,42 @@ export default function Dashboard() {
                 </div>
               ))}
               <div ref={botEndRef} />
+            </div>
+
+            {/* Quick Question Chips */}
+            <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)', scrollbarWidth: 'none' }}>
+              {[
+                { label: "👋 Hi / Hello", query: "Hello! How are you?" },
+                { label: "🪙 Free Coins", query: "How to earn free coins?" },
+                { label: "👑 VIP Plans", query: "Tell me about VIP plans" },
+                { label: "📦 Mystery Boxes", query: "How do Mystery Boxes work?" },
+                { label: "🏆 Leaderboard", query: "Tell me about Leaderboard prizes" },
+                { label: "🛡️ Safety Rules", query: "What are the safety rules?" },
+                { label: "📞 Free Calls", query: "How to call friends for free?" }
+              ].map((chip, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => triggerBotQuery(chip.query)}
+                  style={{
+                    background: 'rgba(99, 102, 241, 0.12)',
+                    border: '1px solid rgba(99, 102, 241, 0.3)',
+                    color: '#c7d2fe',
+                    padding: '5px 11px',
+                    borderRadius: '16px',
+                    fontSize: '0.72rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    transition: '0.2s'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.background = 'rgba(99, 102, 241, 0.25)'}
+                  onMouseOut={(e) => e.currentTarget.style.background = 'rgba(99, 102, 241, 0.12)'}
+                >
+                  {chip.label}
+                </button>
+              ))}
             </div>
             <form className="bot-input-area" onSubmit={handleBotSubmit}>
               <input
