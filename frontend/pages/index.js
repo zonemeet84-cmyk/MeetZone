@@ -2393,7 +2393,7 @@ export default function Dashboard() {
 
         {/* LEADERBOARD BUTTON */}
         {!isLeaderboardOpen && (
-          <div className="zonemeetbot-widget" style={{ bottom: '100px' }}>
+          <div className="zonemeetbot-widget leaderboard-toggle-widget" style={{ bottom: '100px' }}>
             <button className="bot-toggle-btn" style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', boxShadow: '0 10px 30px rgba(245, 158, 11, 0.4)' }} onClick={() => { setIsLeaderboardOpen(true); fetchLeaderboard(); }}>
               <span className="bot-icon">🏆</span>
               <span className="bot-tooltip">Leaderboard</span>
@@ -3108,7 +3108,7 @@ export default function Dashboard() {
       )}
 
       {/* ZONEMEET AI CHATBOT WIDGET */}
-      <div className="zonemeetbot-widget">
+      <div className="zonemeetbot-widget bot-toggle-widget">
         {!isBotOpen ? (
           <button className="bot-toggle-btn" onClick={() => setIsBotOpen(true)}>
             <span className="bot-icon">🤖</span>
@@ -4596,6 +4596,12 @@ export default function Dashboard() {
             z-index: 10000;
             font-family: 'Inter', sans-serif;
           }
+          .leaderboard-toggle-widget {
+            bottom: 90px;
+          }
+          .bot-toggle-widget {
+            bottom: 20px;
+          }
           .bot-toggle-btn {
             background: linear-gradient(135deg, #6366f1, #a855f7);
             border: none;
@@ -5012,6 +5018,12 @@ export default function Dashboard() {
             }
             .zonemeetbot-widget {
               right: 12px !important;
+            }
+            .leaderboard-toggle-widget {
+              bottom: 80px !important;
+            }
+            .bot-toggle-widget {
+              bottom: 20px !important;
             }
             .bot-toggle-btn {
               width: 50px !important;
