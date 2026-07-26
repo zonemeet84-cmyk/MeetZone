@@ -2393,7 +2393,7 @@ export default function Dashboard() {
 
         {/* LEADERBOARD BUTTON */}
         {!isLeaderboardOpen && (
-          <div className="zonemeetbot-widget leaderboard-toggle-widget" style={{ bottom: '100px' }}>
+          <div className="zonemeetbot-widget leaderboard-toggle-widget">
             <button className="bot-toggle-btn" style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', boxShadow: '0 10px 30px rgba(245, 158, 11, 0.4)' }} onClick={() => { setIsLeaderboardOpen(true); fetchLeaderboard(); }}>
               <span className="bot-icon">🏆</span>
               <span className="bot-tooltip">Leaderboard</span>
@@ -4597,7 +4597,7 @@ export default function Dashboard() {
             font-family: 'Inter', sans-serif;
           }
           .leaderboard-toggle-widget {
-            bottom: 90px;
+            bottom: 100px;
           }
           .bot-toggle-widget {
             bottom: 20px;
