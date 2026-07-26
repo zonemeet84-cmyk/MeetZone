@@ -4685,24 +4685,27 @@ export default function Dashboard() {
           }
           .leaderboard-modal-close {
             position: absolute !important;
-            top: 14px !important;
-            right: 14px !important;
-            width: 36px !important;
-            height: 36px !important;
+            top: 16px !important;
+            right: 16px !important;
+            width: 38px !important;
+            height: 38px !important;
             border-radius: 50% !important;
             background: rgba(255, 255, 255, 0.15) !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
             color: #ffffff !important;
-            font-size: 1.4rem !important;
+            font-size: 1.5rem !important;
+            font-weight: 700 !important;
             line-height: 1 !important;
             cursor: pointer !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
             z-index: 100 !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
             transition: all 0.2s ease !important;
           }
-          .leaderboard-modal-close:hover {
+          .leaderboard-modal-close:hover,
+          .leaderboard-modal-close:active {
             background: rgba(255, 255, 255, 0.3) !important;
             transform: scale(1.08) !important;
           }
@@ -5149,11 +5152,11 @@ export default function Dashboard() {
             }
             .leaderboard-modal-close {
               position: absolute !important;
-              top: 12px !important;
-              right: 12px !important;
-              width: 32px !important;
-              height: 32px !important;
-              font-size: 1.3rem !important;
+              top: 16px !important;
+              right: 16px !important;
+              width: 38px !important;
+              height: 38px !important;
+              font-size: 1.5rem !important;
               z-index: 100 !important;
             }
             .leaderboard-toggle-widget {
