@@ -2211,185 +2211,7 @@ export default function Dashboard() {
           <p className="section-subtitle">Get coins to boost your profile or reconnect with community peers.</p>
         </div>
 
-        {/* LEADERBOARD FULL-SCREEN OVERLAY */}
-        {isLeaderboardOpen && (
-          <div className="payment-overlay" style={{ zIndex: 30000, backdropFilter: 'blur(25px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setIsLeaderboardOpen(false)}>
-            <div className="premium-modal leaderboard-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', width: '90%', height: '70vh', maxHeight: '600px', padding: '0', display: 'flex', flexDirection: 'column', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(251, 191, 36, 0.2)', boxShadow: '0 30px 60px rgba(0,0,0,0.5)' }}>
-              {/* Header */}
-              <div style={{ padding: '15px', position: 'relative', background: 'linear-gradient(180deg, rgba(251, 191, 36, 0.1) 0%, transparent 100%)', textAlign: 'center' }}>
-                <button className="modal-close-btn" onClick={() => setIsLeaderboardOpen(false)} style={{ top: '20px', right: '20px' }}>×</button>
-                <div style={{ fontSize: '1.2rem', color: '#fbbf24', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '4px', marginBottom: '10px' }}>HALL OF FAME</div>
-                <h2 style={{ fontSize: '3rem', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 0 30px rgba(251,191,36,0.2)' }}>Top Spenders</h2>
-                <p style={{ color: '#94a3b8', fontSize: '1.1rem', marginTop: '5px' }}>
-                  {leaderboardComingSoon ? "Launch Phase Progress" : `${leaderboardMonth} Rankings & Prizes`}
-                </p>
 
-                {!leaderboardComingSoon && (
-                  <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.05)', padding: '5px', borderRadius: '18px', marginTop: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <button
-                      onClick={() => setLeaderboardFilter('all')}
-                      style={{ padding: '10px 25px', borderRadius: '14px', border: 'none', background: leaderboardFilter === 'all' ? '#fbbf24' : 'transparent', color: leaderboardFilter === 'all' ? '#000' : '#fff', fontWeight: 800, cursor: 'pointer', transition: '0.3s' }}
-                    >🌎 Global</button>
-                    <button
-                      onClick={() => setLeaderboardFilter('india')}
-                      style={{ padding: '10px 25px', borderRadius: '14px', border: 'none', background: leaderboardFilter === 'india' ? '#fbbf24' : 'transparent', color: leaderboardFilter === 'india' ? '#000' : '#fff', fontWeight: 800, cursor: 'pointer', transition: '0.3s' }}
-                    >🇮🇳 India</button>
-                  </div>
-                )}
-              </div>
-              {/* Prize Info Footer */}
-              {!leaderboardComingSoon && (
-                <>
-                  <div style={{ textAlign: 'center', marginTop: '10px' }}>
-                    <button
-                      onClick={() => setShowRewardsInfo(!showRewardsInfo)}
-                      style={{ padding: '8px 20px', borderRadius: '12px', border: '1px solid rgba(251, 191, 36, 0.4)', background: 'rgba(251, 191, 36, 0.1)', color: '#fbbf24', fontWeight: 800, cursor: 'pointer', transition: '0.3s' }}
-                    >
-                      {showRewardsInfo ? 'Hide Rewards 🎁' : 'Show Rewards 🎁'}
-                    </button>
-                  </div>
-                  {showRewardsInfo && (
-                    <div style={{ marginTop: '15px', padding: '20px', background: 'linear-gradient(90deg, rgba(251, 191, 36, 0.05), transparent)', borderRadius: '20px', border: '1px solid rgba(251, 191, 36, 0.1)', display: 'flex', alignItems: 'center', gap: '20px', animation: 'fadeIn 0.3s ease-in-out' }}>
-                      <div style={{ fontSize: '3rem' }}>🎁</div>
-                      <div style={{ flex: 1 }}>
-                        <h4 style={{ margin: 0, color: '#fbbf24', fontSize: '1.1rem', fontWeight: 900 }}>Monthly Rewards Distribution</h4>
-                        <p style={{ margin: '5px 0 0', color: '#94a3b8', lineHeight: '1.4' }}>
-                          🏆 <strong>Rank 1:</strong> 1000 Coins |
-                          🥈 <strong>Rank 2:</strong> 500 Coins |
-                          🥉 <strong>Rank 3:</strong> 200 Coins
-                        </p>
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 700, textAlign: 'right' }}>
-                        NEXT RESET:<br /> {new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toLocaleDateString()}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* Scrollable Body */}
-              <div className="bot-body" style={{ flex: 1, overflowY: 'auto', padding: '0 40px 40px' }}>
-                {leaderboardComingSoon ? (
-                  <div style={{ padding: '60px 20px', textAlign: 'center', animation: 'fadeIn 0.5s' }}>
-                    <div style={{ fontSize: '5rem', marginBottom: '30px' }}>🚀</div>
-                    <h3 style={{ fontSize: '2rem', fontWeight: '900', color: '#fff', marginBottom: '15px' }}>Coming Soon!</h3>
-                    <p style={{ color: '#94a3b8', fontSize: '1.1rem', maxWidth: '400px', margin: '0 auto 40px', lineHeight: '1.6' }}>
-                      The Hall of Fame unlocks once we reach **1,000 Global Users**. Be part of the early wave!
-                    </p>
-
-                    {/* Progress Bar */}
-                    <div style={{ maxWidth: '400px', margin: '0 auto' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '0.9rem', color: '#fbbf24', fontWeight: '800' }}>
-                        <span>Community Progress</span>
-                        <span>{leaderboardComingSoon.current} / {leaderboardComingSoon.target}</span>
-                      </div>
-                      <div style={{ height: '14px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <div style={{
-                          height: '100%',
-                          width: `${Math.min((leaderboardComingSoon.current / leaderboardComingSoon.target) * 100, 100)}%`,
-                          background: 'linear-gradient(90deg, #fbbf24, #f59e0b)',
-                          transition: 'width 1s ease-out',
-                          boxShadow: '0 0 20px rgba(251, 191, 36, 0.4)'
-                        }}></div>
-                      </div>
-                      <p style={{ fontSize: '0.8rem', color: '#475569', marginTop: '20px' }}>
-                        We only need **{Math.max(leaderboardComingSoon.target - leaderboardComingSoon.current, 0)}** more users to go live!
-                      </p>
-                    </div>
-
-                    <button
-                      onClick={() => setIsLeaderboardOpen(false)}
-                      style={{ marginTop: '50px', padding: '15px 40px', borderRadius: '30px', border: 'none', background: 'rgba(255,255,255,0.05)', color: '#fff', fontWeight: '700', cursor: 'pointer' }}
-                    >
-                      Close & Keep Exploring
-                    </button>
-                  </div>
-                ) : leaderboardLoading ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                    <div className="premium-loader" style={{ width: '50px', height: '50px' }}></div>
-                    <p style={{ color: '#94a3b8', marginTop: '20px', fontWeight: 700 }}>Calculating Rankings...</p>
-                  </div>
-                ) : (
-                  <>
-                    {/* PODIUM SECTION */}
-                    {leaderboardData.length >= 3 && (
-                      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '20px', margin: '40px 0 60px' }}>
-                        {/* 2nd Place */}
-                        <div style={{ textAlign: 'center', width: '150px' }}>
-                          <div style={{ position: 'relative', marginBottom: '15px' }}>
-                            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(45deg, #94a3b8, #cbd5e1)', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '4px solid rgba(255,255,255,0.1)' }}>
-                              <span style={{ fontSize: '2rem' }}>🥈</span>
-                            </div>
-                          </div>
-                          <div style={{ fontSize: '1rem', fontWeight: 800, color: '#fff' }}>{leaderboardData[1].name}</div>
-                          <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#cbd5e1' }}>{leaderboardData[1].monthlySpend}</div>
-                          <div style={{ height: '80px', background: 'rgba(255,255,255,0.05)', borderRadius: '15px 15px 0 0', marginTop: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: 'rgba(255,255,255,0.1)', fontSize: '2rem' }}>2</div>
-                        </div>
-
-                        {/* 1st Place */}
-                        <div style={{ textAlign: 'center', width: '180px', transform: 'scale(1.1)' }}>
-                          <div style={{ position: 'relative', marginBottom: '20px' }}>
-                            <div style={{ position: 'absolute', top: '-25px', left: '50%', transform: 'translateX(-50%)', fontSize: '2.5rem', filter: 'drop-shadow(0 0 10px #fbbf24)' }}>👑</div>
-                            <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'linear-gradient(45deg, #fbbf24, #f59e0b)', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '5px solid rgba(251, 191, 36, 0.3)', boxShadow: '0 0 50px rgba(251, 191, 36, 0.3)' }}>
-                              <span style={{ fontSize: '2.5rem' }}>🥇</span>
-                            </div>
-                          </div>
-                          <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff' }}>{leaderboardData[0].name}</div>
-                          <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#fbbf24' }}>{leaderboardData[0].monthlySpend}</div>
-                          <div style={{ height: '120px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '20px 20px 0 0', marginTop: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: 'rgba(251, 191, 36, 0.2)', fontSize: '3rem' }}>1</div>
-                        </div>
-
-                        {/* 3rd Place */}
-                        <div style={{ textAlign: 'center', width: '150px' }}>
-                          <div style={{ position: 'relative', marginBottom: '15px' }}>
-                            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(45deg, #b45309, #d97706)', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '4px solid rgba(255,255,255,0.1)' }}>
-                              <span style={{ fontSize: '2rem' }}>🥉</span>
-                            </div>
-                          </div>
-                          <div style={{ fontSize: '1rem', fontWeight: 800, color: '#fff' }}>{leaderboardData[2].name}</div>
-                          <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#d97706' }}>{leaderboardData[2].monthlySpend}</div>
-                          <div style={{ height: '60px', background: 'rgba(255,255,255,0.05)', borderRadius: '15px 15px 0 0', marginTop: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: 'rgba(255,255,255,0.1)', fontSize: '2rem' }}>3</div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* LIST SECTION (Ranks 4-10) */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      {leaderboardData.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>
-                          <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🕯️</div>
-                          <p style={{ fontSize: '1.2rem' }}>No champions yet this month. Be the first!</p>
-                        </div>
-                      ) : (
-                        leaderboardData.slice(leaderboardData.length >= 3 ? 3 : 0).map((item, idx) => {
-                          const actualRank = (leaderboardData.length >= 3 ? 3 : 0) + idx + 1;
-                          return (
-                            <div key={idx} style={{
-                              display: 'flex', alignItems: 'center', gap: '20px', padding: '18px 25px',
-                              borderRadius: '24px', background: item.isMe ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255,255,255,0.03)',
-                              border: item.isMe ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid rgba(255,255,255,0.05)',
-                              transition: '0.3s'
-                            }}>
-                              <div style={{ width: '40px', fontSize: '1.2rem', fontWeight: 900, color: '#64748b' }}>#{actualRank}</div>
-                              <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff' }}>{item.name} {item.isMe && <span style={{ fontSize: '0.7rem', color: '#fff', background: '#6366f1', padding: '3px 10px', borderRadius: '50px', marginLeft: '10px' }}>YOU</span>}</div>
-                                <div style={{ fontSize: '0.85rem', color: '#64748b' }}>{item.country}</div>
-                              </div>
-                              <div style={{ textAlign: 'right' }}>
-                                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fbbf24' }}>{item.monthlySpend}</div>
-                                <div style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px' }}>Coins Spent</div>
-                              </div>
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
 
 
 
@@ -3095,6 +2917,177 @@ export default function Dashboard() {
                 showModal({ message: 'Failed to submit report', type: 'error' });
               }
             }}>Submit Report</button>
+          </div>
+        </div>
+      )}
+
+      {/* LEADERBOARD FULL-SCREEN OVERLAY */}
+      {isLeaderboardOpen && (
+        <div className="payment-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', zIndex: 99999, backdropFilter: 'blur(25px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }} onClick={() => setIsLeaderboardOpen(false)}>
+          <div className="premium-modal leaderboard-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', width: '95%', height: '80vh', maxHeight: '600px', padding: '0', display: 'flex', flexDirection: 'column', background: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(251, 191, 36, 0.3)', boxShadow: '0 30px 60px rgba(0,0,0,0.8)', borderRadius: '24px', overflow: 'hidden' }}>
+            {/* Header */}
+            <div style={{ padding: '15px', position: 'relative', background: 'linear-gradient(180deg, rgba(251, 191, 36, 0.15) 0%, transparent 100%)', textAlign: 'center' }}>
+              <button className="modal-close-btn" onClick={() => setIsLeaderboardOpen(false)} style={{ top: '15px', right: '15px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>×</button>
+              <div style={{ fontSize: '1rem', color: '#fbbf24', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '5px' }}>HALL OF FAME</div>
+              <h2 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 0 30px rgba(251,191,36,0.2)' }}>Top Spenders</h2>
+              <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginTop: '5px' }}>
+                {leaderboardComingSoon ? "Launch Phase Progress" : `${leaderboardMonth} Rankings & Prizes`}
+              </p>
+
+              {!leaderboardComingSoon && (
+                <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '16px', marginTop: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <button
+                    onClick={() => setLeaderboardFilter('all')}
+                    style={{ padding: '8px 18px', borderRadius: '12px', border: 'none', background: leaderboardFilter === 'all' ? '#fbbf24' : 'transparent', color: leaderboardFilter === 'all' ? '#000' : '#fff', fontWeight: 800, cursor: 'pointer', transition: '0.3s' }}
+                  >🌎 Global</button>
+                  <button
+                    onClick={() => setLeaderboardFilter('india')}
+                    style={{ padding: '8px 18px', borderRadius: '12px', border: 'none', background: leaderboardFilter === 'india' ? '#fbbf24' : 'transparent', color: leaderboardFilter === 'india' ? '#000' : '#fff', fontWeight: 800, cursor: 'pointer', transition: '0.3s' }}
+                  >🇮🇳 India</button>
+                </div>
+              )}
+            </div>
+            {/* Prize Info Footer */}
+            {!leaderboardComingSoon && (
+              <>
+                <div style={{ textAlign: 'center', marginTop: '5px' }}>
+                  <button
+                    onClick={() => setShowRewardsInfo(!showRewardsInfo)}
+                    style={{ padding: '6px 16px', borderRadius: '12px', border: '1px solid rgba(251, 191, 36, 0.4)', background: 'rgba(251, 191, 36, 0.1)', color: '#fbbf24', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', transition: '0.3s' }}
+                  >
+                    {showRewardsInfo ? 'Hide Rewards 🎁' : 'Show Rewards 🎁'}
+                  </button>
+                </div>
+                {showRewardsInfo && (
+                  <div style={{ margin: '10px 15px', padding: '15px', background: 'linear-gradient(90deg, rgba(251, 191, 36, 0.1), transparent)', borderRadius: '16px', border: '1px solid rgba(251, 191, 36, 0.2)', display: 'flex', alignItems: 'center', gap: '15px', animation: 'fadeIn 0.3s ease-in-out' }}>
+                    <div style={{ fontSize: '2rem' }}>🎁</div>
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{ margin: 0, color: '#fbbf24', fontSize: '0.95rem', fontWeight: 900 }}>Monthly Rewards</h4>
+                      <p style={{ margin: '3px 0 0', color: '#94a3b8', fontSize: '0.8rem', lineHeight: '1.3' }}>
+                        🏆 #1: 1000 Coins | 🥈 #2: 500 Coins | 🥉 #3: 200 Coins
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Scrollable Body */}
+            <div className="bot-body" style={{ flex: 1, overflowY: 'auto', padding: '15px 20px 30px' }}>
+              {leaderboardComingSoon ? (
+                <div style={{ padding: '30px 15px', textAlign: 'center', animation: 'fadeIn 0.5s' }}>
+                  <div style={{ fontSize: '3.5rem', marginBottom: '15px' }}>🚀</div>
+                  <h3 style={{ fontSize: '1.6rem', fontWeight: '900', color: '#fff', marginBottom: '10px' }}>Coming Soon!</h3>
+                  <p style={{ color: '#94a3b8', fontSize: '0.95rem', maxWidth: '350px', margin: '0 auto 25px', lineHeight: '1.5' }}>
+                    The Hall of Fame unlocks once we reach <strong>1,000 Global Users</strong>. Be part of the early wave!
+                  </p>
+
+                  {/* Progress Bar */}
+                  <div style={{ maxWidth: '350px', margin: '0 auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem', color: '#fbbf24', fontWeight: '800' }}>
+                      <span>Community Progress</span>
+                      <span>{leaderboardComingSoon.current} / {leaderboardComingSoon.target}</span>
+                    </div>
+                    <div style={{ height: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
+                      <div style={{
+                        height: '100%',
+                        width: `${Math.min((leaderboardComingSoon.current / leaderboardComingSoon.target) * 100, 100)}%`,
+                        background: 'linear-gradient(90deg, #fbbf24, #f59e0b)',
+                        transition: 'width 1s ease-out',
+                        boxShadow: '0 0 20px rgba(251, 191, 36, 0.4)'
+                      }}></div>
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '12px' }}>
+                      Only <strong>{Math.max(leaderboardComingSoon.target - leaderboardComingSoon.current, 0)}</strong> more users needed!
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => setIsLeaderboardOpen(false)}
+                    style={{ marginTop: '30px', padding: '12px 30px', borderRadius: '25px', border: 'none', background: 'rgba(255,255,255,0.1)', color: '#fff', fontWeight: '700', cursor: 'pointer' }}
+                  >
+                    Close & Keep Exploring
+                  </button>
+                </div>
+              ) : leaderboardLoading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '200px' }}>
+                  <div className="premium-loader" style={{ width: '40px', height: '40px' }}></div>
+                  <p style={{ color: '#94a3b8', marginTop: '15px', fontWeight: 700, fontSize: '0.9rem' }}>Calculating Rankings...</p>
+                </div>
+              ) : (
+                <>
+                  {/* PODIUM SECTION */}
+                  {leaderboardData.length >= 3 && (
+                    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '10px', margin: '20px 0 30px' }}>
+                      {/* 2nd Place */}
+                      <div style={{ textAlign: 'center', flex: 1, maxWidth: '100px' }}>
+                        <div style={{ position: 'relative', marginBottom: '8px' }}>
+                          <div style={{ width: '55px', height: '55px', borderRadius: '50%', background: 'linear-gradient(45deg, #94a3b8, #cbd5e1)', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid rgba(255,255,255,0.1)' }}>
+                            <span style={{ fontSize: '1.4rem' }}>🥈</span>
+                          </div>
+                        </div>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{leaderboardData[1].name}</div>
+                        <div style={{ fontSize: '0.9rem', fontWeight: 900, color: '#cbd5e1' }}>{leaderboardData[1].monthlySpend}</div>
+                      </div>
+
+                      {/* 1st Place */}
+                      <div style={{ textAlign: 'center', flex: 1, maxWidth: '120px', transform: 'scale(1.05)' }}>
+                        <div style={{ position: 'relative', marginBottom: '12px' }}>
+                          <div style={{ position: 'absolute', top: '-18px', left: '50%', transform: 'translateX(-50%)', fontSize: '1.8rem', filter: 'drop-shadow(0 0 10px #fbbf24)' }}>👑</div>
+                          <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'linear-gradient(45deg, #fbbf24, #f59e0b)', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '4px solid rgba(251, 191, 36, 0.3)', boxShadow: '0 0 30px rgba(251, 191, 36, 0.4)' }}>
+                            <span style={{ fontSize: '1.8rem' }}>🥇</span>
+                          </div>
+                        </div>
+                        <div style={{ fontSize: '0.95rem', fontWeight: 900, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{leaderboardData[0].name}</div>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#fbbf24' }}>{leaderboardData[0].monthlySpend}</div>
+                      </div>
+
+                      {/* 3rd Place */}
+                      <div style={{ textAlign: 'center', flex: 1, maxWidth: '100px' }}>
+                        <div style={{ position: 'relative', marginBottom: '8px' }}>
+                          <div style={{ width: '55px', height: '55px', borderRadius: '50%', background: 'linear-gradient(45deg, #b45309, #d97706)', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid rgba(255,255,255,0.1)' }}>
+                            <span style={{ fontSize: '1.4rem' }}>🥉</span>
+                          </div>
+                        </div>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{leaderboardData[2].name}</div>
+                        <div style={{ fontSize: '0.9rem', fontWeight: 900, color: '#d97706' }}>{leaderboardData[2].monthlySpend}</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* LIST SECTION (Ranks 4-10) */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {leaderboardData.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                        <div style={{ fontSize: '3rem', marginBottom: '10px' }}>🕯️</div>
+                        <p style={{ fontSize: '1rem' }}>No champions yet this month. Be the first!</p>
+                      </div>
+                    ) : (
+                      leaderboardData.slice(leaderboardData.length >= 3 ? 3 : 0).map((item, idx) => {
+                        const actualRank = (leaderboardData.length >= 3 ? 3 : 0) + idx + 1;
+                        return (
+                          <div key={idx} style={{
+                            display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 15px',
+                            borderRadius: '16px', background: item.isMe ? 'rgba(99, 102, 241, 0.15)' : 'rgba(255,255,255,0.03)',
+                            border: item.isMe ? '1px solid rgba(99, 102, 241, 0.4)' : '1px solid rgba(255,255,255,0.05)'
+                          }}>
+                            <div style={{ width: '30px', fontSize: '0.95rem', fontWeight: 900, color: '#64748b' }}>#{actualRank}</div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{item.name} {item.isMe && <span style={{ fontSize: '0.65rem', color: '#fff', background: '#6366f1', padding: '2px 8px', borderRadius: '50px', marginLeft: '5px' }}>YOU</span>}</div>
+                              <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{item.country}</div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontSize: '0.95rem', fontWeight: 900, color: '#fbbf24' }}>{item.monthlySpend}</div>
+                              <div style={{ fontSize: '0.65rem', color: '#64748b', textTransform: 'uppercase' }}>Coins</div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
