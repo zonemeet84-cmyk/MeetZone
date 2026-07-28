@@ -181,9 +181,101 @@ const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID || "YOUR_TWILIO_ACCOUN
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN || "YOUR_TWILIO_AUTH_TOKEN";
 const TWILIO_VERIFY_SID = process.env.TWILIO_VERIFY_SID || "YOUR_TWILIO_VERIFY_SID";
 
-const twilioClient = (TWILIO_ACCOUNT_SID !== "YOUR_TWILIO_ACCOUNT_SID")
+const twilioClient = (TWILIO_ACCOUNT_SID && TWILIO_ACCOUNT_SID !== "YOUR_TWILIO_ACCOUNT_SID" && TWILIO_AUTH_TOKEN && TWILIO_AUTH_TOKEN !== "YOUR_TWILIO_AUTH_TOKEN")
   ? twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
   : null;
+
+// Helper function to send notification (Email + SMS) on user's first login/signup
+async function notifyFirstLoginSMS(user) {
+  if (!user || user.firstLoginNotified) return;
+
+  // Mark as notified immediately to avoid duplicate triggers
+  user.firstLoginNotified = true;
+  saveUsers();
+
+  const name = user.name || "New User";
+  const contact = user.email || user.phone || user.id || "N/A";
+  const gender = user.gender || "N/A";
+  const country = user.country || "N/A";
+  const timeStr = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+  const totalUsersCount = users ? users.length : 1;
+
+  // 1. Send Instant Email Alert via Resend (Option 1 - Primary)
+  const adminEmail = process.env.ADMIN_EMAIL || "ds9376314@gmail.com";
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const emailHtml = `
+        <div style="font-family: Arial, sans-serif; padding: 25px; background-color: #0f172a; color: #f8fafc; border-radius: 12px; max-width: 600px; margin: 0 auto; border: 1px solid #334155;">
+          <div style="text-align: center; padding-bottom: 20px; border-bottom: 1px solid #334155;">
+            <h2 style="color: #6366f1; margin: 0; font-size: 24px;">🚨 New User First Login Alert!</h2>
+            <p style="color: #94a3b8; margin-top: 5px; font-size: 14px;">ZoneMeet Security & Analytics System</p>
+          </div>
+          
+          <div style="padding: 20px 0;">
+            <table style="width: 100%; border-collapse: collapse; color: #f8fafc;">
+              <tr>
+                <td style="padding: 10px; font-weight: bold; color: #94a3b8; width: 40%;">User Name:</td>
+                <td style="padding: 10px; font-weight: bold; color: #38bdf8;">${name}</td>
+              </tr>
+              <tr style="background-color: #1e293b;">
+                <td style="padding: 10px; font-weight: bold; color: #94a3b8;">Contact Info:</td>
+                <td style="padding: 10px; font-weight: bold; color: #f43f5e;">${contact}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; font-weight: bold; color: #94a3b8;">Gender:</td>
+                <td style="padding: 10px;">${gender}</td>
+              </tr>
+              <tr style="background-color: #1e293b;">
+                <td style="padding: 10px; font-weight: bold; color: #94a3b8;">Country:</td>
+                <td style="padding: 10px;">${country}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; font-weight: bold; color: #94a3b8;">Login Time:</td>
+                <td style="padding: 10px; color: #fbbf24;">${timeStr}</td>
+              </tr>
+              <tr style="background-color: #1e293b;">
+                <td style="padding: 10px; font-weight: bold; color: #94a3b8;">Total Users Now:</td>
+                <td style="padding: 10px; font-weight: bold; color: #10b981; font-size: 16px;">🎉 ${totalUsersCount} Users</td>
+              </tr>
+            </table>
+          </div>
+          
+          <div style="text-align: center; padding-top: 15px; border-top: 1px solid #334155; font-size: 12px; color: #64748b;">
+            This is an automated first-login notification from your ZoneMeet platform.
+          </div>
+        </div>
+      `;
+
+      await sendEmail({
+        from: 'ZoneMeet Alerts <onboarding@resend.dev>',
+        to: adminEmail,
+        subject: `🚨 Alert: ${name} logged in! (Total Users: ${totalUsersCount})`,
+        html: emailHtml
+      });
+      console.log(`[Instant Email Alert] Sent notification to ${adminEmail} for user ${contact} (Total: ${totalUsersCount})`);
+    } catch (err) {
+      console.error("[Email Alert Error]:", err.message);
+    }
+  }
+
+  // 2. Send SMS Alert via Twilio (if configured)
+  const adminPhone = process.env.ADMIN_PHONE_NUMBER;
+  const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
+
+  if (twilioClient && adminPhone && twilioPhone) {
+    try {
+      const messageBody = `🚨 NEW USER FIRST LOGIN ALERT!\n\nName: ${name}\nContact: ${contact}\nTime: ${timeStr}\nTotal Users: ${totalUsersCount}\n\n- ZoneMeet Alert System`;
+      const response = await twilioClient.messages.create({
+        body: messageBody,
+        from: twilioPhone,
+        to: adminPhone
+      });
+      console.log(`[Twilio SMS Alert] Sent to ${adminPhone}, SID: ${response.sid}`);
+    } catch (err) {
+      console.error("[Twilio SMS Alert Error]:", err.message);
+    }
+  }
+}
 // ==================================
 
 // Load users
@@ -861,6 +953,8 @@ app.post("/api/auth/session-login", (req, res) => {
   const { accessToken, refreshToken, cookieOptions } = generateTokens(user, req.body.rememberMe);
   res.cookie('jid', refreshToken, cookieOptions);
   
+  notifyFirstLoginSMS(user);
+
   res.json({ token: accessToken, user });
 });
 
@@ -983,6 +1077,8 @@ app.post("/api/auth/register", async (req, res) => {
 
   saveUsers();
   
+  notifyFirstLoginSMS(newUser);
+
   const { accessToken, refreshToken, cookieOptions } = generateTokens(newUser, false);
   res.cookie('jid', refreshToken, cookieOptions);
   
@@ -1143,6 +1239,8 @@ app.post("/api/auth/login", async (req, res) => {
   user.coinActivity = coinActivity.filter(a => a.email === user.email).slice(-10);
   if (!user.unlockedFilters) user.unlockedFilters = ["None", "Smooth"];
   
+  notifyFirstLoginSMS(user);
+
   // Instant bypass for everyone - 2FA is fully disabled
   const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "30d" });
   return res.json({ token, user });
@@ -1316,6 +1414,7 @@ app.post("/api/auth/register", async (req, res) => {
   }
 
   saveUsers();
+  notifyFirstLoginSMS(newUser);
   const token = jwt.sign({ id: newUser.id }, JWT_SECRET, { expiresIn: "7d" });
   console.log("New user registered:", phone);
   res.status(201).json({ token, user: { id: newUser.id, phone: newUser.phone, name: newUser.name, premium: newUser.premium, gender: newUser.gender, country: newUser.country, state: newUser.state, age: newUser.age, planName: null, unlockedFilters: newUser.unlockedFilters, referralCode: newUser.referralCode } });
