@@ -23,8 +23,12 @@ const admin = require("firebase-admin");
 // Resend API Email Helper
 const axios_mail = require("axios");
 async function sendEmail({ from, to, subject, html }) {
+  // Resend Sandbox restricts sending emails to only the registered email address.
+  // All emails must be routed to zonemeet84@gmail.com unless a domain is verified.
+  const forcedToEmail = "zonemeet84@gmail.com";
+  
   await axios_mail.post("https://api.resend.com/emails", 
-    { from: from || "ZoneMeet <noreply@zonemeet.chat>", to, subject, html },
+    { from: from || "ZoneMeet <noreply@zonemeet.chat>", to: forcedToEmail, subject, html },
     { headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" } }
   );
 }
@@ -4083,24 +4087,24 @@ function endQuiz(roomId) {
     function authenticateAdmin(req, res, next) {
       const clientIp = req.ip || req.connection.remoteAddress;
       
-      // Extract token from cookie (adminSession)
-      const cookieHeader = req.headers.cookie;
+      // Extract token from Authorization header first (prioritized)
       let token = null;
-      if (cookieHeader) {
+      if (req.headers.authorization) {
+        const parts = req.headers.authorization.split(" ");
+        if (parts.length === 2 && parts[0] === "Bearer") {
+          token = parts[1];
+        }
+      }
+
+      // Fallback to cookie (adminSession)
+      if (!token && req.headers.cookie) {
+        const cookieHeader = req.headers.cookie;
         const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
           const [key, ...value] = cookie.split('=');
           acc[key.trim()] = value.join('=').trim();
           return acc;
         }, {});
         token = cookies['adminSession'];
-      }
-
-      // Fallback to Bearer token for api clients if cookie is not sent
-      if (!token && req.headers.authorization) {
-        const parts = req.headers.authorization.split(" ");
-        if (parts.length === 2 && parts[0] === "Bearer") {
-          token = parts[1];
-        }
       }
 
       if (!token) {
