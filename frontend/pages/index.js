@@ -669,6 +669,7 @@ export default function Dashboard() {
           streak_broken: false,
           bonusClaimedToday: true 
         };
+        if (res.data.boostExpiry) updated.boostExpiry = res.data.boostExpiry;
         setUser(updated);
         localStorage.setItem("user", JSON.stringify(updated));
         setDailyStatus({ ...dailyStatus, canCollect: false, streak_day: res.data.streak_day || res.data.streak, streak_broken: false });

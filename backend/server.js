@@ -1835,6 +1835,7 @@ app.post("/api/user/collect-daily-reward", (req, res) => {
     coins: user.coins,
     streak_day: user.streak_day,
     streak: user.streak,
+    boostExpiry: user.boostExpiry,
     rewardGiven: rewardMessage,
     message: `${rewardMessage} claimed!`,
     coinActivity: coinActivity.filter(a => (user.email && a.email === user.email) || (user.phone && a.email === user.phone)).slice(-10)
