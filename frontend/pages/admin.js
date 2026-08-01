@@ -31,6 +31,7 @@ export default function AdminDashboard() {
   const [newNewsContent, setNewNewsContent] = useState("");
   const [timeframe, setTimeframe] = useState("Year");
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterCountry, setFilterCountry] = useState("");
   
   // Manual Edit State
   const [editingUser, setEditingUser] = useState(null);
@@ -852,11 +853,27 @@ export default function AdminDashboard() {
            {activeTab === "user-management" && (
              <div className="glass-card fade-in">
                 <h3>User Management — Permanent Delete</h3>
+                <div style={{ marginBottom: '15px' }}>
+                  <select 
+                    value={filterCountry} 
+                    onChange={e => setFilterCountry(e.target.value)}
+                    style={{ padding: '10px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                  >
+                    <option value="">All Countries</option>
+                    {[...new Set(allUsers.map(u => u.country).filter(Boolean))].sort().map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
                 <div className="reports-masonry">
                    {allUsers.filter(u => {
-                     if (!searchTerm) return true;
+                     let matchCountry = true;
+                     if (filterCountry) matchCountry = u.country === filterCountry;
+                     
+                     if (!searchTerm) return matchCountry;
                      const s = searchTerm.toLowerCase();
-                     return (u.email && u.email.toLowerCase().includes(s)) || (u.name && u.name.toLowerCase().includes(s)) || (u.phone && u.phone.includes(s));
+                     const matchSearch = (u.email && u.email.toLowerCase().includes(s)) || (u.name && u.name.toLowerCase().includes(s)) || (u.phone && u.phone.includes(s));
+                     return matchCountry && matchSearch;
                    }).map(u => (
                      <div className="report-card" key={u.id}>
                         <div className="r-top">
@@ -1017,7 +1034,9 @@ export default function AdminDashboard() {
         .brand h2 { font-size: 22px; font-weight: 900; margin: 0; letter-spacing: -1px; }
         .brand h2 span { color: var(--text-dim); font-weight: 400; font-size: 16px; }
 
-        .nav-menu { flex: 1; }
+        .nav-menu { flex: 1; overflow-y: auto; overflow-x: hidden; padding-right: 5px; }
+        .nav-menu::-webkit-scrollbar { width: 4px; }
+        .nav-menu::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
         .nav-item { padding: 14px 20px; border-radius: 16px; display: flex; align-items: center; gap: 15px; color: var(--text-dim); cursor: pointer; transition: 0.3s; margin-bottom: 8px; position: relative; font-weight: 600; }
         .nav-item i { font-size: 18px; width: 24px; text-align: center; }
         .nav-item:hover { background: rgba(255,255,255,0.03); color: var(--text); }
