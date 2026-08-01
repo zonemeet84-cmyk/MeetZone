@@ -881,7 +881,7 @@ app.post("/api/auth/session-login", (req, res) => {
   const { email, name, referralCode } = req.body;
   if (!email) return res.status(400).json({ message: "Email is required" });
 
-  const clientIp = req.ip || req.connection.remoteAddress;
+  const clientIp = req.headers['cf-connecting-ip'] || (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || req.ip || req.connection.remoteAddress;
   let user = users.find(u => u.email === email);
   const isNewUser = !user;
 
@@ -1005,7 +1005,7 @@ app.post("/api/auth/send-email-otp", async (req, res) => {
 // EMAIL REGISTRATION ENDPOINT
 app.post("/api/auth/register", async (req, res) => {
   const { name, email, password, otp, gender, country, state, age, referralCode, captchaToken } = req.body;
-  const clientIp = req.ip || req.connection.remoteAddress;
+  const clientIp = req.headers['cf-connecting-ip'] || (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || req.ip || req.connection.remoteAddress;
 
   const isCaptchaValid = await verifyCaptcha(captchaToken);
   if (!isCaptchaValid) {
@@ -1194,7 +1194,7 @@ app.post("/api/auth/reset-password", async (req, res) => {
 
 app.post("/api/auth/login", async (req, res) => {
   const { identifier, password, captchaToken } = req.body; // identifier can be email or phone
-  const clientIp = req.ip || req.connection.remoteAddress;
+  const clientIp = req.headers['cf-connecting-ip'] || (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || req.ip || req.connection.remoteAddress;
 
   const isCaptchaValid = await verifyCaptcha(captchaToken);
   if (!isCaptchaValid) {
@@ -1319,7 +1319,7 @@ app.post("/api/auth/send-otp", async (req, res) => {
 app.post("/api/auth/register", async (req, res) => {
   let { phone, password, name, gender, country, state, age, otp, referralCode, captchaToken } = req.body;
   if (phone) phone = phone.replace(/\s/g, ""); // Normalize phone
-  const clientIp = req.ip || req.connection.remoteAddress;
+  const clientIp = req.headers['cf-connecting-ip'] || (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || req.ip || req.connection.remoteAddress;
 
   const isCaptchaValid = await verifyCaptcha(captchaToken);
   if (!isCaptchaValid) {
@@ -1428,7 +1428,7 @@ app.post("/api/auth/register", async (req, res) => {
 // Firebase Registration/Login Endpoint
 app.post("/api/auth/firebase-register", async (req, res) => {
   const { idToken, name, phone, password, gender, country, state, age } = req.body;
-  const clientIp = req.ip || req.connection.remoteAddress;
+  const clientIp = req.headers['cf-connecting-ip'] || (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || req.ip || req.connection.remoteAddress;
 
   if (bannedIps.includes(clientIp)) {
     return res.status(403).json({ message: "Your IP is banned." });
@@ -4086,7 +4086,7 @@ function endQuiz(roomId) {
     let adminOtpStore = {};
 
     function authenticateAdmin(req, res, next) {
-      const clientIp = req.ip || req.connection.remoteAddress;
+      const clientIp = req.headers['cf-connecting-ip'] || (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || req.ip || req.connection.remoteAddress;
       
       // Extract token from Authorization header first (prioritized)
       let token = null;
@@ -4167,7 +4167,7 @@ function endQuiz(roomId) {
 
     app.post("/api/admin/verify-login", async (req, res) => {
       const { email, password, otp, secretRouteKey } = req.body;
-      const clientIp = req.ip || req.connection.remoteAddress;
+      const clientIp = req.headers['cf-connecting-ip'] || (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || req.ip || req.connection.remoteAddress;
 
       if (email !== "ds9376314@gmail.com") {
         return res.status(403).json({ message: "Access Denied" });
