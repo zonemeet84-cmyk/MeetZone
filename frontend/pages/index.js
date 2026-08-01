@@ -120,7 +120,7 @@ export default function Dashboard() {
     };
 
     const handleDisconnect = () => setIsSocketConnected(false);
-    const handleOnlineCount = (count) => setOnlineCount(count || 1);
+    const handleOnlineCount = (count) => setOnlineCount(typeof count === 'number' ? count : 0);
 
     const handleIncoming = (callInfo) => setIncomingCall(callInfo);
     const handleAccepted = ({ roomId }) => router.push(`/chat?room=${roomId}`);
@@ -234,7 +234,7 @@ export default function Dashboard() {
   const [giftRecipientId, setGiftRecipientId] = useState("");
   const [incomingCall, setIncomingCall] = useState(null);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
-  const [onlineCount, setOnlineCount] = useState(5248);
+  const [onlineCount, setOnlineCount] = useState(0);
 
   // The fetchOnlineCount REST API interval has been removed.
   // Online count is now dynamically driven by real-time WebSocket events.
