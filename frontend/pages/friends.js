@@ -9,8 +9,8 @@ export default function Friends() {
   const [user, setUser] = useState(null);
   const [friends, setFriends] = useState([]);
   const [requests, setRequests] = useState([]);
-  const [searchEmail, setSearchEmail] = useState("");
-  const [searchResult, setSearchResult] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
   const [socket, setSocket] = useState(null);
   const [isOnline, setIsOnline] = useState(true);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
@@ -114,27 +114,27 @@ export default function Friends() {
 
   const handleSearch = async (e) => {
     e.preventDefault();
+    if (!searchQuery.trim()) return;
     const token = localStorage.getItem("token");
     try {
-      const res = await axios.get(`https://api.zonemeet.chat/api/users/search?email=${searchEmail}`, {
+      const res = await axios.get(`https://api.zonemeet.chat/api/users/search?query=${searchQuery}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setSearchResult(res.data);
+      setSearchResults(res.data);
     } catch (err) {
-      alert("User not found");
-      setSearchResult(null);
+      alert("No users found matching your search.");
+      setSearchResults([]);
     }
   };
 
-  const sendRequest = async () => {
+  const sendRequest = async (targetId) => {
     const token = localStorage.getItem("token");
     try {
-      await axios.post("https://api.zonemeet.chat/api/friends/request", { targetId: searchResult.id }, {
+      await axios.post("https://api.zonemeet.chat/api/friends/request", { targetId }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert("Friend request sent!");
-      setSearchResult(null);
-      setSearchEmail("");
+      setSearchResults(prev => prev.filter(u => u.id !== targetId));
     } catch (err) {
       if (err.response?.data?.requiresPremium) {
         setShowPremiumPopup(true);
@@ -300,25 +300,32 @@ export default function Friends() {
             </div>
             <form className="friend-search-form" onSubmit={handleSearch}>
               <div className="search-input-wrapper">
-                <i className="fa-solid fa-envelope"></i>
+                <i className="fa-solid fa-search"></i>
                 <input 
-                  type="email" 
-                  value={searchEmail} 
-                  onChange={(e) => setSearchEmail(e.target.value)} 
-                  placeholder="Enter friend's email" 
+                  type="text" 
+                  value={searchQuery} 
+                  onChange={(e) => setSearchQuery(e.target.value)} 
+                  placeholder="Search by name or email" 
                   required 
                 />
               </div>
               <button type="submit" className="btn-search">Search</button>
             </form>
             
-            {searchResult && (
-              <div className="search-result-card">
-                <div className="result-info">
-                  <div className="avatar-mini">{searchResult.name.charAt(0).toUpperCase()}</div>
-                  <span className="result-name">{searchResult.name}</span>
-                </div>
-                <button className="btn-add" onClick={sendRequest}>Add</button>
+            {searchResults.length > 0 && (
+              <div className="search-results-list" style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {searchResults.map(user => (
+                  <div key={user.id} className="search-result-card" style={{ marginTop: 0 }}>
+                    <div className="result-info">
+                      <div className="avatar-mini">{user.name.charAt(0).toUpperCase()}</div>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span className="result-name">{user.name}</span>
+                        {user.email && <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{user.email}</span>}
+                      </div>
+                    </div>
+                    <button className="btn-add" onClick={() => sendRequest(user.id)}>Add</button>
+                  </div>
+                ))}
               </div>
             )}
           </div>

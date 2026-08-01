@@ -2247,10 +2247,18 @@ Promise.all([pubClient.connect(), subClient.connect()])
 
 // Friends API
 app.get("/api/users/search", authenticateToken, (req, res) => {
-  const { email } = req.query;
-  const targetUser = users.find(u => u.email === email);
-  if (!targetUser) return res.status(404).json({ message: "User not found" });
-  res.json({ id: targetUser.id, name: targetUser.name, email: targetUser.email });
+  const { query } = req.query;
+  if (!query) return res.status(400).json({ message: "Search query required" });
+  
+  const q = query.toLowerCase();
+  const matchingUsers = users.filter(u => 
+    (u.email && u.email.toLowerCase().includes(q)) || 
+    (u.name && u.name.toLowerCase().includes(q))
+  ).slice(0, 10); // Limit to 10 results
+  
+  if (matchingUsers.length === 0) return res.status(404).json({ message: "No users found" });
+  
+  res.json(matchingUsers.map(u => ({ id: u.id, name: u.name, email: u.email })));
 });
 
 app.post("/api/friends/request", authenticateToken, (req, res) => {
