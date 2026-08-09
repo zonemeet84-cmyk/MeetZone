@@ -630,7 +630,7 @@ export default function Dashboard() {
 
     const token = localStorage.getItem("token");
     if (!session && (!token || token === "undefined")) {
-      // router.push("/login"); // Optional: Redirect to login if not authenticated
+      router.push("/login"); // Redirect to login if not authenticated
     }
   }, [session, authLoading]);
 
