@@ -2762,42 +2762,72 @@ img, video {
   background: rgba(255, 255, 255, 0.12);
 }
 
-/* MOBILE PHONES / RESPONSIVE (smaller for phones as requested) */
+/* MOBILE PHONES / RESPONSIVE (Strict single-line capsule layout) */
 @media (max-width: 640px) {
   .cyber-island-container {
-    top: 10px;
-    max-width: 95vw;
+    top: 8px;
+    width: 92vw;
+    max-width: 92vw;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    justify-content: center;
   }
   .cyber-capsule-island {
-    padding: 6px 12px 6px 8px;
-    gap: 8px;
-    max-width: 95vw;
+    padding: 4px 10px 4px 6px;
+    gap: 6px;
+    max-width: 92vw;
+    border-radius: 999px;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    display: inline-flex !important;
+    align-items: center !important;
   }
   .island-icon-badge {
-    width: 28px;
-    height: 28px;
+    width: 22px !important;
+    height: 22px !important;
+    flex-shrink: 0 !important;
   }
   .island-icon-badge svg {
-    width: 15px;
-    height: 15px;
+    width: 12px !important;
+    height: 12px !important;
   }
   .island-text-group {
-    gap: 5px;
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    gap: 4px !important;
+    max-width: calc(92vw - 65px) !important;
   }
   .island-prefix {
-    font-size: 0.72rem;
+    display: none !important; /* Hide SYSTEM ALERT: prefix on phone to guarantee 1-line fit */
   }
   .island-message {
-    font-size: 0.76rem;
-    line-height: 1.25;
+    font-size: 0.74rem !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-weight: 600 !important;
+  }
+  .island-close-btn {
+    font-size: 1rem !important;
+    padding: 1px 4px !important;
+    margin-left: 2px !important;
+    flex-shrink: 0 !important;
   }
   .island-actions {
     margin-left: 4px;
     gap: 4px;
+    flex-shrink: 0 !important;
   }
   .island-btn-confirm, .island-btn-cancel {
-    padding: 4px 10px;
-    font-size: 0.72rem;
+    padding: 3px 8px;
+    font-size: 0.7rem;
+    border-radius: 999px;
   }
 }
+
 

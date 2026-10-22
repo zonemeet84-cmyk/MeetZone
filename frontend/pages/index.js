@@ -3380,16 +3380,16 @@ export default function Dashboard() {
       {/* MYSTERY BOX MODALS */}
       {showBoxInfo && (
         <div className="payment-overlay" style={{ zIndex: 20000, backdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', overflow: 'hidden', padding: '16px' }} onClick={() => setShowBoxInfo(false)}>
-          <div className="premium-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '620px', width: '100%', maxHeight: 'min(90vh, 680px)', display: 'flex', flexDirection: 'column', background: '#0b0f19', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 30px 80px rgba(0,0,0,0.85)' }}>
-            <div style={{ background: 'linear-gradient(180deg, rgba(99, 102, 241, 0.12) 0%, transparent 100%)', padding: '18px 24px 12px', position: 'relative', flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <button type="button" className="modal-close-btn" onClick={(e) => { e.stopPropagation(); setShowBoxInfo(false); }} style={{ position: 'absolute', top: '12px', right: '12px', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.2)', color: '#ffffff', fontSize: '1.2rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0 }}>×</button>
-              <h2 style={{ fontSize: '1.8rem', fontWeight: 900, letterSpacing: '-0.5px', margin: 0 }}>Prize <span style={{ color: '#818cf8' }}>Catalog</span></h2>
-              <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '4px 0 0 0' }}>Discover the treasures hidden within each Mystery Box.</p>
+          <div className="catalog-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="catalog-modal-header">
+              <button type="button" className="catalog-modal-close" onClick={(e) => { e.stopPropagation(); setShowBoxInfo(false); }} aria-label="Close">×</button>
+              <h2>Prize <span>Catalog</span></h2>
+              <p>Discover the treasures hidden within each Mystery Box.</p>
             </div>
 
             <div className="modal-body" style={{ padding: '14px 20px 20px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '12px', scrollbarWidth: 'thin' }}>
               {/* INSTRUCTIONS */}
-              <div style={{ background: 'rgba(99, 102, 241, 0.05)', borderRadius: '16px', padding: '10px 16px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+              <div className="catalog-rules-box" style={{ background: 'rgba(99, 102, 241, 0.05)', borderRadius: '16px', padding: '10px 16px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
                 <h5 style={{ color: '#6366f1', margin: '0 0 4px 0', fontSize: '0.8rem', fontWeight: 800 }}>📜 RULES & INFO</h5>
                 <ul style={{ margin: 0, paddingLeft: '16px', color: '#94a3b8', fontSize: '0.78rem', lineHeight: '1.4' }}>
                   <li>Stickers are collected in your profile (Low price in Bronze/Silver, High in Gold).</li>
@@ -3399,19 +3399,19 @@ export default function Dashboard() {
               </div>
 
               {/* BRONZE BOX */}
-              <div style={{
+              <div className="catalog-tier-block" style={{
                 background: 'rgba(205, 127, 50, 0.03)',
                 borderRadius: '18px',
                 border: '1px solid rgba(205, 127, 50, 0.15)',
                 overflow: 'hidden'
               }}>
-                <div style={{ padding: '10px 16px', background: 'rgba(205, 127, 50, 0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="catalog-tier-header" style={{ padding: '10px 16px', background: 'rgba(205, 127, 50, 0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h4 style={{ color: '#cd7f32', margin: 0, fontWeight: 900, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '1.2rem' }}>📦</span> BRONZE TIER
                   </h4>
-                  <span style={{ fontSize: '0.75rem', color: '#cd7f32', fontWeight: 800, background: 'rgba(205,127,50,0.12)', padding: '3px 8px', borderRadius: '50px' }}>50 COINS</span>
+                  <span className="catalog-tier-badge" style={{ fontSize: '0.75rem', color: '#cd7f32', fontWeight: 800, background: 'rgba(205,127,50,0.12)', padding: '3px 8px', borderRadius: '50px' }}>50 COINS</span>
                 </div>
-                <div style={{ padding: '12px 14px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+                <div className="catalog-tier-grid" style={{ padding: '12px 14px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
                   {[
                     { label: 'Coin Rebate', val: '10-20 Coins', icon: '💰' },
                     { label: 'Profile Boost', val: '6-7 Minutes', icon: '🚀' },
@@ -3419,11 +3419,11 @@ export default function Dashboard() {
                     { label: 'Elite Trial', val: '1 Hour VIP', icon: '👑' },
                     { label: 'Random Drop', val: 'Empty Luck', icon: '🍀' }
                   ].map((item, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.02)', padding: '7px 10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
-                      <span style={{ fontSize: '1.05rem' }}>{item.icon}</span>
+                    <div key={i} className="catalog-reward-chip" style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.02)', padding: '7px 10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                      <span className="chip-icon" style={{ fontSize: '1.05rem' }}>{item.icon}</span>
                       <div>
-                        <div style={{ fontSize: '0.62rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>{item.label}</div>
-                        <div style={{ fontSize: '0.78rem', color: '#fff', fontWeight: 800 }}>{item.val}</div>
+                        <div className="chip-label" style={{ fontSize: '0.62rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>{item.label}</div>
+                        <div className="chip-val" style={{ fontSize: '0.78rem', color: '#fff', fontWeight: 800 }}>{item.val}</div>
                       </div>
                     </div>
                   ))}
@@ -3431,19 +3431,19 @@ export default function Dashboard() {
               </div>
 
               {/* SILVER BOX */}
-              <div style={{
+              <div className="catalog-tier-block" style={{
                 background: 'rgba(192, 192, 192, 0.03)',
                 borderRadius: '18px',
                 border: '1px solid rgba(192, 192, 192, 0.15)',
                 overflow: 'hidden'
               }}>
-                <div style={{ padding: '10px 16px', background: 'rgba(192, 192, 192, 0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="catalog-tier-header" style={{ padding: '10px 16px', background: 'rgba(192, 192, 192, 0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h4 style={{ color: '#c0c0c0', margin: 0, fontWeight: 900, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '1.2rem' }}>🎁</span> SILVER TIER
                   </h4>
-                  <span style={{ fontSize: '0.75rem', color: '#c0c0c0', fontWeight: 800, background: 'rgba(192,192,192,0.12)', padding: '3px 8px', borderRadius: '50px' }}>150 COINS</span>
+                  <span className="catalog-tier-badge" style={{ fontSize: '0.75rem', color: '#c0c0c0', fontWeight: 800, background: 'rgba(192,192,192,0.12)', padding: '3px 8px', borderRadius: '50px' }}>150 COINS</span>
                 </div>
-                <div style={{ padding: '12px 14px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+                <div className="catalog-tier-grid" style={{ padding: '12px 14px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
                   {[
                     { label: 'Silver Rebate', val: '40-80 Coins', icon: '💰' },
                     { label: 'Massive Boost', val: '15-20 Minutes', icon: '⚡' },
@@ -3451,11 +3451,11 @@ export default function Dashboard() {
                     { label: 'VIP Pass', val: '6 Hours', icon: '👑' },
                     { label: 'Random Drop', val: 'Empty Luck', icon: '🍀' }
                   ].map((item, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.02)', padding: '7px 10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
-                      <span style={{ fontSize: '1.05rem' }}>{item.icon}</span>
+                    <div key={i} className="catalog-reward-chip" style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.02)', padding: '7px 10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                      <span className="chip-icon" style={{ fontSize: '1.05rem' }}>{item.icon}</span>
                       <div>
-                        <div style={{ fontSize: '0.62rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>{item.label}</div>
-                        <div style={{ fontSize: '0.78rem', color: '#fff', fontWeight: 800 }}>{item.val}</div>
+                        <div className="chip-label" style={{ fontSize: '0.62rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>{item.label}</div>
+                        <div className="chip-val" style={{ fontSize: '0.78rem', color: '#fff', fontWeight: 800 }}>{item.val}</div>
                       </div>
                     </div>
                   ))}
@@ -3463,33 +3463,33 @@ export default function Dashboard() {
               </div>
 
               {/* GOLD BOX */}
-              <div style={{
+              <div className="catalog-tier-block" style={{
                 background: 'rgba(255, 215, 0, 0.05)',
                 borderRadius: '18px',
                 border: '1px solid rgba(255, 215, 0, 0.3)',
                 overflow: 'hidden',
                 boxShadow: '0 0 25px rgba(255, 215, 0, 0.05)'
               }}>
-                <div style={{ padding: '10px 16px', background: 'rgba(255, 215, 0, 0.15)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="catalog-tier-header" style={{ padding: '10px 16px', background: 'rgba(255, 215, 0, 0.15)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h4 style={{ color: '#ffd700', margin: 0, fontWeight: 900, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '1.2rem' }}>✨</span> GOLDEN TIER
                   </h4>
                   <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                     <span style={{ fontSize: '0.62rem', color: '#ffd700', fontWeight: 900, background: 'rgba(0,0,0,0.3)', padding: '3px 6px', borderRadius: '4px' }}>NO LOSS GUARANTEE</span>
-                    <span style={{ fontSize: '0.75rem', color: '#ffd700', fontWeight: 800, background: 'rgba(255,215,0,0.12)', padding: '3px 8px', borderRadius: '50px' }}>500 COINS</span>
+                    <span className="catalog-tier-badge" style={{ fontSize: '0.75rem', color: '#ffd700', fontWeight: 800, background: 'rgba(255,215,0,0.12)', padding: '3px 8px', borderRadius: '50px' }}>500 COINS</span>
                   </div>
                 </div>
-                <div style={{ padding: '12px 14px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
+                <div className="catalog-tier-grid" style={{ padding: '12px 14px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
                   {[
                     { label: 'Ultra Boost', val: '1-2 Hours', icon: '🔥' },
                     { label: 'Luxury Gifts', val: 'Crown/Car', icon: '🏎️' },
                     { label: 'Elite Pass', val: '2 Full Days', icon: '👑' }
                   ].map((item, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,215,0,0.03)', padding: '10px', borderRadius: '12px', border: '1px solid rgba(255,215,0,0.08)' }}>
-                      <span style={{ fontSize: '1.4rem' }}>{item.icon}</span>
+                    <div key={i} className="catalog-reward-chip" style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,215,0,0.03)', padding: '10px', borderRadius: '12px', border: '1px solid rgba(255,215,0,0.08)' }}>
+                      <span className="chip-icon" style={{ fontSize: '1.4rem' }}>{item.icon}</span>
                       <div>
-                        <div style={{ fontSize: '0.62rem', color: '#ffd700', fontWeight: 800, textTransform: 'uppercase' }}>{item.label}</div>
-                        <div style={{ fontSize: '0.8rem', color: '#fff', fontWeight: 900 }}>{item.val}</div>
+                        <div className="chip-label" style={{ fontSize: '0.62rem', color: '#ffd700', fontWeight: 800, textTransform: 'uppercase' }}>{item.label}</div>
+                        <div className="chip-val" style={{ fontSize: '0.8rem', color: '#fff', fontWeight: 900 }}>{item.val}</div>
                       </div>
                     </div>
                   ))}
@@ -3997,7 +3997,7 @@ export default function Dashboard() {
       )}
 
       <div id="footer" style={{ textAlign: 'center', padding: '3rem 0 2rem', color: '#94a3b8', fontSize: '0.9rem', position: 'relative', zIndex: 10 }}>
-        <div style={{
+        <div className="age-compliance-notice" style={{
           background: 'rgba(239, 68, 68, 0.08)',
           border: '1px solid rgba(239, 68, 68, 0.3)',
           borderRadius: '20px',
@@ -4996,6 +4996,69 @@ export default function Dashboard() {
             right: 20px !important;
             z-index: 10000 !important;
           }
+          
+          /* Prize Catalog Modal Base Styles */
+          .catalog-modal-card {
+            max-width: 620px;
+            width: 100%;
+            max-height: min(90vh, 680px);
+            display: flex;
+            flex-direction: column;
+            background: #0b0f19;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.85);
+            position: relative;
+          }
+          .catalog-modal-header {
+            background: linear-gradient(180deg, rgba(99, 102, 241, 0.12) 0%, transparent 100%);
+            padding: 18px 24px 12px;
+            position: relative;
+            flex-shrink: 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+          }
+          .catalog-modal-header h2 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            margin: 0;
+            padding-right: 40px;
+          }
+          .catalog-modal-header h2 span {
+            color: #818cf8;
+          }
+          .catalog-modal-header p {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin: 4px 0 0 0;
+          }
+          .catalog-modal-close {
+            position: absolute !important;
+            top: 14px !important;
+            right: 14px !important;
+            width: 32px !important;
+            height: 32px !important;
+            border-radius: 50% !important;
+            background: rgba(255, 255, 255, 0.12) !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            color: #ffffff !important;
+            font-size: 1.25rem !important;
+            font-weight: 700 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            cursor: pointer !important;
+            z-index: 10 !important;
+            line-height: 1 !important;
+            padding: 0 !important;
+            transition: all 0.2s ease !important;
+          }
+          .catalog-modal-close:hover {
+            background: rgba(255, 255, 255, 0.25) !important;
+            transform: scale(1.05) !important;
+          }
+
           .bot-toggle-btn {
             background: linear-gradient(135deg, #6366f1, #a855f7);
             border: none;
@@ -5447,13 +5510,117 @@ export default function Dashboard() {
               right: 12px !important;
               z-index: 10000 !important;
             }
+            /* Floating Action Buttons - Compact Circular on Phones */
+            .leaderboard-toggle-widget {
+              bottom: 60px !important;
+              right: 12px !important;
+              z-index: 10001 !important;
+            }
+            .bot-toggle-widget {
+              bottom: 14px !important;
+              right: 12px !important;
+              z-index: 10000 !important;
+            }
             .bot-toggle-btn {
-              width: 50px !important;
-              height: 50px !important;
-              box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3) !important;
+              width: 38px !important;
+              height: 38px !important;
+              min-width: 38px !important;
+              max-width: 38px !important;
+              border-radius: 50% !important; /* Perfect circle */
+              box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45) !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              padding: 0 !important;
             }
             .bot-icon {
-              font-size: 1.5rem !important;
+              font-size: 1.15rem !important;
+            }
+
+            /* Age Compliance Notice Card Compact */
+            .age-compliance-notice {
+              padding: 10px 12px !important;
+              font-size: 0.72rem !important;
+              line-height: 1.35 !important;
+              max-width: 92% !important;
+              margin: 0 auto 1.2rem !important;
+              border-radius: 14px !important;
+            }
+
+            /* Prize Catalog Modal Mobile Overhaul (No overlaps, round close, fits screen) */
+            .catalog-modal-card {
+              width: 90% !important;
+              max-width: 325px !important;
+              max-height: 80vh !important;
+              max-height: 80dvh !important;
+              border-radius: 20px !important;
+              margin: auto !important;
+            }
+            .catalog-modal-header {
+              padding: 12px 14px 10px !important;
+            }
+            .catalog-modal-header h2 {
+              font-size: 1.15rem !important;
+              padding-right: 32px !important;
+            }
+            .catalog-modal-header p {
+              font-size: 0.7rem !important;
+            }
+            .catalog-modal-close {
+              top: 10px !important;
+              right: 10px !important;
+              width: 28px !important;
+              height: 28px !important;
+              font-size: 1.1rem !important;
+            }
+            .catalog-modal-card .modal-body {
+              padding: 10px 10px 14px !important;
+              gap: 8px !important;
+              overflow-y: auto !important;
+            }
+            .catalog-rules-box {
+              padding: 8px 10px !important;
+              border-radius: 12px !important;
+            }
+            .catalog-rules-box h5 {
+              font-size: 0.72rem !important;
+            }
+            .catalog-rules-box ul {
+              font-size: 0.68rem !important;
+              line-height: 1.3 !important;
+              padding-left: 14px !important;
+            }
+            .catalog-tier-block {
+              border-radius: 14px !important;
+            }
+            .catalog-tier-header {
+              padding: 6px 10px !important;
+            }
+            .catalog-tier-header h4 {
+              font-size: 0.78rem !important;
+            }
+            .catalog-tier-badge {
+              font-size: 0.65rem !important;
+              padding: 2px 6px !important;
+            }
+            .catalog-tier-grid {
+              padding: 8px 8px !important;
+              grid-template-columns: 1fr 1fr !important;
+              gap: 6px !important;
+            }
+            .catalog-reward-chip {
+              padding: 5px 6px !important;
+              border-radius: 8px !important;
+              gap: 5px !important;
+            }
+            .catalog-reward-chip .chip-icon {
+              font-size: 0.85rem !important;
+            }
+            .catalog-reward-chip .chip-label {
+              font-size: 0.54rem !important;
+            }
+            .catalog-reward-chip .chip-val {
+              font-size: 0.68rem !important;
             }
             .bot-tooltip {
               display: none !important;

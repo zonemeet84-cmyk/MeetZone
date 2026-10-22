@@ -1488,70 +1488,172 @@ export default function Friends() {
 
       /* Compact Phone Screen Responsiveness (< 640px) */
       @media (max-width: 640px) {
+        .header-content {
+          padding: 8px 10px !important;
+          gap: 6px !important;
+        }
+        .brand-group {
+          gap: 4px !important;
+          flex-shrink: 0 !important;
+          cursor: pointer;
+        }
+        .brand-logo-icon {
+          font-size: 1.15rem !important;
+        }
+        .brand-group h1 {
+          font-size: 1.15rem !important;
+          font-weight: 900 !important;
+          margin: 0 !important;
+          display: inline-block !important;
+          white-space: nowrap !important;
+          letter-spacing: -0.5px !important;
+        }
+        .brand-badge {
+          display: none !important;
+        }
+        .header-actions {
+          gap: 6px !important;
+        }
+        .status-indicator {
+          padding: 3px 6px !important;
+          gap: 4px !important;
+        }
+        .status-text {
+          display: none !important;
+        }
+        .user-profile-pill {
+          padding: 3px 6px !important;
+          gap: 4px !important;
+          max-width: 105px !important;
+        }
+        .user-name {
+          font-size: 0.72rem !important;
+          max-width: 65px !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          white-space: nowrap !important;
+        }
+        .user-avatar-badge {
+          width: 22px !important;
+          height: 22px !important;
+          font-size: 0.7rem !important;
+        }
         .dashboard-hero {
-          margin: 8px auto !important;
-          padding: 0 10px !important;
+          margin: 6px auto !important;
+          padding: 0 8px !important;
         }
         .glass-panel {
-          padding: 16px 12px !important;
-          border-radius: 18px !important;
+          padding: 12px 10px !important;
+          border-radius: 14px !important;
+        }
+        .panel-header h2 {
+          font-size: 1.05rem !important;
+        }
+        .panel-header p {
+          font-size: 0.72rem !important;
+        }
+        .friends-list-grid {
+          gap: 8px !important;
         }
         .friend-card {
           flex-direction: column !important;
           align-items: stretch !important;
-          gap: 12px !important;
-          padding: 12px !important;
-          border-radius: 16px !important;
+          gap: 8px !important;
+          padding: 8px 10px !important;
+          border-radius: 12px !important;
         }
         .friend-info {
           width: 100% !important;
           justify-content: flex-start !important;
-          gap: 12px !important;
+          gap: 10px !important;
+        }
+        .avatar-placeholder {
+          width: 34px !important;
+          height: 34px !important;
+          font-size: 0.95rem !important;
+        }
+        .friend-name {
+          font-size: 0.85rem !important;
+        }
+        .status-pill {
+          font-size: 0.65rem !important;
+          padding: 1px 4px !important;
         }
         .friend-call-actions {
           width: 100% !important;
           display: flex !important;
-          gap: 8px !important;
+          flex-direction: row !important;
+          gap: 6px !important;
         }
         .friend-call-actions .call-action-btn {
           flex: 1 !important;
           justify-content: center !important;
-          padding: 8px 10px !important;
+          padding: 5px 8px !important;
+          font-size: 0.72rem !important;
+          border-radius: 8px !important;
+          height: 32px !important;
+          min-height: 32px !important;
+          gap: 4px !important;
+        }
+        .call-btn-icon {
           font-size: 0.8rem !important;
         }
+        .btn-search {
+          padding: 6px 12px !important;
+          font-size: 0.75rem !important;
+          border-radius: 8px !important;
+          height: 34px !important;
+        }
+        .btn-add {
+          padding: 5px 10px !important;
+          font-size: 0.72rem !important;
+          border-radius: 8px !important;
+          height: 30px !important;
+        }
+        .btn-accept-small {
+          padding: 4px 8px !important;
+          font-size: 0.7rem !important;
+          border-radius: 6px !important;
+          height: 28px !important;
+        }
+        .empty-cta-btn {
+          padding: 7px 12px !important;
+          font-size: 0.75rem !important;
+          border-radius: 8px !important;
+        }
         .mobile-tabs-bar {
-          padding: 6px 8px !important;
-          gap: 6px !important;
+          padding: 5px 6px !important;
+          gap: 4px !important;
           overflow-x: auto !important;
         }
         .tab-btn {
-          padding: 7px 11px !important;
-          font-size: 0.78rem !important;
+          padding: 5px 9px !important;
+          font-size: 0.72rem !important;
           white-space: nowrap !important;
-          border-radius: 10px !important;
+          border-radius: 8px !important;
         }
         .incoming-call-card, .outgoing-card {
           width: 90% !important;
           max-width: 320px !important;
-          padding: 20px 16px !important;
-          border-radius: 22px !important;
+          padding: 18px 14px !important;
+          border-radius: 20px !important;
         }
         .call-avatar {
-          width: 60px !important;
-          height: 60px !important;
-          font-size: 1.6rem !important;
-          margin-bottom: 12px !important;
+          width: 54px !important;
+          height: 54px !important;
+          font-size: 1.4rem !important;
+          margin-bottom: 10px !important;
         }
         .incoming-call-card h2, .outgoing-card h2 {
-          font-size: 1.25rem !important;
+          font-size: 1.15rem !important;
         }
         .incoming-call-card p, .outgoing-card p {
-          font-size: 0.82rem !important;
+          font-size: 0.78rem !important;
         }
         .modal-actions button {
-          padding: 9px 14px !important;
-          font-size: 0.85rem !important;
-          border-radius: 12px !important;
+          padding: 8px 12px !important;
+          font-size: 0.78rem !important;
+          border-radius: 10px !important;
         }
       }
 

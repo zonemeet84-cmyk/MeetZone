@@ -2658,7 +2658,7 @@ export default function Home() {
     }
 
     if (!partnerId) {
-      showToast("⏳ Please wait for a partner to connect before sending.", "info", 3000);
+      showToast("⏳ Wait for a partner to connect before sending", "info", 3000);
       return;
     }
 
@@ -3689,24 +3689,12 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             <div className="filters-row-v2" style={{ padding: '0', background: 'transparent', border: 'none', margin: '0' }}>
               <button 
                 className="filter-settings-trigger-btn" 
-                onClick={async () => {
-                  const isOwner = user?.email?.toLowerCase() === "ds9376314@gmail.com";
-
-                  if (canUseGenderCountryFilters(user) || isOwner) {
-                    setTempGender(gender);
-                    setTempCountry(country);
-                    if (canUseEliteFilters(user) || isOwner) {
-                      setTempStateProv(stateProv);
-                      setTempAge(age);
-                    } else {
-                      setTempStateProv("All States");
-                      setTempAge("all");
-                    }
-                    setShowFilterModal(true);
-                  } else {
-                    showToast("Matchmaking preferences are a subscription feature! Please unlock Premium to use.", "warning");
-                    setShowPricingModal(true);
-                  }
+                onClick={() => {
+                  setTempGender(gender);
+                  setTempCountry(country);
+                  setTempStateProv(stateProv);
+                  setTempAge(age);
+                  setShowFilterModal(true);
                 }}
               >
                 <span className="icon">⚙️</span>
@@ -5115,9 +5103,6 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
               By continuing with Camera/Mic, you agree to our <a href="/terms" target="_blank" style={{ color: '#6366f1' }}>Terms</a> and <a href="/guidelines" target="_blank" style={{ color: '#6366f1' }}>Community Guidelines</a>.
             </div>
             <div className="mobile-action-stack">
-              <button className="stop-btn" onClick={() => router.push("/")}>
-                <span className="icon">🛑</span> <span className="text">Quit</span>
-              </button>
               <button 
                 className={`quiz-trigger-btn ${quizState === "queued" ? "cancel" : ""}`} 
                 onClick={handleBrainClashClick}
@@ -5146,17 +5131,11 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
               type="button"
               className="filter-settings-trigger-btn mobile-filter-btn"
               onClick={() => {
-                const isOwner = user?.email?.toLowerCase() === "ds9376314@gmail.com";
-                if (canUseGenderCountryFilters(user) || isOwner) {
-                  setTempGender(gender);
-                  setTempCountry(country);
-                  setTempStateProv(stateProv);
-                  setTempAge(age);
-                  setShowFilterModal(true);
-                } else {
-                  showToast("Matchmaking preferences are a subscription feature! Please unlock Premium to use.", "warning");
-                  setShowPricingModal(true);
-                }
+                setTempGender(gender);
+                setTempCountry(country);
+                setTempStateProv(stateProv);
+                setTempAge(age);
+                setShowFilterModal(true);
               }}
             >
               <span className="icon">⚙️</span>
@@ -9213,8 +9192,9 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            z-index: 100 !important;
+            z-index: 250 !important;
             pointer-events: auto !important;
+            cursor: pointer !important;
           }
           .bottom-actions .next-btn {
             top: 40px !important;
@@ -9638,6 +9618,8 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             align-items: center !important;
             justify-content: center !important;
             padding: 16px !important;
+            z-index: 100050 !important;
+            pointer-events: auto !important;
           }
           .filter-modal-card {
             width: 90% !important;
