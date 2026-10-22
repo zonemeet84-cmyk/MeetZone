@@ -1857,9 +1857,16 @@ export default function Home() {
 
       socket.on("connect", () => {
         setStatus("Waiting for a partner...");
+        let devId = typeof window !== "undefined" ? localStorage.getItem("zonemeet_dev_id") : null;
+        if (!devId && typeof window !== "undefined") {
+          devId = "dev_" + Math.random().toString(36).substring(2, 10) + "_" + Date.now();
+          localStorage.setItem("zonemeet_dev_id", devId);
+        }
+
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
           const profile = JSON.parse(storedUser);
+          profile.deviceId = devId;
 
           // Register online status so friends see this user as ONLINE from any page
           if (profile.id) {
@@ -1873,6 +1880,15 @@ export default function Home() {
           }
           profile.chatMode = isTextModeInitial ? "text" : "video";
           socket.emit("set-profile", profile);
+        } else {
+          // Guest profile
+          const guestProfile = {
+            id: devId,
+            deviceId: devId,
+            name: "Guest " + (devId ? devId.slice(-4) : "User"),
+            chatMode: isTextModeInitial ? "text" : "video"
+          };
+          socket.emit("set-profile", guestProfile);
         }
 
         // Send translate lang on connect if set
@@ -1961,8 +1977,9 @@ export default function Home() {
         setIncomingCall(callInfo);
       });
 
-      socket.on("direct-call-accepted", ({ roomId }) => {
-        router.push(`/chat?room=${roomId}`);
+      socket.on("direct-call-accepted", ({ roomId, callType }) => {
+        const mode = callType || "video";
+        router.push(`/chat?room=${roomId}&mode=${mode}`);
       });
 
       socket.on("direct-call-rejected", () => {
@@ -1973,6 +1990,19 @@ export default function Home() {
 
 
       socket.on("matched", async ({ partnerId, initiator, partnerInfo, chatMode }) => {
+        // STRICT CLIENT CIRCUIT BREAKER: Never connect to yourself!
+        const myUserId = user?.id || (typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).id : null);
+        const myEmail = user?.email || (typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).email : null);
+        const isSelf = 
+          partnerId === socket.id || 
+          (partnerInfo?.id && myUserId && String(partnerInfo.id) === String(myUserId)) ||
+          (partnerInfo?.email && myEmail && partnerInfo.email.toLowerCase() === myEmail.toLowerCase());
+
+        if (isSelf) {
+          console.warn("[Self-Match Blocked] Detected self-match on client. Auto-skipping to next partner...");
+          socket.emit("next");
+          return;
+        }
         setPartnerId(partnerId);
         setPartnerInfo(partnerInfo);
         const isCurrentTextMode = router.query.mode === "text" || chatMode === "text";
@@ -2601,8 +2631,9 @@ export default function Home() {
 
   const acceptCall = () => {
     if (incomingCall) {
-      socket.emit("direct-call-accept", { toSocketId: incomingCall.fromSocketId, roomId: incomingCall.roomId });
-      router.push(`/chat?room=${incomingCall.roomId}`);
+      const mode = incomingCall.callType === "text" ? "text" : "video";
+      socket.emit("direct-call-accept", { toSocketId: incomingCall.fromSocketId, roomId: incomingCall.roomId, callType: mode });
+      router.push(`/chat?room=${incomingCall.roomId}&mode=${mode}`);
       setIncomingCall(null);
     }
   };

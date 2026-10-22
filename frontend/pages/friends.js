@@ -15,7 +15,8 @@ export default function Friends() {
   const [isOnline, setIsOnline] = useState(true);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   
-  const [incomingCall, setIncomingCall] = useState(null); // { fromUser, fromSocketId, roomId }
+  const [incomingCall, setIncomingCall] = useState(null); // { fromUser, fromSocketId, roomId, callType }
+  const [outgoingCall, setOutgoingCall] = useState(null); // { friend, callType, roomId }
   const [activeRoom, setActiveRoom] = useState(null);
   const [showPremiumPopup, setShowPremiumPopup] = useState(false);
   const [mobileTab, setMobileTab] = useState("friends"); // 'friends' | 'add' | 'requests'
@@ -83,8 +84,10 @@ export default function Friends() {
       setIncomingCall(callInfo);
     });
     
-    newSocket.on("direct-call-accepted", ({ roomId }) => {
-      router.push(`/chat?room=${roomId}`);
+        newSocket.on("direct-call-accepted", ({ roomId, callType }) => {
+      setOutgoingCall(null);
+      const mode = callType || "video";
+      router.push(`/chat?room=${roomId}&mode=${mode}`);
     });
 
     newSocket.on("friend-request-received", () => {
@@ -92,7 +95,8 @@ export default function Friends() {
     });
     
     newSocket.on("direct-call-rejected", () => {
-      alert("Call was declined.");
+      setOutgoingCall(null);
+      alert("Call request was declined or user is busy.");
     });
 
     fetchFriends(token);
@@ -162,24 +166,45 @@ export default function Friends() {
     }
   };
 
-  const startDirectCall = (friend) => {
+    const startDirectCall = (friend, callType = "video") => {
     if (!friend.online) {
-      alert("User is offline!");
+      alert(`${friend.name} is currently offline!`);
       return;
     }
     const roomId = `room_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     setActiveRoom(roomId);
-    socket.emit("direct-call-request", { toUserId: friend.id, fromUser: user, roomId });
-    alert("Ringing " + friend.name + "...");
+    setOutgoingCall({ friend, callType, roomId });
+    socket.emit("direct-call-request", { 
+      toUserId: friend.id, 
+      fromUser: user, 
+      roomId, 
+      callType 
+    });
+  };
+
+  const cancelOutgoingCall = () => {
+    if (outgoingCall && socket) {
+      socket.emit("direct-call-reject", { toSocketId: null });
+    }
+    setOutgoingCall(null);
   };
 
   const acceptCall = () => {
-    socket.emit("direct-call-accept", { toSocketId: incomingCall.fromSocketId, roomId: incomingCall.roomId });
-    router.push(`/chat?room=${incomingCall.roomId}`);
+    if (!incomingCall) return;
+    const mode = incomingCall.callType === "text" ? "text" : "video";
+    socket.emit("direct-call-accept", { 
+      toSocketId: incomingCall.fromSocketId, 
+      roomId: incomingCall.roomId, 
+      callType: mode 
+    });
+    router.push(`/chat?room=${incomingCall.roomId}&mode=${mode}`);
+    setIncomingCall(null);
   };
 
   const rejectCall = () => {
-    socket.emit("direct-call-reject", { toSocketId: incomingCall.fromSocketId });
+    if (incomingCall && socket) {
+      socket.emit("direct-call-reject", { toSocketId: incomingCall.fromSocketId });
+    }
     setIncomingCall(null);
   };
 
@@ -253,29 +278,46 @@ export default function Friends() {
         </button>
       </div>
 
-      {incomingCall && (
+            {/* Outgoing Calling Popup */}
+      {outgoingCall && (
         <div className="modal-overlay">
-          <div className="modal-card incoming-call-card">
-            <div className="call-avatar">📞</div>
-            <h2>Incoming Video Call</h2>
-            <p><strong>{incomingCall.fromUser.name}</strong> is calling you directly!</p>
+          <div className="modal-card incoming-call-card outgoing-card">
+            <div className="call-avatar pulsing-call">
+              {outgoingCall.callType === 'text' ? '💬' : '📹'}
+            </div>
+            <h2>Calling {outgoingCall.friend.name}...</h2>
+            <p>
+              Sending request for a{" "}
+              <strong style={{ color: outgoingCall.callType === 'text' ? '#00f2fe' : '#b224ef' }}>
+                {outgoingCall.callType === 'text' ? 'Private Text Chat' : 'Live Video Call'}
+              </strong>
+            </p>
             <div className="modal-actions">
-              <button className="btn-accept" onClick={acceptCall}>✓ Accept Call</button>
-              <button className="btn-decline" onClick={rejectCall}>✕ Decline</button>
+              <button className="btn-decline" onClick={cancelOutgoingCall}>Cancel Request</button>
             </div>
           </div>
         </div>
       )}
 
-      {showPremiumPopup && (
+      {/* Incoming Call Popup */}
+      {incomingCall && (
         <div className="modal-overlay">
-          <div className="modal-card">
-            <div className="premium-icon">👑</div>
-            <h2>Friend Limit Reached</h2>
-            <p>Free plan allows a maximum of 5 friends. Upgrade to VIP Elite to add unlimited friends and unlock priority matching!</p>
+          <div className="modal-card incoming-call-card">
+            <div className="call-avatar pulsing-call">
+              {incomingCall.callType === 'text' ? '💬' : '📹'}
+            </div>
+            <h2>{incomingCall.callType === 'text' ? 'Incoming Text Chat' : 'Incoming Video Call'}</h2>
+            <p>
+              <strong>{incomingCall.fromUser?.name || 'A Friend'}</strong> sent you a request for a{" "}
+              <strong style={{ color: incomingCall.callType === 'text' ? '#00f2fe' : '#b224ef' }}>
+                {incomingCall.callType === 'text' ? 'Private Text Chat' : 'Live Video Call'}
+              </strong>!
+            </p>
             <div className="modal-actions">
-              <button className="btn-premium" onClick={() => router.push("/")}>Upgrade to VIP</button>
-              <button className="btn-secondary" onClick={() => setShowPremiumPopup(false)}>Maybe Later</button>
+              <button className="btn-accept" onClick={acceptCall}>
+                ✓ Accept {incomingCall.callType === 'text' ? 'Text Chat' : 'Video Call'}
+              </button>
+              <button className="btn-decline" onClick={rejectCall}>✕ Decline</button>
             </div>
           </div>
         </div>
@@ -353,15 +395,26 @@ export default function Friends() {
                         </div>
                       </div>
 
-                      <button 
-                        className={`call-action-btn ${f.online ? 'active' : 'disabled'}`}
-                        disabled={!f.online}
-                        onClick={() => startDirectCall(f)}
-                        title={f.online ? `Start video call with ${f.name}` : `${f.name} is offline`}
-                      >
-                        <span className="call-btn-icon">📞</span>
-                        <span>{f.online ? 'Video Call' : 'Offline'}</span>
-                      </button>
+                                            <div className="friend-call-actions">
+                        <button 
+                          className={`call-action-btn video ${f.online ? 'active' : 'disabled'}`}
+                          disabled={!f.online}
+                          onClick={() => startDirectCall(f, 'video')}
+                          title={f.online ? `Start video call with ${f.name}` : `${f.name} is offline`}
+                        >
+                          <span className="call-btn-icon">📹</span>
+                          <span>{f.online ? 'Video Call' : 'Offline'}</span>
+                        </button>
+                        <button 
+                          className={`call-action-btn text ${f.online ? 'active' : 'disabled'}`}
+                          disabled={!f.online}
+                          onClick={() => startDirectCall(f, 'text')}
+                          title={f.online ? `Start text chat with ${f.name}` : `${f.name} is offline`}
+                        >
+                          <span className="call-btn-icon">💬</span>
+                          <span>{f.online ? 'Text Chat' : 'Offline'}</span>
+                        </button>
+                      </div>
                     </div>
                   ))}
               </div>
@@ -918,37 +971,67 @@ export default function Friends() {
         color: #64748b;
       }
 
-      .call-action-btn {
-        padding: 10px 24px;
-        border-radius: 14px;
-        font-weight: 700;
-        font-size: 0.95rem;
-        cursor: pointer;
+            .friend-call-actions {
         display: flex;
         align-items: center;
         gap: 8px;
+        flex-shrink: 0;
+      }
+
+      .call-action-btn {
+        padding: 8px 15px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
         transition: all 0.25s;
         border: none;
         flex-shrink: 0;
         font-family: inherit;
+        white-space: nowrap;
       }
 
-      .call-action-btn.active {
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        color: white;
-        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+      .call-action-btn.video.active {
+        background: linear-gradient(135deg, #7928ca, #b224ef);
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(178, 36, 239, 0.35);
       }
 
-      .call-action-btn.active:hover {
+      .call-action-btn.video.active:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 28px rgba(99, 102, 241, 0.6);
-        filter: brightness(1.1);
+        box-shadow: 0 6px 22px rgba(178, 36, 239, 0.6);
+        filter: brightness(1.12);
+      }
+
+      .call-action-btn.text.active {
+        background: linear-gradient(135deg, #0072ff, #00f2fe);
+        color: #030d1e;
+        box-shadow: 0 4px 14px rgba(0, 242, 254, 0.35);
+      }
+
+      .call-action-btn.text.active:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 22px rgba(0, 242, 254, 0.6);
+        filter: brightness(1.12);
       }
 
       .call-action-btn.disabled {
         background: rgba(255, 255, 255, 0.05);
         color: #64748b;
         cursor: not-allowed;
+      }
+
+      .pulsing-call {
+        animation: pulseAvatar 1.6s infinite ease-in-out;
+      }
+
+      @keyframes pulseAvatar {
+        0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.6); }
+        70% { transform: scale(1.05); box-shadow: 0 0 0 14px rgba(0, 242, 254, 0); }
+        100% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(0, 242, 254, 0); }
       }
 
       /* Empty States */

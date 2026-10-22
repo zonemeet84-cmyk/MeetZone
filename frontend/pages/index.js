@@ -123,7 +123,7 @@ export default function Dashboard() {
     const handleOnlineCount = (count) => setOnlineCount(typeof count === 'number' ? count : 0);
 
     const handleIncoming = (callInfo) => setIncomingCall(callInfo);
-    const handleAccepted = ({ roomId }) => router.push(`/chat?room=${roomId}`);
+    const handleAccepted = ({ roomId, callType }) => { const mode = callType || "video"; router.push(`/chat?room=${roomId}&mode=${mode}`); };
     const handleRejected = () => alert("Call was declined.");
 
     socket.on("connect", handleConnect);
@@ -159,8 +159,9 @@ export default function Dashboard() {
 
   const acceptCall = () => {
     if (incomingCall) {
-      socket.emit("direct-call-accept", { toSocketId: incomingCall.fromSocketId, roomId: incomingCall.roomId });
-      router.push(`/chat?room=${incomingCall.roomId}`);
+      const mode = incomingCall.callType === "text" ? "text" : "video";
+      socket.emit("direct-call-accept", { toSocketId: incomingCall.fromSocketId, roomId: incomingCall.roomId, callType: mode });
+      router.push(`/chat?room=${incomingCall.roomId}&mode=${mode}`);
       setIncomingCall(null);
     }
   };
@@ -1377,15 +1378,20 @@ export default function Dashboard() {
         <div className="incoming-call-overlay">
           <div className="incoming-call-card">
             <div className="call-avatar">
-              {incomingCall.fromUser.name?.charAt(0)}
+              {incomingCall.callType === 'text' ? '💬' : '📹'}
             </div>
             <div className="call-info">
-              <h3>{incomingCall.fromUser.name}</h3>
-              <p>is calling you via ZoneMeet...</p>
+              <h3>{incomingCall.fromUser?.name || 'A Friend'}</h3>
+              <p>
+                {incomingCall.callType === 'text' 
+                  ? 'is requesting a Private Text Chat...' 
+                  : 'is calling you for a Live Video Call...'}
+              </p>
             </div>
             <div className="call-actions">
               <button className="accept-btn" onClick={acceptCall}>
-                <span className="icon">📞</span> Accept
+                <span className="icon">{incomingCall.callType === 'text' ? '💬' : '📹'}</span> 
+                Accept {incomingCall.callType === 'text' ? 'Text' : 'Call'}
               </button>
               <button className="decline-btn" onClick={rejectCall}>
                 <span className="icon">✖</span> Decline

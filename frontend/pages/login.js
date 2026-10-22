@@ -429,7 +429,7 @@ export default function Login() {
           z-index: 2;
           width: 100%;
           max-width: 385px;
-          background: rgba(4, 12, 26, 0.82);
+          background: rgba(4, 12, 26, 0.45);
           backdrop-filter: blur(28px) saturate(180%);
           -webkit-backdrop-filter: blur(28px) saturate(180%);
           border: 1.5px solid #00f2fe;
@@ -617,7 +617,7 @@ export default function Login() {
         }
         .divider span {
           position: relative;
-          background: rgba(4, 12, 26, 0.95);
+          background: rgba(4, 12, 26, 0.6);
           padding: 0 10px;
           color: #64748b;
           font-size: 0.75rem;

@@ -2463,8 +2463,16 @@ setInterval(() => {
 const QUIZ_QUESTIONS = require("./quiz_questions");
 
 function matchUsers() {
+  // 1. Filter out disconnected or already partnered sockets, and deduplicate by socket.id
+  const seenIds = new Set();
+  waitingUsers = (waitingUsers || []).filter(s => {
+    if (!s || !s.connected || s.partner) return false;
+    if (seenIds.has(s.id)) return false;
+    seenIds.add(s.id);
+    return true;
+  });
+
   // Sort waiting users by boost status then by entry time
-  waitingUsers = waitingUsers.filter(Boolean);
   waitingUsers.sort((a, b) => {
     const aUser = users.find(u => u.id === a?.userId);
     const bUser = users.find(u => u.id === b?.userId);
@@ -2482,6 +2490,17 @@ function matchUsers() {
 
     for (let j = i + 1; j < waitingUsers.length; j++) {
       const user2 = waitingUsers[j];
+
+      // CRITICAL: STRICT SELF-MATCH PREVENTION
+      // Never match a user with themselves (same socket, same userId, same email, or same device)
+      const isSameSocket = user1.id === user2.id;
+      const isSameUserId = Boolean(user1.userId && user2.userId && String(user1.userId) === String(user2.userId));
+      const isSameEmail = Boolean(user1.email && user2.email && user1.email.toLowerCase() === user2.email.toLowerCase());
+      const isSameDevice = Boolean(user1.deviceId && user2.deviceId && user1.deviceId === user2.deviceId);
+
+      if (isSameSocket || isSameUserId || isSameEmail || isSameDevice) {
+        continue; // Strictly skip matching with self!
+      }
 
       const f1 = user1.filters || { gender: "all", country: "all", state: "All States", age: "All Ages" };
       const f2 = user2.filters || { gender: "all", country: "all", state: "All States", age: "All Ages" };
@@ -2777,8 +2796,16 @@ function endQuiz(roomId) {
     }
 
     const queueUser = (socket) => {
-      if (!socket) return;
+      if (!socket || !socket.connected) return;
       if (socket.queueTimeout) clearTimeout(socket.queueTimeout);
+
+      // Clean existing references of this socket or user/device from waiting queue before queueing
+      waitingUsers = (waitingUsers || []).filter(s => 
+        s && s.connected && s.id !== socket.id && 
+        (!socket.userId || s.userId !== socket.userId) &&
+        (!socket.email || !s.email || s.email.toLowerCase() !== socket.email.toLowerCase()) &&
+        (!socket.deviceId || !s.deviceId || s.deviceId !== socket.deviceId)
+      );
 
       const isOwner = socket.email?.toLowerCase() === "ds9376314@gmail.com";
       const plan = socket.planName || socket.currentPlan || "";
@@ -2881,6 +2908,7 @@ function endQuiz(roomId) {
 
         socket.user = { ...profile, premium: isPremium, planName: pName, userBadge: uBadge, activeSubscription: actSub };
         socket.userId = dbUser ? dbUser.id : profile.id;
+        socket.deviceId = profile.deviceId || profile.id || profile.email || socket.id;
         socket.name = profile.name;
         socket.email = profile.email;
         socket.gender = profile.gender || (Math.random() > 0.5 ? "Male" : "Female");
@@ -3066,16 +3094,25 @@ function endQuiz(roomId) {
         });
       });
 
-      // Direct Call Signaling
-      socket.on("direct-call-request", ({ toUserId, fromUser, roomId }) => {
+      // Direct Call / Text Chat Signaling
+      socket.on("direct-call-request", ({ toUserId, fromUser, roomId, callType }) => {
         const targetSocketId = onlineUsers.get(toUserId);
         if (targetSocketId) {
-          io.to(targetSocketId).emit("incoming-direct-call", { fromUser, fromSocketId: socket.id, roomId });
+          io.to(targetSocketId).emit("incoming-direct-call", { 
+            fromUser, 
+            fromSocketId: socket.id, 
+            roomId, 
+            callType: callType === "text" ? "text" : "video" 
+          });
         }
       });
 
-      socket.on("direct-call-accept", ({ toSocketId, roomId }) => {
-        io.to(toSocketId).emit("direct-call-accepted", { bySocketId: socket.id, roomId });
+      socket.on("direct-call-accept", ({ toSocketId, roomId, callType }) => {
+        io.to(toSocketId).emit("direct-call-accepted", { 
+          bySocketId: socket.id, 
+          roomId, 
+          callType: callType === "text" ? "text" : "video" 
+        });
       });
 
       socket.on("direct-call-reject", ({ toSocketId }) => {
