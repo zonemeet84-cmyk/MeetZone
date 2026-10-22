@@ -18,6 +18,8 @@ export default function Friends() {
   const [incomingCall, setIncomingCall] = useState(null); // { fromUser, fromSocketId, roomId }
   const [activeRoom, setActiveRoom] = useState(null);
   const [showPremiumPopup, setShowPremiumPopup] = useState(false);
+  const [mobileTab, setMobileTab] = useState("friends"); // 'friends' | 'add' | 'requests'
+  const [friendSearch, setFriendSearch] = useState("");
 
   useEffect(() => {
     const updateOnlineStatus = () => setIsOnline(navigator.onLine);
@@ -192,37 +194,74 @@ export default function Friends() {
 
       <div className="bg-gradient" />
 
-      {/* Premium Glass Header */}
+      {/* Full-Screen Glass Header */}
       <header className="premium-header">
         <div className="header-content">
           <div className="brand-group" onClick={() => router.push("/")}>
+            <span className="brand-logo-icon">⚡</span>
             <h1>ZoneMeet</h1>
+            <span className="brand-badge">VIP ELITE</span>
           </div>
+
+          <nav className="header-nav">
+            <button className="nav-link" onClick={() => router.push("/")}>
+              Home
+            </button>
+            <button className="nav-link active">
+              Friends
+            </button>
+            <button className="nav-link" onClick={() => router.push("/chat?mode=video")}>
+              📹 Video Chat
+            </button>
+            <button className="nav-link" onClick={() => router.push("/chat?mode=text")}>
+              💬 Text Chat
+            </button>
+          </nav>
           
           <div className="header-actions">
-            <button className="home-btn" onClick={() => router.push("/")}>
-              <i className="fa-solid fa-house"></i> Home
-            </button>
-            <div className="user-profile">
-              <div className={`status-indicator ${isOnline && isSocketConnected ? 'online' : 'offline'}`}>
-                <span className="pulse-dot"></span>
-                <span className="status-text">{isOnline && isSocketConnected ? 'Connected' : !isOnline ? 'No Internet' : 'Connecting...'}</span>
-              </div>
+            <div className={`status-indicator ${isOnline && isSocketConnected ? 'online' : 'offline'}`}>
+              <span className="pulse-dot"></span>
+              <span className="status-text">{isOnline && isSocketConnected ? 'Connected' : !isOnline ? 'No Internet' : 'Connecting...'}</span>
+            </div>
+            <div className="user-profile-pill">
+              <span className="user-avatar-badge">{user.name.charAt(0).toUpperCase()}</span>
               <span className="user-name">{user.name}</span>
             </div>
           </div>
         </div>
       </header>
 
+      {/* Mobile Tab Switcher */}
+      <div className="mobile-tabs-bar">
+        <button 
+          className={`tab-btn ${mobileTab === 'friends' ? 'active' : ''}`}
+          onClick={() => setMobileTab('friends')}
+        >
+          <span>👥 Friends ({friends.length})</span>
+        </button>
+        <button 
+          className={`tab-btn ${mobileTab === 'add' ? 'active' : ''}`}
+          onClick={() => setMobileTab('add')}
+        >
+          <span>➕ Add Friend</span>
+        </button>
+        <button 
+          className={`tab-btn ${mobileTab === 'requests' ? 'active' : ''}`}
+          onClick={() => setMobileTab('requests')}
+        >
+          <span>🔔 Requests {requests.length > 0 && `(${requests.length})`}</span>
+        </button>
+      </div>
+
       {incomingCall && (
         <div className="modal-overlay">
           <div className="modal-card incoming-call-card">
-            <div className="call-avatar"><i className="fa-solid fa-phone-volume ring-animation"></i></div>
-            <h2>Incoming Call...</h2>
-            <p><strong>{incomingCall.fromUser.name}</strong> is calling you!</p>
+            <div className="call-avatar">📞</div>
+            <h2>Incoming Video Call</h2>
+            <p><strong>{incomingCall.fromUser.name}</strong> is calling you directly!</p>
             <div className="modal-actions">
-              <button className="btn-accept" onClick={acceptCall}>Accept</button>
-              <button className="btn-decline" onClick={rejectCall}>Decline</button>
+              <button className="btn-accept" onClick={acceptCall}>✓ Accept Call</button>
+              <button className="btn-decline" onClick={rejectCall}>✕ Decline</button>
             </div>
           </div>
         </div>
@@ -233,79 +272,122 @@ export default function Friends() {
           <div className="modal-card">
             <div className="premium-icon">👑</div>
             <h2>Friend Limit Reached</h2>
-            <p>Free plan allows a maximum of 5 friends. Upgrade to a premium subscription to add more friends and unlock exclusive features!</p>
+            <p>Free plan allows a maximum of 5 friends. Upgrade to VIP Elite to add unlimited friends and unlock priority matching!</p>
             <div className="modal-actions">
-              <button className="btn-premium" onClick={() => router.push("/")}>Upgrade Now</button>
+              <button className="btn-premium" onClick={() => router.push("/")}>Upgrade to VIP</button>
               <button className="btn-secondary" onClick={() => setShowPremiumPopup(false)}>Maybe Later</button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Full-Screen Modern Dashboard */}
       <main className="dashboard-hero">
         
-        {/* LEFT PANEL: Friends List */}
-        <section className="friends-panel">
+        {/* LEFT / MAIN PANEL: Friends List */}
+        <section className={`friends-panel ${mobileTab !== 'friends' ? 'mobile-hidden' : ''}`}>
           <div className="glass-panel main-panel">
             <div className="panel-header">
-              <h2>My Friends</h2>
-              <span className="friend-count">{friends.length} Friends</span>
+              <div className="title-group">
+                <h2>My Friends</h2>
+                <span className="friend-count-badge">{friends.length} Total</span>
+              </div>
+              {friends.length > 0 && (
+                <div className="friend-search-filter">
+                  <span className="filter-icon">🔍</span>
+                  <input 
+                    type="text" 
+                    placeholder="Filter friends..." 
+                    value={friendSearch}
+                    onChange={(e) => setFriendSearch(e.target.value)}
+                  />
+                  {friendSearch && (
+                    <button className="clear-btn" onClick={() => setFriendSearch("")}>×</button>
+                  )}
+                </div>
+              )}
             </div>
+
             <div className="divider"></div>
             
             {friends.length === 0 ? (
               <div className="empty-state">
-                <i className="fa-solid fa-user-group"></i>
-                <p>You have no friends yet.</p>
-                <span>Search for a friend on the right to start connecting!</span>
+                <div className="empty-icon-circle">👥</div>
+                <h3>No friends added yet</h3>
+                <p>Connect with awesome people in live video or text rooms, or search for users on the right to build your friends list!</p>
+                <div className="empty-actions">
+                  <button className="empty-cta-btn" onClick={() => router.push("/chat?mode=video")}>
+                    📹 Find Strangers in Video Chat
+                  </button>
+                  <button className="empty-cta-btn cyan" onClick={() => router.push("/chat?mode=text")}>
+                    💬 Start Text Chat
+                  </button>
+                </div>
               </div>
             ) : (
-              <div className="friends-list">
-                {friends.map(f => (
-                  <div key={f.id} className="friend-item">
-                    <div className="friend-info">
-                      <div className={`status-ring ${f.online ? 'online' : 'offline'}`}>
-                        <div className="avatar-placeholder">{f.name.charAt(0).toUpperCase()}</div>
+              <div className="friends-list-grid">
+                {friends
+                  .filter(f => !friendSearch.trim() || f.name.toLowerCase().includes(friendSearch.toLowerCase()))
+                  .map(f => (
+                    <div key={f.id} className="friend-card">
+                      <div className="friend-info">
+                        <div className={`avatar-status-wrap ${f.online ? 'is-online' : 'is-offline'}`}>
+                          <div className="avatar-placeholder">{f.name.charAt(0).toUpperCase()}</div>
+                          <span className="status-dot"></span>
+                        </div>
+                        <div className="friend-details">
+                          <div className="friend-name-row">
+                            <h3 className="friend-name">{f.name}</h3>
+                            {getFlagUrl(f.country) && (
+                              <img 
+                                src={getFlagUrl(f.country)} 
+                                alt={f.country} 
+                                title={getCountryName(f.country)} 
+                                className="country-flag" 
+                              />
+                            )}
+                          </div>
+                          <span className={`status-pill ${f.online ? 'online' : 'offline'}`}>
+                            {f.online ? '🟢 Online & Ready' : '⚪ Offline'}
+                          </span>
+                        </div>
                       </div>
-                      <div className="friend-details">
-                        <h3 className="friend-name">
-                          {f.name}
-                          {getFlagUrl(f.country) && <img src={getFlagUrl(f.country)} alt={f.country} title={getCountryName(f.country)} className="country-flag" />}
-                        </h3>
-                        <span className={`status-label ${f.online ? 'online' : 'offline'}`}>
-                          {f.online ? 'Online' : 'Offline'}
-                        </span>
-                      </div>
+
+                      <button 
+                        className={`call-action-btn ${f.online ? 'active' : 'disabled'}`}
+                        disabled={!f.online}
+                        onClick={() => startDirectCall(f)}
+                        title={f.online ? `Start video call with ${f.name}` : `${f.name} is offline`}
+                      >
+                        <span className="call-btn-icon">📞</span>
+                        <span>{f.online ? 'Video Call' : 'Offline'}</span>
+                      </button>
                     </div>
-                    <button 
-                      className="call-btn" 
-                      disabled={!f.online}
-                      onClick={() => startDirectCall(f)}
-                    >
-                      <i className="fa-solid fa-phone"></i> Call
-                    </button>
-                  </div>
-                ))}
+                  ))}
               </div>
             )}
           </div>
         </section>
 
-        {/* RIGHT PANEL: Search & Requests */}
-        <section className="actions-panel">
+        {/* RIGHT / SIDE PANEL: Search & Requests */}
+        <section className={`actions-panel ${mobileTab === 'friends' ? 'mobile-hidden' : ''}`}>
           
-          <div className="glass-panel">
+          {/* Add Friend Card */}
+          <div className={`glass-panel search-panel ${mobileTab === 'requests' ? 'mobile-hidden' : ''}`}>
             <div className="panel-header">
-              <h3>Add Friend</h3>
+              <div className="title-group">
+                <h3>Add New Friend</h3>
+              </div>
             </div>
+            
             <form className="friend-search-form" onSubmit={handleSearch}>
               <div className="search-input-wrapper">
-                <i className="fa-solid fa-search"></i>
+                <span className="search-icon">🔍</span>
                 <input 
                   type="text" 
                   value={searchQuery} 
                   onChange={(e) => setSearchQuery(e.target.value)} 
-                  placeholder="Search by name or email" 
+                  placeholder="Search by name or email..." 
                   required 
                 />
               </div>
@@ -313,33 +395,42 @@ export default function Friends() {
             </form>
             
             {searchResults.length > 0 && (
-              <div className="search-results-list" style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {searchResults.map(user => (
-                  <div key={user.id} className="search-result-card" style={{ marginTop: 0 }}>
+              <div className="search-results-list">
+                <div className="results-label">Search Results:</div>
+                {searchResults.map(u => (
+                  <div key={u.id} className="search-result-card">
                     <div className="result-info">
-                      <div className="avatar-mini">{user.name.charAt(0).toUpperCase()}</div>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span className="result-name">{user.name}</span>
-                        {user.email && <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{user.email}</span>}
+                      <div className="avatar-mini">{u.name.charAt(0).toUpperCase()}</div>
+                      <div className="result-text">
+                        <span className="result-name">{u.name}</span>
+                        {u.email && <span className="result-email">{u.email}</span>}
                       </div>
                     </div>
-                    <button className="btn-add" onClick={() => sendRequest(user.id)}>Add</button>
+                    <button className="btn-add" onClick={() => sendRequest(u.id)}>
+                      + Add
+                    </button>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          <div className="glass-panel">
+          {/* Friend Requests Card */}
+          <div className={`glass-panel requests-panel ${mobileTab === 'add' ? 'mobile-hidden' : ''}`}>
             <div className="panel-header">
-              <h3>Friend Requests</h3>
-              {requests.length > 0 && <span className="request-badge">{requests.length}</span>}
+              <div className="title-group">
+                <h3>Pending Requests</h3>
+                {requests.length > 0 && (
+                  <span className="request-badge">{requests.length}</span>
+                )}
+              </div>
             </div>
             
             {requests.length === 0 ? (
               <div className="empty-state small">
-                <i className="fa-regular fa-bell"></i>
-                <p>No pending requests.</p>
+                <span className="empty-bell">🔔</span>
+                <p>No pending friend requests</p>
+                <small>Incoming requests will show up here</small>
               </div>
             ) : (
               <div className="requests-list">
@@ -348,11 +439,18 @@ export default function Friends() {
                     <div className="request-info">
                       <div className="avatar-mini">{r.name.charAt(0).toUpperCase()}</div>
                       <div className="request-details">
-                        <span className="request-name">{r.name}</span>
-                        {getFlagUrl(r.country) && <img src={getFlagUrl(r.country)} alt={r.country} title={getCountryName(r.country)} className="country-flag" />}
+                        <div className="req-name-row">
+                          <span className="request-name">{r.name}</span>
+                          {getFlagUrl(r.country) && (
+                            <img src={getFlagUrl(r.country)} alt={r.country} title={getCountryName(r.country)} className="country-flag" />
+                          )}
+                        </div>
+                        <span className="req-sub">Wants to connect</span>
                       </div>
                     </div>
-                    <button className="btn-accept-small" onClick={() => acceptRequest(r.id)}>Accept</button>
+                    <button className="btn-accept-small" onClick={() => acceptRequest(r.id)}>
+                      ✓ Accept
+                    </button>
                   </div>
                 ))}
               </div>
@@ -365,9 +463,12 @@ export default function Friends() {
     <style jsx>{`
       .container {
         min-height: 100vh;
+        width: 100%;
         color: #fff;
         font-family: 'Outfit', sans-serif;
-        padding-bottom: 50px;
+        padding-bottom: 60px;
+        position: relative;
+        overflow-x: hidden;
       }
       
       .bg-gradient {
@@ -376,30 +477,33 @@ export default function Friends() {
         left: 0;
         width: 100vw;
         height: 100vh;
-        background: radial-gradient(circle at 20% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
-                    radial-gradient(circle at 80% 100%, rgba(236, 72, 153, 0.1) 0%, transparent 40%),
+        background: radial-gradient(circle at 15% 10%, rgba(99, 102, 241, 0.18) 0%, transparent 45%),
+                    radial-gradient(circle at 85% 90%, rgba(236, 72, 153, 0.12) 0%, transparent 45%),
                     #030712;
         z-index: -1;
       }
 
-      /* Premium Header */
+      /* Full-Screen Glass Header */
       .premium-header {
         position: sticky;
         top: 0;
         z-index: 100;
-        background: rgba(3, 7, 18, 0.7);
+        background: rgba(3, 7, 18, 0.85);
         backdrop-filter: blur(20px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        padding: 15px 0;
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        width: 100%;
       }
 
       .header-content {
-        max-width: 1200px;
+        max-width: 1600px;
+        width: 100%;
         margin: 0 auto;
-        padding: 0 20px;
+        padding: 16px 36px;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 20px;
       }
 
       .brand-group {
@@ -407,71 +511,95 @@ export default function Friends() {
         display: flex;
         align-items: center;
         gap: 10px;
+        user-select: none;
+      }
+
+      .brand-logo-icon {
+        font-size: 1.4rem;
+        background: linear-gradient(135deg, #a855f7, #ec4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
       }
 
       .brand-group h1 {
         margin: 0;
         font-size: 1.8rem;
-        font-weight: 800;
+        font-weight: 900;
         background: linear-gradient(135deg, #a855f7, #ec4899);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         letter-spacing: -0.5px;
       }
 
-      .header-actions {
-        display: flex;
-        align-items: center;
-        gap: 20px;
+      .brand-badge {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: #000;
+        font-size: 0.65rem;
+        font-weight: 900;
+        padding: 3px 8px;
+        border-radius: 6px;
+        letter-spacing: 0.5px;
       }
 
-      .home-btn {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #e2e8f0;
-        padding: 8px 16px;
-        border-radius: 20px;
+      .header-nav {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .nav-link {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #cbd5e1;
+        padding: 8px 18px;
+        border-radius: 9999px;
         font-weight: 600;
         font-size: 0.9rem;
         cursor: pointer;
-        transition: all 0.3s;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        transition: all 0.25s;
+        font-family: inherit;
       }
 
-      .home-btn:hover {
+      .nav-link:hover {
         background: rgba(255, 255, 255, 0.1);
-        transform: translateY(-2px);
+        color: #fff;
+        transform: translateY(-1px);
       }
 
-      .user-profile {
+      .nav-link.active {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(168, 85, 247, 0.25));
+        border-color: rgba(99, 102, 241, 0.5);
+        color: #fff;
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+      }
+
+      .header-actions {
         display: flex;
         align-items: center;
-        gap: 15px;
+        gap: 16px;
       }
 
       .status-indicator {
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 6px 12px;
-        border-radius: 20px;
+        padding: 6px 14px;
+        border-radius: 9999px;
         font-size: 0.8rem;
         font-weight: 700;
         border: 1px solid;
       }
 
       .status-indicator.online {
-        background: rgba(46, 204, 113, 0.1);
-        border-color: rgba(46, 204, 113, 0.3);
-        color: #2ecc71;
+        background: rgba(16, 185, 129, 0.12);
+        border-color: rgba(16, 185, 129, 0.35);
+        color: #10b981;
       }
 
       .status-indicator.offline {
-        background: rgba(231, 76, 60, 0.1);
-        border-color: rgba(231, 76, 60, 0.3);
-        color: #e74c3c;
+        background: rgba(239, 68, 68, 0.12);
+        border-color: rgba(239, 68, 68, 0.35);
+        color: #ef4444;
       }
 
       .pulse-dot {
@@ -482,94 +610,345 @@ export default function Friends() {
       }
 
       .status-indicator.online .pulse-dot {
-        box-shadow: 0 0 10px #2ecc71;
-        animation: pulse 2s infinite;
+        box-shadow: 0 0 10px #10b981;
+        animation: statusPulse 2s infinite;
       }
 
-      @keyframes pulse {
-        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
-        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(46, 204, 113, 0); }
-        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+      @keyframes statusPulse {
+        0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+        100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+      }
+
+      .user-profile-pill {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 5px 14px 5px 6px;
+        border-radius: 9999px;
+      }
+
+      .user-avatar-badge {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #a855f7, #ec4899);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.95rem;
+        color: #fff;
       }
 
       .user-name {
-        font-weight: 600;
-        color: #f1f5f9;
-        font-size: 1rem;
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #f8fafc;
       }
 
-      /* Dashboard Layout */
+      /* Mobile Tabs Bar */
+      .mobile-tabs-bar {
+        display: none;
+        width: 100%;
+        background: rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(15px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 10px 14px;
+        gap: 8px;
+        overflow-x: auto;
+      }
+
+      .tab-btn {
+        flex: 1;
+        padding: 10px 12px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        color: #94a3b8;
+        font-size: 0.88rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        font-family: inherit;
+        transition: all 0.2s;
+      }
+
+      .tab-btn.active {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(168, 85, 247, 0.25));
+        border-color: #6366f1;
+        color: #fff;
+        box-shadow: 0 0 14px rgba(99, 102, 241, 0.35);
+      }
+
+      /* Full-Screen Dashboard Grid */
       .dashboard-hero {
-        max-width: 1200px;
-        margin: 40px auto;
-        padding: 0 20px;
+        max-width: 1600px;
+        width: 100%;
+        margin: 28px auto;
+        padding: 0 36px;
         display: grid;
-        grid-template-columns: 1fr 400px;
+        grid-template-columns: minmax(0, 1fr) 420px;
         gap: 30px;
         align-items: start;
       }
 
       /* Glass Panels */
       .glass-panel {
-        background: rgba(17, 24, 39, 0.6);
-        backdrop-filter: blur(16px);
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 24px;
-        padding: 30px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        border-radius: 26px;
+        padding: 28px 32px;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
       }
 
       .main-panel {
-        min-height: 60vh;
+        min-height: 65vh;
       }
 
       .panel-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
+        gap: 16px;
+        margin-bottom: 22px;
+        flex-wrap: wrap;
+      }
+
+      .title-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
       }
 
       .panel-header h2 {
         margin: 0;
-        font-size: 1.5rem;
-        font-weight: 700;
+        font-size: 1.65rem;
+        font-weight: 800;
         color: #fff;
+        letter-spacing: -0.02em;
       }
 
       .panel-header h3 {
         margin: 0;
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #e2e8f0;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #f1f5f9;
       }
 
-      .friend-count {
+      .friend-count-badge {
         background: rgba(99, 102, 241, 0.2);
         color: #a5b4fc;
-        padding: 4px 12px;
-        border-radius: 12px;
+        border: 1px solid rgba(99, 102, 241, 0.35);
+        padding: 4px 14px;
+        border-radius: 9999px;
         font-size: 0.85rem;
-        font-weight: 600;
+        font-weight: 700;
       }
-      
-      .request-badge {
-        background: #ec4899;
-        color: white;
-        width: 24px;
-        height: 24px;
+
+      .friend-search-filter {
+        position: relative;
         display: flex;
         align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        font-size: 0.8rem;
-        font-weight: 700;
+        min-width: 220px;
+      }
+
+      .friend-search-filter input {
+        width: 100%;
+        background: rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 8px 30px 8px 36px;
+        border-radius: 9999px;
+        color: #fff;
+        font-size: 0.85rem;
+        font-family: inherit;
+        outline: none;
+        transition: 0.2s;
+      }
+
+      .friend-search-filter input:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 12px rgba(99, 102, 241, 0.25);
+      }
+
+      .filter-icon {
+        position: absolute;
+        left: 12px;
+        font-size: 0.85rem;
+        opacity: 0.6;
+        pointer-events: none;
+      }
+
+      .clear-btn {
+        position: absolute;
+        right: 10px;
+        background: none;
+        border: none;
+        color: #94a3b8;
+        font-size: 1.1rem;
+        cursor: pointer;
+        padding: 0;
       }
 
       .divider {
         height: 1px;
-        background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
-        margin-bottom: 25px;
+        background: linear-gradient(90deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 100%);
+        margin-bottom: 24px;
+      }
+
+      /* Friends List Grid */
+      .friends-list-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .friend-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 22px;
+        background: rgba(255, 255, 255, 0.025);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 20px;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .friend-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(99, 102, 241, 0.35);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+      }
+
+      .friend-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        min-width: 0;
+      }
+
+      .avatar-status-wrap {
+        position: relative;
+        flex-shrink: 0;
+      }
+
+      .avatar-placeholder {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.4rem;
+        box-shadow: 0 6px 18px rgba(99, 102, 241, 0.35);
+      }
+
+      .avatar-status-wrap .status-dot {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2.5px solid #0f172a;
+      }
+
+      .avatar-status-wrap.is-online .status-dot {
+        background: #10b981;
+        box-shadow: 0 0 10px #10b981;
+      }
+
+      .avatar-status-wrap.is-offline .status-dot {
+        background: #64748b;
+      }
+
+      .friend-details {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+      }
+
+      .friend-name-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .friend-name {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #f8fafc;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .country-flag {
+        width: 20px;
+        height: 14px;
+        border-radius: 2px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      }
+
+      .status-pill {
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+
+      .status-pill.online {
+        color: #34d399;
+      }
+
+      .status-pill.offline {
+        color: #64748b;
+      }
+
+      .call-action-btn {
+        padding: 10px 24px;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.25s;
+        border: none;
+        flex-shrink: 0;
+        font-family: inherit;
+      }
+
+      .call-action-btn.active {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+      }
+
+      .call-action-btn.active:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 28px rgba(99, 102, 241, 0.6);
+        filter: brightness(1.1);
+      }
+
+      .call-action-btn.disabled {
+        background: rgba(255, 255, 255, 0.05);
+        color: #64748b;
+        cursor: not-allowed;
       }
 
       /* Empty States */
@@ -579,7 +958,7 @@ export default function Friends() {
         align-items: center;
         justify-content: center;
         text-align: center;
-        padding: 60px 20px;
+        padding: 60px 24px;
         color: #94a3b8;
       }
 
@@ -587,166 +966,83 @@ export default function Friends() {
         padding: 30px 20px;
       }
 
-      .empty-state i {
-        font-size: 3rem;
-        margin-bottom: 15px;
-        opacity: 0.5;
+      .empty-icon-circle {
+        font-size: 3.5rem;
+        margin-bottom: 16px;
+        filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.3));
+      }
+
+      .empty-bell {
+        font-size: 2.4rem;
+        margin-bottom: 10px;
+        opacity: 0.6;
+      }
+
+      .empty-state h3 {
+        color: #f1f5f9;
+        font-size: 1.4rem;
+        margin: 0 0 8px 0;
       }
 
       .empty-state p {
-        margin: 0 0 8px 0;
-        font-size: 1.2rem;
-        color: #cbd5e1;
-        font-weight: 500;
+        margin: 0 0 20px 0;
+        font-size: 1rem;
+        color: #94a3b8;
+        max-width: 440px;
+        line-height: 1.5;
       }
 
-      .empty-state span {
-        font-size: 0.9rem;
-      }
-
-      /* Friend List */
-      .friends-list {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-      }
-
-      .friend-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        padding: 16px 20px;
-        border-radius: 16px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-
-      .friend-item:hover {
-        background: rgba(255, 255, 255, 0.06);
-        transform: translateY(-3px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        border-color: rgba(255, 255, 255, 0.1);
-      }
-
-      .friend-info {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        flex: 1;
-        min-width: 0; /* allows text truncation */
-      }
-
-      .status-ring {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        padding: 3px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-      }
-
-      .status-ring.online {
-        background: linear-gradient(135deg, #2ecc71, #10b981);
-      }
-      
-      .status-ring.offline {
-        background: rgba(255,255,255,0.1);
-      }
-
-      .avatar-placeholder {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        background: #1e293b;
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-        font-weight: 700;
-        border: 2px solid #0f172a;
-      }
-
-      .friend-details {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        overflow: hidden;
-      }
-
-      .friend-name {
-        margin: 0;
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #f8fafc;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .country-flag {
-        width: 18px;
-        height: 13px;
-        border-radius: 2px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        flex-shrink: 0;
-      }
-
-      .status-label {
+      .empty-state small {
+        color: #64748b;
         font-size: 0.85rem;
-        font-weight: 500;
       }
-      
-      .status-label.online { color: #2ecc71; }
-      .status-label.offline { color: #64748b; }
 
-      .call-btn {
+      .empty-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .empty-cta-btn {
         background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        color: white;
+        color: #fff;
         border: none;
-        padding: 10px 24px;
-        border-radius: 12px;
-        font-weight: 600;
+        padding: 12px 24px;
+        border-radius: 9999px;
+        font-weight: 700;
         font-size: 0.95rem;
         cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s;
-        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-        flex-shrink: 0;
+        transition: 0.25s;
+        font-family: inherit;
       }
 
-      .call-btn:hover:not(:disabled) {
+      .empty-cta-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+        box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
       }
 
-      .call-btn:disabled {
-        background: rgba(255, 255, 255, 0.05);
-        color: #64748b;
-        box-shadow: none;
-        cursor: not-allowed;
+      .empty-cta-btn.cyan {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(14, 165, 233, 0.35));
+        border: 1.5px solid #00f2fe;
+      }
+
+      .empty-cta-btn.cyan:hover {
+        box-shadow: 0 10px 25px rgba(0, 242, 254, 0.35);
       }
 
       /* Actions Panel */
       .actions-panel {
         display: flex;
         flex-direction: column;
-        gap: 30px;
+        gap: 24px;
       }
 
       .friend-search-form {
         display: flex;
         flex-direction: column;
         gap: 12px;
-        margin-top: 20px;
+        margin-top: 14px;
       }
 
       .search-input-wrapper {
@@ -755,95 +1051,126 @@ export default function Friends() {
         align-items: center;
       }
 
-      .search-input-wrapper i {
+      .search-icon {
         position: absolute;
         left: 16px;
         color: #94a3b8;
+        font-size: 0.95rem;
       }
 
       .search-input-wrapper input {
         width: 100%;
-        background: rgba(0, 0, 0, 0.3);
+        background: rgba(0, 0, 0, 0.35);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 14px 16px 14px 45px;
-        border-radius: 12px;
+        padding: 13px 16px 13px 44px;
+        border-radius: 14px;
         color: white;
         font-size: 0.95rem;
-        transition: all 0.3s;
+        transition: all 0.25s;
         font-family: inherit;
+        outline: none;
       }
 
       .search-input-wrapper input:focus {
-        outline: none;
         border-color: #6366f1;
-        background: rgba(0, 0, 0, 0.5);
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        box-shadow: 0 0 14px rgba(99, 102, 241, 0.25);
       }
 
       .btn-search {
-        background: rgba(255, 255, 255, 0.1);
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.3));
+        border: 1px solid rgba(99, 102, 241, 0.5);
         color: white;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 14px;
-        border-radius: 12px;
-        font-weight: 600;
+        padding: 12px;
+        border-radius: 14px;
+        font-weight: 700;
         cursor: pointer;
-        transition: all 0.3s;
+        transition: all 0.25s;
+        font-family: inherit;
       }
 
       .btn-search:hover {
-        background: rgba(255, 255, 255, 0.15);
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        transform: translateY(-1px);
+      }
+
+      .search-results-list {
+        margin-top: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .results-label {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
       .search-result-card {
-        margin-top: 20px;
-        padding: 15px;
-        background: rgba(99, 102, 241, 0.1);
-        border: 1px solid rgba(99, 102, 241, 0.3);
-        border-radius: 12px;
+        padding: 12px 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        animation: fadeIn 0.3s ease;
-      }
-
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
+        gap: 12px;
       }
 
       .result-info {
         display: flex;
         align-items: center;
         gap: 12px;
+        min-width: 0;
       }
 
       .avatar-mini {
-        width: 36px;
-        height: 36px;
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
-        background: #334155;
+        background: linear-gradient(135deg, #475569, #334155);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 700;
+        font-weight: 800;
         color: white;
+        flex-shrink: 0;
+      }
+
+      .result-text {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
       }
 
       .result-name {
-        font-weight: 600;
+        font-weight: 700;
+        font-size: 0.95rem;
         color: white;
+      }
+
+      .result-email {
+        font-size: 0.78rem;
+        color: #94a3b8;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .btn-add {
         background: #10b981;
         color: white;
         border: none;
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-weight: 600;
+        padding: 8px 18px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.85rem;
         cursor: pointer;
-        transition: 0.3s;
+        transition: 0.2s;
+        font-family: inherit;
+        flex-shrink: 0;
       }
 
       .btn-add:hover {
@@ -851,171 +1178,231 @@ export default function Friends() {
         transform: scale(1.05);
       }
 
-      /* Requests List */
+      /* Requests Panel */
+      .request-badge {
+        background: #ec4899;
+        color: white;
+        padding: 2px 10px;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+        font-weight: 800;
+      }
+
       .requests-list {
         display: flex;
         flex-direction: column;
         gap: 12px;
+        margin-top: 14px;
       }
 
       .request-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: rgba(0, 0, 0, 0.2);
-        padding: 12px;
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.05);
+        background: rgba(255, 255, 255, 0.03);
+        padding: 12px 16px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        gap: 12px;
       }
 
       .request-info {
         display: flex;
         align-items: center;
         gap: 12px;
+        min-width: 0;
       }
 
       .request-details {
         display: flex;
         flex-direction: column;
         gap: 2px;
+        min-width: 0;
+      }
+
+      .req-name-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
       }
 
       .request-name {
-        font-weight: 600;
+        font-weight: 700;
         font-size: 0.95rem;
         color: #f1f5f9;
       }
 
+      .req-sub {
+        font-size: 0.75rem;
+        color: #94a3b8;
+      }
+
       .btn-accept-small {
-        background: rgba(99, 102, 241, 0.2);
-        color: #818cf8;
-        border: 1px solid rgba(99, 102, 241, 0.4);
-        padding: 6px 14px;
-        border-radius: 8px;
-        font-weight: 600;
+        background: rgba(99, 102, 241, 0.25);
+        color: #a5b4fc;
+        border: 1px solid rgba(99, 102, 241, 0.5);
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-weight: 700;
         font-size: 0.85rem;
         cursor: pointer;
-        transition: 0.3s;
+        transition: 0.2s;
+        font-family: inherit;
+        flex-shrink: 0;
       }
 
       .btn-accept-small:hover {
         background: #6366f1;
         color: white;
+        transform: translateY(-1px);
       }
 
       /* Modals */
       .modal-overlay {
         position: fixed;
         top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(0, 0, 0, 0.8);
-        backdrop-filter: blur(8px);
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(16px);
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 9999;
+        z-index: 99999;
+        padding: 20px;
         animation: fadeIn 0.3s ease;
       }
 
       .modal-card {
-        background: rgba(15, 23, 42, 0.95);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 40px;
-        border-radius: 24px;
-        width: 90%;
-        max-width: 450px;
+        background: rgba(15, 23, 42, 0.96);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        padding: 36px 30px;
+        border-radius: 26px;
+        width: 100%;
+        max-width: 440px;
         text-align: center;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
       }
 
       .modal-card h2 {
         margin: 0 0 10px 0;
         font-size: 1.5rem;
+        font-weight: 800;
       }
 
       .modal-card p {
         color: #cbd5e1;
         line-height: 1.5;
         margin-bottom: 25px;
+        font-size: 0.95rem;
       }
 
       .premium-icon {
-        font-size: 4rem;
-        margin-bottom: 15px;
+        font-size: 3.5rem;
+        margin-bottom: 12px;
       }
 
       .modal-actions {
         display: flex;
-        gap: 15px;
+        gap: 14px;
         justify-content: center;
       }
 
       .modal-actions button {
         padding: 12px 24px;
-        border-radius: 12px;
-        font-weight: 600;
+        border-radius: 14px;
+        font-weight: 700;
         cursor: pointer;
         border: none;
-        transition: 0.3s;
+        transition: 0.25s;
+        font-family: inherit;
       }
 
       .btn-premium { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
       .btn-premium:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4); }
       
       .btn-accept { background: #10b981; color: white; }
-      .btn-decline { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-      .btn-secondary { background: rgba(255,255,255,0.1); color: white; }
+      .btn-decline { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); }
+      .btn-secondary { background: rgba(255,255,255,0.08); color: white; }
 
       .call-avatar {
-        width: 80px;
-        height: 80px;
+        width: 76px;
+        height: 76px;
         border-radius: 50%;
         background: rgba(99, 102, 241, 0.2);
         color: #818cf8;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2rem;
-        margin: 0 auto 20px auto;
+        font-size: 2.2rem;
+        margin: 0 auto 18px auto;
         position: relative;
+        box-shadow: 0 0 25px rgba(99, 102, 241, 0.5);
       }
 
-      .ring-animation {
-        animation: ring 1.5s infinite ease-in-out;
+      @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.96); }
+        to { opacity: 1; transform: scale(1); }
       }
 
-      @keyframes ring {
-        0% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.2); opacity: 0.8; }
-        100% { transform: scale(1); opacity: 1; }
-      }
-
-      /* Mobile Responsive */
+      /* Mobile Phone Optimization */
       @media (max-width: 900px) {
+        .header-content {
+          padding: 12px 18px;
+        }
+
+        .header-nav {
+          display: none;
+        }
+
+        .mobile-tabs-bar {
+          display: flex;
+        }
+
         .dashboard-hero {
           grid-template-columns: 1fr;
+          margin: 14px auto;
+          padding: 0 14px;
+          gap: 16px;
         }
-        
-        .header-content {
+
+        .glass-panel {
+          padding: 20px 16px;
+          border-radius: 20px;
+        }
+
+        .mobile-hidden {
+          display: none !important;
+        }
+
+        .panel-header {
           flex-direction: column;
-          gap: 15px;
-        }
-        
-        .header-actions {
-          width: 100%;
-          justify-content: space-between;
-        }
-        
-        .friend-item {
-          flex-direction: column;
-          gap: 15px;
           align-items: flex-start;
+          gap: 12px;
         }
-        
-        .call-btn {
+
+        .friend-search-filter {
           width: 100%;
-          justify-content: center;
+        }
+
+        .friend-card {
+          padding: 12px 14px;
+        }
+
+        .avatar-placeholder {
+          width: 44px;
+          height: 44px;
+          font-size: 1.2rem;
+        }
+
+        .friend-name {
+          font-size: 1rem;
+        }
+
+        .call-action-btn {
+          padding: 8px 16px;
+          font-size: 0.85rem;
         }
       }
+
     `}</style>
     </div>
   );

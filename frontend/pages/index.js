@@ -1867,75 +1867,76 @@ export default function Dashboard() {
 
               <h1 className="hero-explore-title">
                 Talk to New People Online<br />
-                <span>& Meet Strangers via Live Video Chat.</span>
+                <span>& Meet Strangers via Live Video & Text Chat.</span>
               </h1>
 
               <p className="hero-explore-subtitle">
-                Connect instantly with professionals, language learners, and like-minded peers worldwide through our interest-based communication rooms. Build your professional network, exchange languages, collaborate on ideas, and participate in secure global communities anytime, anywhere.
+                Connect instantly with verified people worldwide through high-definition live video calls or ultra-fast, camera-free text chat. Safe, 100% private, and interest-based — build friendships and talk to strangers anytime, anywhere.
               </p>
 
-              {/* Dual Mode Action Buttons */}
-              <div className="hero-cta-buttons-container" style={{ position: 'relative', zIndex: 20, marginTop: '30px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
-                {/* 1. Main Video Chat Button */}
-                <button 
-                  className="btn btn-primary btn-lg btn-connect-now btn-video-connect" 
-                  onClick={() => startChat("video")} 
-                  disabled={startingChat}
-                >
-                  {startingChat && selectedChatMode === "video" ? "Connecting..." : "Start Video Chat"}
-                  {!startingChat && (
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '10px' }}>
-                      <path d="M23 7a2 2 0 0 0-2.45-1.45L16 7V5a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2l4.55 1.45A2 2 0 0 0 23 17V7z" />
-                    </svg>
-                  )}
-                </button>
+              {/* Dual Mode Action Buttons (Same Size & Premium Design) */}
+              <div className="hero-cta-buttons-container" style={{ position: 'relative', zIndex: 20, marginTop: '28px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
+                <div className="hero-cta-dual-row">
+                  {/* 1. Main Video Chat Button */}
+                  <button 
+                    className="btn btn-primary btn-video-connect" 
+                    onClick={() => startChat("video")} 
+                    disabled={startingChat}
+                  >
+                    <span>{startingChat && selectedChatMode === "video" ? "Connecting..." : "Start Video Chat"}</span>
+                    {!startingChat && (
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '10px' }}>
+                        <path d="M23 7a2 2 0 0 0-2.45-1.45L16 7V5a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2l4.55 1.45A2 2 0 0 0 23 17V7z" />
+                      </svg>
+                    )}
+                  </button>
 
-                {/* 2. Text Only Chat Button Directly Below */}
-                <button 
-                  className="btn btn-secondary btn-text-only-connect" 
-                  onClick={() => startChat("text")} 
-                  disabled={startingChat}
-                >
-                  {startingChat && selectedChatMode === "text" ? "Connecting..." : "Text Only Chat"}
-                  {!startingChat && (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '10px' }}>
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                    </svg>
-                  )}
-                </button>
+                  {/* 2. Text Only Chat Button (Identical Size & Matching Cyber Style) */}
+                  <button 
+                    className="btn btn-secondary btn-text-only-connect" 
+                    onClick={() => startChat("text")} 
+                    disabled={startingChat}
+                  >
+                    <span>{startingChat && selectedChatMode === "text" ? "Connecting..." : "Text Only Chat"}</span>
+                    {!startingChat && (
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00f2fe" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '10px' }}>
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
 
-                <p className="hero-mode-helper-text" style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
-                  💬 Text chat connects instantly without camera or microphone
+                <p className="hero-mode-helper-text" style={{ margin: '6px 0 0 0', fontSize: '0.88rem', color: '#94a3b8' }}>
+                  ✨ Instant matching: Choose <strong>Live Video</strong> with camera or 100% private <strong>Text Chat</strong> without camera/mic
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Full Width Bottom Stats Strip from Image 3 */}
-          {/* Enhanced Bottom Stats Strip */}
+          {/* Full Width Bottom Stats Strip */}
           <div className="hero-stats-premium-strip">
             <div className="stat-premium-card">
               <h3 style={{ color: '#c084fc' }}>190+</h3>
               <p className="stat-label">Global Reach</p>
-              <p className="stat-desc">Connect with friendly people from over 190 countries instantly.</p>
+              <p className="stat-desc">Connect with friendly people from over 190 countries in video or text.</p>
             </div>
 
             <div className="stat-premium-card">
               <h3 style={{ color: '#60a5fa' }}>10M+</h3>
               <p className="stat-label">Live Connections</p>
-              <p className="stat-desc">Millions of successful video call matches made every single day.</p>
+              <p className="stat-desc">Millions of successful video call matches & text chats made every day.</p>
             </div>
 
             <div className="stat-premium-card">
               <h3 style={{ color: '#10b981' }}>100%</h3>
-              <p className="stat-label">Safe & Secure</p>
-              <p className="stat-desc">End-to-end encryption and advanced private call protection.</p>
+              <p className="stat-label">Safe & Private</p>
+              <p className="stat-desc">End-to-end encryption with instant camera-free text chat option.</p>
             </div>
 
             <div className="stat-premium-card">
               <h3 style={{ color: '#f472b6' }}>AI</h3>
               <p className="stat-label">Smart Guardian</p>
-              <p className="stat-desc">Real-time AI moderation to ensure a clean and friendly space.</p>
+              <p className="stat-desc">Real-time AI moderation ensuring clean and friendly video & text rooms.</p>
             </div>
           </div>
         </div>
@@ -2660,9 +2661,9 @@ export default function Dashboard() {
         const todayRewardText = DAILY_REWARDS[currentStreak - 1]?.text || "";
 
         return (
-          <div className="payment-overlay" style={{ zIndex: 11000 }} onClick={() => setShowStreakModal(false)}>
+          <div className="payment-overlay" style={{ zIndex: 11000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', overflow: 'hidden' }} onClick={() => setShowStreakModal(false)}>
             <div className="streak-reward-modal" onClick={e => e.stopPropagation()}>
-              <button type="button" onClick={(e) => { e.stopPropagation(); setShowStreakModal(false); }} className="streak-modal-close" style={{ position: 'absolute', top: '14px', right: '14px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.18)', border: '1px solid rgba(255, 255, 255, 0.25)', color: '#ffffff', fontSize: '1.4rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0 }}>×</button>
+              <button type="button" onClick={(e) => { e.stopPropagation(); setShowStreakModal(false); }} className="streak-modal-close" style={{ position: 'absolute', top: '12px', right: '12px', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.2)', color: '#ffffff', fontSize: '1.2rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0 }}>×</button>
               
               <div className="streak-modal-top">
                 <div className="streak-big-fire">{isBroken ? '💔' : currentStreak >= 7 ? '👑' : '🔥'}</div>
@@ -2691,7 +2692,7 @@ export default function Dashboard() {
                   <span className="streak-stat-icon">🎁</span>
                   <div className="streak-stat-info">
                     <small>Today's Reward</small>
-                    <strong style={{ fontSize: '0.75rem' }}>
+                    <strong style={{ fontSize: '0.72rem' }}>
                       {isBroken ? 'Pending Savior' : (canCollect ? todayRewardText : 'Completed')}
                     </strong>
                   </div>
@@ -2718,7 +2719,7 @@ export default function Dashboard() {
                       {done && <div className="streak-check">✓</div>}
                       {isLocked && <div className="streak-lock-overlay">🔒</div>}
                       <div className="streak-day-icon" style={{ filter: isLocked ? 'grayscale(100%)' : 'none' }}>{icon}</div>
-                      <div className="streak-day-coins" style={{ fontSize: '0.62rem', whiteSpace: 'nowrap' }}>{text}</div>
+                      <div className="streak-day-coins" style={{ fontSize: '0.6rem', whiteSpace: 'nowrap' }}>{text}</div>
                       <div className="streak-day-label">{label}</div>
                     </div>
                   );
@@ -2727,7 +2728,7 @@ export default function Dashboard() {
 
               {/* Progress bar */}
               {!isBroken && (
-                <div className="streak-progress-wrap" style={{ marginBottom: '1.5rem' }}>
+                <div className="streak-progress-wrap" style={{ marginBottom: '1rem' }}>
                   <div className="streak-progress-fill" style={{ width: `${Math.min(((canCollect ? currentStreak - 1 : currentStreak) / 7) * 100, 100)}%` }} />
                   <span className="streak-progress-text">
                     {canCollect ? currentStreak - 1 : currentStreak}/7 days completed
@@ -2737,11 +2738,11 @@ export default function Dashboard() {
 
               {/* Action Buttons / Broken Screen */}
               {isBroken ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.15)', padding: '20px', borderRadius: '24px', textAlign: 'center' }}>
-                  <p style={{ margin: '0 0 15px 0', fontSize: '0.9rem', color: '#fca5a5', lineHeight: '1.5' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.6rem', background: 'rgba(239, 68, 68, 0.06)', border: '1px solid rgba(239, 68, 68, 0.18)', padding: '12px 14px', borderRadius: '18px', textAlign: 'center' }}>
+                  <p style={{ margin: '0 0 8px 0', fontSize: '0.82rem', color: '#fca5a5', lineHeight: '1.4' }}>
                     Spend <strong style={{ color: '#fff' }}>100 Coins</strong> to save your streak?
                   </p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <button 
                       className="streak-cta-btn broken" 
                       onClick={saveStreak}
@@ -2750,13 +2751,15 @@ export default function Dashboard() {
                         background: hasEnoughToSave ? 'linear-gradient(135deg, #fbbf24, #f59e0b)' : '#334155', 
                         color: hasEnoughToSave ? '#000' : '#94a3b8',
                         cursor: hasEnoughToSave ? 'pointer' : 'not-allowed',
-                        fontWeight: '800'
+                        fontWeight: '800',
+                        padding: '10px 14px',
+                        fontSize: '0.88rem'
                       }}
                     >
                       🛡️ Save Streak (100 Coins)
                     </button>
                     {!hasEnoughToSave && (
-                      <p style={{ margin: '0', fontSize: '0.75rem', color: '#f87171' }}>
+                      <p style={{ margin: '0', fontSize: '0.72rem', color: '#f87171' }}>
                         Insufficient coins to save streak.
                       </p>
                     )}
@@ -2767,11 +2770,11 @@ export default function Dashboard() {
                         background: 'rgba(255,255,255,0.05)', 
                         border: '1px solid rgba(255,255,255,0.1)', 
                         color: '#cbd5e1', 
-                        padding: '12px', 
-                        borderRadius: '16px',
+                        padding: '8px 12px', 
+                        borderRadius: '12px',
                         cursor: 'pointer',
                         fontWeight: '700',
-                        fontSize: '0.85rem'
+                        fontSize: '0.8rem'
                       }}
                     >
                       Reset Streak (Start fresh from Day 1)
@@ -3353,39 +3356,39 @@ export default function Dashboard() {
 
       {/* MYSTERY BOX MODALS */}
       {showBoxInfo && (
-        <div className="payment-overlay" style={{ zIndex: 20000, backdropFilter: 'blur(15px)' }} onClick={() => setShowBoxInfo(false)}>
-          <div className="premium-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '580px', padding: '0', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <div style={{ background: 'linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%)', padding: '35px 30px 20px', position: 'relative' }}>
-              <button type="button" className="modal-close-btn" onClick={(e) => { e.stopPropagation(); setShowBoxInfo(false); }} style={{ position: 'absolute', top: '14px', right: '14px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.18)', border: '1px solid rgba(255, 255, 255, 0.25)', color: '#ffffff', fontSize: '1.4rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0 }}>×</button>
-              <h2 style={{ fontSize: '2.4rem', fontWeight: 900, letterSpacing: '-1px' }}>Prize <span>Catalog</span></h2>
-              <p style={{ color: '#94a3b8', fontSize: '1rem', marginTop: '5px' }}>Discover the treasures hidden within each Mystery Box.</p>
+        <div className="payment-overlay" style={{ zIndex: 20000, backdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', overflow: 'hidden', padding: '16px' }} onClick={() => setShowBoxInfo(false)}>
+          <div className="premium-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '620px', width: '100%', maxHeight: 'min(90vh, 680px)', display: 'flex', flexDirection: 'column', background: '#0b0f19', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 30px 80px rgba(0,0,0,0.85)' }}>
+            <div style={{ background: 'linear-gradient(180deg, rgba(99, 102, 241, 0.12) 0%, transparent 100%)', padding: '18px 24px 12px', position: 'relative', flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <button type="button" className="modal-close-btn" onClick={(e) => { e.stopPropagation(); setShowBoxInfo(false); }} style={{ position: 'absolute', top: '12px', right: '12px', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.2)', color: '#ffffff', fontSize: '1.2rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0 }}>×</button>
+              <h2 style={{ fontSize: '1.8rem', fontWeight: 900, letterSpacing: '-0.5px', margin: 0 }}>Prize <span style={{ color: '#818cf8' }}>Catalog</span></h2>
+              <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '4px 0 0 0' }}>Discover the treasures hidden within each Mystery Box.</p>
             </div>
 
-            <div className="modal-body" style={{ padding: '0 30px 40px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className="modal-body" style={{ padding: '14px 20px 20px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '12px', scrollbarWidth: 'thin' }}>
               {/* INSTRUCTIONS */}
-              <div style={{ background: 'rgba(99, 102, 241, 0.05)', borderRadius: '20px', padding: '15px 20px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
-                <h5 style={{ color: '#6366f1', margin: '0 0 5px 0', fontSize: '0.9rem', fontWeight: 800 }}>📜 RULES & INFO</h5>
-                <ul style={{ margin: 0, paddingLeft: '18px', color: '#94a3b8', fontSize: '0.85rem', lineHeight: '1.4' }}>
-                  <li>Stickers are collected in your profile (Low price in Bronze/Silver, High price in Gold).</li>
+              <div style={{ background: 'rgba(99, 102, 241, 0.05)', borderRadius: '16px', padding: '10px 16px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+                <h5 style={{ color: '#6366f1', margin: '0 0 4px 0', fontSize: '0.8rem', fontWeight: 800 }}>📜 RULES & INFO</h5>
+                <ul style={{ margin: 0, paddingLeft: '16px', color: '#94a3b8', fontSize: '0.78rem', lineHeight: '1.4' }}>
+                  <li>Stickers are collected in your profile (Low price in Bronze/Silver, High in Gold).</li>
                   <li>VIP Elite trial grants all premium features instantly.</li>
-                  <li>Golden Box guarantees a prize every time!</li>
+                  <li>Golden Box guarantees a prize every single time!</li>
                 </ul>
               </div>
 
               {/* BRONZE BOX */}
               <div style={{
                 background: 'rgba(205, 127, 50, 0.03)',
-                borderRadius: '24px',
+                borderRadius: '18px',
                 border: '1px solid rgba(205, 127, 50, 0.15)',
                 overflow: 'hidden'
               }}>
-                <div style={{ padding: '15px 20px', background: 'rgba(205, 127, 50, 0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h4 style={{ color: '#cd7f32', margin: 0, fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '1.4rem' }}>📦</span> BRONZE TIER
+                <div style={{ padding: '10px 16px', background: 'rgba(205, 127, 50, 0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h4 style={{ color: '#cd7f32', margin: 0, fontWeight: 900, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '1.2rem' }}>📦</span> BRONZE TIER
                   </h4>
-                  <span style={{ fontSize: '0.8rem', color: '#cd7f32', fontWeight: 800, background: 'rgba(205,127,50,0.1)', padding: '4px 10px', borderRadius: '50px' }}>50 COINS</span>
+                  <span style={{ fontSize: '0.75rem', color: '#cd7f32', fontWeight: 800, background: 'rgba(205,127,50,0.12)', padding: '3px 8px', borderRadius: '50px' }}>50 COINS</span>
                 </div>
-                <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div style={{ padding: '12px 14px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
                   {[
                     { label: 'Coin Rebate', val: '10-20 Coins', icon: '💰' },
                     { label: 'Profile Boost', val: '6-7 Minutes', icon: '🚀' },
@@ -3393,11 +3396,11 @@ export default function Dashboard() {
                     { label: 'Elite Trial', val: '1 Hour VIP', icon: '👑' },
                     { label: 'Random Drop', val: 'Empty Luck', icon: '🍀' }
                   ].map((item, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '14px' }}>
-                      <span style={{ fontSize: '1.1rem' }}>{item.icon}</span>
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.02)', padding: '7px 10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                      <span style={{ fontSize: '1.05rem' }}>{item.icon}</span>
                       <div>
-                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>{item.label}</div>
-                        <div style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 800 }}>{item.val}</div>
+                        <div style={{ fontSize: '0.62rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>{item.label}</div>
+                        <div style={{ fontSize: '0.78rem', color: '#fff', fontWeight: 800 }}>{item.val}</div>
                       </div>
                     </div>
                   ))}
@@ -3407,17 +3410,17 @@ export default function Dashboard() {
               {/* SILVER BOX */}
               <div style={{
                 background: 'rgba(192, 192, 192, 0.03)',
-                borderRadius: '24px',
+                borderRadius: '18px',
                 border: '1px solid rgba(192, 192, 192, 0.15)',
                 overflow: 'hidden'
               }}>
-                <div style={{ padding: '15px 20px', background: 'rgba(192, 192, 192, 0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h4 style={{ color: '#c0c0c0', margin: 0, fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '1.4rem' }}>🎁</span> SILVER TIER
+                <div style={{ padding: '10px 16px', background: 'rgba(192, 192, 192, 0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h4 style={{ color: '#c0c0c0', margin: 0, fontWeight: 900, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '1.2rem' }}>🎁</span> SILVER TIER
                   </h4>
-                  <span style={{ fontSize: '0.8rem', color: '#c0c0c0', fontWeight: 800, background: 'rgba(192,192,192,0.1)', padding: '4px 10px', borderRadius: '50px' }}>150 COINS</span>
+                  <span style={{ fontSize: '0.75rem', color: '#c0c0c0', fontWeight: 800, background: 'rgba(192,192,192,0.12)', padding: '3px 8px', borderRadius: '50px' }}>150 COINS</span>
                 </div>
-                <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div style={{ padding: '12px 14px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
                   {[
                     { label: 'Silver Rebate', val: '40-80 Coins', icon: '💰' },
                     { label: 'Massive Boost', val: '15-20 Minutes', icon: '⚡' },
@@ -3425,11 +3428,11 @@ export default function Dashboard() {
                     { label: 'VIP Pass', val: '6 Hours', icon: '👑' },
                     { label: 'Random Drop', val: 'Empty Luck', icon: '🍀' }
                   ].map((item, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '14px' }}>
-                      <span style={{ fontSize: '1.1rem' }}>{item.icon}</span>
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.02)', padding: '7px 10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                      <span style={{ fontSize: '1.05rem' }}>{item.icon}</span>
                       <div>
-                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>{item.label}</div>
-                        <div style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 800 }}>{item.val}</div>
+                        <div style={{ fontSize: '0.62rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>{item.label}</div>
+                        <div style={{ fontSize: '0.78rem', color: '#fff', fontWeight: 800 }}>{item.val}</div>
                       </div>
                     </div>
                   ))}
@@ -3439,31 +3442,31 @@ export default function Dashboard() {
               {/* GOLD BOX */}
               <div style={{
                 background: 'rgba(255, 215, 0, 0.05)',
-                borderRadius: '24px',
+                borderRadius: '18px',
                 border: '1px solid rgba(255, 215, 0, 0.3)',
                 overflow: 'hidden',
-                boxShadow: '0 0 30px rgba(255, 215, 0, 0.05)'
+                boxShadow: '0 0 25px rgba(255, 215, 0, 0.05)'
               }}>
-                <div style={{ padding: '15px 20px', background: 'rgba(255, 215, 0, 0.15)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h4 style={{ color: '#ffd700', margin: 0, fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '1.4rem' }}>✨</span> GOLDEN TIER
+                <div style={{ padding: '10px 16px', background: 'rgba(255, 215, 0, 0.15)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h4 style={{ color: '#ffd700', margin: 0, fontWeight: 900, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '1.2rem' }}>✨</span> GOLDEN TIER
                   </h4>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.65rem', color: '#ffd700', fontWeight: 900, background: 'rgba(0,0,0,0.3)', padding: '4px 8px', borderRadius: '6px' }}>NO LOSS GUARANTEE</span>
-                    <span style={{ fontSize: '0.8rem', color: '#ffd700', fontWeight: 800, background: 'rgba(255,215,0,0.1)', padding: '4px 10px', borderRadius: '50px' }}>500 COINS</span>
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.62rem', color: '#ffd700', fontWeight: 900, background: 'rgba(0,0,0,0.3)', padding: '3px 6px', borderRadius: '4px' }}>NO LOSS GUARANTEE</span>
+                    <span style={{ fontSize: '0.75rem', color: '#ffd700', fontWeight: 800, background: 'rgba(255,215,0,0.12)', padding: '3px 8px', borderRadius: '50px' }}>500 COINS</span>
                   </div>
                 </div>
-                <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                <div style={{ padding: '12px 14px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
                   {[
                     { label: 'Ultra Boost', val: '1-2 Hours', icon: '🔥' },
-                    { label: 'Luxury Gifts', val: 'Crown/Supercar', icon: '🏎️' },
+                    { label: 'Luxury Gifts', val: 'Crown/Car', icon: '🏎️' },
                     { label: 'Elite Pass', val: '2 Full Days', icon: '👑' }
                   ].map((item, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,0,0.03)', padding: '15px', borderRadius: '18px', border: '1px solid rgba(255,215,0,0.05)' }}>
-                      <span style={{ fontSize: '1.8rem' }}>{item.icon}</span>
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,215,0,0.03)', padding: '10px', borderRadius: '12px', border: '1px solid rgba(255,215,0,0.08)' }}>
+                      <span style={{ fontSize: '1.4rem' }}>{item.icon}</span>
                       <div>
-                        <div style={{ fontSize: '0.7rem', color: '#ffd700', fontWeight: 800, textTransform: 'uppercase' }}>{item.label}</div>
-                        <div style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 900 }}>{item.val}</div>
+                        <div style={{ fontSize: '0.62rem', color: '#ffd700', fontWeight: 800, textTransform: 'uppercase' }}>{item.label}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#fff', fontWeight: 900 }}>{item.val}</div>
                       </div>
                     </div>
                   ))}
@@ -4531,40 +4534,40 @@ export default function Dashboard() {
           .streak-bar-wrap { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.06); border-radius: 0 0 50px 50px; }
           .streak-bar-fill { height: 100%; background: linear-gradient(90deg, #ff4500, #ff9500); border-radius: inherit; transition: width 0.6s ease; }
 
-          /* ===== 7-DAY STREAK REWARD MODAL ===== */
+          /* ===== 7-DAY STREAK REWARD MODAL (COMPACT & CENTERED) ===== */
           .streak-reward-modal {
             background: linear-gradient(180deg, #0d1117 0%, #0f172a 100%);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 32px;
-            padding: 2rem 1.75rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 1.25rem 1.4rem;
             width: 100%;
-            max-width: 480px;
+            max-width: 410px;
             position: relative;
-            animation: modalSlideUp 0.4s cubic-bezier(0.16,1,0.3,1);
-            box-shadow: 0 40px 100px rgba(0,0,0,0.7);
+            animation: modalSlideUp 0.35s cubic-bezier(0.16,1,0.3,1);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.85);
           }
           .streak-modal-close {
-            position: absolute; top: 1.2rem; right: 1.2rem;
-            background: rgba(255,255,255,0.05); border: none;
-            color: #64748b; width: 36px; height: 36px;
-            border-radius: 50%; font-size: 1.4rem; cursor: pointer;
+            position: absolute; top: 1rem; right: 1rem;
+            background: rgba(255,255,255,0.06); border: none;
+            color: #94a3b8; width: 32px; height: 32px;
+            border-radius: 50%; font-size: 1.2rem; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
             transition: 0.2s;
           }
-          .streak-modal-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
-          .streak-modal-top { text-align: center; margin-bottom: 1.75rem; }
-          .streak-big-fire { font-size: 3.5rem; margin-bottom: 0.75rem; filter: drop-shadow(0 0 20px rgba(255,100,0,0.6)); animation: pulse 2s infinite; }
-          @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-          .streak-modal-title { font-size: 1.6rem; font-weight: 900; color: #fff; margin: 0 0 0.4rem; letter-spacing: -0.03em; }
-          .streak-modal-sub { font-size: 0.9rem; color: #64748b; margin: 0; font-weight: 500; }
+          .streak-modal-close:hover { background: rgba(255,255,255,0.15); color: #fff; }
+          .streak-modal-top { text-align: center; margin-bottom: 0.8rem; }
+          .streak-big-fire { font-size: 2.2rem; margin-bottom: 0.3rem; filter: drop-shadow(0 0 16px rgba(255,100,0,0.6)); animation: pulse 2s infinite; }
+          @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+          .streak-modal-title { font-size: 1.25rem; font-weight: 900; color: #fff; margin: 0 0 0.2rem; letter-spacing: -0.02em; }
+          .streak-modal-sub { font-size: 0.8rem; color: #94a3b8; margin: 0; font-weight: 500; }
 
           /* Day Cards Grid */
           .streak-days-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 1.5rem;
+            gap: 6px;
+            margin-bottom: 0.8rem;
           }
           .streak-day-card:nth-child(1) { grid-area: 1 / 1 / 2 / 2; }
           .streak-day-card:nth-child(2) { grid-area: 1 / 2 / 2 / 3; }
@@ -4582,8 +4585,8 @@ export default function Dashboard() {
           .streak-day-card {
             background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 14px;
-            padding: 10px 4px 8px;
+            border-radius: 10px;
+            padding: 6px 2px 5px;
             text-align: center;
             position: relative;
             transition: all 0.3s;
@@ -4595,8 +4598,8 @@ export default function Dashboard() {
           .streak-day-card.today {
             background: rgba(255,100,0,0.1);
             border-color: rgba(255,100,0,0.5);
-            box-shadow: 0 0 16px rgba(255,100,0,0.2);
-            transform: scale(1.08);
+            box-shadow: 0 0 14px rgba(255,100,0,0.25);
+            transform: scale(1.04);
           }
           .streak-day-card.locked {
             background: rgba(255,255,255,0.01);
@@ -4608,14 +4611,14 @@ export default function Dashboard() {
             border-color: rgba(245,158,11,0.5);
           }
           .streak-day-card.grand .streak-day-icon {
-            font-size: 2rem;
-            margin-bottom: 8px;
+            font-size: 1.35rem;
+            margin-bottom: 3px;
           }
           .streak-day-card.grand .streak-day-coins {
-            font-size: 0.85rem !important;
+            font-size: 0.68rem !important;
           }
           .streak-day-card.grand .streak-day-label {
-            font-size: 0.75rem !important;
+            font-size: 0.62rem !important;
           }
           .streak-day-card.grand.done {
             box-shadow: 0 0 20px rgba(245,158,11,0.35);
@@ -6243,78 +6246,91 @@ export default function Dashboard() {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 14px;
+            gap: 16px;
             margin-top: 25px;
           }
+          .hero-cta-dual-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            width: 100%;
+          }
           .btn-video-connect {
-            background: linear-gradient(135deg, #5855ec, #4f46e5) !important;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
             color: #ffffff !important;
-            font-size: 1.15rem !important;
+            font-size: 1.05rem !important;
             font-weight: 700 !important;
-            padding: 16px 44px !important;
-            border-radius: 999px !important;
+            height: 54px !important;
+            padding: 0 32px !important;
+            border-radius: 9999px !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            box-shadow: 0 10px 30px rgba(88, 85, 236, 0.45) !important;
-            border: none !important;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.45), 0 0 15px rgba(99, 102, 241, 0.25) !important;
+            border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
             cursor: pointer !important;
-            min-width: 250px;
+            min-width: 250px !important;
+            letter-spacing: 0.01em;
           }
           .btn-video-connect:hover {
-            transform: translateY(-2px) scale(1.02) !important;
-            box-shadow: 0 14px 38px rgba(88, 85, 236, 0.6) !important;
-            filter: brightness(1.08);
+            transform: translateY(-3px) scale(1.02) !important;
+            box-shadow: 0 14px 38px rgba(99, 102, 241, 0.6), 0 0 25px rgba(139, 92, 246, 0.4) !important;
+            filter: brightness(1.1);
           }
           .btn-video-connect:active {
             transform: translateY(0) scale(0.98) !important;
           }
           .btn-text-only-connect {
-            background: rgba(15, 23, 42, 0.75) !important;
-            color: #e2e8f0 !important;
-            font-size: 1rem !important;
-            font-weight: 600 !important;
-            padding: 12px 34px !important;
-            border-radius: 999px !important;
-            border: 1.5px solid rgba(0, 242, 254, 0.35) !important;
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.22), rgba(14, 165, 233, 0.32)) !important;
+            color: #ffffff !important;
+            font-size: 1.05rem !important;
+            font-weight: 700 !important;
+            height: 54px !important;
+            padding: 0 32px !important;
+            border-radius: 9999px !important;
+            border: 1.5px solid #00f2fe !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
-            backdrop-filter: blur(12px) !important;
-            -webkit-backdrop-filter: blur(12px) !important;
-            transition: all 0.25s ease !important;
+            box-shadow: 0 8px 25px rgba(0, 242, 254, 0.35), 0 0 15px rgba(0, 242, 254, 0.2) !important;
+            backdrop-filter: blur(14px) !important;
+            -webkit-backdrop-filter: blur(14px) !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
             cursor: pointer !important;
-            min-width: 220px;
+            min-width: 250px !important;
+            letter-spacing: 0.01em;
           }
           .btn-text-only-connect:hover {
-            border-color: #00f2fe !important;
-            background: rgba(0, 242, 254, 0.12) !important;
+            border-color: #38bdf8 !important;
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.35), rgba(14, 165, 233, 0.45)) !important;
             color: #ffffff !important;
-            transform: translateY(-2px) !important;
-            box-shadow: 0 10px 25px rgba(0, 242, 254, 0.25) !important;
+            transform: translateY(-3px) scale(1.02) !important;
+            box-shadow: 0 14px 38px rgba(0, 242, 254, 0.5), 0 0 25px rgba(6, 182, 212, 0.35) !important;
+            filter: brightness(1.1);
           }
           .btn-text-only-connect:active {
-            transform: translateY(0) !important;
+            transform: translateY(0) scale(0.98) !important;
           }
           .hero-mode-helper-text {
-            font-size: 0.85rem !important;
+            font-size: 0.88rem !important;
             color: #94a3b8 !important;
             text-align: center;
           }
           @media (max-width: 640px) {
-            .btn-video-connect {
-              width: 100% !important;
-              max-width: 290px !important;
-              padding: 14px 28px !important;
-              font-size: 1.05rem !important;
+            .hero-cta-dual-row {
+              flex-direction: column !important;
+              gap: 12px !important;
             }
-            .btn-text-only-connect {
+            .btn-video-connect, .btn-text-only-connect {
               width: 100% !important;
-              max-width: 260px !important;
-              padding: 11px 24px !important;
-              font-size: 0.95rem !important;
+              max-width: 310px !important;
+              min-width: unset !important;
+              height: 50px !important;
+              font-size: 1rem !important;
             }
           }
           .seo-content-section {
