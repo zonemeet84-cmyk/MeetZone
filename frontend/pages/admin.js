@@ -86,11 +86,33 @@ export default function AdminDashboard() {
     setLoading(false);
   }, [sessionStatus, session, router]);
 
+  // Dedicated 1-second live users poller for zero-delay real-time tracking
+  const fetchLiveUsers = async () => {
+    const config = getAdminHeaders();
+    if (!config) return;
+    try {
+      const liveRes = await axios.get("https://api.zonemeet.chat/api/admin/live-users", config);
+      if (Array.isArray(liveRes.data)) {
+        setLiveUsers(liveRes.data);
+        setStats(prev => ({ 
+          ...prev, 
+          onlineCount: liveRes.data.length,
+          liveCalls: Math.floor(liveRes.data.filter(u => u.inCall).length / 2)
+        }));
+      }
+    } catch (_) {}
+  };
+
   useEffect(() => {
     if (!isVerified || !adminToken) return;
     fetchData();
-    const interval = setInterval(fetchData, 15000);
-    return () => clearInterval(interval);
+    fetchLiveUsers();
+    const dataInterval = setInterval(fetchData, 15000);
+    const liveInterval = setInterval(fetchLiveUsers, 1000); // 1-second realtime heartbeat
+    return () => {
+      clearInterval(dataInterval);
+      clearInterval(liveInterval);
+    };
   }, [isVerified, adminToken]);
 
   const handleSend2FA = async () => {
@@ -450,6 +472,7 @@ export default function AdminDashboard() {
         <nav className="nav-menu">
           {[
             { id: 'dashboard', icon: 'fa-grid-2', label: 'Dashboard' },
+            { id: 'live-now', icon: 'fa-satellite-dish', label: `Live Online (${liveUsers.length})` },
             { id: 'analytics', icon: 'fa-chart-mixed', label: 'Analytics' },
             { id: 'revenue', icon: 'fa-wallet', label: 'Revenue' },
             { id: 'coins', icon: 'fa-coins', label: 'Coins Market' },
@@ -658,20 +681,47 @@ export default function AdminDashboard() {
                    </div>
 
                    <div className="glass-card side-info">
-                      <h3>Live Connectivity</h3>
-                      <div className="live-user-list">
-                         {liveUsers.slice(0, 6).map(u => (
-                           <div className="live-item" key={u.id}>
-                              <div className="avatar-mini">{u.name.charAt(0)}</div>
-                              <div className="item-meta">
-                                 <strong>{u.name}</strong>
-                                 <small>{u.country}</small>
-                              </div>
-                              <div className="status-pulse"></div>
-                           </div>
-                         ))}
-                      </div>
-                   </div>
+                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                          <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.05rem' }}>
+                             <span className="live-ping-pulse"></span>
+                             <span>Live Online Users ({liveUsers.length})</span>
+                          </h3>
+                          <span style={{ fontSize: '0.72rem', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '3px 8px', borderRadius: '20px', fontWeight: 800 }}>
+                             ⚡ 1s Realtime
+                          </span>
+                       </div>
+
+                       <div className="live-user-list-box" style={{ maxHeight: '340px', overflowY: 'auto', paddingRight: '4px' }}>
+                          {liveUsers.length === 0 ? (
+                             <div style={{ textAlign: 'center', padding: '30px 10px', color: '#64748b' }}>
+                                <div style={{ fontSize: '2rem', marginBottom: '8px' }}>📡</div>
+                                <p style={{ margin: 0, fontSize: '0.85rem' }}>No users currently online.</p>
+                                <small style={{ fontSize: '0.72rem' }}>Listening on live socket...</small>
+                             </div>
+                          ) : (
+                             liveUsers.map((u, idx) => (
+                               <div className="live-item-modern" key={u.socketId || u.id || idx}>
+                                  <div className="avatar-mini-modern">
+                                     {(u.name || "U").charAt(0).toUpperCase()}
+                                  </div>
+                                  <div className="item-meta-modern">
+                                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <strong>{u.name || "Anonymous User"}</strong>
+                                        {u.premium && <span style={{ fontSize: '0.62rem', background: '#f59e0b', color: '#000', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>VIP</span>}
+                                     </div>
+                                     <small>{u.country || "Global"} {u.email && u.email !== "Guest / Anonymous" ? `• ${u.email}` : ""}</small>
+                                  </div>
+                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                                     <span style={{ fontSize: '0.68rem', padding: '2px 8px', borderRadius: '10px', fontWeight: 700, background: u.inCall ? 'rgba(239, 68, 68, 0.18)' : 'rgba(16, 185, 129, 0.18)', color: u.inCall ? '#fca5a5' : '#86efac', border: `1px solid ${u.inCall ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}` }}>
+                                        {u.inCall ? "🔴 In Call" : u.chatMode === "text" ? "💬 Text" : "📹 Video"}
+                                     </span>
+                                     <div className="status-pulse"></div>
+                                  </div>
+                               </div>
+                             ))
+                          )}
+                       </div>
+                    </div>
                 </div>
              </div>
            )}
@@ -987,6 +1037,80 @@ export default function AdminDashboard() {
              </div>
            )}
 
+           {activeTab === "live-now" && (
+             <div className="glass-card fade-in">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.4rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span className="live-ping-pulse"></span> Live Online Users ({liveUsers.length})
+                    </h3>
+                    <p style={{ margin: '4px 0 0', color: '#94a3b8', fontSize: '0.85rem' }}>
+                      Real-time live connections across ZoneMeet. Updates every 1 second with 0 delay.
+                    </p>
+                  </div>
+                  <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '6px 14px', borderRadius: '12px', color: '#86efac', fontSize: '0.82rem', fontWeight: 800 }}>
+                    ⚡ 1-Sec Realtime Stream
+                  </div>
+                </div>
+
+                <div className="table-box" style={{ overflowX: 'auto' }}>
+                  <table className="modern-table">
+                     <thead>
+                        <tr>
+                           <th>User Name</th>
+                           <th>Live Status</th>
+                           <th>Country</th>
+                           <th>Mode</th>
+                           <th>Gender</th>
+                           <th>Socket / Session</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        {liveUsers.length === 0 ? (
+                           <tr>
+                              <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
+                                 📡 No users currently online. Waiting for active connections...
+                              </td>
+                           </tr>
+                        ) : (
+                           liveUsers.map((u, idx) => (
+                             <tr key={u.socketId || u.id || idx}>
+                                <td>
+                                   <div className="user-id">
+                                      <div className="avatar-mini-modern">
+                                         {(u.name || "U").charAt(0).toUpperCase()}
+                                      </div>
+                                      <div>
+                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <strong>{u.name || "Anonymous User"}</strong>
+                                            {u.premium && <span className="pill gold">VIP</span>}
+                                         </div>
+                                         <small>{u.email || "Guest"}</small>
+                                      </div>
+                                   </div>
+                                </td>
+                                <td>
+                                   <span className={`pill ${u.inCall ? "danger" : "blue"}`}>
+                                      {u.inCall ? "🔴 In Active Call" : "🟢 Online / Matching"}
+                                   </span>
+                                </td>
+                                <td><strong>{u.country || "Global"}</strong></td>
+                                <td>
+                                   <span style={{ fontSize: '0.85rem' }}>
+                                      {u.chatMode === "text" ? "💬 Text Chat" : "📹 Video Chat"}
+                                   </span>
+                                </td>
+                                <td>{u.gender || "N/A"}</td>
+                                <td><code style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{u.socketId || u.id}</code></td>
+                             </tr>
+                           ))
+                        )}
+                     </tbody>
+                  </table>
+                </div>
+             </div>
+           )}
+
            {activeTab === "broadcast-email" && (
              <div className="glass-card fade-in">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
@@ -1271,6 +1395,71 @@ export default function AdminDashboard() {
         .live-item { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 18px; border: 1px solid transparent; transition: 0.2s; }
         .live-item:hover { background: rgba(255,255,255,0.05); border-color: var(--border); }
         .avatar-mini { width: 36px; height: 36px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; }
+
+        .live-ping-pulse {
+          display: inline-block;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: #10b981;
+          box-shadow: 0 0 10px #10b981;
+          animation: livePulseGlow 1.4s infinite;
+        }
+        @keyframes livePulseGlow {
+          0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+          70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+          100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .live-item-modern {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 10px;
+          padding: 10px 14px;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 16px;
+          transition: all 0.2s ease;
+        }
+        .live-item-modern:hover {
+          background: rgba(255, 255, 255, 0.06);
+          border-color: rgba(99, 102, 241, 0.4);
+          transform: translateX(2px);
+        }
+        .avatar-mini-modern {
+          width: 36px;
+          height: 36px;
+          min-width: 36px;
+          background: linear-gradient(135deg, #6366f1, #a855f7);
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 800;
+          font-size: 14px;
+          color: #fff;
+          box-shadow: 0 0 10px rgba(99, 102, 241, 0.35);
+        }
+        .item-meta-modern {
+          flex: 1;
+          min-width: 0;
+        }
+        .item-meta-modern strong {
+          font-size: 13px;
+          color: #ffffff;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: block;
+        }
+        .item-meta-modern small {
+          font-size: 11px;
+          color: #94a3b8;
+          display: block;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
         .item-meta { flex: 1; }
         .item-meta strong { font-size: 14px; display: block; }
         .item-meta small { font-size: 11px; color: var(--text-dim); }

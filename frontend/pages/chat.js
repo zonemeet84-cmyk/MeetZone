@@ -2729,6 +2729,19 @@ export default function Home() {
     setStatus("Matching Stopped. Click Next to search.");
   };
 
+  const handleTextChatStopAndGoHome = () => {
+    try {
+      closeConnection();
+      setFriendReqStatus(false);
+      setShowPartnerPreview(false);
+      if (socket) {
+        socket.emit("leave-room");
+        socket.emit("stop-matching");
+      }
+    } catch (_) {}
+    router.push("/");
+  };
+
   const handleBrainClashClick = () => {
     if (quizState === "queued") {
       socket?.emit("leave-quiz-queue");
@@ -3933,11 +3946,11 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                 <form className="text-mode-composer" onSubmit={sendMessage}>
                   <button 
                     type="button" 
-                    className={`btn-composer-stop ${!partnerId && status?.includes("Stopped") ? "start-mode" : ""}`}
-                    onClick={partnerId ? stopMatching : (status?.includes("Stopped") ? nextPartner : stopMatching)}
-                    title={partnerId ? "Disconnect from partner" : (status?.includes("Stopped") ? "Start Search" : "Stop Searching")}
+                    className="btn-composer-stop"
+                    onClick={handleTextChatStopAndGoHome}
+                    title="Stop Chat & Return to Home"
                   >
-                    {partnerId ? "🛑 Disconnect" : (status?.includes("Stopped") ? "🔍 Start" : "🛑 Stop")}
+                    🛑 Stop
                   </button>
                   <input
                     type="text"

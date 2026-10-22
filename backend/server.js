@@ -4386,12 +4386,61 @@ function endQuiz(roomId) {
       if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
 
       const liveList = [];
+      const seen = new Set();
+
+      try {
+        const sockets = io.sockets.sockets;
+        if (sockets) {
+          sockets.forEach((s) => {
+            const dbUser = (s.userId && users.find(u => u.id === s.userId)) || 
+                           (s.email && users.find(u => u.email === s.email));
+            const name = (dbUser && dbUser.name) || s.name || (s.user && s.user.name) || (s.userId ? `User (${s.userId.slice(-5)})` : `Guest (${s.id.slice(0, 4)})`);
+            const email = (dbUser && dbUser.email) || s.email || (s.user && s.user.email) || "Guest / Anonymous";
+            const country = (dbUser && dbUser.country) || s.country || (s.user && s.user.country) || "Global";
+            const uniqueKey = s.userId || (email !== "Guest / Anonymous" ? email : s.id);
+
+            if (!seen.has(uniqueKey)) {
+              seen.add(uniqueKey);
+              liveList.push({
+                id: s.userId || s.id,
+                socketId: s.id,
+                name: name,
+                email: email,
+                country: country,
+                gender: (dbUser && dbUser.gender) || s.gender || "N/A",
+                chatMode: s.chatMode || (s.partner ? "in-call" : "browsing"),
+                inCall: !!s.partner,
+                premium: !!((dbUser && dbUser.premium) || s.premium),
+                connectedAt: s.handshake?.time || new Date().toISOString()
+              });
+            }
+          });
+        }
+      } catch (err) {
+        console.error("Error inspecting sockets for live users:", err);
+      }
+
       onlineUsers.forEach((socketId, userId) => {
-        const u = users.find(usr => usr.id === userId);
-        if (u) {
-          liveList.push({ id: u.id, name: u.name, country: u.country, email: u.email });
+        if (!seen.has(userId)) {
+          const u = users.find(usr => usr.id === userId);
+          if (u) {
+            seen.add(userId);
+            liveList.push({
+              id: u.id,
+              socketId,
+              name: u.name,
+              country: u.country || "Global",
+              email: u.email,
+              gender: u.gender || "N/A",
+              chatMode: "online",
+              inCall: false,
+              premium: !!u.premium,
+              connectedAt: new Date().toISOString()
+            });
+          }
         }
       });
+
       res.json(liveList);
     });
 
