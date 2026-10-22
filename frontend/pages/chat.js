@@ -2603,7 +2603,12 @@ export default function Home() {
       return;
     }
 
-    if (message.trim() && partnerId) {
+    if (!partnerId) {
+      showToast("⏳ Please wait for a partner to connect before sending.", "info", 3000);
+      return;
+    }
+
+    if (message.trim()) {
       socket.emit("send-message", { text: message, to: partnerId });
       setMessages((prev) => [...prev, { text: message, sender: "me" }]);
       if (typeof window !== 'undefined' && window.innerWidth < 768) {
@@ -3595,21 +3600,6 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
               )}
             </div>
 
-            <button 
-              className={`btn-home mode-switch-btn ${activeChatMode === "text" ? "text-mode-active" : "video-mode-active"}`} 
-              onClick={() => {
-                const nextMode = activeChatMode === "text" ? "video" : "text";
-                setActiveChatMode(nextMode);
-                try { localStorage.setItem("preferredChatMode", nextMode); } catch (e) {}
-                router.push(`/chat?mode=${nextMode}`);
-              }} 
-              title="Click to switch between Live Video and Text Chat"
-              style={{ marginRight: '6px' }}
-            >
-              <span className="icon">{activeChatMode === "text" ? "💬" : "📹"}</span>
-              <span className="text">{activeChatMode === "text" ? "Text Chat" : "Video Chat"}</span>
-            </button>
-
             <button className="btn-home" onClick={() => { fetchHistory(); setShowHistoryModal(true); }} style={{ marginRight: '6px' }}>
               <span className="icon">🕒</span>
               <span className="text">History</span>
@@ -3648,31 +3638,44 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                   </div>
                   <div className="partner-meta-info">
                     <div className="partner-name-row">
-                      <span className="partner-display-name">
-                        {partnerId ? (partnerInfo?.name || "Stranger") : "Looking for someone..."}
-                      </span>
-                      {partnerId && partnerInfo?.gender && (
-                        <span className={`gender-tag ${partnerInfo.gender.toLowerCase()}`}>
-                          {partnerInfo.gender}
-                        </span>
-                      )}
-                      {partnerId && partnerInfo?.country && (
-                        <span className="country-tag">
-                          {getFlagUrl(partnerInfo.country) && (
-                            <img src={getFlagUrl(partnerInfo.country)} alt="" />
+                      {partnerId ? (
+                        <>
+                          <span className="partner-connected-heading">
+                            You are connected with{" "}
+                            <strong className="partner-connected-name">{partnerInfo?.name || "Stranger"}</strong>
+                          </span>
+                          {partnerInfo?.country && (
+                            <span className="country-tag">
+                              {getFlagUrl(partnerInfo.country) && (
+                                <img 
+                                  src={getFlagUrl(partnerInfo.country)} 
+                                  alt="" 
+                                  style={{ width: '16px', height: '11px', marginRight: '5px', verticalAlign: 'middle', borderRadius: '2px' }} 
+                                />
+                              )}
+                              {getCountryName(partnerInfo.country)}
+                            </span>
                           )}
-                          {getCountryName(partnerInfo.country)}
+                          {partnerInfo?.gender && (
+                            <span className={`gender-tag ${partnerInfo.gender.toLowerCase()}`}>
+                              {partnerInfo.gender === "Female" ? "👩 Female" : partnerInfo.gender === "Male" ? "👨 Male" : partnerInfo.gender}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="partner-display-name">
+                          Looking for someone...
                         </span>
                       )}
                     </div>
                     <div className="partner-status-row">
                       {partnerId ? (
                         <span className="connected-status">
-                          <span className="live-dot"></span> Online & Connected
+                          <span className="live-dot"></span> Online & Connected • Say hi!
                         </span>
                       ) : (
                         <span className="searching-status">
-                          <span className="radar-mini-pulse"></span> {status || "Searching for strangers in text chat..."}
+                          <span className="radar-mini-pulse"></span> {status || "Waiting for a partner..."}
                         </span>
                       )}
                     </div>
@@ -3788,25 +3791,24 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                 <form className="text-mode-composer" onSubmit={sendMessage}>
                   <button 
                     type="button" 
-                    className="btn-composer-skip"
-                    onClick={nextPartner}
-                    title="Skip (Esc)"
+                    className={`btn-composer-stop ${!partnerId && status?.includes("Stopped") ? "start-mode" : ""}`}
+                    onClick={partnerId ? stopMatching : (status?.includes("Stopped") ? nextPartner : stopMatching)}
+                    title={partnerId ? "Disconnect from partner" : (status?.includes("Stopped") ? "Start Search" : "Stop Searching")}
                   >
-                    ⏭️ Next
+                    {partnerId ? "🛑 Disconnect" : (status?.includes("Stopped") ? "🔍 Start" : "🛑 Stop")}
                   </button>
                   <input
                     type="text"
                     className="text-mode-input-field"
-                    placeholder={partnerId ? "Type a message to stranger..." : "Waiting for match..."}
+                    placeholder={partnerId ? "Type a message to stranger..." : "Type a message here (sends once connected)..."}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    disabled={!partnerId}
                     autoFocus
                   />
                   <button 
                     type="submit" 
                     className="btn-composer-send"
-                    disabled={!partnerId || !message.trim()}
+                    disabled={!message.trim()}
                   >
                     <span>Send</span>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -5532,54 +5534,55 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
       <MobileGiftPopup />
 
       <style jsx global>{`
+        html, body {
+          overflow: hidden !important;
+          height: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
         .chat-page-v2 {
           max-width: 100% !important;
-          min-height: 100vh;
-          overflow: hidden;
-          padding: 1rem 2rem !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          height: 100dvh !important;
+          overflow: hidden !important;
+          padding: 0.6rem 1rem !important;
           display: flex;
           flex-direction: column;
-          gap: 0.75rem;
+          gap: 0.5rem;
           user-select: none; /* Prevent text selection */
           -webkit-user-drag: none; /* Prevent dragging elements */
+          box-sizing: border-box !important;
         }
 
-        /* HEADER MODE SWITCH BUTTON */
-        .mode-switch-btn.text-mode-active {
-          border-color: rgba(0, 242, 254, 0.45) !important;
-          background: rgba(0, 242, 254, 0.12) !important;
-          color: #a5f3fc !important;
-        }
-        .mode-switch-btn.video-mode-active {
-          border-color: rgba(168, 85, 247, 0.45) !important;
-          background: rgba(168, 85, 247, 0.12) !important;
-          color: #e9d5ff !important;
-        }
-
-        /* TEXT MODE LAYOUT & CHAT CONTAINER */
+        /* TEXT MODE LAYOUT & CHAT CONTAINER - FULL SCREEN */
         .text-mode-active-layout {
           display: flex !important;
-          justify-content: center !important;
+          justify-content: stretch !important;
           align-items: stretch !important;
-          max-width: 960px !important;
-          margin: 0 auto !important;
+          max-width: 100% !important;
           width: 100% !important;
+          margin: 0 !important;
           flex: 1 !important;
+          height: 100% !important;
           min-height: 0 !important;
+          overflow: hidden !important;
         }
         .text-mode-container {
           display: flex;
           flex-direction: column;
-          width: 100%;
-          height: calc(100vh - 120px);
-          min-height: 480px;
+          width: 100% !important;
+          max-width: 100% !important;
+          height: 100% !important;
+          flex: 1 !important;
+          min-height: 0 !important;
           background: rgba(15, 23, 42, 0.85);
           backdrop-filter: blur(24px);
           -webkit-backdrop-filter: blur(24px);
           border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 20px;
+          border-radius: 16px;
           overflow: hidden;
-          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
         }
         .text-mode-partner-card {
           padding: 14px 20px;
@@ -5635,6 +5638,18 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           font-size: 1.05rem;
           font-weight: 700;
           color: #f8fafc;
+        }
+        .partner-connected-heading {
+          font-size: 1.05rem;
+          font-weight: 600;
+          color: #f1f5f9;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .partner-connected-name {
+          color: #00f2fe;
+          font-weight: 800;
         }
         .gender-tag {
           font-size: 0.72rem;
@@ -5855,20 +5870,35 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           align-items: center;
           gap: 12px;
         }
-        .btn-composer-skip {
-          padding: 10px 16px;
+        .btn-composer-stop {
+          padding: 10px 18px;
           border-radius: 12px;
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          color: #cbd5e1;
-          font-weight: 600;
+          background: rgba(239, 68, 68, 0.16);
+          border: 1px solid rgba(239, 68, 68, 0.35);
+          color: #fca5a5;
+          font-weight: 700;
           font-size: 0.85rem;
           cursor: pointer;
           white-space: nowrap;
           transition: all 0.2s ease;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
         }
-        .btn-composer-skip:hover {
-          background: rgba(255, 255, 255, 0.14);
+        .btn-composer-stop:hover {
+          background: rgba(239, 68, 68, 0.28);
+          border-color: #ef4444;
+          color: #ffffff;
+          transform: translateY(-1px);
+        }
+        .btn-composer-stop.start-mode {
+          background: rgba(16, 185, 129, 0.16);
+          border-color: rgba(16, 185, 129, 0.35);
+          color: #6ee7b7;
+        }
+        .btn-composer-stop.start-mode:hover {
+          background: rgba(16, 185, 129, 0.28);
+          border-color: #10b981;
           color: #ffffff;
         }
         .text-mode-input-field {
@@ -6459,23 +6489,29 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
 
         .main-layout {
           display: flex;
-          gap: 1rem;
-          height: calc(100vh - 100px);
+          gap: 0.75rem;
+          flex: 1 !important;
+          height: 0 !important;
+          min-height: 0 !important;
+          overflow: hidden !important;
         }
 
         .video-column {
           flex: 8;
           display: flex;
           flex-direction: column;
-          gap: 0;
+          gap: 0.5rem;
           height: 100%;
-          justify-content: center;
+          min-height: 0;
+          overflow: hidden;
         }
 
         .chat-column {
           flex: 1;
           min-width: 300px;
           max-width: 400px;
+          height: 100%;
+          min-height: 0;
         }
 
         .video-grid-v2 {
@@ -6483,7 +6519,8 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           grid-template-columns: 1fr 1fr;
           gap: 0.75rem;
           flex: 1;
-          margin-bottom: 1rem; 
+          min-height: 0;
+          margin-bottom: 0.25rem; 
           align-items: stretch;
           justify-items: stretch;
         }
