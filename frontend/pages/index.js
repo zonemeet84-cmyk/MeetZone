@@ -120,6 +120,15 @@ export default function Dashboard() {
     };
 
     const handleDisconnect = () => setIsSocketConnected(false);
+    
+    // Fetch initial accurate count immediately
+    axios.get("https://api.zonemeet.chat/api/public/online-count")
+      .then(res => {
+        if (res.data?.onlineCount && typeof res.data.onlineCount === 'number') {
+          setOnlineCount(res.data.onlineCount);
+        }
+      })
+      .catch(() => {});
     const handleOnlineCount = (count) => setOnlineCount(typeof count === 'number' ? count : 0);
 
     const handleIncoming = (callInfo) => setIncomingCall(callInfo);
@@ -3483,86 +3492,169 @@ export default function Dashboard() {
         </div>
       )}
 
-      {confirmOpen && (
-        <div className="payment-overlay" style={{ background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(20px)', zIndex: 20000 }}>
-          <div className="premium-modal" style={{
-            maxWidth: '450px',
-            padding: '0',
-            background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            overflow: 'hidden',
-            boxShadow: '0 50px 100px rgba(0,0,0,0.8)'
-          }}>
-            {/* Header with Box Color */}
-            <div style={{
-              height: '10px',
-              background: confirmOpen === 'bronze' ? '#cd7f32' : confirmOpen === 'silver' ? '#c0c0c0' : '#ffd700',
-              boxShadow: `0 0 20px ${confirmOpen === 'bronze' ? '#cd7f32' : confirmOpen === 'silver' ? '#c0c0c0' : '#ffd700'}55`
-            }}></div>
+            {confirmOpen && (() => {
+        const isBronze = confirmOpen === 'bronze';
+        const isSilver = confirmOpen === 'silver';
+        const tierName = isBronze ? 'Common' : isSilver ? 'Rare' : 'Legendary';
+        const tierColor = isBronze ? '#cd7f32' : isSilver ? '#00f2fe' : '#ffd700';
+        const tierGlow = isBronze ? 'rgba(205, 127, 50, 0.45)' : isSilver ? 'rgba(0, 242, 254, 0.45)' : 'rgba(255, 215, 0, 0.55)';
+        const overlayBg = isBronze 
+          ? 'radial-gradient(circle at 50% 48%, rgba(205, 127, 50, 0.28) 0%, rgba(120, 53, 15, 0.16) 35%, rgba(3, 7, 18, 0.96) 80%)'
+          : isSilver
+          ? 'radial-gradient(circle at 50% 48%, rgba(0, 242, 254, 0.26) 0%, rgba(99, 102, 241, 0.18) 35%, rgba(3, 7, 18, 0.96) 80%)'
+          : 'radial-gradient(circle at 50% 48%, rgba(255, 215, 0, 0.3) 0%, rgba(245, 158, 11, 0.18) 35%, rgba(3, 7, 18, 0.96) 80%)';
+        const crateIcon = isBronze ? '📦' : isSilver ? '🎁' : '✨';
+        const coinCost = isBronze ? 50 : isSilver ? 150 : 500;
+        const isAdmin = user?.email === "ds9376314@gmail.com";
 
-            <div style={{ padding: '40px 30px' }}>
-              <div style={{ fontSize: '5rem', marginBottom: '25px', filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.5))' }} className="mystery-float">
-                {confirmOpen === 'bronze' ? '📦' : confirmOpen === 'silver' ? '🎁' : '✨'}
-              </div>
+        return (
+          <div 
+            className="crate-modal-overlay"
+            style={{ 
+              position: 'fixed', 
+              inset: 0, 
+              width: '100vw', 
+              height: '100vh', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              background: overlayBg, 
+              backdropFilter: 'blur(25px)', 
+              WebkitBackdropFilter: 'blur(25px)', 
+              zIndex: 20000, 
+              overflow: 'hidden',
+              padding: '16px'
+            }}
+          >
+            {/* Ambient cyber pulse aura */}
+            <div 
+              style={{
+                position: 'absolute',
+                width: '320px',
+                height: '320px',
+                borderRadius: '50%',
+                background: tierGlow,
+                filter: 'blur(90px)',
+                opacity: 0.35,
+                pointerEvents: 'none'
+              }}
+            />
 
-              <h3 style={{ fontSize: '2rem', fontWeight: '900', marginBottom: '15px', color: '#fff', letterSpacing: '-1px' }}>
-                Initiate <span style={{ color: confirmOpen === 'bronze' ? '#cd7f32' : confirmOpen === 'silver' ? '#c0c0c0' : '#ffd700' }}>{confirmOpen === 'bronze' ? 'Common' : confirmOpen === 'silver' ? 'Rare' : 'Legendary'}</span> Unlock?
-              </h3>
+            <div 
+              className="crate-confirm-card"
+              style={{
+                position: 'relative',
+                zIndex: 2,
+                width: '100%',
+                maxWidth: '410px',
+                maxHeight: 'min(90vh, 560px)',
+                borderRadius: '26px',
+                background: 'linear-gradient(165deg, rgba(20, 30, 50, 0.94) 0%, rgba(8, 14, 28, 0.98) 100%)',
+                border: `1.5px solid ${tierColor}`,
+                boxShadow: `0 0 32px ${tierGlow}, 0 25px 60px rgba(0, 0, 0, 0.85)`,
+                overflow: 'hidden',
+                textAlign: 'center',
+                boxSizing: 'border-box'
+              }}
+            >
+              {/* Colored top bar */}
+              <div style={{ height: '5px', width: '100%', background: tierColor, boxShadow: `0 0 16px ${tierColor}` }} />
 
-              <p style={{ color: '#94a3b8', fontSize: '1.1rem', lineHeight: '1.6', marginBottom: '35px' }}>
-                {user.email === "ds9376314@gmail.com"
-                  ? "Admin Privileges detected. Unlock this crate for zero cost."
-                  : `You are about to authorize a spend of ${confirmOpen === 'bronze' ? 50 : confirmOpen === 'silver' ? 150 : 500} coins for this transaction.`}
-              </p>
-
-              <div style={{ display: 'flex', gap: '20px' }}>
-                <button
-                  onClick={() => startOpeningFlow(confirmOpen)}
-                  style={{
-                    flex: 1.5,
-                    padding: '18px',
-                    borderRadius: '20px',
-                    border: 'none',
-                    background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
-                    color: '#fff',
-                    fontWeight: '900',
-                    cursor: 'pointer',
-                    fontSize: '1.1rem',
-                    boxShadow: '0 10px 20px rgba(99, 102, 241, 0.3)',
-                    transition: '0.3s'
+              <div style={{ padding: '24px 22px 26px' }}>
+                {/* Floating 3D Icon with ambient glow */}
+                <div 
+                  className="mystery-float" 
+                  style={{ 
+                    fontSize: '4.2rem', 
+                    lineHeight: 1, 
+                    marginBottom: '16px', 
+                    filter: `drop-shadow(0 12px 24px ${tierGlow})` 
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                  onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
                 >
-                  Confirm & Open
-                </button>
-                <button
-                  onClick={() => setConfirmOpen(null)}
-                  style={{
-                    flex: 1,
-                    padding: '18px',
-                    borderRadius: '20px',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    background: 'rgba(255,255,255,0.03)',
-                    color: '#94a3b8',
-                    fontWeight: '800',
-                    cursor: 'pointer',
-                    fontSize: '1rem',
-                    transition: '0.3s'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-                  onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
-                >
-                  Decline
-                </button>
+                  {crateIcon}
+                </div>
+
+                {/* Badge */}
+                <div style={{ display: 'inline-block', padding: '4px 14px', borderRadius: '9999px', background: `${tierColor}22`, border: `1px solid ${tierColor}66`, color: tierColor, fontSize: '0.78rem', fontWeight: '800', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '10px' }}>
+                  {tierName} Mystery Crate
+                </div>
+
+                <h3 style={{ fontSize: '1.45rem', fontWeight: '900', margin: '0 0 10px 0', color: '#ffffff', letterSpacing: '-0.02em' }}>
+                  Initiate <span style={{ color: tierColor }}>{tierName}</span> Unlock?
+                </h3>
+
+                <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: '1.5', margin: '0 0 22px 0' }}>
+                  {isAdmin
+                    ? "Admin Privileges detected. Unlock this crate for zero cost."
+                    : `You are about to authorize a spend of ${coinCost} coins for this transaction.`}
+                </p>
+
+                {/* Dual Action Buttons */}
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button
+                    onClick={() => startOpeningFlow(confirmOpen)}
+                    style={{
+                      flex: 1.4,
+                      padding: '13px 18px',
+                      borderRadius: '16px',
+                      border: 'none',
+                      background: isBronze 
+                        ? 'linear-gradient(135deg, #cd7f32, #ea9039)' 
+                        : isSilver 
+                        ? 'linear-gradient(135deg, #0072ff, #00f2fe)' 
+                        : 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                      color: isSilver || isBronze ? '#ffffff' : '#030d1e',
+                      fontWeight: '800',
+                      cursor: 'pointer',
+                      fontSize: '0.98rem',
+                      boxShadow: `0 8px 22px ${tierGlow}`,
+                      transition: 'all 0.25s',
+                      fontFamily: 'inherit'
+                    }}
+                  >
+                    Confirm & Open
+                  </button>
+                  <button
+                    onClick={() => setConfirmOpen(null)}
+                    style={{
+                      flex: 1,
+                      padding: '13px 16px',
+                      borderRadius: '16px',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      color: '#94a3b8',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      fontSize: '0.95rem',
+                      transition: 'all 0.25s',
+                      fontFamily: 'inherit'
+                    }}
+                  >
+                    Decline
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {showSpinner && (
-        <div className="payment-overlay" style={{ background: 'rgba(2, 6, 23, 0.98)', backdropFilter: 'blur(30px)', zIndex: 20000 }}>
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          width: '100vw',
+          height: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.22) 0%, rgba(2, 6, 23, 0.98) 75%)',
+          backdropFilter: 'blur(30px)',
+          WebkitBackdropFilter: 'blur(30px)',
+          zIndex: 20000,
+          overflow: 'hidden',
+          padding: '16px'
+        }}>
           <div className="spinner-container" style={{ textAlign: 'center', position: 'relative', maxWidth: '500px', width: '95%' }}>
 
             {/* Mechanical Frame */}
@@ -3629,7 +3721,23 @@ export default function Dashboard() {
       )}
 
       {revealPrize && (
-        <div className="payment-overlay" style={{ background: 'rgba(2, 6, 23, 0.95)', backdropFilter: 'blur(20px)', zIndex: 20000 }}>
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          width: '100vw',
+          height: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: revealPrize.isLoss
+            ? 'radial-gradient(circle at 50% 50%, rgba(239, 68, 68, 0.22) 0%, rgba(2, 6, 23, 0.96) 75%)'
+            : 'radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.25) 0%, rgba(2, 6, 23, 0.96) 75%)',
+          backdropFilter: 'blur(25px)',
+          WebkitBackdropFilter: 'blur(25px)',
+          zIndex: 20000,
+          overflow: 'hidden',
+          padding: '16px'
+        }}>
           <div className="reveal-container" style={{ textAlign: 'center', maxWidth: '400px', width: '90%', position: 'relative' }}>
 
             {/* Celebration Lighting */}

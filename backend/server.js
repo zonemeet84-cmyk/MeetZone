@@ -2434,9 +2434,20 @@ let waitingQuizUsers = [];
 let quizRooms = {};
 
 // REAL-TIME CATEGORY & GLOBAL ONLINE STATS BROADCAST
+function getGlobalOnlineCount() {
+  const socketCount = (io && io.engine) ? io.engine.clientsCount : ((io && io.sockets && io.sockets.sockets) ? io.sockets.sockets.size : 0);
+  const registeredCount = (typeof onlineUsers !== "undefined" && onlineUsers) ? onlineUsers.size : 0;
+  return Math.max(socketCount, registeredCount, 1);
+}
+
 setInterval(() => {
-  if (!io) return;
-  const stats = { GK: 0, Tech: 0, Gaming: 0, Anime: 0, Movies: 0, Memes: 0, Football: 0, Science: 0 };
+  const stats = {
+    "General Knowledge": 0,
+    "Science & Tech": 0,
+    "Pop Culture & Movies": 0,
+    "History & Geography": 0,
+    "Sports & Games": 0
+  };
 
   waitingQuizUsers.forEach(s => {
     if (s.quizCategory && stats[s.quizCategory] !== undefined) {
@@ -2454,10 +2465,8 @@ setInterval(() => {
     }
   }
 
-  // To simulate scale for aesthetics while maintaining dynamic reality, we can add a base scaling
-  // But per user request, we display exact real online users.
   io.emit("quiz-category-stats", stats);
-  io.emit("global-online-count", onlineUsers.size);
+  io.emit("global-online-count", getGlobalOnlineCount());
 }, 3000);
 
 const QUIZ_QUESTIONS = require("./quiz_questions");
@@ -2843,6 +2852,8 @@ function endQuiz(roomId) {
 
     io.on("connection", (socket) => {
       console.log("User Connected:", socket.id);
+      socket.emit("global-online-count", getGlobalOnlineCount());
+      io.emit("global-online-count", getGlobalOnlineCount());
 
       // Initialize with default filters/info
       socket.filters = { gender: "all", country: "all" };
@@ -4715,7 +4726,7 @@ function endQuiz(roomId) {
 
     // ========= PUBLIC ONLINE USERS COUNT =========
     app.get("/api/public/online-count", (req, res) => {
-      res.json({ success: true, onlineCount: onlineUsers.size });
+      res.json({ success: true, onlineCount: getGlobalOnlineCount() });
     });
 
     // Self-ping every 10 minutes to stay awake on Render
