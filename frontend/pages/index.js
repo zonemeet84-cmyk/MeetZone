@@ -2678,7 +2678,7 @@ export default function Dashboard() {
         return (
           <div className="payment-overlay" style={{ zIndex: 11000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', overflow: 'hidden' }} onClick={() => setShowStreakModal(false)}>
             <div className="streak-reward-modal" onClick={e => e.stopPropagation()}>
-              <button type="button" onClick={(e) => { e.stopPropagation(); setShowStreakModal(false); }} className="streak-modal-close" style={{ position: 'absolute', top: '12px', right: '12px', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.2)', color: '#ffffff', fontSize: '1.2rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0 }}>×</button>
+              <button type="button" onClick={(e) => { e.stopPropagation(); setShowStreakModal(false); }} className="streak-modal-close" style={{ position: 'absolute', top: '10px', right: '10px', width: '32px', height: '32px', minWidth: '32px', maxWidth: '32px', minHeight: '32px', maxHeight: '32px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.16)', border: '1px solid rgba(255, 255, 255, 0.25)', color: '#ffffff', fontSize: '1.25rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0, margin: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>×</button>
               
               <div className="streak-modal-top">
                 <div className="streak-big-fire">{isBroken ? '💔' : currentStreak >= 7 ? '👑' : '🔥'}</div>
@@ -6849,6 +6849,240 @@ export default function Dashboard() {
                 padding: 2px 6px !important;
                 top: 8px !important;
                 right: 8px !important;
+              }
+
+              /* Streak Modal Compact & Circular Top-Right Close Button */
+              .streak-reward-modal {
+                width: 90% !important;
+                max-width: 330px !important;
+                max-height: 85vh !important;
+                padding: 14px 12px !important;
+                border-radius: 20px !important;
+                position: relative !important;
+                box-sizing: border-box !important;
+                overflow-y: auto !important;
+              }
+              .streak-modal-close {
+                position: absolute !important;
+                top: 10px !important;
+                right: 10px !important;
+                left: auto !important;
+                width: 32px !important;
+                height: 32px !important;
+                min-width: 32px !important;
+                max-width: 32px !important;
+                min-height: 32px !important;
+                max-height: 32px !important;
+                border-radius: 50% !important;
+                margin: 0 !important;
+                transform: none !important;
+                background: rgba(255, 255, 255, 0.16) !important;
+                border: 1px solid rgba(255, 255, 255, 0.25) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                z-index: 1000 !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+              }
+              .streak-big-fire {
+                font-size: 1.8rem !important;
+                margin-bottom: 2px !important;
+              }
+              .streak-modal-title {
+                font-size: 1.05rem !important;
+                margin-bottom: 2px !important;
+              }
+              .streak-modal-sub {
+                font-size: 0.72rem !important;
+                margin-bottom: 8px !important;
+              }
+              .streak-stats-card {
+                padding: 6px 8px !important;
+                gap: 6px !important;
+                margin-bottom: 8px !important;
+              }
+              .streak-stat-box {
+                gap: 4px !important;
+              }
+              .streak-stat-icon {
+                font-size: 1rem !important;
+              }
+              .streak-stat-info small {
+                font-size: 0.58rem !important;
+              }
+              .streak-stat-info strong {
+                font-size: 0.72rem !important;
+              }
+              .streak-days-grid {
+                gap: 4px !important;
+                margin-bottom: 8px !important;
+              }
+              .streak-day-card {
+                padding: 4px 2px !important;
+                border-radius: 8px !important;
+              }
+              .streak-day-icon {
+                font-size: 0.95rem !important;
+                margin-bottom: 1px !important;
+              }
+              .streak-day-coins {
+                font-size: 0.52rem !important;
+              }
+              .streak-day-label {
+                font-size: 0.48rem !important;
+              }
+              .streak-progress-wrap {
+                margin-bottom: 8px !important;
+              }
+              .streak-progress-text {
+                font-size: 0.65rem !important;
+              }
+              .streak-cta-btn {
+                padding: 10px 14px !important;
+                font-size: 0.82rem !important;
+                border-radius: 12px !important;
+              }
+
+              /* Membership Cards - Compact Swipeable Row Instead of Massive Vertical Stack */
+              .pricing-container {
+                display: flex !important;
+                flex-direction: row !important;
+                overflow-x: auto !important;
+                scroll-snap-type: x mandatory !important;
+                gap: 12px !important;
+                padding: 10px 6px 18px !important;
+                scrollbar-width: none !important;
+                -webkit-overflow-scrolling: touch !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+              }
+              .pricing-container::-webkit-scrollbar {
+                display: none;
+              }
+              .pricing-container .premium-card {
+                flex: 0 0 76vw !important;
+                max-width: 275px !important;
+                min-width: 250px !important;
+                scroll-snap-align: center !important;
+                padding: 1.3rem 1.1rem !important;
+                border-radius: 20px !important;
+                margin: 0 !important;
+              }
+              .premium-card .card-header h3 {
+                font-size: 1.25rem !important;
+              }
+              .premium-card .duration {
+                font-size: 0.72rem !important;
+              }
+              .price-tag .amount {
+                font-size: 1.8rem !important;
+              }
+              .premium-features {
+                margin: 0.9rem 0 !important;
+                gap: 7px !important;
+              }
+              .premium-features li {
+                font-size: 0.78rem !important;
+                gap: 6px !important;
+              }
+              .premium-btn {
+                padding: 10px 14px !important;
+                font-size: 0.88rem !important;
+                border-radius: 12px !important;
+              }
+              .elite-hero-banner {
+                padding: 18px 14px !important;
+                border-radius: 20px !important;
+                margin-top: 20px !important;
+              }
+              .elite-main-info h2 {
+                font-size: 1.35rem !important;
+              }
+              .elite-price-group .price {
+                font-size: 1.6rem !important;
+              }
+              .elite-btn-v3 {
+                padding: 10px 16px !important;
+                font-size: 0.88rem !important;
+                border-radius: 12px !important;
+              }
+
+              /* Coins Store - Compact 2x2 Grid with Minimal Vertical Footprint */
+              .pricing-grid.coins-grid {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 8px !important;
+                padding: 0 !important;
+              }
+              .coin-square-card {
+                padding: 10px 8px !important;
+                border-radius: 14px !important;
+                height: auto !important;
+              }
+              .coin-mini-badge {
+                font-size: 0.58rem !important;
+                padding: 2px 6px !important;
+                top: 6px !important;
+                right: 6px !important;
+              }
+              .coin-card-icon {
+                font-size: 1.6rem !important;
+                margin-bottom: 4px !important;
+              }
+              .coin-card-name {
+                font-size: 0.78rem !important;
+                margin-bottom: 2px !important;
+              }
+              .price-now {
+                font-size: 0.98rem !important;
+              }
+
+              /* Mystery Treasures - Compact Swipeable Row Instead of Massive Vertical Stack */
+              .mystery-grid {
+                display: flex !important;
+                flex-direction: row !important;
+                overflow-x: auto !important;
+                scroll-snap-type: x mandatory !important;
+                gap: 12px !important;
+                padding: 10px 6px 18px !important;
+                scrollbar-width: none !important;
+                -webkit-overflow-scrolling: touch !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+              }
+              .mystery-grid::-webkit-scrollbar {
+                display: none;
+              }
+              .mystery-grid > * {
+                flex: 0 0 68vw !important;
+                max-width: 240px !important;
+                min-width: 210px !important;
+                scroll-snap-align: center !important;
+                padding: 22px 14px !important;
+                border-radius: 22px !important;
+                margin: 0 !important;
+              }
+              .mystery-card {
+                padding: 22px 14px !important;
+              }
+              .mystery-card div[style*="fontSize: '5rem'"] {
+                font-size: 2.8rem !important;
+                margin-bottom: 12px !important;
+              }
+              .mystery-card h3 {
+                font-size: 1.15rem !important;
+                margin-bottom: 8px !important;
+              }
+              .box-rarity {
+                top: 10px !important;
+                right: 10px !important;
+                font-size: 0.58rem !important;
+                padding: 2px 7px !important;
+              }
+              .mystery-card div[style*="fontSize: '1.1rem'"] {
+                font-size: 0.82rem !important;
+                padding: 6px 12px !important;
+                border-radius: 10px !important;
               }
             }
           }

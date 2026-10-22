@@ -3884,14 +3884,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                   >
                     ⏭️ Next
                   </button>
-                  <button 
-                    className="action-pill-btn stop-pill-btn"
-                    onClick={stopMatching}
-                    title="Stop matching"
-                  >
-                    🛑 Stop
-                  </button>
-                </div>
+                  </div>
               </div>
 
               {/* Chat Messages Body */}
@@ -5788,14 +5781,16 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
         }
         .text-mode-partner-card {
-          padding: 14px 20px;
+          padding: 8px 16px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          background: rgba(30, 41, 59, 0.55);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-          gap: 12px;
-          flex-wrap: wrap;
+          background: rgba(10, 18, 36, 0.35);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+          gap: 10px;
+          min-height: 48px;
         }
         .partner-identity-left {
           display: flex;
@@ -9515,6 +9510,103 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             color: white !important;
             box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
           }
+          
+          /* Mobile Text Chat & Mascot Responsiveness */
+          .text-mode-container {
+            height: calc(100dvh - 65px) !important;
+            border: none !important;
+            border-radius: 0 !important;
+            background: transparent !important;
+          }
+          .text-mode-partner-card {
+            padding: 6px 10px !important;
+            min-height: 40px !important;
+            background: transparent !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+          }
+          .partner-avatar-circle {
+            width: 30px !important;
+            height: 30px !important;
+            font-size: 0.82rem !important;
+          }
+          .partner-display-name {
+            font-size: 0.84rem !important;
+            font-weight: 700 !important;
+          }
+          .partner-connected-heading {
+            font-size: 0.82rem !important;
+          }
+          .partner-status-row {
+            font-size: 0.7rem !important;
+          }
+          .searching-status {
+            font-size: 0.7rem !important;
+          }
+          .action-pill-btn {
+            padding: 6px 12px !important;
+            font-size: 0.78rem !important;
+            border-radius: 9999px !important;
+          }
+          .mascot-stage {
+            width: 90px !important;
+            height: 90px !important;
+            margin-bottom: 6px !important;
+          }
+          .mascot-stage svg {
+            width: 82px !important;
+            height: 72px !important;
+          }
+          .pulse-1 { width: 68px !important; height: 68px !important; }
+          .pulse-2 { width: 92px !important; height: 92px !important; }
+          .pulse-3 { width: 115px !important; height: 115px !important; }
+          .mascot-status-header {
+            margin-bottom: 6px !important;
+            gap: 3px !important;
+          }
+          .radar-live-badge {
+            padding: 2px 7px !important;
+            font-size: 0.58rem !important;
+          }
+          .mascot-main-heading {
+            font-size: 0.95rem !important;
+          }
+          .mascot-ticker-container {
+            max-width: 290px !important;
+            padding: 6px 10px !important;
+            border-radius: 10px !important;
+            gap: 7px !important;
+          }
+          .ticker-tag {
+            font-size: 0.58rem !important;
+            padding: 2px 5px !important;
+          }
+          .ticker-icon {
+            font-size: 0.9rem !important;
+          }
+          .ticker-text {
+            font-size: 0.74rem !important;
+          }
+          .mascot-sub-helper {
+            font-size: 0.68rem !important;
+            margin-top: 4px !important;
+          }
+          .text-mode-composer {
+            padding: 8px 10px !important;
+            gap: 6px !important;
+          }
+          .btn-composer-skip {
+            padding: 8px 10px !important;
+            font-size: 0.78rem !important;
+          }
+          .text-mode-input-field {
+            padding: 8px 10px !important;
+            font-size: 0.82rem !important;
+          }
+          .btn-composer-send {
+            padding: 8px 12px !important;
+            font-size: 0.8rem !important;
+          }
+
         }
       `}</style>
       </div>
