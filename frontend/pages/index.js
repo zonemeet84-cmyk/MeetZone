@@ -3017,7 +3017,7 @@ export default function Dashboard() {
           <div className="leaderboard-modal-card" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div style={{ padding: '15px 20px', position: 'relative', background: 'linear-gradient(180deg, rgba(251, 191, 36, 0.15) 0%, transparent 100%)', textAlign: 'center' }}>
-              <button type="button" className="leaderboard-modal-close" onClick={(e) => { e.stopPropagation(); setIsLeaderboardOpen(false); }} style={{ position: 'absolute', top: '14px', right: '14px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.18)', border: '1px solid rgba(255, 255, 255, 0.25)', color: '#ffffff', fontSize: '1.4rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0 }}>×</button>
+              <button type="button" className="leaderboard-modal-close" onClick={(e) => { e.stopPropagation(); setIsLeaderboardOpen(false); }} style={{ position: 'absolute', top: '10px', right: '10px', left: 'auto', margin: 0, width: '32px', height: '32px', minWidth: '32px', maxWidth: '32px', minHeight: '32px', maxHeight: '32px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.16)', border: '1px solid rgba(255, 255, 255, 0.25)', color: '#ffffff', fontSize: '1.25rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>×</button>
               <div style={{ fontSize: '1rem', color: '#fbbf24', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '5px' }}>HALL OF FAME</div>
               <h2 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 0 30px rgba(251,191,36,0.2)' }}>Top Spenders</h2>
               <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginTop: '5px' }}>
@@ -3639,86 +3639,186 @@ export default function Dashboard() {
         );
       })()}
 
-      {showSpinner && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          width: '100vw',
-          height: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.22) 0%, rgba(2, 6, 23, 0.98) 75%)',
-          backdropFilter: 'blur(30px)',
-          WebkitBackdropFilter: 'blur(30px)',
-          zIndex: 20000,
-          overflow: 'hidden',
-          padding: '16px'
-        }}>
-          <div className="spinner-container" style={{ textAlign: 'center', position: 'relative', maxWidth: '500px', width: '95%' }}>
+      {showSpinner && (() => {
+        const getSlotDisplay = (itemStr) => {
+          if (!itemStr || itemStr === "❓") return { icon: "🎰", label: "ROLLING...", sub: "DECRYPTING" };
+          const s = String(itemStr).toLowerCase();
+          if (s.includes("coin")) return { icon: "🪙", label: itemStr, sub: "COINS PACK" };
+          if (s.includes("boost") || s.includes("min")) return { icon: "⚡", label: itemStr, sub: "VIP BOOST" };
+          if (s.includes("vip") || s.includes("elite")) return { icon: "👑", label: itemStr, sub: "TIER PASS" };
+          if (s.includes("luck") || s.includes("better")) return { icon: "🍀", label: "Better Luck", sub: "TRY AGAIN" };
+          return { icon: "🎁", label: itemStr, sub: "PRIZE CRATE" };
+        };
 
-            {/* Mechanical Frame */}
-            <div className="slot-machine-frame" style={{
-              background: 'linear-gradient(180deg, #334155 0%, #1e293b 100%)',
-              padding: '30px',
-              borderRadius: '60px',
-              border: '8px solid #475569',
-              boxShadow: '0 0 150px rgba(99, 102, 241, 0.4), inset 0 0 50px rgba(0,0,0,0.8)',
-              position: 'relative'
-            }}>
-              {/* Flashing Side Lights */}
-              <div style={{ position: 'absolute', top: '10%', left: '-15px', height: '80%', width: '10px', display: 'flex', flexDirection: 'column', justifyContent: 'space-around' }}>
-                {[1, 2, 3, 4, 5].map(i => <div key={i} style={{ width: '10px', height: '10px', borderRadius: '50%', background: i % 2 === 0 ? '#fbbf24' : '#6366f1', animation: 'pulse 0.5s infinite alternate' }}></div>)}
-              </div>
-              <div style={{ position: 'absolute', top: '10%', right: '-15px', height: '80%', width: '10px', display: 'flex', flexDirection: 'column', justifyContent: 'space-around' }}>
-                {[1, 2, 3, 4, 5].map(i => <div key={i} style={{ width: '10px', height: '10px', borderRadius: '50%', background: i % 2 === 0 ? '#6366f1' : '#fbbf24', animation: 'pulse 0.5s infinite alternate-reverse' }}></div>)}
-              </div>
+        const slotInfo = getSlotDisplay(spinnerItem);
 
-              <div style={{ fontSize: '1.2rem', color: '#fff', fontWeight: '900', marginBottom: '25px', letterSpacing: '5px', textTransform: 'uppercase', textShadow: '0 0 10px #6366f1' }}>
-                🎰 Randomizing Rewards...
-              </div>
+        return (
+          <div className="cyber-slot-backdrop" style={{
+            position: 'fixed',
+            inset: 0,
+            width: '100vw',
+            height: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'radial-gradient(ellipse at 50% 50%, rgba(99, 102, 241, 0.28) 0%, rgba(245, 158, 11, 0.14) 35%, rgba(2, 6, 23, 0.98) 75%)',
+            backdropFilter: 'blur(30px)',
+            WebkitBackdropFilter: 'blur(30px)',
+            zIndex: 20000,
+            overflow: 'hidden',
+            padding: '16px'
+          }}>
+            {/* Ambient Animated Cyber Halo Rings */}
+            <div style={{ position: 'absolute', width: '600px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(251, 191, 36, 0.12) 0%, transparent 65%)', filter: 'blur(40px)', pointerEvents: 'none', animation: 'pulse 3s infinite alternate' }} />
 
-              {/* Slot Windows */}
-              <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-                {[0, 1, 2].map((reelIdx) => (
-                  <div key={reelIdx} className="spinner-window" style={{
-                    background: '#020617',
-                    height: '180px',
-                    width: '120px',
-                    borderRadius: '25px',
-                    border: '3px solid rgba(255,255,255,0.1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    boxShadow: 'inset 0 20px 40px rgba(0,0,0,0.9)',
-                    opacity: reelIdx === 1 ? 1 : 0.6,
-                    transform: reelIdx === 1 ? 'scale(1.1)' : 'scale(0.95)',
-                    zIndex: reelIdx === 1 ? 10 : 1
-                  }}>
-                    <div style={{
-                      fontSize: '3.5rem',
-                      position: 'relative',
-                      filter: reelIdx === 1 ? 'none' : 'blur(2px)'
-                    }} className="slot-spinning">
-                      {spinnerItem}
-                    </div>
-                    {/* Glass Overlay Effect */}
-                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.05) 100%)', pointerEvents: 'none' }}></div>
+            <div className="slot-machine-container" style={{ textAlign: 'center', position: 'relative', maxWidth: '480px', width: '94%', zIndex: 2 }}>
+
+              {/* Luxury Cyber Arcade Chassis */}
+              <div className="slot-cyber-chassis" style={{
+                background: 'linear-gradient(165deg, #1e293b 0%, #0f172a 50%, #17172b 100%)',
+                padding: '24px 18px 22px',
+                borderRadius: '32px',
+                border: '2px solid rgba(251, 191, 36, 0.6)',
+                boxShadow: '0 0 60px rgba(251, 191, 36, 0.35), 0 25px 60px rgba(0, 0, 0, 0.9), inset 0 0 40px rgba(0, 0, 0, 0.85)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                {/* Top Neon Marquee Trim */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #fbbf24, #6366f1, #00f2fe, #fbbf24)', boxShadow: '0 0 12px #fbbf24' }} />
+
+                {/* Left Chasing LED Column */}
+                <div style={{ position: 'absolute', top: '15%', left: '8px', height: '70%', width: '8px', display: 'flex', flexDirection: 'column', justifyContent: 'space-around', zIndex: 5 }}>
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} style={{ width: '8px', height: '8px', borderRadius: '50%', background: i % 2 === 0 ? '#fbbf24' : '#00f2fe', boxShadow: i % 2 === 0 ? '0 0 8px #fbbf24' : '0 0 8px #00f2fe', animation: 'pulse 0.4s infinite alternate' }} />
+                  ))}
+                </div>
+
+                {/* Right Chasing LED Column */}
+                <div style={{ position: 'absolute', top: '15%', right: '8px', height: '70%', width: '8px', display: 'flex', flexDirection: 'column', justifyContent: 'space-around', zIndex: 5 }}>
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} style={{ width: '8px', height: '8px', borderRadius: '50%', background: i % 2 === 0 ? '#00f2fe' : '#fbbf24', boxShadow: i % 2 === 0 ? '0 0 8px #00f2fe' : '0 0 8px #fbbf24', animation: 'pulse 0.4s infinite alternate-reverse' }} />
+                  ))}
+                </div>
+
+                {/* Marquee Title */}
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '5px 16px',
+                  borderRadius: '9999px',
+                  background: 'rgba(251, 191, 36, 0.12)',
+                  border: '1px solid rgba(251, 191, 36, 0.35)',
+                  marginBottom: '18px',
+                  boxShadow: '0 0 15px rgba(251, 191, 36, 0.2)'
+                }}>
+                  <span style={{ fontSize: '1rem' }}>🎰</span>
+                  <span style={{ fontSize: '0.82rem', color: '#fbbf24', fontWeight: '900', letterSpacing: '2px', textTransform: 'uppercase' }}>
+                    CYBER REWARD CASINO
+                  </span>
+                  <span style={{ fontSize: '1rem' }}>✨</span>
+                </div>
+
+                {/* 3D Curved Cylindrical Slot Reels */}
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', alignItems: 'center', padding: '0 12px' }}>
+                  {[0, 1, 2].map((reelIdx) => {
+                    const isCenter = reelIdx === 1;
+                    return (
+                      <div key={reelIdx} className="slot-reel-window" style={{
+                        flex: 1,
+                        background: 'linear-gradient(180deg, #050b18 0%, #0b1329 50%, #050b18 100%)',
+                        height: isCenter ? '185px' : '165px',
+                        maxWidth: '125px',
+                        borderRadius: '20px',
+                        border: isCenter ? '2px solid rgba(251, 191, 36, 0.65)' : '1.5px solid rgba(255, 255, 255, 0.1)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        boxShadow: isCenter 
+                          ? 'inset 0 25px 35px rgba(0,0,0,0.95), inset 0 -25px 35px rgba(0,0,0,0.95), 0 0 25px rgba(251, 191, 36, 0.35)' 
+                          : 'inset 0 25px 30px rgba(0,0,0,0.95), inset 0 -25px 30px rgba(0,0,0,0.95)',
+                        opacity: isCenter ? 1 : 0.75,
+                        transform: isCenter ? 'scale(1.05)' : 'scale(0.96)',
+                        zIndex: isCenter ? 10 : 2,
+                        transition: 'all 0.3s'
+                      }}>
+                        {/* Reel Icon */}
+                        <div style={{
+                          fontSize: isCenter ? '2.8rem' : '2.2rem',
+                          lineHeight: 1,
+                          marginBottom: '8px',
+                          filter: isCenter ? 'drop-shadow(0 0 16px rgba(251, 191, 36, 0.6))' : 'none'
+                        }}>
+                          {slotInfo.icon}
+                        </div>
+
+                        {/* Reel Prize Label */}
+                        <div style={{
+                          fontSize: isCenter ? '0.78rem' : '0.68rem',
+                          fontWeight: '900',
+                          color: isCenter ? '#fbbf24' : '#e2e8f0',
+                          letterSpacing: '-0.01em',
+                          padding: '0 6px',
+                          textAlign: 'center',
+                          whiteSpace: 'normal',
+                          lineHeight: '1.2'
+                        }}>
+                          {slotInfo.label}
+                        </div>
+
+                        {/* Sub Category */}
+                        <div style={{
+                          fontSize: '0.52rem',
+                          color: '#64748b',
+                          fontWeight: '800',
+                          letterSpacing: '1px',
+                          textTransform: 'uppercase',
+                          marginTop: '3px'
+                        }}>
+                          {slotInfo.sub}
+                        </div>
+
+                        {/* Glass Specular Reflection Highlight */}
+                        <div style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          background: 'linear-gradient(135deg, rgba(255,255,255,0.14) 0%, transparent 45%, rgba(255,255,255,0.03) 100%)',
+                          pointerEvents: 'none'
+                        }} />
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Real-time Quantum Engine Diagnostic Bar */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  marginTop: '20px',
+                  padding: '9px 16px',
+                  background: 'rgba(0, 0, 0, 0.45)',
+                  borderRadius: '14px',
+                  border: '1px solid rgba(255, 255, 255, 0.08)'
+                }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981', animation: 'dotBlink 1s infinite' }} />
+                  <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: '800', letterSpacing: '1px' }}>
+                    QUANTUM CIPHER: <span style={{ color: '#10b981', fontWeight: '900' }}>DECRYPTING...</span>
                   </div>
-                ))}
-              </div>
+                </div>
 
-              {/* Status Bar */}
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '30px', padding: '15px', background: 'rgba(0,0,0,0.3)', borderRadius: '20px' }}>
-                <div style={{ fontSize: '0.9rem', color: '#94a3b8', fontWeight: '800' }}>ENGINE STATUS:</div>
-                <div style={{ fontSize: '0.9rem', color: '#10b981', fontWeight: '900' }}>STABLE</div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {revealPrize && (
         <div style={{
@@ -7035,6 +7135,96 @@ export default function Dashboard() {
               }
               .price-now {
                 font-size: 0.98rem !important;
+              }
+
+
+              /* Hall of Fame Modal (Top Spenders) Compact & Circular Close */
+              .leaderboard-modal-card {
+                width: 90% !important;
+                max-width: 330px !important;
+                height: auto !important;
+                max-height: 85vh !important;
+                border-radius: 22px !important;
+                overflow: hidden !important;
+              }
+              .leaderboard-modal-close {
+                position: absolute !important;
+                top: 10px !important;
+                right: 10px !important;
+                left: auto !important;
+                margin: 0 !important;
+                width: 32px !important;
+                height: 32px !important;
+                min-width: 32px !important;
+                max-width: 32px !important;
+                min-height: 32px !important;
+                max-height: 32px !important;
+                border-radius: 50% !important;
+                background: rgba(255, 255, 255, 0.16) !important;
+                border: 1px solid rgba(255, 255, 255, 0.25) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                z-index: 1000 !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+              }
+              .leaderboard-modal-card h2 {
+                font-size: 1.25rem !important;
+                margin: 0 !important;
+              }
+              .leaderboard-modal-card div[style*="HALL OF FAME"] {
+                font-size: 0.76rem !important;
+                letter-spacing: 2px !important;
+              }
+              .leaderboard-modal-card p {
+                font-size: 0.74rem !important;
+              }
+
+              /* Legendary Mystery Crate Confirmation Modal Compact */
+              .crate-confirm-card {
+                max-width: 310px !important;
+                width: 88% !important;
+                border-radius: 20px !important;
+                box-sizing: border-box !important;
+              }
+              .crate-confirm-card > div:nth-child(2) {
+                padding: 16px 14px 18px !important;
+              }
+              .mystery-float {
+                font-size: 2.8rem !important;
+                margin-bottom: 8px !important;
+              }
+              .crate-confirm-card h3 {
+                font-size: 1.15rem !important;
+                margin-bottom: 6px !important;
+              }
+              .crate-confirm-card p {
+                font-size: 0.78rem !important;
+                margin-bottom: 14px !important;
+                line-height: 1.4 !important;
+              }
+              .crate-confirm-card button {
+                padding: 10px 14px !important;
+                font-size: 0.85rem !important;
+                border-radius: 12px !important;
+              }
+
+              /* Slot Machine Mobile Compaction */
+              .slot-machine-container {
+                max-width: 330px !important;
+              }
+              .slot-cyber-chassis {
+                padding: 16px 10px 14px !important;
+                border-radius: 24px !important;
+              }
+              .slot-reel-window {
+                height: 145px !important;
+                border-radius: 16px !important;
+              }
+              .slot-reel-window div[style*="fontSize: '2.8rem'"],
+              .slot-reel-window div[style*="fontSize: '2.2rem'"] {
+                font-size: 1.8rem !important;
+                margin-bottom: 4px !important;
               }
 
               /* Mystery Treasures - Compact Swipeable Row Instead of Massive Vertical Stack */

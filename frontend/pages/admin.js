@@ -29,6 +29,10 @@ export default function AdminDashboard() {
   const [news, setNews] = useState([]);
   const [newNewsTitle, setNewNewsTitle] = useState("");
   const [newNewsContent, setNewNewsContent] = useState("");
+  const [broadcastSubject, setBroadcastSubject] = useState("");
+  const [broadcastHeading, setBroadcastHeading] = useState("");
+  const [broadcastMessage, setBroadcastMessage] = useState("");
+  const [broadcastSending, setBroadcastSending] = useState(false);
   const [timeframe, setTimeframe] = useState("Year");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCountry, setFilterCountry] = useState("");
@@ -350,6 +354,63 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSendBroadcast = async () => {
+    if (!broadcastSubject.trim()) {
+      return Swal.fire({ text: "Please enter an Email Subject", icon: "warning", background: "#0f172a", color: "#fff" });
+    }
+    if (!broadcastMessage.trim()) {
+      return Swal.fire({ text: "Please enter a Message Body", icon: "warning", background: "#0f172a", color: "#fff" });
+    }
+
+    const confirmRes = await Swal.fire({
+      title: "Broadcast to ALL Registered Users?",
+      html: `<p style="color: #94a3b8; font-size: 14px;">This will send this announcement to every registered user with a valid email in ZoneMeet.</p><p style="color: #fbbf24; font-weight: 700;">Subject: ${broadcastSubject}</p>`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "🚀 Yes, Send to All Users",
+      cancelButtonText: "Cancel",
+      background: "#0f172a",
+      color: "#fff",
+      confirmButtonColor: "#6366f1",
+      cancelButtonColor: "#64748b"
+    });
+
+    if (!confirmRes.isConfirmed) return;
+
+    setBroadcastSending(true);
+    try {
+      const config = getAdminHeaders();
+      if (!config) { lockAdminPanel(); return; }
+      const res = await axios.post("https://api.zonemeet.chat/api/admin/broadcast-email", {
+        subject: broadcastSubject.trim(),
+        heading: broadcastHeading.trim(),
+        message: broadcastMessage.trim()
+      }, config);
+
+      Swal.fire({
+        title: "Broadcast Finished!",
+        text: res.data.message || "Emails sent successfully!",
+        icon: "success",
+        background: "#0f172a",
+        color: "#fff",
+        confirmButtonColor: "#6366f1"
+      });
+      setBroadcastSubject("");
+      setBroadcastHeading("");
+      setBroadcastMessage("");
+    } catch (err) {
+      Swal.fire({
+        title: "Broadcast Error",
+        text: err.response?.data?.message || "Failed to broadcast email",
+        icon: "error",
+        background: "#0f172a",
+        color: "#fff"
+      });
+    } finally {
+      setBroadcastSending(false);
+    }
+  };
+
   if (loading) return (
     <div className="loading-container">
       <div className="loader-glow"></div>
@@ -398,7 +459,8 @@ export default function AdminDashboard() {
             { id: 'reports', icon: 'fa-flag', label: 'Reports' },
             { id: 'user-management', icon: 'fa-user-cog', label: 'User Management' },
             { id: 'banned', icon: 'fa-user-slash', label: 'Banned' },
-            { id: 'news', icon: 'fa-bullhorn', label: 'News & Announcements' }
+            { id: 'news', icon: 'fa-bullhorn', label: 'News & Announcements' },
+            { id: 'broadcast-email', icon: 'fa-paper-plane', label: 'Broadcast Email' }
           ].map(item => (
             <div 
               key={item.id}
@@ -921,6 +983,122 @@ export default function AdminDashboard() {
                      </div>
                    ))}
                    {news.length === 0 && <p style={{ color: 'var(--text-dim)' }}>No announcements yet.</p>}
+                </div>
+             </div>
+           )}
+
+           {activeTab === "broadcast-email" && (
+             <div className="glass-card fade-in">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.4rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '1.6rem' }}>📢</span> Instant Broadcast Email to All Users
+                    </h3>
+                    <p style={{ margin: '4px 0 0', color: '#94a3b8', fontSize: '0.85rem' }}>
+                      Compose a message here and it will be delivered directly to the inbox of every registered user in ZoneMeet.
+                    </p>
+                  </div>
+                  <div style={{ background: 'rgba(99, 102, 241, 0.15)', border: '1px solid rgba(99, 102, 241, 0.3)', padding: '6px 14px', borderRadius: '12px', color: '#a5b4fc', fontSize: '0.82rem', fontWeight: 700 }}>
+                    👥 Target: All Registered Users
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 1.2fr) minmax(280px, 1fr)', gap: '20px', alignItems: 'start' }}>
+                  {/* Left Column: Form */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', background: 'rgba(0,0,0,0.25)', padding: '22px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#e2e8f0', marginBottom: '6px' }}>
+                        Email Subject Line <span style={{ color: '#ef4444' }}>*</span>
+                      </label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Exciting New Features on ZoneMeet! 🚀" 
+                        value={broadcastSubject} 
+                        onChange={e => setBroadcastSubject(e.target.value)} 
+                        style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.12)', color: 'white', fontSize: '0.92rem', outline: 'none', boxSizing: 'border-box' }} 
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#e2e8f0', marginBottom: '6px' }}>
+                        Announcement Title / Subheading <small style={{ color: '#94a3b8' }}>(Optional)</small>
+                      </label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Special Weekend Community Update" 
+                        value={broadcastHeading} 
+                        onChange={e => setBroadcastHeading(e.target.value)} 
+                        style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.12)', color: 'white', fontSize: '0.92rem', outline: 'none', boxSizing: 'border-box' }} 
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#e2e8f0', marginBottom: '6px' }}>
+                        Message Body <span style={{ color: '#ef4444' }}>*</span>
+                      </label>
+                      <textarea 
+                        placeholder="Type your announcement or update here... Every user will receive this exact message in their email inbox." 
+                        value={broadcastMessage} 
+                        onChange={e => setBroadcastMessage(e.target.value)} 
+                        rows="7" 
+                        style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.12)', color: 'white', fontSize: '0.92rem', outline: 'none', resize: 'vertical', boxSizing: 'border-box', lineHeight: '1.5' }}
+                      />
+                    </div>
+
+                    <button 
+                      onClick={handleSendBroadcast} 
+                      disabled={broadcastSending}
+                      style={{ 
+                        marginTop: '10px',
+                        background: broadcastSending ? '#64748b' : 'linear-gradient(135deg, #6366f1, #a855f7)', 
+                        color: 'white', 
+                        border: 'none', 
+                        padding: '14px 20px', 
+                        borderRadius: '14px', 
+                        cursor: broadcastSending ? 'wait' : 'pointer', 
+                        fontWeight: '800',
+                        fontSize: '1rem',
+                        boxShadow: '0 8px 24px rgba(99, 102, 241, 0.45)',
+                        transition: 'all 0.25s',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '10px'
+                      }}
+                    >
+                      {broadcastSending ? (
+                        <><span>⏳</span> Broadcasting Emails to All Users...</>
+                      ) : (
+                        <><span>🚀</span> Send Broadcast Email to All Users</>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Right Column: Live Email Preview */}
+                  <div style={{ background: '#0b1329', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.6)' }}>
+                    <div style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #06b6d4 100%)', padding: '20px', textAlign: 'center' }}>
+                      <h4 style={{ margin: 0, fontSize: '1.2rem', color: '#fff', fontWeight: 900 }}>ZoneMeet</h4>
+                      <small style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.72rem', fontWeight: 600 }}>Community Announcement (Preview)</small>
+                    </div>
+                    <div style={{ padding: '20px', background: '#0f172a' }}>
+                      {broadcastHeading && (
+                        <h5 style={{ margin: '0 0 10px', color: '#fbbf24', fontSize: '1rem', fontWeight: 800 }}>
+                          {broadcastHeading}
+                        </h5>
+                      )}
+                      <p style={{ fontSize: '0.85rem', color: '#cbd5e1', margin: '0 0 12px' }}>
+                        Hello <strong>[User Name]</strong>,
+                      </p>
+                      <div style={{ fontSize: '0.85rem', color: '#e2e8f0', background: 'rgba(255,255,255,0.03)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)', minHeight: '80px', whiteSpace: 'pre-line', lineHeight: '1.5' }}>
+                        {broadcastMessage || "Your formatted message text will appear right here..."}
+                      </div>
+                      <div style={{ textAlign: 'center', margin: '18px 0 6px' }}>
+                        <span style={{ display: 'inline-block', background: 'linear-gradient(135deg, #6366f1, #a855f7)', color: '#fff', padding: '8px 20px', borderRadius: '999px', fontSize: '0.78rem', fontWeight: 800 }}>
+                          Open ZoneMeet & Explore
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
              </div>
            )}

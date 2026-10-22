@@ -1481,8 +1481,77 @@ export default function Friends() {
         }
 
         .call-action-btn {
-          padding: 8px 16px;
-          font-size: 0.85rem;
+          padding: 8px 14px;
+          font-size: 0.82rem;
+        }
+      }
+
+      /* Compact Phone Screen Responsiveness (< 640px) */
+      @media (max-width: 640px) {
+        .dashboard-hero {
+          margin: 8px auto !important;
+          padding: 0 10px !important;
+        }
+        .glass-panel {
+          padding: 16px 12px !important;
+          border-radius: 18px !important;
+        }
+        .friend-card {
+          flex-direction: column !important;
+          align-items: stretch !important;
+          gap: 12px !important;
+          padding: 12px !important;
+          border-radius: 16px !important;
+        }
+        .friend-info {
+          width: 100% !important;
+          justify-content: flex-start !important;
+          gap: 12px !important;
+        }
+        .friend-call-actions {
+          width: 100% !important;
+          display: flex !important;
+          gap: 8px !important;
+        }
+        .friend-call-actions .call-action-btn {
+          flex: 1 !important;
+          justify-content: center !important;
+          padding: 8px 10px !important;
+          font-size: 0.8rem !important;
+        }
+        .mobile-tabs-bar {
+          padding: 6px 8px !important;
+          gap: 6px !important;
+          overflow-x: auto !important;
+        }
+        .tab-btn {
+          padding: 7px 11px !important;
+          font-size: 0.78rem !important;
+          white-space: nowrap !important;
+          border-radius: 10px !important;
+        }
+        .incoming-call-card, .outgoing-card {
+          width: 90% !important;
+          max-width: 320px !important;
+          padding: 20px 16px !important;
+          border-radius: 22px !important;
+        }
+        .call-avatar {
+          width: 60px !important;
+          height: 60px !important;
+          font-size: 1.6rem !important;
+          margin-bottom: 12px !important;
+        }
+        .incoming-call-card h2, .outgoing-card h2 {
+          font-size: 1.25rem !important;
+        }
+        .incoming-call-card p, .outgoing-card p {
+          font-size: 0.82rem !important;
+        }
+        .modal-actions button {
+          padding: 9px 14px !important;
+          font-size: 0.85rem !important;
+          border-radius: 12px !important;
         }
       }
 

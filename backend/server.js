@@ -4724,6 +4724,103 @@ function endQuiz(roomId) {
       res.json({ message: "News deleted successfully", news });
     });
 
+    // --- Admin Broadcast Email to All Registered Users ---
+    app.post("/api/admin/broadcast-email", authenticateAdmin, async (req, res) => {
+      if (req.user.email !== "ds9376314@gmail.com") return res.status(403).json({ message: "Forbidden" });
+      const { subject, heading, message } = req.body;
+      if (!subject || !message) {
+        return res.status(400).json({ success: false, message: "Subject and Message are required" });
+      }
+
+      // Collect unique valid email addresses from registered users
+      const validRecipients = users
+        .filter(u => u && u.email && typeof u.email === "string" && u.email.includes("@"))
+        .map(u => ({ email: u.email.trim().toLowerCase(), name: u.name || "ZoneMeet Member" }));
+
+      // Deduplicate by email
+      const uniqueMap = new Map();
+      validRecipients.forEach(item => {
+        if (!uniqueMap.has(item.email)) {
+          uniqueMap.set(item.email, item);
+        }
+      });
+      const recipientsList = Array.from(uniqueMap.values());
+
+      if (recipientsList.length === 0) {
+        return res.json({ success: true, message: "No registered users found with email", sentCount: 0 });
+      }
+
+      console.log(`[BROADCAST EMAIL] Starting broadcast to ${recipientsList.length} users with subject: "${subject}"`);
+
+      const buildHtml = (userName, bodyContent, bannerHeading) => `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #0b1329; color: #f8fafc; padding: 32px 16px; min-height: 100%;">
+          <div style="max-width: 580px; margin: 0 auto; background: #0f172a; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.6);">
+            <!-- Top Header -->
+            <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #06b6d4 100%); padding: 30px 24px; text-align: center;">
+              <h1 style="margin: 0; font-size: 26px; font-weight: 900; color: #ffffff; letter-spacing: -0.02em;">ZoneMeet</h1>
+              <p style="margin: 6px 0 0; color: rgba(255,255,255,0.85); font-size: 14px; font-weight: 600;">Official Community Announcement</p>
+            </div>
+            <!-- Body -->
+            <div style="padding: 32px 26px;">
+              ${bannerHeading ? `<h2 style="font-size: 20px; color: #fbbf24; margin-top: 0; margin-bottom: 16px; font-weight: 800;">${bannerHeading}</h2>` : ''}
+              <p style="font-size: 15px; color: #cbd5e1; line-height: 1.6; margin-bottom: 20px;">
+                Hello <strong>${userName}</strong>,
+              </p>
+              <div style="font-size: 15px; color: #e2e8f0; line-height: 1.7; white-space: pre-line; background: rgba(255,255,255,0.03); padding: 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); margin-bottom: 26px;">
+${bodyContent}
+              </div>
+              <div style="text-align: center; margin: 30px 0 10px;">
+                <a href="https://zonemeet.chat" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #6366f1, #a855f7); color: #ffffff; padding: 12px 32px; border-radius: 9999px; text-decoration: none; font-weight: 800; font-size: 15px; box-shadow: 0 8px 24px rgba(99, 102, 241, 0.45);">
+                  Open ZoneMeet & Explore
+                </a>
+              </div>
+            </div>
+            <!-- Footer -->
+            <div style="padding: 18px 24px; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.06); text-align: center; font-size: 12px; color: #64748b;">
+              You received this message because you are a registered user of ZoneMeet.<br />
+              &copy; 2026 ZoneMeet Inc. All rights reserved.
+            </div>
+          </div>
+        </div>
+      `;
+
+      let sentCount = 0;
+      let failCount = 0;
+
+      for (const rec of recipientsList) {
+        try {
+          const htmlContent = buildHtml(rec.name, message, heading);
+          if (process.env.RESEND_API_KEY) {
+            await axios.post("https://api.resend.com/emails", {
+              from: "ZoneMeet <onboarding@resend.dev>",
+              to: rec.email,
+              subject: subject,
+              html: htmlContent
+            }, {
+              headers: {
+                Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+                "Content-Type": "application/json"
+              },
+              timeout: 8000
+            });
+            sentCount++;
+          }
+        } catch (mailErr) {
+          console.error(`[BROADCAST FAILED] ${rec.email}:`, mailErr.response?.data?.message || mailErr.message);
+          failCount++;
+        }
+      }
+
+      res.json({
+        success: true,
+        message: `Broadcast complete! Sent to ${sentCount} user(s). Failed: ${failCount}`,
+        totalUsers: recipientsList.length,
+        sentCount,
+        failCount
+      });
+    });
+
+
     // ========= PUBLIC ONLINE USERS COUNT =========
     app.get("/api/public/online-count", (req, res) => {
       res.json({ success: true, onlineCount: getGlobalOnlineCount() });

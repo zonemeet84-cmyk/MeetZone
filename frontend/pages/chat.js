@@ -4397,7 +4397,15 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                       onChange={(e) => setMessage(e.target.value)}
                       onClick={(e) => e.stopPropagation()}
                     />
-                    <button type="submit" disabled={!message.trim()}>💬</button>
+                    <button type="submit" disabled={!message.trim()} title="Send message">💬</button>
+                    <button 
+                      type="button" 
+                      className="inline-stop-btn"
+                      onClick={() => router.push("/")}
+                      title="Quit / Disconnect"
+                    >
+                      🛑
+                    </button>
                   </form>
                 </div>
               </div>
@@ -6005,12 +6013,16 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         }
         .mascot-stage {
           position: relative;
-          width: 160px;
-          height: 160px;
+          width: 100px;
+          height: 100px;
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-bottom: 12px;
+          margin-bottom: 8px;
+        }
+        .mascot-stage svg {
+          width: 90px;
+          height: 80px;
         }
         .mascot-character-wrapper {
           position: relative;
@@ -6032,9 +6044,9 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           border: 1.5px solid rgba(0, 242, 254, 0.4);
           animation: mascotPulse 2.8s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
         }
-        .pulse-1 { width: 105px; height: 105px; animation-delay: 0s; }
-        .pulse-2 { width: 140px; height: 140px; animation-delay: 0.9s; border-color: rgba(168, 85, 247, 0.35); }
-        .pulse-3 { width: 175px; height: 175px; animation-delay: 1.8s; border-color: rgba(0, 242, 254, 0.2); }
+        .pulse-1 { width: 75px; height: 75px; animation-delay: 0s; }
+        .pulse-2 { width: 100px; height: 100px; animation-delay: 0.9s; border-color: rgba(168, 85, 247, 0.35); }
+        .pulse-3 { width: 125px; height: 125px; animation-delay: 1.8s; border-color: rgba(0, 242, 254, 0.2); }
         @keyframes mascotPulse {
           0% {
             transform: scale(0.65);
@@ -6097,18 +6109,18 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           text-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
         .mascot-ticker-container {
-          background: rgba(30, 41, 59, 0.65);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          border-radius: 14px;
-          padding: 10px 18px;
+          background: transparent;
+          border: none;
+          padding: 4px 10px;
           display: flex;
           align-items: center;
+          justify-content: center;
           gap: 10px;
-          max-width: 440px;
-          width: 100%;
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+          max-width: 480px;
+          width: auto;
+          box-shadow: none;
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
           animation: tickerFadeIn 0.35s ease-out;
         }
         @keyframes tickerFadeIn {
@@ -9547,20 +9559,82 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             font-size: 0.78rem !important;
             border-radius: 9999px !important;
           }
+          /* Mobile Stop Button Relocation & Floating Stack Cleaned */
+          .bottom-actions .mobile-action-stack .stop-btn {
+            display: none !important;
+          }
+          .mobile-inline-chat-form .inline-stop-btn {
+            background: rgba(239, 68, 68, 0.85) !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            flex-shrink: 0 !important;
+            width: 32px !important;
+            height: 32px !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            cursor: pointer !important;
+            font-size: 0.9rem !important;
+          }
+
+          /* Matchmaking Preferences Modal Compact & Centered */
+          .filter-modal-overlay {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 16px !important;
+          }
+          .filter-modal-card {
+            width: 90% !important;
+            max-width: 325px !important;
+            max-height: 85vh !important;
+            max-height: 85dvh !important;
+            overflow-y: auto !important;
+            padding: 16px 14px !important;
+            border-radius: 20px !important;
+            gap: 14px !important;
+          }
+          .filter-modal-header h2 {
+            font-size: 1.05rem !important;
+          }
+          .gender-options-grid {
+            gap: 6px !important;
+          }
+          .gender-option-card {
+            padding: 8px 4px !important;
+            border-radius: 12px !important;
+          }
+          .gender-option-card .emoji {
+            font-size: 1.25rem !important;
+          }
+          .gender-option-card .name {
+            font-size: 0.72rem !important;
+          }
+          .select-dropdown-trigger {
+            padding: 8px 12px !important;
+            font-size: 0.82rem !important;
+            border-radius: 12px !important;
+          }
+          .btn-apply-filters {
+            padding: 10px 14px !important;
+            font-size: 0.85rem !important;
+            border-radius: 12px !important;
+          }
+
           .mascot-stage {
-            width: 90px !important;
-            height: 90px !important;
-            margin-bottom: 6px !important;
+            width: 75px !important;
+            height: 75px !important;
+            margin-bottom: 4px !important;
           }
           .mascot-stage svg {
-            width: 82px !important;
-            height: 72px !important;
+            width: 68px !important;
+            height: 58px !important;
           }
-          .pulse-1 { width: 68px !important; height: 68px !important; }
-          .pulse-2 { width: 92px !important; height: 92px !important; }
-          .pulse-3 { width: 115px !important; height: 115px !important; }
+          .pulse-1 { width: 55px !important; height: 55px !important; }
+          .pulse-2 { width: 75px !important; height: 75px !important; }
+          .pulse-3 { width: 95px !important; height: 95px !important; }
           .mascot-status-header {
-            margin-bottom: 6px !important;
+            margin-bottom: 4px !important;
             gap: 3px !important;
           }
           .radar-live-badge {
@@ -9568,23 +9642,26 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             font-size: 0.58rem !important;
           }
           .mascot-main-heading {
-            font-size: 0.95rem !important;
+            font-size: 0.92rem !important;
           }
           .mascot-ticker-container {
-            max-width: 290px !important;
-            padding: 6px 10px !important;
-            border-radius: 10px !important;
-            gap: 7px !important;
+            max-width: 300px !important;
+            padding: 4px 6px !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            backdrop-filter: none !important;
+            gap: 6px !important;
           }
           .ticker-tag {
             font-size: 0.58rem !important;
             padding: 2px 5px !important;
           }
           .ticker-icon {
-            font-size: 0.9rem !important;
+            font-size: 0.88rem !important;
           }
           .ticker-text {
-            font-size: 0.74rem !important;
+            font-size: 0.72rem !important;
           }
           .mascot-sub-helper {
             font-size: 0.68rem !important;
