@@ -88,6 +88,17 @@ if (typeof window !== "undefined") {
   glassesImg.src = "https://i.imgur.com/YGmkF.png";
 }
 
+const MATCHMAKING_TIPS = [
+  { icon: "🐒", text: "Scanning for active friendly people right now...", tag: "Matchmaking" },
+  { icon: "🌍", text: "Connecting you with people in 190+ countries...", tag: "Global" },
+  { icon: "✨", text: "Tip: A friendly 'Hello' always makes the best start!", tag: "Pro Tip" },
+  { icon: "⚡", text: "Looking for someone with great vibes...", tag: "Instant" },
+  { icon: "🚀", text: "Hang tight! Your next match is just seconds away...", tag: "Live Queue" },
+  { icon: "🔒", text: "Safe, respectful & end-to-end private connections", tag: "Security" },
+  { icon: "🎧", text: "Good vibes only — get ready to chat & vibe!", tag: "Vibes" },
+  { icon: "💫", text: "Matching by shared language and interests...", tag: "Smart Connect" },
+];
+
 // AR Drawing Helpers
 const drawImage = (ctx, img, x, y, w, h, angle) => {
   ctx.save();
@@ -240,6 +251,18 @@ export default function Home() {
       setActiveChatMode(mode);
     }
   }, [router.query.mode, router.isReady]);
+
+  // Rotating tips ticker for matchmaking mascot
+  const [searchingTipIdx, setSearchingTipIdx] = useState(0);
+
+  useEffect(() => {
+    if (!partnerId) {
+      const timer = setInterval(() => {
+        setSearchingTipIdx((prev) => (prev + 1) % MATCHMAKING_TIPS.length);
+      }, 2600);
+      return () => clearInterval(timer);
+    }
+  }, [partnerId]);
 
   // Filters & Premium
   const [gender, setGender] = useState("all");
@@ -3428,6 +3451,127 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
   }
   // ====================================================
 
+  const renderMatchmakingMascot = (isVideo = false) => {
+    const tip = MATCHMAKING_TIPS[searchingTipIdx] || MATCHMAKING_TIPS[0];
+    return (
+      <div className={`mascot-matchmaking-box ${isVideo ? "video-view" : "text-view"}`}>
+        <div className="mascot-stage">
+          {/* Glowing pulse rings */}
+          <div className="mascot-radar-pulse pulse-1" />
+          <div className="mascot-radar-pulse pulse-2" />
+          <div className="mascot-radar-pulse pulse-3" />
+
+          {/* Floating mascot container */}
+          <div className="mascot-character-wrapper">
+            <svg width={isVideo ? "105" : "125"} height={isVideo ? "105" : "125"} viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" className="mascot-monkey-svg">
+              <defs>
+                <linearGradient id="headbandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#00f2fe" />
+                  <stop offset="100%" stopColor="#a855f7" />
+                </linearGradient>
+                <linearGradient id="monkeyFur" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#f59e0b" />
+                  <stop offset="100%" stopColor="#d97706" />
+                </linearGradient>
+                <linearGradient id="earcupGradLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#00f2fe" />
+                  <stop offset="100%" stopColor="#0284c7" />
+                </linearGradient>
+                <linearGradient id="earcupGradRight" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#c084fc" />
+                  <stop offset="100%" stopColor="#9333ea" />
+                </linearGradient>
+                <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
+
+              {/* Left Ear */}
+              <circle cx="34" cy="78" r="18" fill="url(#monkeyFur)" />
+              <circle cx="34" cy="78" r="11" fill="#fde68a" />
+
+              {/* Right Ear */}
+              <circle cx="126" cy="78" r="18" fill="url(#monkeyFur)" />
+              <circle cx="126" cy="78" r="11" fill="#fde68a" />
+
+              {/* Head */}
+              <circle cx="80" cy="80" r="46" fill="url(#monkeyFur)" />
+
+              {/* Face Mask */}
+              <ellipse cx="62" cy="74" rx="16" ry="18" fill="#fef3c7" />
+              <ellipse cx="98" cy="74" rx="16" ry="18" fill="#fef3c7" />
+              <ellipse cx="80" cy="94" rx="26" ry="20" fill="#fef3c7" />
+
+              {/* Rosy Cheeks */}
+              <circle cx="56" cy="94" r="6" fill="#f87171" opacity="0.45" />
+              <circle cx="104" cy="94" r="6" fill="#f87171" opacity="0.45" />
+
+              {/* Eyes with Highlights */}
+              <ellipse cx="65" cy="75" rx="6.5" ry="8.5" fill="#1e1b18" />
+              <circle cx="67.5" cy="72" r="2.5" fill="#ffffff" />
+              <circle cx="64" cy="78" r="1.2" fill="#ffffff" />
+
+              <ellipse cx="95" cy="75" rx="6.5" ry="8.5" fill="#1e1b18" />
+              <circle cx="97.5" cy="72" r="2.5" fill="#ffffff" />
+              <circle cx="94" cy="78" r="1.2" fill="#ffffff" />
+
+              {/* Snout / Nose */}
+              <path d="M77 88 C77 86.5 83 86.5 83 88 C83 90 77 90 77 88 Z" fill="#78350f" />
+
+              {/* Big Cheerful Smile */}
+              <path d="M68 96 Q80 110 92 96" stroke="#78350f" strokeWidth="3" strokeLinecap="round" fill="none" />
+              <path d="M74 100 Q80 106 86 100" fill="#f43f5e" />
+
+              {/* Headphone Band */}
+              <path d="M28 72 C28 32 132 32 132 72" stroke="url(#headbandGrad)" strokeWidth="7" strokeLinecap="round" fill="none" filter="url(#neonGlow)" />
+              <path d="M42 42 C60 28 100 28 118 42" stroke="rgba(255,255,255,0.6)" strokeWidth="2" strokeLinecap="round" fill="none" />
+
+              {/* Left Earcup */}
+              <rect x="18" y="58" width="16" height="32" rx="8" fill="url(#earcupGradLeft)" filter="url(#neonGlow)" />
+              <rect x="22" y="63" width="8" height="22" rx="4" fill="#0f172a" opacity="0.6" />
+
+              {/* Right Earcup */}
+              <rect x="126" y="58" width="16" height="32" rx="8" fill="url(#earcupGradRight)" filter="url(#neonGlow)" />
+              <rect x="130" y="63" width="8" height="22" rx="4" fill="#0f172a" opacity="0.6" />
+
+              {/* Sound Equalizer Bars */}
+              <rect x="6" y="68" width="3" height="12" rx="1.5" fill="#00f2fe" opacity="0.85" className="mascot-eq-bar bar-1" />
+              <rect x="11" y="63" width="3" height="22" rx="1.5" fill="#00f2fe" opacity="0.95" className="mascot-eq-bar bar-2" />
+              <rect x="146" y="63" width="3" height="22" rx="1.5" fill="#a855f7" opacity="0.95" className="mascot-eq-bar bar-2" />
+              <rect x="151" y="68" width="3" height="12" rx="1.5" fill="#a855f7" opacity="0.85" className="mascot-eq-bar bar-1" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Status Heading */}
+        <div className="mascot-status-header">
+          <div className="radar-live-badge">
+            <span className="radar-glow-dot" />
+            <span>LOOKING FOR PARTNER</span>
+          </div>
+          <h3 className="mascot-main-heading">
+            {isVideo ? "Searching Live Video Match..." : "Searching Text Chat Match..."}
+          </h3>
+        </div>
+
+        {/* Dynamic Rotating Line Ticker */}
+        <div className="mascot-ticker-container" key={searchingTipIdx}>
+          <span className="ticker-tag">{tip.tag}</span>
+          <div className="ticker-line-content">
+            <span className="ticker-icon">{tip.icon}</span>
+            <span className="ticker-text">{tip.text}</span>
+          </div>
+        </div>
+
+        {/* Subtitle helper */}
+        <p className="mascot-sub-helper">
+          ⚡ Click <strong style={{ color: '#00f2fe' }}>'Next'</strong> anytime to skip to the next person
+        </p>
+      </div>
+    );
+  };
+
   return (
     <>
       <div className="container chat-page-v2">
@@ -3722,15 +3866,15 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
               {/* Chat Messages Body */}
               <div className="text-mode-chat-body">
                 <div className="text-mode-messages-scroll">
-                  {messages.length === 0 && (
+                  {messages.length === 0 && !partnerId && (
+                    renderMatchmakingMascot(false)
+                  )}
+
+                  {messages.length === 0 && partnerId && (
                     <div className="text-mode-empty-state">
-                      <div className="empty-icon">💬</div>
-                      <h3>{partnerId ? "You're connected with a stranger!" : "Text Matchmaking Active"}</h3>
-                      <p>
-                        {partnerId 
-                          ? "Say hello to start chatting! Real-time end-to-end stranger messaging."
-                          : "Finding someone who wants to text chat right now. Click 'Next' if you want to skip."}
-                      </p>
+                      <div className="empty-icon">👋</div>
+                      <h3>You are connected with {partnerInfo?.name || "a stranger"}!</h3>
+                      <p>Say hello to start chatting! Real-time end-to-end stranger messaging.</p>
                     </div>
                   )}
 
@@ -4323,14 +4467,8 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
 
               {/* SEARCHING OVERLAY */}
               {!partnerId && !showPartnerPreview && (
-                <div className="searching-overlay-v2">
-                  <div className="searching-ripple"></div>
-                  <div className="searching-ripple" style={{ animationDelay: '1s' }}></div>
-                  <div className="searching-ripple" style={{ animationDelay: '2s' }}></div>
-                  <div className="searching-content">
-                    <div className="searching-icon">🔍</div>
-                    <h3 style={{ fontSize: '0.95rem', margin: 0 }}>{status}</h3>
-                  </div>
+                <div className="searching-overlay-v2 mascot-video-overlay">
+                  {renderMatchmakingMascot(true)}
                 </div>
               )}
 
@@ -5785,6 +5923,184 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           font-size: 0.9rem;
           color: #94a3b8;
           line-height: 1.5;
+        }
+
+        /* MASCOT MATCHMAKING & ROTATING TICKER STYLES */
+        .mascot-matchmaking-box {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          margin: auto;
+          width: 100%;
+          max-width: 460px;
+          padding: 24px 20px;
+          position: relative;
+          z-index: 5;
+        }
+        .mascot-matchmaking-box.video-view {
+          max-width: 400px;
+          padding: 14px 10px;
+        }
+        .mascot-stage {
+          position: relative;
+          width: 160px;
+          height: 160px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 12px;
+        }
+        .mascot-character-wrapper {
+          position: relative;
+          z-index: 3;
+          animation: mascotFloat 3s ease-in-out infinite;
+          filter: drop-shadow(0 14px 24px rgba(0, 242, 254, 0.4));
+        }
+        @keyframes mascotFloat {
+          0%, 100% {
+            transform: translateY(0px) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-9px) rotate(1.5deg);
+          }
+        }
+        .mascot-radar-pulse {
+          position: absolute;
+          border-radius: 50%;
+          border: 1.5px solid rgba(0, 242, 254, 0.4);
+          animation: mascotPulse 2.8s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+        }
+        .pulse-1 { width: 105px; height: 105px; animation-delay: 0s; }
+        .pulse-2 { width: 140px; height: 140px; animation-delay: 0.9s; border-color: rgba(168, 85, 247, 0.35); }
+        .pulse-3 { width: 175px; height: 175px; animation-delay: 1.8s; border-color: rgba(0, 242, 254, 0.2); }
+        @keyframes mascotPulse {
+          0% {
+            transform: scale(0.65);
+            opacity: 0.9;
+          }
+          100% {
+            transform: scale(1.4);
+            opacity: 0;
+          }
+        }
+        .mascot-eq-bar {
+          animation: eqBounce 0.8s ease-in-out infinite alternate;
+          transform-origin: bottom;
+        }
+        .bar-1 { animation-delay: 0.15s; }
+        .bar-2 { animation-delay: 0.4s; }
+        @keyframes eqBounce {
+          0% { transform: scaleY(0.4); }
+          100% { transform: scaleY(1.35); }
+        }
+        .mascot-status-header {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+          margin-bottom: 14px;
+        }
+        .radar-live-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 4px 12px;
+          border-radius: 999px;
+          background: rgba(0, 242, 254, 0.1);
+          border: 1px solid rgba(0, 242, 254, 0.3);
+          color: #a5f3fc;
+          font-size: 0.72rem;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+        .radar-glow-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #00f2fe;
+          box-shadow: 0 0 8px #00f2fe;
+          animation: dotBlink 1.4s infinite;
+        }
+        @keyframes dotBlink {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(0.7); }
+        }
+        .mascot-main-heading {
+          font-size: 1.25rem;
+          font-weight: 800;
+          color: #ffffff;
+          margin: 0;
+          letter-spacing: -0.01em;
+          text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        .mascot-ticker-container {
+          background: rgba(30, 41, 59, 0.65);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 14px;
+          padding: 10px 18px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          max-width: 440px;
+          width: 100%;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+          animation: tickerFadeIn 0.35s ease-out;
+        }
+        @keyframes tickerFadeIn {
+          0% {
+            opacity: 0;
+            transform: translateY(6px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .ticker-tag {
+          font-size: 0.68rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          padding: 3px 8px;
+          border-radius: 6px;
+          background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(168, 85, 247, 0.2));
+          border: 1px solid rgba(0, 242, 254, 0.4);
+          color: #67e8f9;
+          white-space: nowrap;
+        }
+        .ticker-line-content {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          overflow: hidden;
+          text-align: left;
+        }
+        .ticker-icon {
+          font-size: 1.1rem;
+          flex-shrink: 0;
+        }
+        .ticker-text {
+          font-size: 0.88rem;
+          font-weight: 600;
+          color: #f1f5f9;
+          line-height: 1.35;
+        }
+        .mascot-sub-helper {
+          font-size: 0.82rem;
+          color: #94a3b8;
+          margin-top: 10px;
+          margin-bottom: 0;
+        }
+        .mascot-video-overlay {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          background: radial-gradient(circle at center, rgba(15, 23, 42, 0.8) 0%, rgba(2, 6, 23, 0.95) 100%) !important;
         }
         .text-msg-item {
           display: flex;
