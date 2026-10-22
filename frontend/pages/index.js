@@ -2376,26 +2376,124 @@ export default function Dashboard() {
 
         <div className="pricing-grid coins-grid">
           {[
-            { name: "100 Coins Pack", base: 100, bonus: 0,   price: 79,  usdPrice: 0.99, icon: "🪙", color: "#94a3b8", tag: "Starter"      },
-            { name: "200 Coins Pack", base: 150, bonus: 50,  price: 149, usdPrice: 1.79, icon: "💰", color: "#fbbf24", tag: "⭐ Popular"   },
-            { name: "500 Coins Pack", base: 350, bonus: 150, price: 299, usdPrice: 3.59, icon: "💎", color: "#6366f1", tag: "🔥 Best Deal" },
-            { name: "1300 Coins Pack",base: 1000,bonus: 300, price: 699, usdPrice: 8.49, icon: "👑", color: "#ec4899", tag: "💎 Ultimate"  }
+            { 
+              name: "100 Coins Pack", 
+              base: 100, 
+              bonus: 0,   
+              price: 79,  
+              oldPrice: 99,
+              usdPrice: 0.99, 
+              oldUsd: 1.49,
+              icon: "🪙", 
+              color: "#38bdf8", 
+              tag: "STARTER PACK",
+              perks: [
+                "⚡ Instant Video & Text Matching",
+                "💬 High Priority Connect Speed",
+                "🔒 Direct Wallet Credits (No Expiry)"
+              ]
+            },
+            { 
+              name: "200 Coins Pack", 
+              base: 150, 
+              bonus: 50,  
+              price: 149, 
+              oldPrice: 199,
+              usdPrice: 1.79, 
+              oldUsd: 2.49,
+              icon: "💰", 
+              color: "#fbbf24", 
+              tag: "⭐ POPULAR (+33% BONUS)",
+              perks: [
+                "🎁 Send 5+ Premium Virtual Gifts",
+                "✨ Animated Chat Reaction Effects",
+                "⚡ Faster Auto-matching Priority"
+              ]
+            },
+            { 
+              name: "500 Coins Pack", 
+              base: 350, 
+              bonus: 150, 
+              price: 299, 
+              oldPrice: 399,
+              usdPrice: 3.59, 
+              oldUsd: 4.99,
+              icon: "💎", 
+              color: "#818cf8", 
+              tag: "🔥 BEST VALUE (+43% BONUS)",
+              perks: [
+                "🎯 Unlock VIP Gender & Region Filter",
+                "🚀 2x Video Connection Priority",
+                "👑 Exclusive Chat Badge & Glow"
+              ]
+            },
+            { 
+              name: "1300 Coins Pack",
+              base: 1000,
+              bonus: 300, 
+              price: 699, 
+              oldPrice: 899,
+              usdPrice: 8.49, 
+              oldUsd: 10.99,
+              icon: "👑", 
+              color: "#ec4899", 
+              tag: "👑 ULTIMATE VIP (+30% BONUS)",
+              perks: [
+                "🚀 Profile Boost on Global Leaderboard",
+                "💎 Unlimited HD Video Calls & Gifting",
+                "🔥 Special Top Spender Recognition"
+              ]
+            }
           ].map((pkg, idx) => (
-            <div className="coin-square-card" key={idx} style={{ borderTop: `4px solid ${pkg.color}` }} onClick={() => {
-              setSelectedPlan({ name: pkg.name, price: currency === "INR" ? `₹${pkg.price}` : `$${pkg.usdPrice}` });
-              setPaymentStep("methods");
-              setShowPaymentModal(true);
-              setIsGifting(false);
-              setGiftRecipientId("");
-            }}>
-              {pkg.tag && <div className="coin-mini-badge" style={{ background: pkg.color }}>{pkg.tag}</div>}
+            <div 
+              className="coin-square-card" 
+              key={idx} 
+              style={{ 
+                borderTop: `4px solid ${pkg.color}`,
+                boxShadow: `0 10px 30px -10px ${pkg.color}33`
+              }} 
+              onClick={() => {
+                setSelectedPlan({ name: pkg.name, price: currency === "INR" ? `₹${pkg.price}` : `${pkg.usdPrice}` });
+                setPaymentStep("methods");
+                setShowPaymentModal(true);
+                setIsGifting(false);
+                setGiftRecipientId("");
+              }}
+            >
+              {pkg.tag && (
+                <div className="coin-mini-badge" style={{ background: pkg.color, color: pkg.color === '#fbbf24' ? '#000' : '#fff' }}>
+                  {pkg.tag}
+                </div>
+              )}
               <div className="coin-card-icon">{pkg.icon}</div>
               <div className="coin-card-name">
-                {pkg.base} Coins
-                {pkg.bonus > 0 && <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#10b981', display: 'block', marginTop: '2px' }}>+{pkg.bonus} Bonus!</span>}
+                <span className="coin-total-count">{pkg.base + pkg.bonus} Coins</span>
+                {pkg.bonus > 0 ? (
+                  <span className="coin-bonus-pill">
+                    +{pkg.bonus} Free Bonus!
+                  </span>
+                ) : (
+                  <span className="coin-base-sub">Standard Wallet Pack</span>
+                )}
               </div>
+
+              <ul className="coin-card-perks">
+                {pkg.perks.map((perk, pIdx) => (
+                  <li key={pIdx}>
+                    <span className="perk-bullet">✓</span>
+                    <span>{perk}</span>
+                  </li>
+                ))}
+              </ul>
+
               <div className="coin-card-price">
-                <span className="price-now">{currency === "INR" ? `₹${pkg.price}` : `$${pkg.usdPrice}`}</span>
+                <div className="price-tag-row">
+                  <span className="price-now">{currency === "INR" ? `₹${pkg.price}` : `${pkg.usdPrice}`}</span>
+                  <span className="price-old">{currency === "INR" ? `₹${pkg.oldPrice}` : `${pkg.oldUsd}`}</span>
+                </div>
+                <div className="coin-card-cta">
+                  <span>⚡ Buy Coins</span>
+                </div>
               </div>
             </div>
           ))}
@@ -4843,41 +4941,100 @@ export default function Dashboard() {
           }
           .coin-square-card {
             background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 24px;
-            padding: 2rem 1.5rem;
+            padding: 2.2rem 1.4rem 1.6rem;
             text-align: center;
             position: relative;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            aspect-ratio: 1/1;
-            backdrop-filter: blur(10px);
+            justify-content: space-between;
+            min-height: 380px;
+            backdrop-filter: blur(12px);
+            overflow: hidden;
           }
           .coin-square-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            background: rgba(255, 255, 255, 0.07);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            border-color: rgba(255,255,255,0.15);
+            transform: translateY(-8px) scale(1.02);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
           }
           .coin-card-icon {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+            font-size: 3.2rem;
+            margin-top: 0.4rem;
+            margin-bottom: 0.5rem;
+            filter: drop-shadow(0 6px 16px rgba(0,0,0,0.4));
           }
           .coin-card-name {
-            font-weight: 800;
-            font-size: 1.1rem;
-            color: #fff;
-            margin-bottom: 0.5rem;
-          }
-          .coin-card-price {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 0.6rem;
+          }
+          .coin-total-count {
+            font-weight: 900;
+            font-size: 1.35rem;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+          }
+          .coin-bonus-pill {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.14);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 2px 10px;
+            border-radius: 999px;
+            display: inline-block;
+          }
+          .coin-base-sub {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #94a3b8;
+          }
+          .coin-card-perks {
+            list-style: none;
+            padding: 0;
+            margin: 0.4rem 0 0.8rem;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            text-align: left;
+          }
+          .coin-card-perks li {
+            font-size: 0.76rem;
+            color: #cbd5e1;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            line-height: 1.3;
+          }
+          .coin-card-perks .perk-bullet {
+            color: #10b981;
+            font-weight: 900;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+          }
+          .coin-card-price {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-top: auto;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+          }
+          .price-tag-row {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            justify-content: center;
           }
           .price-now {
             font-size: 1.5rem;
@@ -4889,17 +5046,34 @@ export default function Dashboard() {
             color: #64748b;
             text-decoration: line-through;
           }
+          .coin-card-cta {
+            width: 100%;
+            padding: 8px 16px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 0.84rem;
+            text-align: center;
+            transition: all 0.25s ease;
+          }
+          .coin-square-card:hover .coin-card-cta {
+            background: linear-gradient(135deg, #00f2fe, #0072ff);
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4);
+            transform: translateY(-2px);
+          }
           .coin-mini-badge {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 0.65rem;
+            top: 12px;
+            right: 12px;
+            font-size: 0.62rem;
             font-weight: 900;
-            padding: 4px 10px;
+            padding: 3px 8px;
             border-radius: 50px;
-            color: #000;
-            letter-spacing: 1px;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
           }
 
           /* ===== STREAK HEADER PILL ===== */
@@ -7514,31 +7688,53 @@ export default function Dashboard() {
                 display: none;
               }
               .pricing-grid.coins-grid .coin-square-card {
-                flex: 0 0 65vw !important;
-                max-width: 215px !important;
-                min-width: 180px !important;
+                flex: 0 0 76vw !important;
+                max-width: 260px !important;
+                min-width: 220px !important;
                 scroll-snap-align: center !important;
-                padding: 14px 12px !important;
-                border-radius: 18px !important;
+                padding: 16px 14px 14px !important;
+                border-radius: 20px !important;
                 margin: 0 !important;
                 box-sizing: border-box !important;
+                min-height: 285px !important;
+                height: auto !important;
+                aspect-ratio: auto !important;
               }
               .coin-mini-badge {
                 font-size: 0.58rem !important;
-                padding: 2px 6px !important;
-                top: 6px !important;
-                right: 6px !important;
+                padding: 2px 7px !important;
+                top: 8px !important;
+                right: 8px !important;
               }
               .coin-card-icon {
-                font-size: 1.6rem !important;
+                font-size: 2.1rem !important;
+                margin-top: 2px !important;
                 margin-bottom: 4px !important;
               }
-              .coin-card-name {
-                font-size: 0.78rem !important;
-                margin-bottom: 2px !important;
+              .coin-total-count {
+                font-size: 1.15rem !important;
+              }
+              .coin-bonus-pill {
+                font-size: 0.65rem !important;
+                padding: 2px 8px !important;
+              }
+              .coin-card-perks {
+                margin: 6px 0 8px !important;
+                gap: 4px !important;
+              }
+              .coin-card-perks li {
+                font-size: 0.72rem !important;
               }
               .price-now {
-                font-size: 0.98rem !important;
+                font-size: 1.25rem !important;
+              }
+              .price-old {
+                font-size: 0.75rem !important;
+              }
+              .coin-card-cta {
+                padding: 6px 12px !important;
+                font-size: 0.78rem !important;
+                border-radius: 10px !important;
               }
 
 

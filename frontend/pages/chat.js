@@ -5764,6 +5764,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           border-bottom: 1px solid rgba(255, 255, 255, 0.06);
           gap: 10px;
           min-height: 48px;
+          flex-shrink: 0 !important;
         }
         .partner-identity-left {
           display: flex;
@@ -6894,11 +6895,24 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           gap: 4px;
         }
 
-        .main-layout {
+        .main-layout:not(.text-mode-active-layout) {
           display: flex;
           gap: 0.75rem;
           flex: 1 !important;
           height: 0 !important;
+          min-height: 0 !important;
+          overflow: hidden !important;
+        }
+
+        .main-layout.text-mode-active-layout {
+          display: flex !important;
+          justify-content: stretch !important;
+          align-items: stretch !important;
+          max-width: 100% !important;
+          width: 100% !important;
+          margin: 0 !important;
+          flex: 1 1 auto !important;
+          height: auto !important;
           min-height: 0 !important;
           overflow: hidden !important;
         }
@@ -9807,6 +9821,88 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           .text-mode-composer .btn-composer-send svg {
             width: 14px !important;
             height: 14px !important;
+          }
+        }
+
+        /* Desktop Screens (>= 769px) - Large Text Chat Room Header & Controls */
+        @media (min-width: 769px) {
+          .header-v2 {
+            flex-shrink: 0 !important;
+            margin-bottom: 6px !important;
+          }
+          .main-layout.text-mode-active-layout {
+            flex: 1 1 auto !important;
+            height: calc(100vh - 86px) !important;
+            max-height: calc(100vh - 86px) !important;
+            min-height: 0 !important;
+            overflow: hidden !important;
+            position: relative !important;
+          }
+          .text-mode-container {
+            height: 100% !important;
+            max-height: 100% !important;
+            flex: 1 !important;
+            min-height: 0 !important;
+          }
+          .text-mode-partner-card {
+            flex-shrink: 0 !important;
+            min-height: 60px !important;
+            padding: 12px 24px !important;
+            gap: 16px !important;
+          }
+          .text-mode-partner-card .partner-avatar-circle {
+            width: 48px !important;
+            height: 48px !important;
+            font-size: 1.3rem !important;
+          }
+          .text-mode-partner-card .partner-display-name {
+            font-size: 1.15rem !important;
+            font-weight: 700 !important;
+          }
+          .text-mode-partner-card .action-pill-btn {
+            padding: 10px 24px !important;
+            font-size: 0.95rem !important;
+            border-radius: 999px !important;
+            font-weight: 700 !important;
+            min-height: 42px !important;
+          }
+          .text-mode-composer {
+            padding: 14px 24px !important;
+            gap: 14px !important;
+            flex-shrink: 0 !important;
+          }
+          .text-mode-composer .btn-composer-stop {
+            height: 48px !important;
+            padding: 12px 24px !important;
+            font-size: 0.95rem !important;
+            border-radius: 14px !important;
+            min-width: 110px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+          }
+          .text-mode-composer .text-mode-input-field {
+            height: 48px !important;
+            padding: 12px 20px !important;
+            font-size: 1.02rem !important;
+            border-radius: 14px !important;
+            flex: 1 1 auto !important;
+          }
+          .text-mode-composer .btn-composer-send {
+            height: 48px !important;
+            padding: 12px 28px !important;
+            font-size: 0.95rem !important;
+            border-radius: 14px !important;
+            min-width: 110px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+          }
+          .text-mode-composer .btn-composer-send svg {
+            width: 18px !important;
+            height: 18px !important;
           }
         }
       `}</style>

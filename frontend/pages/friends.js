@@ -244,6 +244,13 @@ export default function Friends() {
           </nav>
           
           <div className="header-actions">
+            <button 
+              className="mobile-header-home-btn" 
+              onClick={() => router.push("/")} 
+              title="Return to Home"
+            >
+              🏠
+            </button>
             <div className={`status-indicator ${isOnline && isSocketConnected ? 'online' : 'offline'}`}>
               <span className="pulse-dot"></span>
               <span className="status-text">{isOnline && isSocketConnected ? 'Connected' : !isOnline ? 'No Internet' : 'Connecting...'}</span>
@@ -259,6 +266,13 @@ export default function Friends() {
       {/* Mobile Tab Switcher */}
       <div className="mobile-tabs-bar">
         <button 
+          className="tab-btn tab-btn-home" 
+          onClick={() => router.push("/")}
+          title="Return to Home"
+        >
+          <span>🏠 Home</span>
+        </button>
+        <button 
           className={`tab-btn ${mobileTab === 'friends' ? 'active' : ''}`}
           onClick={() => setMobileTab('friends')}
         >
@@ -268,13 +282,13 @@ export default function Friends() {
           className={`tab-btn ${mobileTab === 'add' ? 'active' : ''}`}
           onClick={() => setMobileTab('add')}
         >
-          <span>➕ Add Friend</span>
+          <span>➕ Add</span>
         </button>
         <button 
           className={`tab-btn ${mobileTab === 'requests' ? 'active' : ''}`}
           onClick={() => setMobileTab('requests')}
         >
-          <span>🔔 Requests {requests.length > 0 && `(${requests.length})`}</span>
+          <span>🔔 ({requests.length})</span>
         </button>
       </div>
 
@@ -624,6 +638,10 @@ export default function Friends() {
         border-color: rgba(99, 102, 241, 0.5);
         color: #fff;
         box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+      }
+
+      .mobile-header-home-btn {
+        display: none !important;
       }
 
       .header-actions {
@@ -1428,6 +1446,37 @@ export default function Friends() {
 
       /* Mobile Phone Optimization */
       @media (max-width: 900px) {
+        .mobile-header-home-btn {
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          width: 32px !important;
+          height: 32px !important;
+          min-width: 32px !important;
+          border-radius: 50% !important;
+          background: rgba(255, 255, 255, 0.08) !important;
+          border: 1px solid rgba(255, 255, 255, 0.16) !important;
+          color: #fff !important;
+          font-size: 0.95rem !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          cursor: pointer !important;
+          flex: 0 0 32px !important;
+          transition: all 0.2s ease !important;
+        }
+        .mobile-header-home-btn:hover, .mobile-header-home-btn:active {
+          background: rgba(99, 102, 241, 0.3) !important;
+          border-color: rgba(99, 102, 241, 0.6) !important;
+          transform: scale(1.05) !important;
+        }
+        .tab-btn-home {
+          background: rgba(99, 102, 241, 0.15) !important;
+          border: 1px solid rgba(99, 102, 241, 0.35) !important;
+          color: #a5b4fc !important;
+          font-weight: 800 !important;
+          flex: 0 0 auto !important;
+          padding: 8px 12px !important;
+        }
         .header-content {
           padding: 12px 18px;
         }
@@ -1510,6 +1559,17 @@ export default function Friends() {
         }
         .brand-badge {
           display: none !important;
+        }
+        .mobile-header-home-btn {
+          width: 28px !important;
+          height: 28px !important;
+          min-width: 28px !important;
+          font-size: 0.85rem !important;
+          flex: 0 0 28px !important;
+        }
+        .tab-btn-home {
+          padding: 5px 9px !important;
+          font-size: 0.72rem !important;
         }
         .header-actions {
           gap: 6px !important;

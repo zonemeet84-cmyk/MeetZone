@@ -1420,7 +1420,7 @@ img, video {
   }
   
   /* Buttons & Inputs */
-  button:not(.nav-link):not(.profile-modal-close):not(.profile-premium-btn):not(.profile-referral-btn):not(.ctrl-btn):not(.quiz-opt-btn):not(.quiz-add-friend-btn):not(.sticker-cat-btn):not(.gift-send-btn):not(.close-btn):not(.quiz-done-btn):not(.dare-done-btn):not(.filter-settings-trigger-btn):not(.btn-home):not(.apply-btn):not(.next-btn):not(.stop-btn):not(.report-trigger-btn):not(.quiz-trigger-btn):not(.reason-btn):not(.tool-btn):not(.btn-composer-stop):not(.btn-composer-send):not(.profile-edit-btn):not(.onboarding-close-btn):not(.inline-stop-btn):not(.catalog-modal-close):not(.tab-btn):not(.call-action-btn) {
+  button:not(.nav-link):not(.profile-modal-close):not(.profile-premium-btn):not(.profile-referral-btn):not(.ctrl-btn):not(.quiz-opt-btn):not(.quiz-add-friend-btn):not(.sticker-cat-btn):not(.gift-send-btn):not(.close-btn):not(.quiz-done-btn):not(.dare-done-btn):not(.filter-settings-trigger-btn):not(.btn-home):not(.apply-btn):not(.next-btn):not(.stop-btn):not(.report-trigger-btn):not(.quiz-trigger-btn):not(.reason-btn):not(.tool-btn):not(.btn-composer-stop):not(.btn-composer-send):not(.profile-edit-btn):not(.onboarding-close-btn):not(.inline-stop-btn):not(.catalog-modal-close):not(.tab-btn):not(.call-action-btn):not(.island-close-btn):not(.mobile-header-home-btn) {
     width: 100% !important;
     padding: 12px 20px !important;
     font-size: 16px !important;
@@ -2773,50 +2773,66 @@ img, video {
     justify-content: center;
   }
   .cyber-capsule-island {
-    padding: 4px 10px 4px 6px;
-    gap: 6px;
-    max-width: 92vw;
-    border-radius: 999px;
+    padding: 6px 10px 6px 8px !important;
+    gap: 8px !important;
+    max-width: 94vw !important;
+    border-radius: 999px !important;
     white-space: nowrap !important;
-    overflow: hidden !important;
     display: inline-flex !important;
     align-items: center !important;
+    justify-content: flex-start !important;
+    box-sizing: border-box !important;
   }
   .island-icon-badge {
-    width: 22px !important;
-    height: 22px !important;
-    flex-shrink: 0 !important;
+    width: 24px !important;
+    height: 24px !important;
+    flex: 0 0 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
   .island-icon-badge svg {
-    width: 12px !important;
-    height: 12px !important;
+    width: 14px !important;
+    height: 14px !important;
   }
   .island-text-group {
     display: flex !important;
     align-items: center !important;
-    flex-wrap: nowrap !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     gap: 4px !important;
-    max-width: calc(92vw - 65px) !important;
   }
   .island-prefix {
     display: none !important; /* Hide SYSTEM ALERT: prefix on phone to guarantee 1-line fit */
   }
   .island-message {
-    font-size: 0.74rem !important;
+    color: #ffffff !important;
+    font-size: 0.76rem !important;
     line-height: 1.2 !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     font-weight: 600 !important;
+    display: inline-block !important;
   }
   .island-close-btn {
-    font-size: 1rem !important;
-    padding: 1px 4px !important;
-    margin-left: 2px !important;
-    flex-shrink: 0 !important;
+    font-size: 1.1rem !important;
+    padding: 0 4px !important;
+    margin: 0 !important;
+    flex: 0 0 auto !important;
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: transparent !important;
+    color: #94a3b8 !important;
+    cursor: pointer !important;
   }
   .island-actions {
     margin-left: 4px;
