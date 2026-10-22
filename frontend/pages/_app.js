@@ -9,6 +9,7 @@ import { useEffect } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import Script from 'next/script'
+import CyberNotification from '../components/CyberNotification'
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }) {
   const router = useRouter();
@@ -112,6 +113,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
         <link rel="icon" href="/favicon.png" type="image/png" />
       </Head>
       <Component {...pageProps} />
+      <CyberNotification />
     </SessionProvider>
   )
 }

@@ -2562,3 +2562,242 @@ img, video {
     contain-intrinsic-size: auto 500px;
   }
 }
+
+/* ════════════════════════════════════════════════════════════ */
+/*          CYBER CAPSULE ISLAND NOTIFICATION SYSTEM            */
+/* ════════════════════════════════════════════════════════════ */
+.cyber-island-container {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+  width: auto;
+  max-width: 90vw;
+}
+
+.cyber-capsule-island {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(8, 14, 27, 0.95);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  border-radius: 9999px;
+  padding: 8px 18px 8px 10px;
+  border: 1.5px solid rgba(0, 242, 254, 0.5);
+  box-shadow: 0 0 28px rgba(0, 242, 254, 0.42), 0 12px 35px rgba(0, 0, 0, 0.85);
+  animation: cyberIslandDrop 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  max-width: 90vw;
+  box-sizing: border-box;
+  color: #ffffff;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.cyber-capsule-island:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 35px rgba(0, 242, 254, 0.6), 0 16px 40px rgba(0, 0, 0, 0.9);
+}
+
+@keyframes cyberIslandDrop {
+  0% {
+    opacity: 0;
+    transform: translateY(-25px) scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* THEMES */
+.cyber-capsule-island.island-info {
+  border-color: rgba(0, 242, 254, 0.55);
+  box-shadow: 0 0 28px rgba(0, 242, 254, 0.45), 0 12px 35px rgba(0, 0, 0, 0.85);
+}
+.cyber-capsule-island.island-error {
+  background: rgba(24, 8, 14, 0.96);
+  border-color: rgba(239, 68, 68, 0.65);
+  box-shadow: 0 0 28px rgba(239, 68, 68, 0.45), 0 12px 35px rgba(0, 0, 0, 0.85);
+}
+.cyber-capsule-island.island-success {
+  background: rgba(8, 24, 16, 0.96);
+  border-color: rgba(16, 185, 129, 0.65);
+  box-shadow: 0 0 28px rgba(16, 185, 129, 0.45), 0 12px 35px rgba(0, 0, 0, 0.85);
+}
+.cyber-capsule-island.island-warning {
+  background: rgba(26, 18, 6, 0.96);
+  border-color: rgba(245, 158, 11, 0.65);
+  box-shadow: 0 0 28px rgba(245, 158, 11, 0.45), 0 12px 35px rgba(0, 0, 0, 0.85);
+}
+.cyber-capsule-island.island-coins {
+  background: rgba(26, 20, 6, 0.96);
+  border-color: rgba(251, 191, 36, 0.65);
+  box-shadow: 0 0 28px rgba(251, 191, 36, 0.45), 0 12px 35px rgba(0, 0, 0, 0.85);
+}
+
+.island-icon-badge {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 242, 254, 0.12);
+  border: 1.5px solid rgba(0, 242, 254, 0.45);
+  box-shadow: inset 0 0 10px rgba(0, 242, 254, 0.25);
+}
+.island-error .island-icon-badge {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.55);
+  box-shadow: inset 0 0 10px rgba(239, 68, 68, 0.25);
+}
+.island-success .island-icon-badge {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.55);
+  box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.25);
+}
+.island-warning .island-icon-badge {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.55);
+  box-shadow: inset 0 0 10px rgba(245, 158, 11, 0.25);
+}
+.island-coins .island-icon-badge {
+  background: rgba(251, 191, 36, 0.14);
+  border-color: rgba(251, 191, 36, 0.55);
+  box-shadow: inset 0 0 10px rgba(251, 191, 36, 0.25);
+}
+
+.island-text-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  text-align: left;
+}
+
+.island-prefix {
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #00f2fe;
+  white-space: nowrap;
+}
+.island-error .island-prefix { color: #f87171; }
+.island-success .island-prefix { color: #34d399; }
+.island-warning .island-prefix { color: #fbbf24; }
+.island-coins .island-prefix { color: #f59e0b; }
+
+.island-message {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  line-height: 1.35;
+}
+
+.island-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+}
+.island-btn-confirm {
+  background: linear-gradient(135deg, #00f2fe, #0072ff);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.island-btn-confirm:hover {
+  filter: brightness(1.15);
+  transform: scale(1.04);
+}
+.island-btn-cancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.island-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.island-close-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 6px;
+  margin-left: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: all 0.2s;
+}
+.island-close-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* MOBILE PHONES / RESPONSIVE (smaller for phones as requested) */
+@media (max-width: 640px) {
+  .cyber-island-container {
+    top: 10px;
+    max-width: 95vw;
+  }
+  .cyber-capsule-island {
+    padding: 6px 12px 6px 8px;
+    gap: 8px;
+    max-width: 95vw;
+  }
+  .island-icon-badge {
+    width: 28px;
+    height: 28px;
+  }
+  .island-icon-badge svg {
+    width: 15px;
+    height: 15px;
+  }
+  .island-text-group {
+    gap: 5px;
+  }
+  .island-prefix {
+    font-size: 0.72rem;
+  }
+  .island-message {
+    font-size: 0.76rem;
+    line-height: 1.25;
+  }
+  .island-actions {
+    margin-left: 4px;
+    gap: 4px;
+  }
+  .island-btn-confirm, .island-btn-cancel {
+    padding: 4px 10px;
+    font-size: 0.72rem;
+  }
+}
+

@@ -5647,20 +5647,54 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         </div>
       )}
 
-      {/* PREMIUM TOAST NOTIFICATION STACK */}
+      {/* CYBER CAPSULE ISLAND NOTIFICATION STACK */}
       {toastQueue.length > 0 && (
-        <div className="toast-stack-container">
-          {toastQueue.map((toast, idx) => (
-            <div key={toast.id} className={`premium-toast toast-${toast.type}`} style={{ animationDelay: `${idx * 0.05}s` }}>
-              <div className="toast-icon-wrapper">
-                {toast.type === 'success' && <span className="toast-icon">✅</span>}
-                {toast.type === 'error' && <span className="toast-icon">❌</span>}
-                {toast.type === 'warning' && <span className="toast-icon">⚠️</span>}
-                {toast.type === 'info' && <span className="toast-icon">ℹ️</span>}
+        <div className="cyber-island-container">
+          {toastQueue.map((toast) => (
+            <div 
+              key={toast.id} 
+              className={`cyber-capsule-island island-${toast.type}`}
+              onClick={() => setToastQueue(prev => prev.filter(t => t.id !== toast.id))}
+            >
+              <div className="island-icon-badge">
+                {toast.type === 'error' ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                ) : toast.type === 'success' ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                ) : toast.type === 'warning' ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00f2fe" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <ellipse cx="12" cy="5" rx="8" ry="2.5"/>
+                    <path d="M20 10c0 1.4-3.6 2.5-8 2.5s-8-1.1-8-2.5"/>
+                    <path d="M4 5v9c0 1.4 3.6 2.5 8 2.5s8-1.1 8-2.5V5"/>
+                    <polygon points="12 11 16 18 8 18" fill="rgba(0, 242, 254, 0.25)" stroke="#00f2fe" strokeWidth="1.8"/>
+                  </svg>
+                )}
               </div>
-              <span className="toast-message">{toast.message}</span>
-              <button className="toast-close" onClick={() => setToastQueue(prev => prev.filter(t => t.id !== toast.id))}>×</button>
-              <div className="toast-progress-bar" style={{ animationDuration: '4s' }}></div>
+              <div className="island-text-group">
+                <span className="island-prefix">
+                  {toast.type === 'error' ? 'SYSTEM ALERT:' : toast.type === 'success' ? 'SYSTEM SUCCESS:' : toast.type === 'warning' ? 'SYSTEM WARNING:' : 'SYSTEM ALERT:'}
+                </span>
+                <span className="island-message">{toast.message}</span>
+              </div>
+              <button 
+                className="island-close-btn" 
+                onClick={(e) => { e.stopPropagation(); setToastQueue(prev => prev.filter(t => t.id !== toast.id)); }}
+                aria-label="Close"
+              >
+                ×
+              </button>
             </div>
           ))}
         </div>
@@ -7771,173 +7805,8 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         }
 
         /* ═══════════════════════════════════════════════════ */
-        /*           PREMIUM TOAST NOTIFICATION SYSTEM          */
+        /*   CYBER ISLAND NOTIFICATIONS HANDLED IN GLOBALS.CSS */
         /* ═══════════════════════════════════════════════════ */
-        .toast-stack-container {
-          position: fixed;
-          inset: 0;
-          z-index: 999999;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 15px;
-          background: rgba(0, 0, 0, 0.65);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          pointer-events: all;
-          padding: 20px;
-        }
-
-        .premium-toast {
-          pointer-events: all;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          gap: 16px;
-          padding: 28px 24px;
-          border-radius: 24px;
-          backdrop-filter: blur(20px) saturate(1.8);
-          -webkit-backdrop-filter: blur(20px) saturate(1.8);
-          box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.1) inset;
-          animation: toastPopIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          position: relative;
-          overflow: hidden;
-          font-family: 'Inter', 'Segoe UI', sans-serif;
-          width: 420px;
-          max-width: 100%;
-        }
-
-        @keyframes toastPopIn {
-          0% { opacity: 0; transform: scale(0.85) translateY(20px); }
-          100% { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        /* Type-specific premium themes */
-        .toast-info {
-          background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(129, 140, 248, 0.15));
-          border: 1px solid rgba(99, 102, 241, 0.4);
-        }
-        .toast-success {
-          background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(52, 211, 153, 0.15));
-          border: 1px solid rgba(16, 185, 129, 0.4);
-        }
-        .toast-warning {
-          background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(251, 191, 36, 0.15));
-          border: 1px solid rgba(245, 158, 11, 0.4);
-        }
-        .toast-error {
-          background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(248, 113, 113, 0.15));
-          border: 1px solid rgba(239, 68, 68, 0.4);
-        }
-
-        .toast-icon-wrapper {
-          flex-shrink: 0;
-          width: 64px;
-          height: 64px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 2.2rem;
-          margin-bottom: 4px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        .toast-info .toast-icon-wrapper { background: rgba(99, 102, 241, 0.25); }
-        .toast-success .toast-icon-wrapper { background: rgba(16, 185, 129, 0.25); }
-        .toast-warning .toast-icon-wrapper { background: rgba(245, 158, 11, 0.25); }
-        .toast-error .toast-icon-wrapper { background: rgba(239, 68, 68, 0.25); }
-
-        .toast-icon {
-          font-size: 2.2rem;
-          line-height: 1;
-        }
-
-        .toast-content {
-          flex: 1;
-          min-width: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 100%;
-        }
-
-        .toast-message {
-          font-size: 1.15rem;
-          font-weight: 600;
-          color: #f8fafc;
-          line-height: 1.5;
-          letter-spacing: 0.01em;
-          text-align: center;
-        }
-
-        .toast-close {
-          position: absolute;
-          top: 14px;
-          right: 14px;
-          flex-shrink: 0;
-          background: rgba(255,255,255,0.08);
-          border: 1px solid rgba(255,255,255,0.1);
-          color: #cbd5e1;
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          font-size: 1.2rem;
-          font-weight: 700;
-          transition: all 0.2s ease;
-          line-height: 1;
-        }
-        .toast-close:hover {
-          background: rgba(255,255,255,0.2);
-          color: #fff;
-          transform: scale(1.1);
-        }
-
-        .toast-progress-bar {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          height: 6px;
-          border-radius: 0 0 24px 24px;
-          animation: toastProgress linear forwards;
-        }
-        .toast-info .toast-progress-bar { background: linear-gradient(90deg, #6366f1, #818cf8); }
-        .toast-success .toast-progress-bar { background: linear-gradient(90deg, #10b981, #34d399); }
-        .toast-warning .toast-progress-bar { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-        .toast-error .toast-progress-bar { background: linear-gradient(90deg, #ef4444, #f87171); }
-
-        @keyframes toastProgress {
-          0% { width: 100%; }
-          100% { width: 0%; }
-        }
-
-        @media (max-width: 600px) {
-          .toast-stack-container {
-            padding: 16px;
-          }
-          .premium-toast {
-            padding: 28px 20px 24px 20px;
-            gap: 14px;
-            border-radius: 24px;
-            width: 100%;
-          }
-          .toast-message {
-            font-size: 1.05rem;
-          }
-          .toast-icon-wrapper {
-            width: 56px;
-            height: 56px;
-            font-size: 1.8rem;
-          }
-          .toast-icon {
-            font-size: 1.8rem;
-          }
-        }
 
         /* MOBILE RESPONSIVENESS FOR CHAT */
         @media (max-width: 1024px) {
