@@ -257,16 +257,20 @@ export default function Signup() {
         
         @media (max-width: 768px) {
           .login-container {
-            padding: 10px;
+            padding: 12px 14px;
+            align-items: center;
+            justify-content: center;
           }
           .login-card {
-            padding: 2rem 1.5rem;
-            width: 100%;
-            border-radius: 24px;
+            padding: 1.15rem 1.1rem;
+            width: 90%;
+            max-width: 320px;
+            border-radius: 22px;
+            margin: auto;
           }
-          h1 { font-size: 1.5rem; }
-          .zonemeet-logo { font-size: 2rem; margin-bottom: 0.5rem; }
-          .submit-btn { padding: 0.8rem; }
+          h1 { font-size: 1.25rem; }
+          .zonemeet-logo { font-size: 1.8rem; margin-bottom: 0.35rem; }
+          .submit-btn { padding: 0.65rem; }
         }
       `}</style>
     </div>

@@ -3494,83 +3494,69 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
 
           {/* Floating mascot container */}
           <div className="mascot-character-wrapper">
-            <svg width={isVideo ? "105" : "125"} height={isVideo ? "105" : "125"} viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" className="mascot-monkey-svg">
+            <svg width={isVideo ? "105" : "125"} height={isVideo ? "105" : "125"} viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" className="mascot-cyber-orb">
               <defs>
-                <linearGradient id="headbandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id="cyberCoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#00f2fe" />
+                  <stop offset="50%" stopColor="#6366f1" />
                   <stop offset="100%" stopColor="#a855f7" />
                 </linearGradient>
-                <linearGradient id="monkeyFur" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#f59e0b" />
-                  <stop offset="100%" stopColor="#d97706" />
-                </linearGradient>
-                <linearGradient id="earcupGradLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id="ringGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#00f2fe" />
-                  <stop offset="100%" stopColor="#0284c7" />
+                  <stop offset="100%" stopColor="#06b6d4" />
                 </linearGradient>
-                <linearGradient id="earcupGradRight" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id="ringGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#c084fc" />
-                  <stop offset="100%" stopColor="#9333ea" />
+                  <stop offset="100%" stopColor="#ec4899" />
                 </linearGradient>
-                <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="3" result="blur" />
+                <linearGradient id="radarSweepGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#00f2fe" stopOpacity="0.8" />
+                  <stop offset="100%" stopColor="#00f2fe" stopOpacity="0.0" />
+                </linearGradient>
+                <filter id="cyberNeonGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3.5" result="blur" />
                   <feComposite in="SourceGraphic" in2="blur" operator="over" />
                 </filter>
               </defs>
 
-              {/* Left Ear */}
-              <circle cx="34" cy="78" r="18" fill="url(#monkeyFur)" />
-              <circle cx="34" cy="78" r="11" fill="#fde68a" />
+              {/* Outer Gyro Orbital Ring 1 */}
+              <circle cx="80" cy="80" r="66" stroke="url(#ringGrad1)" strokeWidth="1.8" strokeDasharray="5 7" className="cyber-orbital-ring-1" opacity="0.85" />
 
-              {/* Right Ear */}
-              <circle cx="126" cy="78" r="18" fill="url(#monkeyFur)" />
-              <circle cx="126" cy="78" r="11" fill="#fde68a" />
+              {/* Angled Orbital Ellipse 2 */}
+              <ellipse cx="80" cy="80" rx="68" ry="26" stroke="url(#ringGrad2)" strokeWidth="1.8" transform="rotate(-25 80 80)" className="cyber-orbital-ring-2" opacity="0.9" />
 
-              {/* Head */}
-              <circle cx="80" cy="80" r="46" fill="url(#monkeyFur)" />
+              {/* Angled Counter-Orbital Ellipse 3 */}
+              <ellipse cx="80" cy="80" rx="68" ry="26" stroke="url(#ringGrad1)" strokeWidth="1.8" transform="rotate(35 80 80)" className="cyber-orbital-ring-3" opacity="0.75" />
 
-              {/* Face Mask */}
-              <ellipse cx="62" cy="74" rx="16" ry="18" fill="#fef3c7" />
-              <ellipse cx="98" cy="74" rx="16" ry="18" fill="#fef3c7" />
-              <ellipse cx="80" cy="94" rx="26" ry="20" fill="#fef3c7" />
+              {/* Holographic Radar Scanner Beam */}
+              <path d="M80 80 L80 14 A66 66 0 0 1 142 54 Z" fill="url(#radarSweepGrad)" opacity="0.45" className="cyber-radar-sweep" />
 
-              {/* Rosy Cheeks */}
-              <circle cx="56" cy="94" r="6" fill="#f87171" opacity="0.45" />
-              <circle cx="104" cy="94" r="6" fill="#f87171" opacity="0.45" />
+              {/* Orbiting Satellite Beacons */}
+              <circle cx="146" cy="70" r="3" fill="#00f2fe" filter="url(#cyberNeonGlow)" />
+              <circle cx="14" cy="90" r="2.8" fill="#ec4899" filter="url(#cyberNeonGlow)" />
+              <circle cx="95" cy="14" r="2.5" fill="#38bdf8" filter="url(#cyberNeonGlow)" />
 
-              {/* Eyes with Highlights */}
-              <ellipse cx="65" cy="75" rx="6.5" ry="8.5" fill="#1e1b18" />
-              <circle cx="67.5" cy="72" r="2.5" fill="#ffffff" />
-              <circle cx="64" cy="78" r="1.2" fill="#ffffff" />
+              {/* Core Holographic Sphere */}
+              <circle cx="80" cy="80" r="34" fill="url(#cyberCoreGrad)" filter="url(#cyberNeonGlow)" opacity="0.95" />
+              <circle cx="80" cy="80" r="30" fill="#090d16" opacity="0.88" />
 
-              <ellipse cx="95" cy="75" rx="6.5" ry="8.5" fill="#1e1b18" />
-              <circle cx="97.5" cy="72" r="2.5" fill="#ffffff" />
-              <circle cx="94" cy="78" r="1.2" fill="#ffffff" />
+              {/* Holographic Grid Lines inside Sphere */}
+              <circle cx="80" cy="80" r="20" stroke="rgba(0, 242, 254, 0.45)" strokeWidth="1" strokeDasharray="3 3" />
+              <line x1="80" y1="60" x2="80" y2="100" stroke="rgba(0, 242, 254, 0.35)" strokeWidth="1" />
+              <line x1="60" y1="80" x2="100" y2="80" stroke="rgba(0, 242, 254, 0.35)" strokeWidth="1" />
 
-              {/* Snout / Nose */}
-              <path d="M77 88 C77 86.5 83 86.5 83 88 C83 90 77 90 77 88 Z" fill="#78350f" />
+              {/* AI Visor Eyes & Friendly Digital Smile */}
+              <circle cx="71" cy="76" r="3.2" fill="#00f2fe" filter="url(#cyberNeonGlow)" />
+              <circle cx="72" cy="75" r="1.2" fill="#ffffff" />
+              <circle cx="89" cy="76" r="3.2" fill="#00f2fe" filter="url(#cyberNeonGlow)" />
+              <circle cx="90" cy="75" r="1.2" fill="#ffffff" />
+              <path d="M72 85 Q80 93 88 85" stroke="#00f2fe" strokeWidth="2.5" strokeLinecap="round" fill="none" filter="url(#cyberNeonGlow)" />
 
-              {/* Big Cheerful Smile */}
-              <path d="M68 96 Q80 110 92 96" stroke="#78350f" strokeWidth="3" strokeLinecap="round" fill="none" />
-              <path d="M74 100 Q80 106 86 100" fill="#f43f5e" />
-
-              {/* Headphone Band */}
-              <path d="M28 72 C28 32 132 32 132 72" stroke="url(#headbandGrad)" strokeWidth="7" strokeLinecap="round" fill="none" filter="url(#neonGlow)" />
-              <path d="M42 42 C60 28 100 28 118 42" stroke="rgba(255,255,255,0.6)" strokeWidth="2" strokeLinecap="round" fill="none" />
-
-              {/* Left Earcup */}
-              <rect x="18" y="58" width="16" height="32" rx="8" fill="url(#earcupGradLeft)" filter="url(#neonGlow)" />
-              <rect x="22" y="63" width="8" height="22" rx="4" fill="#0f172a" opacity="0.6" />
-
-              {/* Right Earcup */}
-              <rect x="126" y="58" width="16" height="32" rx="8" fill="url(#earcupGradRight)" filter="url(#neonGlow)" />
-              <rect x="130" y="63" width="8" height="22" rx="4" fill="#0f172a" opacity="0.6" />
-
-              {/* Sound Equalizer Bars */}
-              <rect x="6" y="68" width="3" height="12" rx="1.5" fill="#00f2fe" opacity="0.85" className="mascot-eq-bar bar-1" />
-              <rect x="11" y="63" width="3" height="22" rx="1.5" fill="#00f2fe" opacity="0.95" className="mascot-eq-bar bar-2" />
-              <rect x="146" y="63" width="3" height="22" rx="1.5" fill="#a855f7" opacity="0.95" className="mascot-eq-bar bar-2" />
-              <rect x="151" y="68" width="3" height="12" rx="1.5" fill="#a855f7" opacity="0.85" className="mascot-eq-bar bar-1" />
+              {/* Cyber Equalizer Audio Bars */}
+              <rect x="42" y="74" width="2.5" height="12" rx="1.25" fill="#00f2fe" className="mascot-eq-bar bar-1" />
+              <rect x="47" y="69" width="2.5" height="22" rx="1.25" fill="#38bdf8" className="mascot-eq-bar bar-2" />
+              <rect x="110" y="69" width="2.5" height="22" rx="1.25" fill="#c084fc" className="mascot-eq-bar bar-2" />
+              <rect x="115" y="74" width="2.5" height="12" rx="1.25" fill="#a855f7" className="mascot-eq-bar bar-1" />
             </svg>
           </div>
         </div>
@@ -5994,6 +5980,35 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         }
 
         /* MASCOT MATCHMAKING & ROTATING TICKER STYLES */
+        /* Cyber Hologram Orb Animations */
+        @keyframes cyberRingRotate {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes cyberRingRotateRev {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(-360deg); }
+        }
+        @keyframes radarSweepBeam {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        .cyber-orbital-ring-1 {
+          transform-origin: 80px 80px;
+          animation: cyberRingRotate 14s linear infinite;
+        }
+        .cyber-orbital-ring-2 {
+          transform-origin: 80px 80px;
+          animation: cyberRingRotateRev 10s linear infinite;
+        }
+        .cyber-orbital-ring-3 {
+          transform-origin: 80px 80px;
+          animation: cyberRingRotate 16s linear infinite;
+        }
+        .cyber-radar-sweep {
+          transform-origin: 80px 80px;
+          animation: radarSweepBeam 3.5s linear infinite;
+        }
         .mascot-matchmaking-box {
           display: flex;
           flex-direction: column;
@@ -6355,20 +6370,45 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             padding: 12px;
           }
           .text-mode-composer {
-            padding: 10px 12px;
-            gap: 8px;
+            padding: 6px 8px !important;
+            gap: 6px !important;
+            box-sizing: border-box !important;
+            width: 100% !important;
+            max-width: 100vw !important;
+            overflow: hidden !important;
           }
-          .btn-composer-skip {
-            padding: 8px 12px;
-            font-size: 0.8rem;
+          .btn-composer-stop {
+            padding: 5px 9px !important;
+            font-size: 0.72rem !important;
+            border-radius: 8px !important;
+            flex-shrink: 0 !important;
+            white-space: nowrap !important;
+            height: 34px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 3px !important;
           }
           .text-mode-input-field {
-            padding: 9px 12px;
-            font-size: 0.88rem;
+            padding: 6px 10px !important;
+            font-size: 0.78rem !important;
+            border-radius: 8px !important;
+            flex: 1 1 auto !important;
+            min-width: 0 !important;
+            height: 34px !important;
+            box-sizing: border-box !important;
           }
           .btn-composer-send {
-            padding: 9px 14px;
-            font-size: 0.82rem;
+            padding: 5px 10px !important;
+            font-size: 0.72rem !important;
+            border-radius: 8px !important;
+            flex-shrink: 0 !important;
+            white-space: nowrap !important;
+            gap: 4px !important;
+            height: 34px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
           }
         }
 
@@ -9529,35 +9569,50 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             border: none !important;
             border-radius: 0 !important;
             background: transparent !important;
+            width: 100% !important;
+            max-width: 100vw !important;
+            overflow-x: hidden !important;
+            box-sizing: border-box !important;
           }
           .text-mode-partner-card {
-            padding: 6px 10px !important;
-            min-height: 40px !important;
+            padding: 4px 8px !important;
+            min-height: 34px !important;
             background: transparent !important;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+            box-sizing: border-box !important;
+            width: 100% !important;
+          }
+          .partner-identity-left {
+            gap: 8px !important;
           }
           .partner-avatar-circle {
-            width: 30px !important;
-            height: 30px !important;
-            font-size: 0.82rem !important;
+            width: 26px !important;
+            height: 26px !important;
+            font-size: 0.74rem !important;
           }
           .partner-display-name {
-            font-size: 0.84rem !important;
+            font-size: 0.76rem !important;
             font-weight: 700 !important;
           }
           .partner-connected-heading {
-            font-size: 0.82rem !important;
+            font-size: 0.74rem !important;
           }
           .partner-status-row {
-            font-size: 0.7rem !important;
+            font-size: 0.64rem !important;
           }
           .searching-status {
-            font-size: 0.7rem !important;
+            font-size: 0.64rem !important;
           }
           .action-pill-btn {
-            padding: 6px 12px !important;
-            font-size: 0.78rem !important;
-            border-radius: 9999px !important;
+            padding: 4px 8px !important;
+            font-size: 0.7rem !important;
+            border-radius: 8px !important;
+          }
+          .skip-pill-btn {
+            padding: 4px 9px !important;
+            font-size: 0.7rem !important;
+            border-radius: 8px !important;
+            box-shadow: 0 2px 8px rgba(0, 242, 254, 0.25) !important;
           }
           /* Mobile Stop Button Relocation & Floating Stack Cleaned */
           .bottom-actions .mobile-action-stack .stop-btn {
@@ -9621,67 +9676,103 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             border-radius: 12px !important;
           }
 
+          .mascot-matchmaking-box {
+            padding: 12px 10px !important;
+            max-width: 100% !important;
+          }
           .mascot-stage {
-            width: 75px !important;
-            height: 75px !important;
+            width: 72px !important;
+            height: 72px !important;
             margin-bottom: 4px !important;
           }
           .mascot-stage svg {
             width: 68px !important;
-            height: 58px !important;
+            height: 68px !important;
           }
-          .pulse-1 { width: 55px !important; height: 55px !important; }
-          .pulse-2 { width: 75px !important; height: 75px !important; }
-          .pulse-3 { width: 95px !important; height: 95px !important; }
+          .pulse-1 { width: 48px !important; height: 48px !important; }
+          .pulse-2 { width: 68px !important; height: 68px !important; }
+          .pulse-3 { width: 88px !important; height: 88px !important; }
           .mascot-status-header {
-            margin-bottom: 4px !important;
-            gap: 3px !important;
+            margin-bottom: 3px !important;
+            gap: 2px !important;
           }
           .radar-live-badge {
-            padding: 2px 7px !important;
-            font-size: 0.58rem !important;
+            padding: 2px 6px !important;
+            font-size: 0.55rem !important;
           }
           .mascot-main-heading {
-            font-size: 0.92rem !important;
+            font-size: 0.85rem !important;
           }
           .mascot-ticker-container {
-            max-width: 300px !important;
-            padding: 4px 6px !important;
+            max-width: 270px !important;
+            padding: 2px 4px !important;
             background: transparent !important;
             border: none !important;
             box-shadow: none !important;
             backdrop-filter: none !important;
-            gap: 6px !important;
+            gap: 5px !important;
+            margin: 4px auto !important;
           }
           .ticker-tag {
-            font-size: 0.58rem !important;
-            padding: 2px 5px !important;
+            font-size: 0.54rem !important;
+            padding: 1px 5px !important;
+            border-radius: 4px !important;
           }
           .ticker-icon {
-            font-size: 0.88rem !important;
+            font-size: 0.8rem !important;
           }
           .ticker-text {
-            font-size: 0.72rem !important;
+            font-size: 0.68rem !important;
+            color: #94a3b8 !important;
           }
           .mascot-sub-helper {
-            font-size: 0.68rem !important;
-            margin-top: 4px !important;
+            font-size: 0.62rem !important;
+            margin-top: 3px !important;
           }
           .text-mode-composer {
-            padding: 8px 10px !important;
+            padding: 6px 8px !important;
             gap: 6px !important;
+            box-sizing: border-box !important;
+            width: 100% !important;
+            max-width: 100vw !important;
+            overflow: hidden !important;
           }
-          .btn-composer-skip {
-            padding: 8px 10px !important;
-            font-size: 0.78rem !important;
+          .btn-composer-stop {
+            padding: 5px 9px !important;
+            font-size: 0.72rem !important;
+            border-radius: 8px !important;
+            flex-shrink: 0 !important;
+            white-space: nowrap !important;
+            height: 34px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 3px !important;
           }
           .text-mode-input-field {
-            padding: 8px 10px !important;
-            font-size: 0.82rem !important;
+            padding: 6px 10px !important;
+            font-size: 0.78rem !important;
+            border-radius: 8px !important;
+            flex: 1 1 auto !important;
+            min-width: 0 !important;
+            height: 34px !important;
+            box-sizing: border-box !important;
           }
           .btn-composer-send {
-            padding: 8px 12px !important;
-            font-size: 0.8rem !important;
+            padding: 5px 10px !important;
+            font-size: 0.72rem !important;
+            border-radius: 8px !important;
+            flex-shrink: 0 !important;
+            white-space: nowrap !important;
+            gap: 4px !important;
+            height: 34px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+          }
+          .btn-composer-send svg {
+            width: 13px !important;
+            height: 13px !important;
           }
 
         }

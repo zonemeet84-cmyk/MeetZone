@@ -2151,6 +2151,10 @@ export default function Dashboard() {
           </div>
         </div>
 
+        <div className="mobile-swipe-hint">
+          <span>👉 Swipe left to see more cards 👈</span>
+        </div>
+
         <div className="pricing-container">
           {/* STARTER PLAN */}
           <div className="premium-card">
@@ -2341,6 +2345,10 @@ export default function Dashboard() {
               USD ($)
             </button>
           </div>
+        </div>
+
+        <div className="mobile-swipe-hint">
+          <span>👉 Swipe left to see more packs 👈</span>
         </div>
 
         <div className="pricing-grid coins-grid">
@@ -5624,13 +5632,14 @@ export default function Dashboard() {
               left: auto !important;
               right: auto !important;
               transform: none !important;
-              width: calc(100vw - 24px) !important;
-              max-width: 400px !important;
-              max-height: min(90dvh, 90vh) !important;
+              width: 90% !important;
+              max-width: 320px !important;
+              max-height: 80vh !important;
+              max-height: 80dvh !important;
               overflow-y: auto !important;
               overflow-x: hidden !important;
               border-radius: 20px !important;
-              margin: 0 auto !important;
+              margin: auto !important;
             }
             .streak-reward-modal {
               width: 95% !important;
@@ -5983,12 +5992,14 @@ export default function Dashboard() {
               padding: 10px !important;
             }
             .profile-modal-card--mobile {
-              width: calc(100vw - 20px) !important;
-              max-width: 100% !important;
-              max-height: min(92dvh, 92vh) !important;
+              width: 90% !important;
+              max-width: 320px !important;
+              max-height: 80vh !important;
+              max-height: 80dvh !important;
               overflow-y: auto !important;
               overflow-x: hidden !important;
-              border-radius: 18px !important;
+              border-radius: 20px !important;
+              margin: auto !important;
             }
             .profile-modal-header {
               padding: 8px !important;
@@ -7107,17 +7118,69 @@ export default function Dashboard() {
                 border-radius: 12px !important;
               }
 
-              /* Coins Store - Compact 2x2 Grid with Minimal Vertical Footprint */
-              .pricing-grid.coins-grid {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                gap: 8px !important;
-                padding: 0 !important;
+              /* Mobile Currency Switcher & Swipe Hint */
+              .currency-selector {
+                margin-top: 8px !important;
+                margin-bottom: 10px !important;
               }
-              .coin-square-card {
-                padding: 10px 8px !important;
-                border-radius: 14px !important;
-                height: auto !important;
+              .currency-pill {
+                padding: 0.22rem !important;
+                border-radius: 12px !important;
+                gap: 0.3rem !important;
+              }
+              .currency-pill button {
+                padding: 5px 13px !important;
+                font-size: 0.76rem !important;
+                border-radius: 8px !important;
+                font-weight: 700 !important;
+              }
+              .mobile-swipe-hint {
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 6px !important;
+                font-size: 0.72rem !important;
+                font-weight: 700 !important;
+                color: #38bdf8 !important;
+                background: rgba(14, 165, 233, 0.12) !important;
+                border: 1px dashed rgba(56, 189, 248, 0.4) !important;
+                border-radius: 999px !important;
+                padding: 4px 14px !important;
+                margin: 0 auto 10px auto !important;
+                text-align: center !important;
+                letter-spacing: 0.02em !important;
+                animation: swipePulse 2s ease-in-out infinite !important;
+              }
+              @keyframes swipePulse {
+                0%, 100% { transform: scale(1); opacity: 0.9; }
+                50% { transform: scale(1.03); opacity: 1; }
+              }
+
+              /* Coins Store - Swipeable Horizontal Snap Carousel like Membership */
+              .pricing-grid.coins-grid {
+                display: flex !important;
+                flex-direction: row !important;
+                overflow-x: auto !important;
+                scroll-snap-type: x mandatory !important;
+                gap: 12px !important;
+                padding: 10px 6px 18px !important;
+                scrollbar-width: none !important;
+                -webkit-overflow-scrolling: touch !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+              }
+              .pricing-grid.coins-grid::-webkit-scrollbar {
+                display: none;
+              }
+              .pricing-grid.coins-grid .coin-square-card {
+                flex: 0 0 65vw !important;
+                max-width: 215px !important;
+                min-width: 180px !important;
+                scroll-snap-align: center !important;
+                padding: 14px 12px !important;
+                border-radius: 18px !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
               }
               .coin-mini-badge {
                 font-size: 0.58rem !important;
@@ -7227,50 +7290,43 @@ export default function Dashboard() {
                 margin-bottom: 4px !important;
               }
 
-              /* Mystery Treasures - Compact Swipeable Row Instead of Massive Vertical Stack */
+              /* Mystery Treasures - Compact Vertical Stack (1 below another) */
               .mystery-grid {
-                display: flex !important;
-                flex-direction: row !important;
-                overflow-x: auto !important;
-                scroll-snap-type: x mandatory !important;
+                display: grid !important;
+                grid-template-columns: 1fr !important;
                 gap: 12px !important;
-                padding: 10px 6px 18px !important;
-                scrollbar-width: none !important;
-                -webkit-overflow-scrolling: touch !important;
+                padding: 4px 2px !important;
+                overflow-x: visible !important;
                 width: 100% !important;
                 box-sizing: border-box !important;
               }
-              .mystery-grid::-webkit-scrollbar {
-                display: none;
-              }
               .mystery-grid > * {
-                flex: 0 0 68vw !important;
-                max-width: 240px !important;
-                min-width: 210px !important;
-                scroll-snap-align: center !important;
-                padding: 22px 14px !important;
-                border-radius: 22px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: unset !important;
+                flex: unset !important;
                 margin: 0 !important;
               }
               .mystery-card {
-                padding: 22px 14px !important;
+                padding: 14px 12px !important;
+                border-radius: 16px !important;
               }
               .mystery-card div[style*="fontSize: '5rem'"] {
-                font-size: 2.8rem !important;
-                margin-bottom: 12px !important;
+                font-size: 2.2rem !important;
+                margin-bottom: 6px !important;
               }
               .mystery-card h3 {
-                font-size: 1.15rem !important;
-                margin-bottom: 8px !important;
+                font-size: 1.05rem !important;
+                margin-bottom: 4px !important;
               }
               .box-rarity {
-                top: 10px !important;
-                right: 10px !important;
-                font-size: 0.58rem !important;
-                padding: 2px 7px !important;
+                top: 8px !important;
+                right: 8px !important;
+                font-size: 0.55rem !important;
+                padding: 2px 6px !important;
               }
               .mystery-card div[style*="fontSize: '1.1rem'"] {
-                font-size: 0.82rem !important;
+                font-size: 0.8rem !important;
                 padding: 6px 12px !important;
                 border-radius: 10px !important;
               }

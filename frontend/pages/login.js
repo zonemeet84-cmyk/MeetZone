@@ -720,14 +720,16 @@ export default function Login() {
         /* ULTRA COMPACT MOBILE RESPONSIVENESS */
         @media (max-width: 480px) {
           .login-container {
-            padding: 8px 10px;
+            padding: 12px 14px;
             align-items: center;
+            justify-content: center;
           }
           .login-card {
             padding: 1.15rem 1.1rem;
-            max-width: 100%;
+            width: 90%;
+            max-width: 320px;
             border-radius: 22px;
-            margin-top: 0;
+            margin: auto;
           }
           .login-header {
             margin-bottom: 0.6rem;
