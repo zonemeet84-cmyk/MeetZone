@@ -9542,7 +9542,44 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             color: white !important;
             box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
           }
-          
+          /* Desktop Filter Preferences Modal - Restored Roomy Size */
+          .filter-modal-card {
+            width: 90% !important;
+            max-width: 480px !important;
+            padding: 24px !important;
+            border-radius: 28px !important;
+            gap: 20px !important;
+          }
+          .filter-modal-header h2 {
+            font-size: 1.35rem !important;
+          }
+          .gender-options-grid {
+            gap: 12px !important;
+          }
+          .gender-option-card {
+            padding: 14px 10px !important;
+            border-radius: 16px !important;
+          }
+          .gender-option-card .emoji {
+            font-size: 1.8rem !important;
+          }
+          .gender-option-card .name {
+            font-size: 0.85rem !important;
+          }
+          .select-dropdown-trigger {
+            padding: 12px 16px !important;
+            font-size: 0.95rem !important;
+            border-radius: 14px !important;
+          }
+          .btn-apply-filters {
+            padding: 14px 20px !important;
+            font-size: 1rem !important;
+            border-radius: 16px !important;
+          }
+        }
+
+        /* Mobile Phone Screens (<= 768px) */
+        @media (max-width: 768px) {
           /* Mobile Text Chat & Mascot Responsiveness */
           .text-mode-container {
             height: calc(100dvh - 65px) !important;
@@ -9612,7 +9649,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             font-size: 0.9rem !important;
           }
 
-          /* Matchmaking Preferences Modal Compact & Centered */
+          /* Matchmaking Preferences Modal Compact & Centered strictly on phone */
           .filter-modal-overlay {
             display: flex !important;
             align-items: center !important;
@@ -9622,8 +9659,8 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             pointer-events: auto !important;
           }
           .filter-modal-card {
-            width: 90% !important;
-            max-width: 325px !important;
+            width: 92% !important;
+            max-width: 330px !important;
             max-height: 85vh !important;
             max-height: 85dvh !important;
             overflow-y: auto !important;
@@ -9711,52 +9748,66 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             font-size: 0.62rem !important;
             margin-top: 3px !important;
           }
+
+          /* Text Mode Composer on Phones: Stop Button, Input & Send Button Fit Cleanly */
           .text-mode-composer {
-            padding: 6px 8px !important;
-            gap: 6px !important;
+            padding: 8px 10px !important;
+            gap: 8px !important;
             box-sizing: border-box !important;
             width: 100% !important;
             max-width: 100vw !important;
             overflow: hidden !important;
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
           }
-          .btn-composer-stop {
-            padding: 5px 9px !important;
-            font-size: 0.72rem !important;
-            border-radius: 8px !important;
-            flex-shrink: 0 !important;
-            white-space: nowrap !important;
-            height: 34px !important;
+          .text-mode-composer .btn-composer-stop {
+            width: auto !important;
+            max-width: fit-content !important;
+            flex: 0 0 auto !important;
+            margin: 0 !important;
+            padding: 6px 12px !important;
+            height: 36px !important;
+            font-size: 0.76rem !important;
+            border-radius: 10px !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 3px !important;
-          }
-          .text-mode-input-field {
-            padding: 6px 10px !important;
-            font-size: 0.78rem !important;
-            border-radius: 8px !important;
-            flex: 1 1 auto !important;
-            min-width: 0 !important;
-            height: 34px !important;
+            gap: 4px !important;
+            white-space: nowrap !important;
             box-sizing: border-box !important;
           }
-          .btn-composer-send {
-            padding: 5px 10px !important;
-            font-size: 0.72rem !important;
-            border-radius: 8px !important;
-            flex-shrink: 0 !important;
-            white-space: nowrap !important;
-            gap: 4px !important;
-            height: 34px !important;
+          .text-mode-composer .text-mode-input-field {
+            flex: 1 1 auto !important;
+            min-width: 0 !important;
+            width: auto !important;
+            margin: 0 !important;
+            padding: 6px 12px !important;
+            height: 36px !important;
+            font-size: 0.82rem !important;
+            border-radius: 10px !important;
+            box-sizing: border-box !important;
+          }
+          .text-mode-composer .btn-composer-send {
+            width: auto !important;
+            max-width: fit-content !important;
+            flex: 0 0 auto !important;
+            margin: 0 !important;
+            padding: 6px 14px !important;
+            height: 36px !important;
+            font-size: 0.76rem !important;
+            border-radius: 10px !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
+            gap: 4px !important;
+            white-space: nowrap !important;
+            box-sizing: border-box !important;
           }
-          .btn-composer-send svg {
-            width: 13px !important;
-            height: 13px !important;
+          .text-mode-composer .btn-composer-send svg {
+            width: 14px !important;
+            height: 14px !important;
           }
-
         }
       `}</style>
       </div>

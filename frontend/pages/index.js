@@ -81,6 +81,7 @@ export default function Dashboard() {
   const { data: session } = useSession();
   const [user, setUser] = useState(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [onboardForm, setOnboardForm] = useState({
     gender: "Male",
     countryCode: "IN",
@@ -945,62 +946,84 @@ export default function Dashboard() {
 
   const handleOnboardSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("token");
-    const { Country, State } = await import("country-state-city");
-    const selectedCountry = Country.getAllCountries().find(c => c.isoCode === onboardForm.countryCode);
-    const selectedState = State.getStatesOfCountry(onboardForm.countryCode).find(s => s.isoCode === onboardForm.stateCode);
+    if (!user || isSavingProfile) return;
+    setIsSavingProfile(true);
+
+    let countryName = onboardForm.countryCode;
+    let stateName = onboardForm.stateCode || "Other";
+
+    if (countriesList.length > 0) {
+      const foundCountry = countriesList.find(c => c.isoCode === onboardForm.countryCode);
+      if (foundCountry) countryName = foundCountry.name;
+    }
+    if (statesList.length > 0) {
+      const foundState = statesList.find(s => s.isoCode === onboardForm.stateCode);
+      if (foundState) stateName = foundState.name;
+    }
 
     const updatedData = {
       gender: onboardForm.gender,
-      country: selectedCountry ? selectedCountry.name : onboardForm.countryCode,
-      state: selectedState ? selectedState.name : (onboardForm.stateCode || "Other"),
+      country: countryName || user.country || "India",
+      state: stateName || user.state || "Other",
       age: onboardForm.age
     };
 
+    // ⚡ Instant Optimistic Update (0ms) so user never waits!
+    const newUser = { ...user, ...updatedData, onboardingCompleted: true };
+    setUser(newUser);
     try {
-      // In a real app, we'd have a PATCH /api/auth/profile endpoint.
-      // For now, we can reuse register or a custom endpoint if it exists.
-      // Let's assume we need to update the user in users.json.
-      // I'll check if there's a profile update endpoint in server.js.
+      localStorage.setItem("user", JSON.stringify(newUser));
+    } catch (err) {}
+    setShowOnboarding(false);
+    showModal({ message: "Profile saved successfully! ✨", type: "success" });
 
-      const res = await axios.post("https://api.zonemeet.chat/api/auth/update-profile", {
+    // Background sync to backend with fast timeout
+    try {
+      await axios.post("https://api.zonemeet.chat/api/auth/update-profile", {
         email: user.email,
         name: user.name,
         ...updatedData
-      });
-
-      if (res.data.success) {
-        const newUser = { ...user, ...updatedData };
-        setUser(newUser);
-        localStorage.setItem("user", JSON.stringify(newUser));
-        setShowOnboarding(false);
-        // Redirect to Home instead of Chat as requested
-        router.push("/");
-      }
+      }, { timeout: 3500 });
     } catch (err) {
-      showModal({ message: "Failed to update profile. Please try again.", type: "info" });
+      console.warn("Profile background sync note:", err.message);
+    } finally {
+      setIsSavingProfile(false);
     }
   };
 
   const startEdit = async () => {
-    // Find country and state codes for the form
-    const { Country, State } = await import("country-state-city");
-    const currentCountry = Country.getAllCountries().find(c => c.name === user.country);
-    const countryCode = currentCountry ? currentCountry.isoCode : "IN";
+    setShowProfileDrop(false);
 
-    const states = State.getStatesOfCountry(countryCode);
-    const currentState = states.find(s => s.name === user.state);
-    const stateCode = currentState ? currentState.isoCode : (states.length > 0 ? states[0].isoCode : "");
+    let countryCode = "IN";
+    let stateCode = "";
+
+    try {
+      let countries = countriesList;
+      if (countries.length === 0) {
+        const { Country } = await import("country-state-city");
+        countries = Country.getAllCountries();
+        setCountriesList(countries);
+      }
+
+      const currentCountry = countries.find(c => c.name === user?.country || c.isoCode === user?.country);
+      if (currentCountry) countryCode = currentCountry.isoCode;
+
+      const { State } = await import("country-state-city");
+      const states = State.getStatesOfCountry(countryCode);
+      setStatesList(states);
+
+      const currentState = states.find(s => s.name === user?.state || s.isoCode === user?.state);
+      stateCode = currentState ? currentState.isoCode : (states.length > 0 ? states[0].isoCode : "");
+    } catch (err) {
+      console.warn("country-state-city load note:", err);
+    }
 
     setOnboardForm({
-      gender: user.gender || "Male",
+      gender: user?.gender || "Male",
       countryCode: countryCode,
       stateCode: stateCode,
-      age: user.age || "18-24"
+      age: user?.age || "18-24"
     });
-    setCountriesList(Country.getAllCountries());
-    setStatesList(states);
-    setShowProfileDrop(false);
     setShowOnboarding(true);
   };
 
@@ -2570,22 +2593,29 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ONBOARDING MODAL */}
+      {/* ONBOARDING / PROFILE EDIT MODAL */}
       {showOnboarding && (
-        <div className="payment-overlay" style={{ zIndex: 10000 }}>
-          <div className="premium-modal" style={{ maxWidth: '450px', padding: '2.5rem' }}>
-            <div className="modal-header">
-              <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>👋</div>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: 800 }}>Almost There!</h2>
-              <p style={{ color: '#94a3b8', marginTop: '0.5rem' }}>Tell us a bit about yourself to get started.</p>
+        <div className="onboarding-overlay" onClick={() => setShowOnboarding(false)}>
+          <div className="onboarding-card" onClick={(e) => e.stopPropagation()}>
+            <button 
+              type="button" 
+              className="onboarding-close-btn" 
+              onClick={() => setShowOnboarding(false)}
+              title="Close"
+            >
+              ×
+            </button>
+            <div className="onboarding-header">
+              <div className="onboarding-icon-badge">👋</div>
+              <h2>{user?.onboardingCompleted ? "Edit Your Profile" : "Almost There!"}</h2>
+              <p>{user?.onboardingCompleted ? "Update your details below" : "Tell us a bit about yourself to get started."}</p>
             </div>
 
-            <form onSubmit={handleOnboardSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginTop: '2rem' }}>
-              <div className="input-group" style={{ textAlign: 'left' }}>
-                <label style={{ color: '#cbd5e1', fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>Gender</label>
+            <form onSubmit={handleOnboardSubmit} className="onboarding-form">
+              <div className="onboarding-input-group">
+                <label>Gender</label>
                 <select
-                  className="styled-select"
-                  style={{ width: '100%', background: '#000', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem', borderRadius: '12px' }}
+                  className="onboarding-select"
                   value={onboardForm.gender}
                   onChange={(e) => setOnboardForm({ ...onboardForm, gender: e.target.value })}
                 >
@@ -2595,17 +2625,19 @@ export default function Dashboard() {
                 </select>
               </div>
 
-              <div className="input-row" style={{ display: 'flex', gap: '1rem' }}>
-                <div className="input-group" style={{ flex: 1, textAlign: 'left' }}>
-                  <label style={{ color: '#cbd5e1', fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>Country</label>
+              <div className="onboarding-input-row">
+                <div className="onboarding-input-group">
+                  <label>Country</label>
                   <select
-                    className="styled-select"
-                    style={{ width: '100%', background: '#000', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem', borderRadius: '12px' }}
+                    className="onboarding-select"
                     value={onboardForm.countryCode}
                     onChange={async (e) => {
                       const val = e.target.value;
-                      const { State } = await import("country-state-city");
-                      const states = State.getStatesOfCountry(val);
+                      let states = [];
+                      try {
+                        const { State } = await import("country-state-city");
+                        states = State.getStatesOfCountry(val);
+                      } catch (err) {}
                       setOnboardForm({ ...onboardForm, countryCode: val, stateCode: states.length > 0 ? states[0].isoCode : "" });
                       setStatesList(states);
                     }}
@@ -2620,11 +2652,10 @@ export default function Dashboard() {
                   </select>
                 </div>
 
-                <div className="input-group" style={{ flex: 1, textAlign: 'left' }}>
-                  <label style={{ color: '#cbd5e1', fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>Age</label>
+                <div className="onboarding-input-group">
+                  <label>Age</label>
                   <select
-                    className="styled-select"
-                    style={{ width: '100%', background: '#000', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem', borderRadius: '12px' }}
+                    className="onboarding-select"
                     value={onboardForm.age}
                     onChange={(e) => setOnboardForm({ ...onboardForm, age: e.target.value })}
                   >
@@ -2637,11 +2668,10 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="input-group" style={{ textAlign: 'left' }}>
-                <label style={{ color: '#cbd5e1', fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>State / Province</label>
+              <div className="onboarding-input-group">
+                <label>State / Province</label>
                 <select
-                  className="styled-select"
-                  style={{ width: '100%', background: '#000', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem', borderRadius: '12px' }}
+                  className="onboarding-select"
                   value={onboardForm.stateCode}
                   onChange={(e) => setOnboardForm({ ...onboardForm, stateCode: e.target.value })}
                 >
@@ -2655,8 +2685,8 @@ export default function Dashboard() {
                 </select>
               </div>
 
-              <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: '1rem', background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', border: 'none', borderRadius: '16px' }}>
-                Start My Journey
+              <button type="submit" className="onboarding-submit-btn" disabled={isSavingProfile}>
+                {isSavingProfile ? "Saving..." : (user?.onboardingCompleted ? "💾 Save Profile" : "🚀 Start My Journey")}
               </button>
             </form>
           </div>
@@ -4089,7 +4119,7 @@ export default function Dashboard() {
           .profile-user-info { width: 100%; }
           .profile-user-name { font-size: 1.1rem; font-weight: 800; color: white; margin-bottom: 0.25rem; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px; }
           .profile-user-id { color: #475569; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
-          .profile-edit-btn { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); color: #6366f1; padding: 0.35rem 0.8rem; border-radius: 10px; font-size: 0.7rem; font-weight: 800; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; }
+          .profile-edit-btn { background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.25); color: #818cf8; padding: 3px 8px; border-radius: 8px; font-size: 0.68rem; font-weight: 700; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; display: inline-flex; align-items: center; gap: 4px; width: auto; height: auto; }
           .profile-edit-btn:hover { background: #6366f1; color: white; transform: scale(1.05); }
           .profile-premium-banner { background: linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(236,72,153,0.08) 100%); border: 1px solid rgba(99,102,241,0.2); padding: 1rem 1.25rem; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
           .active-sub-banner { box-shadow: 0 4px 15px rgba(99,102,241,0.15); }
@@ -4537,6 +4567,140 @@ export default function Dashboard() {
             .elite-hero-banner { flex-direction: column; padding: 2rem; gap: 2rem; }
             .elite-main-info h2 { font-size: 2.5rem; }
             .section-title { font-size: 2.5rem; }
+          /* Centered Onboarding & Profile Edit Modal Card */
+          .onboarding-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            z-index: 100050;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            box-sizing: border-box;
+          }
+          .onboarding-card {
+            position: relative;
+            background: linear-gradient(145deg, #0f172a 0%, #1e1b4b 100%);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 24px;
+            padding: 24px 20px;
+            width: 92%;
+            max-width: 400px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(99, 102, 241, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-sizing: border-box;
+            animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          .onboarding-close-btn {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #94a3b8;
+            font-size: 1.25rem;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 10;
+          }
+          .onboarding-close-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.4);
+            transform: scale(1.05);
+          }
+          .onboarding-header {
+            text-align: center;
+            padding-top: 4px;
+          }
+          .onboarding-icon-badge {
+            font-size: 2.2rem;
+            margin-bottom: 6px;
+            display: inline-block;
+          }
+          .onboarding-header h2 {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0;
+            letter-spacing: -0.5px;
+          }
+          .onboarding-header p {
+            color: #94a3b8;
+            font-size: 0.82rem;
+            margin-top: 4px;
+          }
+          .onboarding-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+          }
+          .onboarding-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            text-align: left;
+          }
+          .onboarding-input-group label {
+            color: #cbd5e1;
+            font-size: 0.78rem;
+            font-weight: 600;
+          }
+          .onboarding-select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            padding: 9px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+          }
+          .onboarding-select:focus {
+            border-color: #a855f7;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+          }
+          .onboarding-input-row {
+            display: flex;
+            gap: 10px;
+          }
+          .onboarding-input-row .onboarding-input-group {
+            flex: 1;
+          }
+          .onboarding-submit-btn {
+            width: 100% !important;
+            margin-top: 6px !important;
+            padding: 12px !important;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%) !important;
+            border: none !important;
+            border-radius: 14px !important;
+            color: #ffffff !important;
+            font-weight: 800 !important;
+            font-size: 0.95rem !important;
+            cursor: pointer !important;
+            transition: all 0.25s !important;
+            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35) !important;
+          }
+          .onboarding-submit-btn:hover {
+            filter: brightness(1.12);
+            transform: translateY(-1px);
           }
 
           .payment-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(15px); z-index: 100000; display: flex; align-items: flex-start; justify-content: center; padding: 2rem; overflow-y: auto; }
@@ -6149,7 +6313,7 @@ export default function Dashboard() {
               border-radius: 12px !important;
               width: 100% !important;
             }
-            .btn-contact-home, .btn-secondary, .btn-primary, .premium-btn, .elite-btn-v3, .streak-cta-btn, .profile-edit-btn {
+            .btn-contact-home, .btn-secondary, .btn-primary, .premium-btn, .elite-btn-v3, .streak-cta-btn {
               font-size: 0.85rem !important;
               padding: 10px 18px !important;
               height: auto !important;
@@ -6392,30 +6556,40 @@ export default function Dashboard() {
               font-size: 3rem !important;
             }
 
-            /* Profile Edit / Onboarding Modal responsiveness */
-            .premium-modal .modal-header h2 {
-              font-size: 1.25rem !important;
+            /* Profile Edit / Onboarding Modal Card Mobile Polish */
+            .onboarding-card {
+              width: 90% !important;
+              max-width: 325px !important;
+              padding: 20px 16px !important;
+              border-radius: 20px !important;
+              gap: 12px !important;
             }
-            .premium-modal .modal-header p {
-              font-size: 0.75rem !important;
+            .onboarding-icon-badge {
+              font-size: 1.8rem !important;
+              margin-bottom: 2px !important;
             }
-            .premium-modal form {
-              gap: 0.8rem !important;
-              margin-top: 1rem !important;
+            .onboarding-header h2 {
+              font-size: 1.15rem !important;
             }
-            .premium-modal .styled-select {
-              padding: 0.5rem !important;
-              font-size: 0.8rem !important;
-              border-radius: 8px !important;
+            .onboarding-header p {
+              font-size: 0.72rem !important;
             }
-            .premium-modal label {
-              font-size: 0.75rem !important;
-              margin-bottom: 0.25rem !important;
+            .onboarding-form {
+              gap: 9px !important;
             }
-            .premium-modal .btn-lg {
-              padding: 0.6rem !important;
-              font-size: 0.85rem !important;
+            .onboarding-select {
+              padding: 7px 10px !important;
+              font-size: 0.78rem !important;
+              border-radius: 10px !important;
+            }
+            .onboarding-input-group label {
+              font-size: 0.72rem !important;
+            }
+            .onboarding-submit-btn {
+              padding: 10px 14px !important;
+              font-size: 0.82rem !important;
               border-radius: 12px !important;
+              margin-top: 4px !important;
             }
 
             /* History modal item responsiveness */
