@@ -1080,16 +1080,33 @@ export default function Dashboard() {
   };
 
   const [startingChat, setStartingChat] = useState(false);
+  const [selectedChatMode, setSelectedChatMode] = useState("video");
 
-  const startChat = async () => {
+  useEffect(() => {
+    const saved = localStorage.getItem("preferredChatMode");
+    if (saved === "text" || saved === "video") setSelectedChatMode(saved);
+  }, []);
+
+  const handleSelectMode = (mode) => {
+    setSelectedChatMode(mode);
+    try {
+      localStorage.setItem("preferredChatMode", mode);
+    } catch (e) {}
+  };
+
+  const startChat = async (modeInput) => {
     if (startingChat) return;
+    const mode = (typeof modeInput === "string" ? modeInput : selectedChatMode) || "video";
     setStartingChat(true);
-    console.log("Start Chat Triggered");
+    console.log("Start Chat Triggered with mode:", mode);
+    try {
+      localStorage.setItem("preferredChatMode", mode);
+    } catch (e) {}
 
     const token = localStorage.getItem("token");
     if (!token && !session) {
       console.log("No auth found, redirecting...");
-      router.push("/login?callbackUrl=/chat");
+      router.push(`/login?callbackUrl=/chat?mode=${mode}`);
       setStartingChat(false);
       return;
     }
@@ -1103,12 +1120,20 @@ export default function Dashboard() {
       return;
     }
 
+    if (mode === "text") {
+      // TEXT ONLY CHAT: No camera / mic permission needed! Direct route!
+      router.push("/chat?mode=text");
+      setStartingChat(false);
+      return;
+    }
+
+    // VIDEO CHAT: Request camera and microphone
     try {
       console.log("Requesting camera/mic permissions...");
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       console.log("Permissions granted, redirecting to chat...");
       stream.getTracks().forEach(track => track.stop());
-      router.push("/chat");
+      router.push("/chat?mode=video");
     } catch (err) {
       console.error("Permission denied or error:", err);
       showModal({ message: "Please allow camera and microphone access to start video chat.", type: "info" });
@@ -1849,15 +1874,39 @@ export default function Dashboard() {
                 Connect instantly with professionals, language learners, and like-minded peers worldwide through our interest-based communication rooms. Build your professional network, exchange languages, collaborate on ideas, and participate in secure global communities anytime, anywhere.
               </p>
 
-              <div className="action-buttons" style={{ position: 'relative', zIndex: 20, marginTop: '30px' }}>
-                <button className="btn btn-primary btn-lg btn-connect-now" onClick={startChat} disabled={startingChat}>
-                  {startingChat ? "Connecting..." : "Connect Now"}
+              {/* Dual Mode Action Buttons */}
+              <div className="hero-cta-buttons-container" style={{ position: 'relative', zIndex: 20, marginTop: '30px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
+                {/* 1. Main Video Chat Button */}
+                <button 
+                  className="btn btn-primary btn-lg btn-connect-now btn-video-connect" 
+                  onClick={() => startChat("video")} 
+                  disabled={startingChat}
+                >
+                  {startingChat && selectedChatMode === "video" ? "Connecting..." : "Start Video Chat"}
                   {!startingChat && (
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '10px' }}>
                       <path d="M23 7a2 2 0 0 0-2.45-1.45L16 7V5a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2l4.55 1.45A2 2 0 0 0 23 17V7z" />
                     </svg>
                   )}
                 </button>
+
+                {/* 2. Text Only Chat Button Directly Below */}
+                <button 
+                  className="btn btn-secondary btn-text-only-connect" 
+                  onClick={() => startChat("text")} 
+                  disabled={startingChat}
+                >
+                  {startingChat && selectedChatMode === "text" ? "Connecting..." : "Text Only Chat"}
+                  {!startingChat && (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '10px' }}>
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                  )}
+                </button>
+
+                <p className="hero-mode-helper-text" style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
+                  💬 Text chat connects instantly without camera or microphone
+                </p>
               </div>
             </div>
           </div>
@@ -6189,6 +6238,84 @@ export default function Dashboard() {
             font-weight: 400;
             margin-left: auto;
             margin-right: auto;
+          }
+          .hero-cta-buttons-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            margin-top: 25px;
+          }
+          .btn-video-connect {
+            background: linear-gradient(135deg, #5855ec, #4f46e5) !important;
+            color: #ffffff !important;
+            font-size: 1.15rem !important;
+            font-weight: 700 !important;
+            padding: 16px 44px !important;
+            border-radius: 999px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 10px 30px rgba(88, 85, 236, 0.45) !important;
+            border: none !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            cursor: pointer !important;
+            min-width: 250px;
+          }
+          .btn-video-connect:hover {
+            transform: translateY(-2px) scale(1.02) !important;
+            box-shadow: 0 14px 38px rgba(88, 85, 236, 0.6) !important;
+            filter: brightness(1.08);
+          }
+          .btn-video-connect:active {
+            transform: translateY(0) scale(0.98) !important;
+          }
+          .btn-text-only-connect {
+            background: rgba(15, 23, 42, 0.75) !important;
+            color: #e2e8f0 !important;
+            font-size: 1rem !important;
+            font-weight: 600 !important;
+            padding: 12px 34px !important;
+            border-radius: 999px !important;
+            border: 1.5px solid rgba(0, 242, 254, 0.35) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            transition: all 0.25s ease !important;
+            cursor: pointer !important;
+            min-width: 220px;
+          }
+          .btn-text-only-connect:hover {
+            border-color: #00f2fe !important;
+            background: rgba(0, 242, 254, 0.12) !important;
+            color: #ffffff !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 10px 25px rgba(0, 242, 254, 0.25) !important;
+          }
+          .btn-text-only-connect:active {
+            transform: translateY(0) !important;
+          }
+          .hero-mode-helper-text {
+            font-size: 0.85rem !important;
+            color: #94a3b8 !important;
+            text-align: center;
+          }
+          @media (max-width: 640px) {
+            .btn-video-connect {
+              width: 100% !important;
+              max-width: 290px !important;
+              padding: 14px 28px !important;
+              font-size: 1.05rem !important;
+            }
+            .btn-text-only-connect {
+              width: 100% !important;
+              max-width: 260px !important;
+              padding: 11px 24px !important;
+              font-size: 0.95rem !important;
+            }
           }
           .seo-content-section {
             max-width: 900px;

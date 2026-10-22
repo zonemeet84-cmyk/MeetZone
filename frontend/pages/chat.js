@@ -4,8 +4,6 @@ import axios from "axios";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useSession, signOut } from "next-auth/react";
-import * as nsfwjs from "nsfwjs";
-import * as tf from "@tensorflow/tfjs";
 import { Country, State } from "country-state-city";
 import Script from "next/script";
 import { FaceMaskArEngine, is3dArMask } from "../lib/faceMaskAr";
@@ -232,6 +230,16 @@ export default function Home() {
   const [authError, setAuthError] = useState(null);
   const [banInfo, setBanInfo] = useState(null); // { reason, screenshot }
   const router = useRouter();
+  const [activeChatMode, setActiveChatMode] = useState("video");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlMode = urlParams.get("mode");
+      const mode = urlMode || router.query.mode || localStorage.getItem("preferredChatMode") || "video";
+      setActiveChatMode(mode);
+    }
+  }, [router.query.mode, router.isReady]);
 
   // Filters & Premium
   const [gender, setGender] = useState("all");
@@ -1640,31 +1648,20 @@ export default function Home() {
         return;
       }
 
-      // 2. Camera Logic
-      try {
-        const videoConstraints = {
-          width: { ideal: 1920, max: 1920 },
-          height: { ideal: 1080, max: 1080 },
-          frameRate: { ideal: 30, max: 30 }
-        };
+      const isTextModeInitial = (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("mode") === "text") || router.query.mode === "text";
 
-        console.log("Forcing High Quality Camera Constraints:", videoConstraints);
-        streamInstance = await navigator.mediaDevices.getUserMedia({
-          video: videoConstraints,
-          audio: true,
-        });
-        if (localVideo.current) {
-          localVideo.current.srcObject = streamInstance;
-          const vt = streamInstance.getVideoTracks()[0];
-          if (vt) originalVideoTrackRef.current = vt;
-          const at = streamInstance.getAudioTracks()[0];
-          if (at) originalAudioTrackRef.current = at;
-        }
-      } catch (err) {
-        console.warn("Error accessing media devices with ideal constraints, trying standard fallback.", err);
+      // 2. Camera Logic (Only for Video Mode)
+      if (!isTextModeInitial) {
         try {
+          const videoConstraints = {
+            width: { ideal: 1920, max: 1920 },
+            height: { ideal: 1080, max: 1080 },
+            frameRate: { ideal: 30, max: 30 }
+          };
+
+          console.log("Forcing High Quality Camera Constraints:", videoConstraints);
           streamInstance = await navigator.mediaDevices.getUserMedia({
-            video: true,
+            video: videoConstraints,
             audio: true,
           });
           if (localVideo.current) {
@@ -1674,29 +1671,47 @@ export default function Home() {
             const at = streamInstance.getAudioTracks()[0];
             if (at) originalAudioTrackRef.current = at;
           }
-        } catch (fbErr) {
-          console.error("Camera access failed completely.", fbErr);
-          setStatus("Please allow camera/mic access");
-          let errorMessage = "Camera/microphone access failed. Please enable permissions in your browser settings.";
-          if (fbErr.name === 'NotAllowedError' || fbErr.name === 'PermissionDeniedError') {
-            errorMessage = "Permission denied: Please allow camera and microphone access in your browser address bar/settings.";
-          } else if (fbErr.name === 'NotFoundError' || fbErr.name === 'DevicesNotFoundError') {
-            errorMessage = "No camera or microphone found. Please connect your hardware device and try again.";
-          } else if (fbErr.name === 'NotReadableError' || fbErr.name === 'TrackStartError') {
-            errorMessage = "Your camera or microphone is already in use by another app/tab. Please close it and refresh.";
-          } else if (fbErr.name === 'OverconstrainedError') {
-            errorMessage = "Camera constraints could not be satisfied. Please choose a different device or refresh.";
+        } catch (err) {
+          console.warn("Error accessing media devices with ideal constraints, trying standard fallback.", err);
+          try {
+            streamInstance = await navigator.mediaDevices.getUserMedia({
+              video: true,
+              audio: true,
+            });
+            if (localVideo.current) {
+              localVideo.current.srcObject = streamInstance;
+              const vt = streamInstance.getVideoTracks()[0];
+              if (vt) originalVideoTrackRef.current = vt;
+              const at = streamInstance.getAudioTracks()[0];
+              if (at) originalAudioTrackRef.current = at;
+            }
+          } catch (fbErr) {
+            console.error("Camera access failed completely.", fbErr);
+            setStatus("Please allow camera/mic access");
+            let errorMessage = "Camera/microphone access failed. Please enable permissions in your browser settings.";
+            if (fbErr.name === 'NotAllowedError' || fbErr.name === 'PermissionDeniedError') {
+              errorMessage = "Permission denied: Please allow camera and microphone access in your browser address bar/settings.";
+            } else if (fbErr.name === 'NotFoundError' || fbErr.name === 'DevicesNotFoundError') {
+              errorMessage = "No camera or microphone found. Please connect your hardware device and try again.";
+            } else if (fbErr.name === 'NotReadableError' || fbErr.name === 'TrackStartError') {
+              errorMessage = "Your camera or microphone is already in use by another app/tab. Please close it and refresh.";
+            } else if (fbErr.name === 'OverconstrainedError') {
+              errorMessage = "Camera constraints could not be satisfied. Please choose a different device or refresh.";
+            }
+            showToast(errorMessage, "error", 8000);
           }
-          showToast(errorMessage, "error", 8000);
         }
+      } else {
+        console.log("[Text Mode] Skipping camera and microphone permission request.");
       }
 
       // 4. AI Guard: Multi-Layer Hybrid NSFW Detection (NSFWJS Client-Side + Hive AI Backend-Side Verification)
       const initNSFW = async () => {
         try {
-          await tf.ready();
-          nsfwModel.current = await nsfwjs.load();
-          console.log("NSFW Guardian active.");
+          if (typeof window !== "undefined" && window.nsfwjs) {
+            nsfwModel.current = await window.nsfwjs.load();
+            console.log("NSFW Guardian active.");
+          }
           
           const checkVideo = async () => {
             if (localVideo.current && localVideo.current.readyState === 4 && socket && socket.connected) {
@@ -1810,7 +1825,9 @@ export default function Home() {
           console.error("NSFW Guardian failed to load:", err);
         }
       };
-      initNSFW();
+      if (!isTextModeInitial) {
+        initNSFW();
+      }
 
       // 3. Socket Logic
       socket = io("https://api.zonemeet.chat");
@@ -1831,6 +1848,7 @@ export default function Home() {
             socket.emit("join-room", router.query.room);
             setStatus("Joining Direct Chat...");
           }
+          profile.chatMode = isTextModeInitial ? "text" : "video";
           socket.emit("set-profile", profile);
         }
 
@@ -1931,35 +1949,41 @@ export default function Home() {
 
 
 
-      socket.on("matched", async ({ partnerId, initiator, partnerInfo }) => {
+      socket.on("matched", async ({ partnerId, initiator, partnerInfo, chatMode }) => {
         setPartnerId(partnerId);
         setPartnerInfo(partnerInfo);
-        setShowPartnerPreview(true);
-        setStatus("Partner Found!");
+        const isCurrentTextMode = router.query.mode === "text" || chatMode === "text";
+        setShowPartnerPreview(!isCurrentTextMode);
+        setStatus(isCurrentTextMode ? "Connected" : "Partner Found!");
         setMessages([]);
         iceCandidatesQueue.current = [];
-        createPeer(partnerId);
 
-        // BULLETPROOF EFFECT SYNCING (using refs to avoid stale closure values)
-        setTimeout(() => {
-          if (socket) {
-            console.log("[Matched] Force syncing current local effects with partner...", activeAvatarRef.current, isFaceBlurredRef.current);
-            socket.emit("partner-effect", { type: 'blur', value: isFaceBlurredRef.current });
-            socket.emit("partner-effect", { type: 'avatar', value: activeAvatarRef.current });
-            socket.emit("partner-effect", { type: 'mask', value: activeMaskRef.current });
-            socket.emit("partner-effect", { type: 'filter', value: activeFilterRef.current });
-            socket.emit("partner-effect", { type: 'voice', value: activeVoiceRef.current });
-          }
-        }, 1000);
+        if (!isCurrentTextMode) {
+          createPeer(partnerId);
 
-        if (initiator) {
-          try {
-            const offer = await peerConnection.current.createOffer();
-            await peerConnection.current.setLocalDescription(offer);
-            socket.emit("offer", { offer, to: partnerId });
-          } catch (err) {
-            console.error("Failed to create offer:", err);
+          // BULLETPROOF EFFECT SYNCING (using refs to avoid stale closure values)
+          setTimeout(() => {
+            if (socket) {
+              console.log("[Matched] Force syncing current local effects with partner...", activeAvatarRef.current, isFaceBlurredRef.current);
+              socket.emit("partner-effect", { type: 'blur', value: isFaceBlurredRef.current });
+              socket.emit("partner-effect", { type: 'avatar', value: activeAvatarRef.current });
+              socket.emit("partner-effect", { type: 'mask', value: activeMaskRef.current });
+              socket.emit("partner-effect", { type: 'filter', value: activeFilterRef.current });
+              socket.emit("partner-effect", { type: 'voice', value: activeVoiceRef.current });
+            }
+          }, 1000);
+
+          if (initiator) {
+            try {
+              const offer = await peerConnection.current.createOffer();
+              await peerConnection.current.setLocalDescription(offer);
+              socket.emit("offer", { offer, to: partnerId });
+            } catch (err) {
+              console.error("Failed to create offer:", err);
+            }
           }
+        } else {
+          console.log("[Matched in Text Mode] No WebRTC media stream needed.");
         }
       });
 
@@ -2445,8 +2469,9 @@ export default function Home() {
   };
 
   const createPeer = (partner) => {
+    if (router.query.mode === "text") return;
     peerConnection.current = new RTCPeerConnection(servers);
-    const stream = localVideo.current.srcObject;
+    const stream = localVideo.current?.srcObject;
     if (stream) {
       stream.getTracks().forEach((track) => {
         if (track.kind === 'audio' && processedAudioTrackRef.current) {
@@ -3570,6 +3595,21 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
               )}
             </div>
 
+            <button 
+              className={`btn-home mode-switch-btn ${activeChatMode === "text" ? "text-mode-active" : "video-mode-active"}`} 
+              onClick={() => {
+                const nextMode = activeChatMode === "text" ? "video" : "text";
+                setActiveChatMode(nextMode);
+                try { localStorage.setItem("preferredChatMode", nextMode); } catch (e) {}
+                router.push(`/chat?mode=${nextMode}`);
+              }} 
+              title="Click to switch between Live Video and Text Chat"
+              style={{ marginRight: '6px' }}
+            >
+              <span className="icon">{activeChatMode === "text" ? "💬" : "📹"}</span>
+              <span className="text">{activeChatMode === "text" ? "Text Chat" : "Video Chat"}</span>
+            </button>
+
             <button className="btn-home" onClick={() => { fetchHistory(); setShowHistoryModal(true); }} style={{ marginRight: '6px' }}>
               <span className="icon">🕒</span>
               <span className="text">History</span>
@@ -3582,8 +3622,203 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           </div>
         </div>
 
-        <div className="main-layout">
-          <div className="video-column">
+        <div className={`main-layout ${activeChatMode === "text" ? "text-mode-active-layout" : ""}`}>
+          {activeChatMode === "text" ? (
+            <div className="text-mode-container">
+              {/* Always mount video elements hidden to prevent any ref access issues */}
+              <div style={{ display: 'none' }} aria-hidden="true">
+                <video ref={localVideo} />
+                <video ref={remoteVideo} />
+                <canvas ref={canvasRef} />
+              </div>
+
+              {/* Stranger Top Card */}
+              <div className="text-mode-partner-card">
+                <div className="partner-identity-left">
+                  <div className="partner-avatar-circle">
+                    {partnerId ? (
+                      partnerInfo?.avatar && partnerInfo?.avatar !== "None" ? (
+                        <img src={getAvatarUrl(partnerInfo.avatar)} alt="Avatar" />
+                      ) : (
+                        <span>{partnerInfo?.name?.charAt(0) || "S"}</span>
+                      )
+                    ) : (
+                      <span className="searching-pulse-icon">💬</span>
+                    )}
+                  </div>
+                  <div className="partner-meta-info">
+                    <div className="partner-name-row">
+                      <span className="partner-display-name">
+                        {partnerId ? (partnerInfo?.name || "Stranger") : "Looking for someone..."}
+                      </span>
+                      {partnerId && partnerInfo?.gender && (
+                        <span className={`gender-tag ${partnerInfo.gender.toLowerCase()}`}>
+                          {partnerInfo.gender}
+                        </span>
+                      )}
+                      {partnerId && partnerInfo?.country && (
+                        <span className="country-tag">
+                          {getFlagUrl(partnerInfo.country) && (
+                            <img src={getFlagUrl(partnerInfo.country)} alt="" />
+                          )}
+                          {getCountryName(partnerInfo.country)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="partner-status-row">
+                      {partnerId ? (
+                        <span className="connected-status">
+                          <span className="live-dot"></span> Online & Connected
+                        </span>
+                      ) : (
+                        <span className="searching-status">
+                          <span className="radar-mini-pulse"></span> {status || "Searching for strangers in text chat..."}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-mode-actions-right">
+                  {partnerId && (
+                    <>
+                      <button 
+                        className={`action-pill-btn ${friendReqStatus ? "friend-sent" : ""}`}
+                        onClick={addFriend}
+                        disabled={friendReqStatus}
+                        title="Add as Friend"
+                      >
+                        {friendReqStatus ? "✅ Sent" : "👤+ Friend"}
+                      </button>
+                      <button 
+                        className="action-pill-btn report-pill-btn"
+                        onClick={() => setShowReportModal(true)}
+                        title="Report Partner"
+                      >
+                        🚨 Report
+                      </button>
+                    </>
+                  )}
+                  <button 
+                    className="action-pill-btn skip-pill-btn"
+                    onClick={nextPartner}
+                    title="Skip to next stranger"
+                  >
+                    ⏭️ Next
+                  </button>
+                  <button 
+                    className="action-pill-btn stop-pill-btn"
+                    onClick={stopMatching}
+                    title="Stop matching"
+                  >
+                    🛑 Stop
+                  </button>
+                </div>
+              </div>
+
+              {/* Chat Messages Body */}
+              <div className="text-mode-chat-body">
+                <div className="text-mode-messages-scroll">
+                  {messages.length === 0 && (
+                    <div className="text-mode-empty-state">
+                      <div className="empty-icon">💬</div>
+                      <h3>{partnerId ? "You're connected with a stranger!" : "Text Matchmaking Active"}</h3>
+                      <p>
+                        {partnerId 
+                          ? "Say hello to start chatting! Real-time end-to-end stranger messaging."
+                          : "Finding someone who wants to text chat right now. Click 'Next' if you want to skip."}
+                      </p>
+                    </div>
+                  )}
+
+                  {messages.map((msg, idx) => (
+                    <div key={idx} className={`text-msg-item ${msg.sender}`}>
+                      {msg.sender === "partner" && (
+                        <div className="msg-sender-name">
+                          {partnerInfo?.name || "Stranger"}
+                        </div>
+                      )}
+                      <div className="msg-bubble-content">
+                        {msg.type === "coin-prompt" ? (
+                          <div className="coin-prompt-bubble">
+                            <span>💰 {msg.text}</span>
+                            <div className="coin-prompt-buttons">
+                              <button onClick={() => confirmAndSendMessage(msg.pendingText)}>Send (-5 Coins)</button>
+                              <button onClick={() => setMessages(prev => prev.filter(m => m.type !== "coin-prompt"))}>Cancel</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <span>{msg.text}</span>
+                        )}
+                        {msg.translated && (
+                          <div className="translated-subtext">
+                            Translated: {msg.translated}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={chatEndRef} />
+                </div>
+
+                {/* Floating Gift Overlay for text mode */}
+                {receivedGift && (
+                  <div className="floating-gift-overlay">
+                    <div className="floating-sticker-container">
+                      <div className="sticker-glow" style={{ background: receivedGift.isSender ? 'rgba(99,102,241,0.6)' : 'rgba(236,72,153,0.6)' }}></div>
+                      <div className="sticker-emoji">{receivedGift.icon}</div>
+                      <div className="sticker-info">
+                        {receivedGift.isSender ? (
+                          <>
+                            <div className="sticker-sender" style={{ color: '#a5b4fc' }}>🎁 Sent to {partnerInfo?.name || 'Partner'}!</div>
+                            <div className="sticker-amount" style={{ color: '#c4b5fd' }}>-{receivedGift.amount} Coins</div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="sticker-sender">From {receivedGift.from}</div>
+                            <div className="sticker-amount">+{receivedGift.amount} Coins</div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Chat Input Bar */}
+                <form className="text-mode-composer" onSubmit={sendMessage}>
+                  <button 
+                    type="button" 
+                    className="btn-composer-skip"
+                    onClick={nextPartner}
+                    title="Skip (Esc)"
+                  >
+                    ⏭️ Next
+                  </button>
+                  <input
+                    type="text"
+                    className="text-mode-input-field"
+                    placeholder={partnerId ? "Type a message to stranger..." : "Waiting for match..."}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    disabled={!partnerId}
+                    autoFocus
+                  />
+                  <button 
+                    type="submit" 
+                    className="btn-composer-send"
+                    disabled={!partnerId || !message.trim()}
+                  >
+                    <span>Send</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                    </svg>
+                  </button>
+                </form>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="video-column">
 
             {/* PREMIUM FILTER SETTINGS MODAL */}
             {showFilterModal && (
@@ -4884,6 +5119,8 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             </form>
           </div>
         </div>
+            </>
+          )}
       </div>
 
       {/* PREMIUM PAYMENT MODAL */}
@@ -5305,6 +5542,416 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           gap: 0.75rem;
           user-select: none; /* Prevent text selection */
           -webkit-user-drag: none; /* Prevent dragging elements */
+        }
+
+        /* HEADER MODE SWITCH BUTTON */
+        .mode-switch-btn.text-mode-active {
+          border-color: rgba(0, 242, 254, 0.45) !important;
+          background: rgba(0, 242, 254, 0.12) !important;
+          color: #a5f3fc !important;
+        }
+        .mode-switch-btn.video-mode-active {
+          border-color: rgba(168, 85, 247, 0.45) !important;
+          background: rgba(168, 85, 247, 0.12) !important;
+          color: #e9d5ff !important;
+        }
+
+        /* TEXT MODE LAYOUT & CHAT CONTAINER */
+        .text-mode-active-layout {
+          display: flex !important;
+          justify-content: center !important;
+          align-items: stretch !important;
+          max-width: 960px !important;
+          margin: 0 auto !important;
+          width: 100% !important;
+          flex: 1 !important;
+          min-height: 0 !important;
+        }
+        .text-mode-container {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          height: calc(100vh - 120px);
+          min-height: 480px;
+          background: rgba(15, 23, 42, 0.85);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 20px;
+          overflow: hidden;
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+        .text-mode-partner-card {
+          padding: 14px 20px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: rgba(30, 41, 59, 0.55);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+        .partner-identity-left {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+        }
+        .partner-avatar-circle {
+          width: 46px;
+          height: 46px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #00f2fe, #0072ff);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: #fff;
+          box-shadow: 0 0 15px rgba(0, 242, 254, 0.35);
+          overflow: hidden;
+          flex-shrink: 0;
+        }
+        .partner-avatar-circle img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .searching-pulse-icon {
+          font-size: 1.3rem;
+          animation: pulse 1.8s infinite;
+        }
+        .partner-meta-info {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .partner-name-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        .partner-display-name {
+          font-size: 1.05rem;
+          font-weight: 700;
+          color: #f8fafc;
+        }
+        .gender-tag {
+          font-size: 0.72rem;
+          font-weight: 600;
+          padding: 2px 8px;
+          border-radius: 999px;
+          text-transform: capitalize;
+        }
+        .gender-tag.male {
+          background: rgba(59, 130, 246, 0.2);
+          color: #93c5fd;
+          border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+        .gender-tag.female {
+          background: rgba(236, 72, 153, 0.2);
+          color: #f472b6;
+          border: 1px solid rgba(236, 72, 153, 0.4);
+        }
+        .country-tag {
+          font-size: 0.75rem;
+          color: #cbd5e1;
+          background: rgba(255, 255, 255, 0.08);
+          padding: 2px 8px;
+          border-radius: 999px;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+        .country-tag img {
+          width: 14px;
+          height: 10px;
+          border-radius: 2px;
+        }
+        .partner-status-row {
+          font-size: 0.8rem;
+        }
+        .connected-status {
+          color: #10b981;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-weight: 500;
+        }
+        .live-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #10b981;
+          box-shadow: 0 0 8px #10b981;
+        }
+        .searching-status {
+          color: #38bdf8;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .text-mode-actions-right {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-left: auto;
+        }
+        .action-pill-btn {
+          padding: 7px 14px;
+          border-radius: 10px;
+          font-size: 0.82rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          background: rgba(255, 255, 255, 0.06);
+          color: #f8fafc;
+        }
+        .action-pill-btn:hover {
+          transform: translateY(-1px);
+          background: rgba(255, 255, 255, 0.12);
+        }
+        .skip-pill-btn {
+          background: linear-gradient(135deg, #00f2fe, #0072ff) !important;
+          border: none !important;
+          color: #fff !important;
+          box-shadow: 0 4px 14px rgba(0, 242, 254, 0.3) !important;
+        }
+        .skip-pill-btn:hover {
+          box-shadow: 0 6px 18px rgba(0, 242, 254, 0.45) !important;
+        }
+        .stop-pill-btn {
+          background: rgba(239, 68, 68, 0.15) !important;
+          border-color: rgba(239, 68, 68, 0.3) !important;
+          color: #fca5a5 !important;
+        }
+        .report-pill-btn {
+          background: rgba(239, 68, 68, 0.1) !important;
+          border-color: rgba(239, 68, 68, 0.25) !important;
+          color: #fca5a5 !important;
+        }
+        .action-pill-btn.friend-sent {
+          background: rgba(34, 197, 94, 0.2) !important;
+          border-color: rgba(34, 197, 94, 0.4) !important;
+          color: #86efac !important;
+        }
+        .text-mode-chat-body {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          min-height: 0;
+          position: relative;
+        }
+        .text-mode-messages-scroll {
+          flex: 1;
+          overflow-y: auto;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .text-mode-empty-state {
+          margin: auto;
+          text-align: center;
+          max-width: 380px;
+          padding: 30px 20px;
+        }
+        .text-mode-empty-state .empty-icon {
+          font-size: 3rem;
+          margin-bottom: 12px;
+        }
+        .text-mode-empty-state h3 {
+          font-size: 1.25rem;
+          color: #f8fafc;
+          margin-bottom: 8px;
+        }
+        .text-mode-empty-state p {
+          font-size: 0.9rem;
+          color: #94a3b8;
+          line-height: 1.5;
+        }
+        .text-msg-item {
+          display: flex;
+          flex-direction: column;
+          max-width: 75%;
+          animation: fadeInMsg 0.2s ease-out;
+        }
+        @keyframes fadeInMsg {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .text-msg-item.me {
+          align-self: flex-end;
+          align-items: flex-end;
+        }
+        .text-msg-item.partner {
+          align-self: flex-start;
+          align-items: flex-start;
+        }
+        .msg-sender-name {
+          font-size: 0.72rem;
+          color: #94a3b8;
+          margin-bottom: 4px;
+          margin-left: 6px;
+        }
+        .text-msg-item.me .msg-bubble-content {
+          background: linear-gradient(135deg, #00f2fe, #0072ff);
+          color: #ffffff;
+          border-radius: 18px 18px 4px 18px;
+          padding: 10px 16px;
+          font-size: 0.95rem;
+          line-height: 1.45;
+          box-shadow: 0 4px 15px rgba(0, 114, 255, 0.25);
+          word-break: break-word;
+        }
+        .text-msg-item.partner .msg-bubble-content {
+          background: rgba(30, 41, 59, 0.88);
+          color: #f1f5f9;
+          border-radius: 18px 18px 18px 4px;
+          padding: 10px 16px;
+          font-size: 0.95rem;
+          line-height: 1.45;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+          word-break: break-word;
+        }
+        .translated-subtext {
+          font-size: 0.75rem;
+          color: #a5f3fc;
+          margin-top: 4px;
+          border-top: 1px solid rgba(255, 255, 255, 0.15);
+          padding-top: 3px;
+        }
+        .coin-prompt-bubble {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .coin-prompt-buttons {
+          display: flex;
+          gap: 8px;
+        }
+        .coin-prompt-buttons button {
+          padding: 4px 10px;
+          border-radius: 6px;
+          font-size: 0.8rem;
+          cursor: pointer;
+          border: none;
+        }
+        .coin-prompt-buttons button:first-child {
+          background: #10b981;
+          color: #fff;
+        }
+        .coin-prompt-buttons button:last-child {
+          background: #64748b;
+          color: #fff;
+        }
+        .text-mode-composer {
+          padding: 14px 18px;
+          background: rgba(15, 23, 42, 0.9);
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .btn-composer-skip {
+          padding: 10px 16px;
+          border-radius: 12px;
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          color: #cbd5e1;
+          font-weight: 600;
+          font-size: 0.85rem;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.2s ease;
+        }
+        .btn-composer-skip:hover {
+          background: rgba(255, 255, 255, 0.14);
+          color: #ffffff;
+        }
+        .text-mode-input-field {
+          flex: 1;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          border-radius: 12px;
+          padding: 11px 16px;
+          color: #ffffff;
+          font-size: 0.95rem;
+          outline: none;
+          transition: all 0.2s ease;
+        }
+        .text-mode-input-field:focus {
+          border-color: #00f2fe;
+          box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+        }
+        .btn-composer-send {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 11px 20px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, #00f2fe, #0072ff);
+          border: none;
+          color: #fff;
+          font-weight: 600;
+          font-size: 0.9rem;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+        }
+        .btn-composer-send:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+          box-shadow: none;
+        }
+        @media (max-width: 768px) {
+          .text-mode-active-layout {
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+          }
+          .text-mode-container {
+            height: calc(100dvh - 80px);
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
+          }
+          .text-mode-partner-card {
+            padding: 10px 12px;
+          }
+          .partner-avatar-circle {
+            width: 38px;
+            height: 38px;
+            font-size: 1rem;
+          }
+          .partner-display-name {
+            font-size: 0.92rem;
+          }
+          .action-pill-btn {
+            padding: 6px 10px;
+            font-size: 0.75rem;
+          }
+          .text-mode-messages-scroll {
+            padding: 12px;
+          }
+          .text-mode-composer {
+            padding: 10px 12px;
+            gap: 8px;
+          }
+          .btn-composer-skip {
+            padding: 8px 12px;
+            font-size: 0.8rem;
+          }
+          .text-mode-input-field {
+            padding: 9px 12px;
+            font-size: 0.88rem;
+          }
+          .btn-composer-send {
+            padding: 9px 14px;
+            font-size: 0.82rem;
+          }
         }
 
         .mobile-gift-popup-box {

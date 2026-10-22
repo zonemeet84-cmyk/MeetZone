@@ -63,15 +63,41 @@ async function verifyWithHiveAI(base64Image) {
 }
 
 const app = express();
-app.set("trust proxy", 1); // Trust first proxy (Cloudflare/Nginx) for rate-limit IP parsing
+app.set("trust proxy", true); // Trust reverse proxies (Cloudflare/Render/Nginx)
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
+// Helper function to extract genuine client IP behind Cloudflare and Render proxies
+function getClientIp(req) {
+  return (
+    req.headers["cf-connecting-ip"] ||
+    (req.headers["x-forwarded-for"] ? req.headers["x-forwarded-for"].split(",")[0].trim() : null) ||
+    req.ip ||
+    req.socket?.remoteAddress ||
+    req.connection?.remoteAddress ||
+    "127.0.0.1"
+  );
+}
+
 const rateLimit = require("express-rate-limit");
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 100, // Increased for Admin Dashboard polling
+  max: 300, // 300 requests per minute per real client IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    const ip = getClientIp(req);
+    return rateLimit.ipKeyGenerator(ip);
+  },
+  skip: (req) => {
+    // Exempt keepalive pings and static news polling from rate limiting
+    return req.path === "/ping" || req.path === "/news";
+  },
+  validate: {
+    xForwardedForHeader: false,
+    default: true
+  },
   message: { message: "Too many requests from this IP, please try again after a minute" }
 });
 app.use("/api/", apiLimiter);
@@ -881,7 +907,7 @@ app.post("/api/auth/session-login", (req, res) => {
   const { email, name, referralCode } = req.body;
   if (!email) return res.status(400).json({ message: "Email is required" });
 
-  const clientIp = req.headers['cf-connecting-ip'] || (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || req.ip || req.connection.remoteAddress;
+  const clientIp = getClientIp(req);
   let user = users.find(u => u.email === email);
   const isNewUser = !user;
 
@@ -1005,7 +1031,7 @@ app.post("/api/auth/send-email-otp", async (req, res) => {
 // EMAIL REGISTRATION ENDPOINT
 app.post("/api/auth/register", async (req, res) => {
   const { name, email, password, otp, gender, country, state, age, referralCode, captchaToken } = req.body;
-  const clientIp = req.headers['cf-connecting-ip'] || (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || req.ip || req.connection.remoteAddress;
+  const clientIp = getClientIp(req);
 
   const isCaptchaValid = await verifyCaptcha(captchaToken);
   if (!isCaptchaValid) {
@@ -1194,7 +1220,7 @@ app.post("/api/auth/reset-password", async (req, res) => {
 
 app.post("/api/auth/login", async (req, res) => {
   const { identifier, password, captchaToken } = req.body; // identifier can be email or phone
-  const clientIp = req.headers['cf-connecting-ip'] || (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || req.ip || req.connection.remoteAddress;
+  const clientIp = getClientIp(req);
 
   const isCaptchaValid = await verifyCaptcha(captchaToken);
   if (!isCaptchaValid) {
@@ -1319,7 +1345,7 @@ app.post("/api/auth/send-otp", async (req, res) => {
 app.post("/api/auth/register", async (req, res) => {
   let { phone, password, name, gender, country, state, age, otp, referralCode, captchaToken } = req.body;
   if (phone) phone = phone.replace(/\s/g, ""); // Normalize phone
-  const clientIp = req.headers['cf-connecting-ip'] || (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || req.ip || req.connection.remoteAddress;
+  const clientIp = getClientIp(req);
 
   const isCaptchaValid = await verifyCaptcha(captchaToken);
   if (!isCaptchaValid) {
@@ -1428,7 +1454,7 @@ app.post("/api/auth/register", async (req, res) => {
 // Firebase Registration/Login Endpoint
 app.post("/api/auth/firebase-register", async (req, res) => {
   const { idToken, name, phone, password, gender, country, state, age } = req.body;
-  const clientIp = req.headers['cf-connecting-ip'] || (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || req.ip || req.connection.remoteAddress;
+  const clientIp = getClientIp(req);
 
   if (bannedIps.includes(clientIp)) {
     return res.status(403).json({ message: "Your IP is banned." });
@@ -2460,6 +2486,11 @@ function matchUsers() {
       const f1 = user1.filters || { gender: "all", country: "all", state: "All States", age: "All Ages" };
       const f2 = user2.filters || { gender: "all", country: "all", state: "All States", age: "All Ages" };
 
+      // Check Chat Mode: "video" only with "video", "text" only with "text"
+      const mode1 = user1.chatMode || "video";
+      const mode2 = user2.chatMode || "video";
+      const matchesMode = mode1 === mode2;
+
       // Check User 1's preferences against User 2
       const matchesGender1 = f1.gender === "all" || f1.gender === user2.gender;
       const matchesCountry1 = f1.country === "all" || f1.country === user2.country;
@@ -2472,7 +2503,8 @@ function matchUsers() {
       const matchesState2 = !f2.state || f2.state === "All States" || f2.state === user1.state;
       const matchesAge2 = !f2.age || f2.age === "All Ages" || f2.age === "all" || f2.age === user1.age;
 
-      if (matchesGender1 && matchesCountry1 && matchesState1 && matchesAge1 &&
+      if (matchesMode &&
+          matchesGender1 && matchesCountry1 && matchesState1 && matchesAge1 &&
           matchesGender2 && matchesCountry2 && matchesState2 && matchesAge2) {
         // Remove them from waiting list
         waitingUsers.splice(j, 1);
@@ -2504,6 +2536,7 @@ function matchUsers() {
         user1.emit("matched", {
           partnerId: user2.id,
           initiator: true,
+          chatMode: mode1,
           partnerInfo: {
             id: user2.userId,
             name: user2.name,
@@ -2518,6 +2551,7 @@ function matchUsers() {
         user2.emit("matched", {
           partnerId: user1.id,
           initiator: false,
+          chatMode: mode2,
           partnerInfo: {
             id: user1.userId,
             name: user1.name,
@@ -2853,12 +2887,13 @@ function endQuiz(roomId) {
         socket.country = profile.country || "India";
         socket.state = profile.state || "All States";
         socket.age = profile.age || "18-24";
+        socket.chatMode = profile.chatMode === "text" ? "text" : "video";
         socket.premium = isPremium;
         socket.planName = pName;
         socket.userBadge = uBadge;
         socket.activeSubscription = actSub;
 
-        console.log(`User ${socket.id} profile set securely: ${profile.name} (${profile.email}), ${socket.premium ? "PREMIUM" : "FREE"}`);
+        console.log(`User ${socket.id} profile set securely: ${profile.name} (${profile.email}), ${socket.chatMode.toUpperCase()}, ${socket.premium ? "PREMIUM" : "FREE"}`);
 
         if (socket.userId) {
           onlineUsers.set(socket.userId, socket.id);
@@ -2908,6 +2943,11 @@ function endQuiz(roomId) {
       socket.on("set-translate-language", (langCode) => {
         socket.translateLang = langCode;
         console.log(`User ${socket.id} set translation language to ${langCode}`);
+      });
+
+      socket.on("set-chat-mode", ({ mode }) => {
+        socket.chatMode = mode === "text" ? "text" : "video";
+        console.log(`User ${socket.id} updated chat mode to ${socket.chatMode}`);
       });
 
       socket.on("send-message", async ({ text, to }) => {
@@ -4094,7 +4134,7 @@ function endQuiz(roomId) {
     let adminOtpStore = {};
 
     function authenticateAdmin(req, res, next) {
-      const clientIp = req.headers['cf-connecting-ip'] || (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || req.ip || req.connection.remoteAddress;
+      const clientIp = getClientIp(req);
       
       // Extract token from Authorization header first (prioritized)
       let token = null;
@@ -4175,7 +4215,7 @@ function endQuiz(roomId) {
 
     app.post("/api/admin/verify-login", async (req, res) => {
       const { email, password, otp, secretRouteKey } = req.body;
-      const clientIp = req.headers['cf-connecting-ip'] || (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || req.ip || req.connection.remoteAddress;
+      const clientIp = getClientIp(req);
 
       if (email !== "ds9376314@gmail.com") {
         return res.status(403).json({ message: "Access Denied" });
