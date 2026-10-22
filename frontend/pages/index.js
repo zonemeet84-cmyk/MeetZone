@@ -1,4 +1,5 @@
 import PremiumModal from "../components/PremiumModal";
+import MaintenanceModal from "../components/MaintenanceModal";
 import ZoneMeetLogo from "../components/ZoneMeetLogo";
 import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -76,9 +77,12 @@ function getHeaderSubscriptionLabel(user) {
   return planName;
 }
 
-export default function Dashboard() {
+export default function Dashboard(props) {
   const router = useRouter();
   const { data: session } = useSession();
+  const maintenance = props?.maintenance || { active: false };
+  const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
+  const [bypassMaintenance, setBypassMaintenance] = useState(false);
   const [user, setUser] = useState(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
@@ -1130,6 +1134,14 @@ export default function Dashboard() {
   const startChat = async (modeInput) => {
     if (startingChat) return;
     const mode = (typeof modeInput === "string" ? modeInput : selectedChatMode) || "video";
+
+    // Maintenance Mode Guard: Block matching for regular visitors
+    const isAdminUser = isSiteAdmin(user?.email || session?.user?.email);
+    if (maintenance?.active && !isAdminUser && !bypassMaintenance) {
+      setShowMaintenanceModal(true);
+      return;
+    }
+
     setStartingChat(true);
     console.log("Start Chat Triggered with mode:", mode);
     try {
@@ -7897,6 +7909,17 @@ export default function Dashboard() {
         confirmText={premiumModal.confirmText}
         cancelText={premiumModal.cancelText}
         onConfirm={premiumModal.onConfirm}
+      />
+      <MaintenanceModal
+        isOpen={showMaintenanceModal}
+        onClose={() => setShowMaintenanceModal(false)}
+        maintenance={maintenance}
+        isAdmin={isSiteAdmin(user?.email || session?.user?.email)}
+        onBypass={() => {
+          setBypassMaintenance(true);
+          setShowMaintenanceModal(false);
+          startChat(selectedChatMode);
+        }}
       />
     </div>
   );

@@ -5,11 +5,12 @@ const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 import { SessionProvider } from "next-auth/react"
 import Head from 'next/head'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import Script from 'next/script'
 import CyberNotification from '../components/CyberNotification'
+import MaintenanceBanner from '../components/MaintenanceBanner'
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }) {
   const router = useRouter();
@@ -78,6 +79,23 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
     };
   }, [router]);
 
+  const [maintenance, setMaintenance] = useState({ active: false });
+
+  const fetchMaintenance = async () => {
+    try {
+      const res = await axios.get("https://api.zonemeet.chat/api/maintenance-status");
+      if (res.data) {
+        setMaintenance(res.data);
+      }
+    } catch (_) {}
+  };
+
+  useEffect(() => {
+    fetchMaintenance();
+    const interval = setInterval(fetchMaintenance, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <SessionProvider session={session}>
       {/* Global Site Tag (gtag.js) - Google Analytics */}
@@ -112,7 +130,8 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.png" type="image/png" />
       </Head>
-      <Component {...pageProps} />
+      <MaintenanceBanner maintenance={maintenance} onRefresh={fetchMaintenance} />
+      <Component {...pageProps} maintenance={maintenance} onRefreshMaintenance={fetchMaintenance} />
       <CyberNotification />
     </SessionProvider>
   )

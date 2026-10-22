@@ -366,6 +366,69 @@ function saveNews() {
   if (db) db.collection("appData").updateOne({ _id: "news" }, { $set: { data: news } }, { upsert: true }).catch(console.error);
 }
 
+// ========= SYSTEM CONFIG & MAINTENANCE MODE PERSISTENCE =========
+const SYSTEM_CONFIG_FILE = path.join(__dirname, "system_config.json");
+let systemConfig = { 
+  lastResetMonth: new Date().getMonth(), 
+  lastResetYear: new Date().getFullYear(),
+  maintenance: {
+    active: false,
+    startedAt: null,
+    endsAt: null,
+    durationMinutes: 30,
+    message: "Scheduled server upgrades in progress. Live video & text matching are temporarily paused. Feel free to explore the site!"
+  }
+};
+if (fs.existsSync(SYSTEM_CONFIG_FILE)) {
+  try { 
+    const loaded = JSON.parse(fs.readFileSync(SYSTEM_CONFIG_FILE, "utf-8"));
+    systemConfig = { ...systemConfig, ...loaded };
+  } catch (e) { }
+}
+if (!systemConfig.maintenance) {
+  systemConfig.maintenance = {
+    active: false,
+    startedAt: null,
+    endsAt: null,
+    durationMinutes: 30,
+    message: "Scheduled server upgrades in progress. Live video & text matching are temporarily paused. Feel free to explore the site!"
+  };
+}
+
+function saveSystemConfig() {
+  try { fs.writeFileSync(SYSTEM_CONFIG_FILE, JSON.stringify(systemConfig, null, 2)); } catch (e) { }
+  if (db) db.collection("appData").updateOne({ _id: "systemConfig" }, { $set: { data: systemConfig } }, { upsert: true }).catch(console.error);
+}
+
+function getMaintenanceStatus() {
+  if (!systemConfig) return { active: false, remainingSeconds: 0 };
+  if (!systemConfig.maintenance) {
+    systemConfig.maintenance = {
+      active: false,
+      startedAt: null,
+      endsAt: null,
+      durationMinutes: 30,
+      message: "Scheduled server upgrades in progress. Live video & text matching are temporarily paused. Feel free to explore the site!"
+    };
+  }
+  const m = systemConfig.maintenance;
+  const now = Date.now();
+  const isActuallyActive = !!(m.active && m.endsAt && now < m.endsAt);
+  // Auto-deactivate when elapsed
+  if (m.active && m.endsAt && now >= m.endsAt) {
+    m.active = false;
+    saveSystemConfig();
+  }
+  const remainingSeconds = isActuallyActive ? Math.max(0, Math.floor((m.endsAt - now) / 1000)) : 0;
+  return {
+    active: isActuallyActive,
+    endsAt: isActuallyActive ? m.endsAt : null,
+    durationMinutes: m.durationMinutes || 30,
+    message: m.message || "Scheduled server upgrades in progress. Live video & text matching are temporarily paused. Feel free to explore the site!",
+    remainingSeconds
+  };
+}
+
 // Generate unique referral code from name + random suffix
 function generateReferralCode(name) {
   const prefix = (name || "USER").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3) || "ZM";
@@ -2808,6 +2871,14 @@ function endQuiz(roomId) {
       if (!socket || !socket.connected) return;
       if (socket.queueTimeout) clearTimeout(socket.queueTimeout);
 
+      // Check Maintenance Mode
+      const isOwner = socket.email?.toLowerCase() === "ds9376314@gmail.com";
+      const mStatus = getMaintenanceStatus();
+      if (mStatus.active && !isOwner) {
+        socket.emit("maintenance_active", mStatus);
+        return;
+      }
+
       // Clean existing references of this socket or user/device from waiting queue before queueing
       waitingUsers = (waitingUsers || []).filter(s => 
         s && s.connected && s.id !== socket.id && 
@@ -2816,7 +2887,6 @@ function endQuiz(roomId) {
         (!socket.deviceId || !s.deviceId || s.deviceId !== socket.deviceId)
       );
 
-      const isOwner = socket.email?.toLowerCase() === "ds9376314@gmail.com";
       const plan = socket.planName || socket.currentPlan || "";
       const isVIPElite = plan === "VIP Elite" || isOwner;
       const isPriority = isOwner || plan === "Starter" || plan === "Prime" || plan === "Silver" || plan === "Prime Silver" || socket.premium;
@@ -2853,6 +2923,10 @@ function endQuiz(roomId) {
     io.on("connection", (socket) => {
       console.log("User Connected:", socket.id);
       socket.emit("global-online-count", getGlobalOnlineCount());
+      const initialMStatus = getMaintenanceStatus();
+      if (initialMStatus.active) {
+        socket.emit("maintenance_status", initialMStatus);
+      }
       io.emit("global-online-count", getGlobalOnlineCount());
 
       // Initialize with default filters/info
@@ -3464,6 +3538,12 @@ function endQuiz(roomId) {
         }
 
         const isAdmin = user.email === "ds9376314@gmail.com";
+        const mStatus = getMaintenanceStatus();
+        if (mStatus.active && !isAdmin) {
+          socket.emit("maintenance_active", mStatus);
+          socket.emit("quiz-error", { message: "Quiz Duel is temporarily paused for server maintenance." });
+          return;
+        }
 
         if (!isAdmin && (user.coins || 0) < 50) {
           socket.emit("quiz-error", { message: "Insufficient Coins! Entry fee is 50 coins." });
@@ -4629,16 +4709,6 @@ function endQuiz(roomId) {
     });
 
     // ========= LEADERBOARD LOGIC =========
-    const SYSTEM_CONFIG_FILE = path.join(__dirname, "system_config.json");
-    let systemConfig = { lastResetMonth: new Date().getMonth(), lastResetYear: new Date().getFullYear() };
-    if (fs.existsSync(SYSTEM_CONFIG_FILE)) {
-      try { systemConfig = JSON.parse(fs.readFileSync(SYSTEM_CONFIG_FILE, "utf-8")); } catch (e) { }
-    }
-
-    function saveSystemConfig() {
-      try { fs.writeFileSync(SYSTEM_CONFIG_FILE, JSON.stringify(systemConfig, null, 2)); } catch (e) { }
-      if (db) db.collection("appData").updateOne({ _id: "systemConfig" }, { $set: { data: systemConfig } }, { upsert: true }).catch(console.error);
-    }
 
     function checkLeaderboardReset() {
       const now = new Date();
@@ -4751,6 +4821,53 @@ function endQuiz(roomId) {
     // ========= KEEP ALIVE LOGIC =========
     app.get("/api/ping", (req, res) => {
       res.json({ status: "alive", timestamp: Date.now() });
+    });
+
+    // ========= MAINTENANCE MODE ENDPOINTS =========
+    app.get("/api/maintenance-status", (req, res) => {
+      res.json(getMaintenanceStatus());
+    });
+
+    app.post("/api/admin/maintenance", authenticateAdmin, (req, res) => {
+      if (req.user.email !== "ds9376314@gmail.com") return res.status(403).json({ message: "Forbidden" });
+      const { active, durationMinutes, message } = req.body;
+      const now = Date.now();
+      const mins = Math.max(1, parseInt(durationMinutes, 10) || 30);
+      const endsAt = active ? now + mins * 60 * 1000 : null;
+
+      if (!systemConfig.maintenance) systemConfig.maintenance = {};
+      systemConfig.maintenance.active = !!active;
+      systemConfig.maintenance.startedAt = active ? now : null;
+      systemConfig.maintenance.endsAt = endsAt;
+      systemConfig.maintenance.durationMinutes = mins;
+      if (message !== undefined) systemConfig.maintenance.message = message;
+      saveSystemConfig();
+
+      const statusPayload = getMaintenanceStatus();
+
+      // If activating maintenance, purge non-admin waiting queues
+      if (active) {
+        waitingUsers = (waitingUsers || []).filter(s => {
+          if (s && s.email?.toLowerCase() === "ds9376314@gmail.com") return true;
+          if (s && s.connected) {
+            s.emit("maintenance_active", statusPayload);
+          }
+          return false;
+        });
+        waitingQuizUsers = (waitingQuizUsers || []).filter(s => {
+          if (s && s.email?.toLowerCase() === "ds9376314@gmail.com") return true;
+          if (s && s.connected) {
+            s.emit("maintenance_active", statusPayload);
+          }
+          return false;
+        });
+      }
+
+      if (io) {
+        io.emit("maintenance_status", statusPayload);
+      }
+
+      res.json({ success: true, maintenance: statusPayload });
     });
 
     // --- News Endpoints ---

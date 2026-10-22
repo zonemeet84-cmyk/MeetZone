@@ -37,6 +37,13 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCountry, setFilterCountry] = useState("");
   
+  // Maintenance Mode State
+  const [maintenance, setMaintenance] = useState({ active: false, endsAt: null, durationMinutes: 30, message: "" });
+  const [maintenanceMinutes, setMaintenanceMinutes] = useState(30);
+  const [maintenanceMessage, setMaintenanceMessage] = useState("Scheduled server upgrades in progress. Live video & text matching are temporarily paused. Feel free to explore the site!");
+  const [maintenanceTimeLeft, setMaintenanceTimeLeft] = useState("");
+  const [savingMaintenance, setSavingMaintenance] = useState(false);
+
   // Manual Edit State
   const [editingUser, setEditingUser] = useState(null);
   const [editForm, setEditForm] = useState({ premium: false, planName: "Free", isVIP: false });
@@ -85,6 +92,86 @@ export default function AdminDashboard() {
     setAuthForm((prev) => ({ ...prev, email: ADMIN_EMAIL }));
     setLoading(false);
   }, [sessionStatus, session, router]);
+
+  const fetchMaintenanceStatus = async () => {
+    try {
+      const res = await axios.get("https://api.zonemeet.chat/api/maintenance-status");
+      if (res.data) {
+        setMaintenance(res.data);
+        if (res.data.durationMinutes) setMaintenanceMinutes(res.data.durationMinutes);
+        if (res.data.message) setMaintenanceMessage(res.data.message);
+      }
+    } catch (_) {}
+  };
+
+  const handleToggleMaintenance = async (active, mins, msg) => {
+    const config = getAdminHeaders();
+    if (!config) return;
+    setSavingMaintenance(true);
+    try {
+      const targetMins = mins !== undefined ? mins : maintenanceMinutes;
+      const targetMsg = msg !== undefined ? msg : maintenanceMessage;
+      const res = await axios.post("https://api.zonemeet.chat/api/admin/maintenance", {
+        active,
+        durationMinutes: targetMins,
+        message: targetMsg
+      }, config);
+      if (res.data.success) {
+        setMaintenance(res.data.maintenance);
+        Swal.fire({
+          icon: active ? "warning" : "success",
+          title: active ? "🛠️ Maintenance Activated!" : "🟢 Website is 100% Live!",
+          text: active
+            ? `Matching & Chat are paused for ${targetMins} minutes. Visitors can explore the site freely.`
+            : "All matching and video/text chat services have been fully restored.",
+          background: "#0f172a",
+          color: "#fff"
+        });
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err.response?.data?.message || "Failed to update maintenance mode",
+        background: "#0f172a",
+        color: "#fff"
+      });
+    } finally {
+      setSavingMaintenance(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMaintenanceStatus();
+  }, []);
+
+  useEffect(() => {
+    if (!maintenance?.active || !maintenance?.endsAt) {
+      setMaintenanceTimeLeft("");
+      return;
+    }
+    const tick = () => {
+      const now = Date.now();
+      const diff = Math.max(0, maintenance.endsAt - now);
+      if (diff <= 0) {
+        setMaintenanceTimeLeft("00:00");
+        fetchMaintenanceStatus();
+        return;
+      }
+      const totalSec = Math.floor(diff / 1000);
+      const hours = Math.floor(totalSec / 3600);
+      const minutes = Math.floor((totalSec % 3600) / 60);
+      const seconds = totalSec % 60;
+      if (hours > 0) {
+        setMaintenanceTimeLeft(`${hours}h ${minutes.toString().padStart(2, "0")}m ${seconds.toString().padStart(2, "0")}s`);
+      } else {
+        setMaintenanceTimeLeft(`${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`);
+      }
+    };
+    tick();
+    const timer = setInterval(tick, 1000);
+    return () => clearInterval(timer);
+  }, [maintenance?.active, maintenance?.endsAt]);
 
   // Dedicated 1-second live users poller for zero-delay real-time tracking
   const fetchLiveUsers = async () => {
@@ -472,6 +559,7 @@ export default function AdminDashboard() {
         <nav className="nav-menu">
           {[
             { id: 'dashboard', icon: 'fa-grid-2', label: 'Dashboard' },
+            { id: 'maintenance', icon: 'fa-wrench', label: '🛠️ Maintenance Mode' },
             { id: 'live-now', icon: 'fa-satellite-dish', label: `Live Online (${liveUsers.length})` },
             { id: 'analytics', icon: 'fa-chart-mixed', label: 'Analytics' },
             { id: 'revenue', icon: 'fa-wallet', label: 'Revenue' },
@@ -532,6 +620,32 @@ export default function AdminDashboard() {
            </div>
            
            <div className="header-right">
+               <div 
+                 onClick={() => setActiveTab("maintenance")}
+                 style={{
+                   display: "inline-flex",
+                   alignItems: "center",
+                   gap: "8px",
+                   padding: "8px 16px",
+                   borderRadius: "12px",
+                   background: maintenance?.active ? "rgba(245, 158, 11, 0.15)" : "rgba(16, 185, 129, 0.12)",
+                   border: `1px solid ${maintenance?.active ? "rgba(245, 158, 11, 0.4)" : "rgba(16, 185, 129, 0.3)"}`,
+                   color: maintenance?.active ? "#fbbf24" : "#34d399",
+                   fontWeight: 800,
+                   fontSize: "0.82rem",
+                   cursor: "pointer",
+                   marginRight: "10px"
+                 }}
+               >
+                 <span style={{
+                   width: "8px",
+                   height: "8px",
+                   borderRadius: "50%",
+                   background: maintenance?.active ? "#f59e0b" : "#10b981",
+                   boxShadow: `0 0 8px ${maintenance?.active ? "#f59e0b" : "#10b981"}`
+                 }}></span>
+                 <span>{maintenance?.active ? `🛠️ MAINTENANCE ON (${maintenanceTimeLeft || "Active"})` : "🟢 SITE 100% LIVE"}</span>
+               </div>
               <div className="search-pill">
                  <i className="fa fa-search"></i>
                  <input 
@@ -557,6 +671,268 @@ export default function AdminDashboard() {
 
         {/* DYNAMIC VIEWS */}
         <div className="view-container">
+           {activeTab === "maintenance" && (
+             <div className="maintenance-tab-container">
+               {/* STATUS HERO CARD */}
+               <div style={{
+                 background: maintenance?.active 
+                   ? "linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%)"
+                   : "linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(15, 23, 42, 0.8) 100%)",
+                 border: `1.5px solid ${maintenance?.active ? "rgba(245, 158, 11, 0.5)" : "rgba(16, 185, 129, 0.35)"}`,
+                 borderRadius: "24px",
+                 padding: "32px",
+                 marginBottom: "30px",
+                 boxShadow: maintenance?.active ? "0 20px 50px rgba(245, 158, 11, 0.15)" : "0 20px 50px rgba(16, 185, 129, 0.1)",
+                 display: "flex",
+                 flexDirection: "column",
+                 gap: "20px"
+               }}>
+                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "15px" }}>
+                   <div>
+                     <div style={{
+                       display: "inline-flex",
+                       alignItems: "center",
+                       gap: "8px",
+                       background: maintenance?.active ? "rgba(245, 158, 11, 0.2)" : "rgba(16, 185, 129, 0.2)",
+                       color: maintenance?.active ? "#fbbf24" : "#34d399",
+                       padding: "6px 14px",
+                       borderRadius: "999px",
+                       fontWeight: 900,
+                       fontSize: "0.75rem",
+                       letterSpacing: "1px",
+                       marginBottom: "10px"
+                     }}>
+                       <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "currentColor" }}></span>
+                       {maintenance?.active ? "MAINTENANCE MODE ACTIVE" : "PLATFORM IS 100% LIVE"}
+                     </div>
+                     <h2 style={{ fontSize: "1.85rem", fontWeight: 900, color: "#fff", margin: "0 0 8px" }}>
+                       {maintenance?.active ? "Website is in Exploration Mode" : "Website Live & Accepting Matches"}
+                     </h2>
+                     <p style={{ color: "#94a3b8", fontSize: "0.92rem", margin: 0, maxWidth: "650px", lineHeight: "1.5" }}>
+                       {maintenance?.active 
+                         ? "Visitors can explore pages, check coin packages, and view features. Matching and chat are paused with a live countdown."
+                         : "All users can connect via Video Chat and Text Chat without restriction. Turn on Maintenance anytime to make safe updates."}
+                     </p>
+                   </div>
+
+                   {maintenance?.active && (
+                     <div style={{
+                       background: "rgba(0,0,0,0.5)",
+                       border: "1px solid rgba(245, 158, 11, 0.4)",
+                       borderRadius: "18px",
+                       padding: "16px 24px",
+                       textAlign: "center"
+                     }}>
+                       <div style={{ color: "#94a3b8", fontSize: "0.72rem", fontWeight: 800, letterSpacing: "1px" }}>TIME REMAINING</div>
+                       <div style={{ color: "#fbbf24", fontSize: "2rem", fontWeight: 900, fontFamily: "monospace" }}>
+                         {maintenanceTimeLeft || "--:--"}
+                       </div>
+                       <div style={{ color: "#10b981", fontSize: "0.75rem", fontWeight: 600 }}>Visitors see live countdown</div>
+                     </div>
+                   )}
+                 </div>
+
+                 {/* ACTION BAR */}
+                 <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", paddingTop: "15px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+                   {maintenance?.active ? (
+                     <>
+                       <button
+                         onClick={() => handleToggleMaintenance(false)}
+                         disabled={savingMaintenance}
+                         style={{
+                           background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                           border: "none",
+                           color: "#fff",
+                           padding: "14px 28px",
+                           borderRadius: "14px",
+                           fontWeight: 900,
+                           fontSize: "1rem",
+                           cursor: "pointer",
+                           boxShadow: "0 8px 25px rgba(16, 185, 129, 0.35)",
+                           transition: "all 0.2s"
+                         }}
+                       >
+                         {savingMaintenance ? "Updating..." : "🟢 End Maintenance & Go 100% Live Now"}
+                       </button>
+
+                       <button
+                         onClick={() => {
+                           const remainingMins = Math.max(1, Math.round((maintenance.endsAt - Date.now()) / 60000));
+                           handleToggleMaintenance(true, remainingMins + 15);
+                         }}
+                         disabled={savingMaintenance}
+                         style={{
+                           background: "rgba(255,255,255,0.08)",
+                           border: "1px solid rgba(255,255,255,0.2)",
+                           color: "#fff",
+                           padding: "14px 20px",
+                           borderRadius: "14px",
+                           fontWeight: 700,
+                           fontSize: "0.9rem",
+                           cursor: "pointer"
+                         }}
+                       >
+                         ⏳ +15 Min Extend
+                       </button>
+
+                       <button
+                         onClick={() => {
+                           const remainingMins = Math.max(1, Math.round((maintenance.endsAt - Date.now()) / 60000));
+                           handleToggleMaintenance(true, remainingMins + 30);
+                         }}
+                         disabled={savingMaintenance}
+                         style={{
+                           background: "rgba(255,255,255,0.08)",
+                           border: "1px solid rgba(255,255,255,0.2)",
+                           color: "#fff",
+                           padding: "14px 20px",
+                           borderRadius: "14px",
+                           fontWeight: 700,
+                           fontSize: "0.9rem",
+                           cursor: "pointer"
+                         }}
+                       >
+                         ⏳ +30 Min Extend
+                       </button>
+                     </>
+                   ) : (
+                     <button
+                       onClick={() => handleToggleMaintenance(true, maintenanceMinutes, maintenanceMessage)}
+                       disabled={savingMaintenance}
+                       style={{
+                         background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+                         border: "none",
+                         color: "#fff",
+                         padding: "14px 32px",
+                         borderRadius: "14px",
+                         fontWeight: 900,
+                         fontSize: "1rem",
+                         cursor: "pointer",
+                         boxShadow: "0 8px 25px rgba(245, 158, 11, 0.35)",
+                         transition: "all 0.2s"
+                       }}
+                     >
+                       {savingMaintenance ? "Activating..." : "🔴 Put Website Under Maintenance Mode"}
+                     </button>
+                   )}
+                 </div>
+               </div>
+
+               {/* CONFIGURATION CARD */}
+               <div style={{
+                 background: "rgba(15, 23, 42, 0.6)",
+                 border: "1px solid rgba(255, 255, 255, 0.08)",
+                 borderRadius: "24px",
+                 padding: "28px",
+                 display: "flex",
+                 flexDirection: "column",
+                 gap: "24px"
+               }}>
+                 <div>
+                   <h3 style={{ fontSize: "1.25rem", fontWeight: 800, color: "#fff", margin: "0 0 6px" }}>
+                     ⏱️ Maintenance Duration (How Long Will You Work?)
+                   </h3>
+                   <p style={{ color: "#94a3b8", fontSize: "0.85rem", margin: "0 0 16px" }}>
+                     Visitors will see this exact duration as a live countdown timer.
+                   </p>
+
+                   {/* PRESET PILLS */}
+                   <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "14px" }}>
+                     {[15, 30, 45, 60, 120].map((mins) => (
+                       <button
+                         key={mins}
+                         type="button"
+                         onClick={() => setMaintenanceMinutes(mins)}
+                         style={{
+                           padding: "10px 18px",
+                           borderRadius: "12px",
+                           background: maintenanceMinutes === mins ? "rgba(245, 158, 11, 0.25)" : "rgba(255, 255, 255, 0.05)",
+                           border: `1.5px solid ${maintenanceMinutes === mins ? "#f59e0b" : "rgba(255, 255, 255, 0.1)"}`,
+                           color: maintenanceMinutes === mins ? "#fbbf24" : "#94a3b8",
+                           fontWeight: 800,
+                           fontSize: "0.88rem",
+                           cursor: "pointer",
+                           transition: "all 0.2s"
+                         }}
+                       >
+                         {mins >= 60 ? `${mins / 60} Hour${mins > 60 ? 's' : ''}` : `${mins} Minutes`}
+                       </button>
+                     ))}
+                   </div>
+
+                   {/* CUSTOM MINUTES INPUT */}
+                   <div style={{ display: "flex", alignItems: "center", gap: "10px", maxWidth: "280px" }}>
+                     <label style={{ color: "#cbd5e1", fontSize: "0.85rem", fontWeight: 700 }}>Custom Minutes:</label>
+                     <input
+                       type="number"
+                       min="1"
+                       max="1440"
+                       value={maintenanceMinutes}
+                       onChange={(e) => setMaintenanceMinutes(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                       style={{
+                         flex: 1,
+                         background: "rgba(0, 0, 0, 0.6)",
+                         border: "1px solid rgba(255, 255, 255, 0.15)",
+                         color: "#fff",
+                         padding: "8px 12px",
+                         borderRadius: "10px",
+                         fontSize: "0.95rem",
+                         fontWeight: 800,
+                         textAlign: "center"
+                       }}
+                     />
+                   </div>
+                 </div>
+
+                 {/* CUSTOM VISITOR MESSAGE */}
+                 <div>
+                   <h3 style={{ fontSize: "1.25rem", fontWeight: 800, color: "#fff", margin: "0 0 6px" }}>
+                     📢 Visitor Notification Notice
+                   </h3>
+                   <p style={{ color: "#94a3b8", fontSize: "0.85rem", margin: "0 0 12px" }}>
+                     This message will be shown on the top banner and in popups when someone attempts to start video or text chat.
+                   </p>
+                   <textarea
+                     rows="3"
+                     value={maintenanceMessage}
+                     onChange={(e) => setMaintenanceMessage(e.target.value)}
+                     placeholder="Explain the scheduled upgrade..."
+                     style={{
+                       width: "100%",
+                       background: "rgba(0, 0, 0, 0.6)",
+                       border: "1px solid rgba(255, 255, 255, 0.15)",
+                       color: "#fff",
+                       padding: "12px 14px",
+                       borderRadius: "14px",
+                       fontSize: "0.9rem",
+                       lineHeight: "1.4",
+                       boxSizing: "border-box",
+                       resize: "vertical"
+                     }}
+                   />
+                 </div>
+
+                 {/* HOW IT WORKS INFO BOX */}
+                 <div style={{
+                   background: "rgba(99, 102, 241, 0.08)",
+                   border: "1px solid rgba(99, 102, 241, 0.25)",
+                   borderRadius: "16px",
+                   padding: "16px 20px"
+                 }}>
+                   <h4 style={{ color: "#a5b4fc", fontSize: "0.95rem", margin: "0 0 6px", fontWeight: 800 }}>
+                     💡 How Exploration Maintenance Mode Works:
+                   </h4>
+                   <ul style={{ color: "#94a3b8", fontSize: "0.85rem", margin: 0, paddingLeft: "18px", lineHeight: "1.6" }}>
+                     <li><strong>Site Stays Accessible:</strong> Regular visitors will NOT see a broken 502/down screen. They can explore pages, read guides, and view coin packages.</li>
+                     <li><strong>Chat & Matching Paused:</strong> If anyone clicks "Start Video Chat" or "Text Only Chat", they will see your return countdown timer.</li>
+                     <li><strong>Admin Bypass:</strong> Since you are logged in as Admin, you can still test matching and chat rooms anytime.</li>
+                     <li><strong>Instant Deactivation:</strong> As soon as your work is complete, click "End Maintenance" to restore live matching instantly without server restarts.</li>
+                   </ul>
+                 </div>
+               </div>
+             </div>
+           )}
+
            {(activeTab === "dashboard" || activeTab === "analytics") && (
              <div className="fade-in">
                 <div className="dashboard-header-flex">

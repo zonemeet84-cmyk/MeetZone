@@ -7,6 +7,8 @@ import { useSession, signOut } from "next-auth/react";
 import { Country, State } from "country-state-city";
 import Script from "next/script";
 import { FaceMaskArEngine, is3dArMask } from "../lib/faceMaskAr";
+import MaintenanceModal from "../components/MaintenanceModal";
+import { isSiteAdmin } from "../lib/admin";
 // MediaPipe + Three.js 3D AR (free stack, no DeepAR)
 
 let socket;
@@ -151,8 +153,21 @@ const STICKERS = [
 ];
 
 
-export default function Home() {
+export default function Home(props) {
   const { data: session, status: sessionStatus } = useSession();
+  const maintenance = props?.maintenance || { active: false };
+  const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
+  const [bypassMaintenance, setBypassMaintenance] = useState(false);
+  useEffect(() => {
+    let email = session?.user?.email || "";
+    try {
+      const stored = JSON.parse(localStorage.getItem("user") || "{}");
+      if (stored?.email) email = stored.email;
+    } catch (_) {}
+    if (maintenance?.active && !isSiteAdmin(email) && !bypassMaintenance) {
+      setShowMaintenanceModal(true);
+    }
+  }, [maintenance?.active, session, bypassMaintenance]);
   const localVideo = useRef(null);
   const remoteVideo = useRef(null);
   const peerConnection = useRef(null);
@@ -1935,6 +1950,17 @@ export default function Home() {
             socket.emit("partner-effect", { type: "blur", value: false });
           }
         }, 5000);
+      });
+
+      socket.on("maintenance_active", (data) => {
+        let email = session?.user?.email || "";
+        try {
+          const stored = JSON.parse(localStorage.getItem("user") || "{}");
+          if (stored?.email) email = stored.email;
+        } catch (_) {}
+        if (!isSiteAdmin(email) && !bypassMaintenance) {
+          setShowMaintenanceModal(true);
+        }
       });
 
       socket.on("banned-alert", (data) => {
@@ -9919,6 +9945,19 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           }
         }
       `}</style>
+        <MaintenanceModal
+          isOpen={showMaintenanceModal}
+          onClose={() => {
+            setShowMaintenanceModal(false);
+            router.push("/");
+          }}
+          maintenance={maintenance}
+          isAdmin={isSiteAdmin(session?.user?.email)}
+          onBypass={() => {
+            setBypassMaintenance(true);
+            setShowMaintenanceModal(false);
+          }}
+        />
       </div>
     </>
   );
