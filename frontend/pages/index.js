@@ -4665,6 +4665,8 @@ export default function Dashboard() {
             .elite-hero-banner { flex-direction: column; padding: 2rem; gap: 2rem; }
             .elite-main-info h2 { font-size: 2.5rem; }
             .section-title { font-size: 2.5rem; }
+          }
+
           /* Centered Onboarding & Profile Edit Modal Card */
           .onboarding-overlay {
             position: fixed;
@@ -4933,11 +4935,15 @@ export default function Dashboard() {
           .pricing-card:hover .amount { transform: scale(1.1); transition: 0.3s; display: inline-block; }
 
           /* SQUARE COIN CARDS */
-          .coins-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
+          .coins-grid,
+          .pricing-grid.coins-grid {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 1.5rem !important;
+            margin: 2rem auto 0 !important;
+            max-width: 1200px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
           }
           .coin-square-card {
             background: rgba(255, 255, 255, 0.03);
@@ -4955,6 +4961,12 @@ export default function Dashboard() {
             min-height: 380px;
             backdrop-filter: blur(12px);
             overflow: hidden;
+            box-sizing: border-box;
+          }
+          .pricing-grid.coins-grid .coin-square-card {
+            width: 100% !important;
+            max-width: 100% !important;
+            flex: none !important;
           }
           .coin-square-card:hover {
             transform: translateY(-8px) scale(1.02);
@@ -4997,22 +5009,25 @@ export default function Dashboard() {
             color: #94a3b8;
           }
           .coin-card-perks {
-            list-style: none;
-            padding: 0;
-            margin: 0.4rem 0 0.8rem;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            text-align: left;
+            list-style: none !important;
+            list-style-type: none !important;
+            padding: 0 !important;
+            margin: 0.4rem 0 0.8rem !important;
+            width: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 6px !important;
+            text-align: left !important;
           }
           .coin-card-perks li {
-            font-size: 0.76rem;
-            color: #cbd5e1;
-            display: flex;
-            align-items: flex-start;
-            gap: 6px;
-            line-height: 1.3;
+            list-style: none !important;
+            list-style-type: none !important;
+            font-size: 0.76rem !important;
+            color: #cbd5e1 !important;
+            display: flex !important;
+            align-items: flex-start !important;
+            gap: 6px !important;
+            line-height: 1.3 !important;
           }
           .coin-card-perks .perk-bullet {
             color: #10b981;
@@ -5065,15 +5080,19 @@ export default function Dashboard() {
             transform: translateY(-2px);
           }
           .coin-mini-badge {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            font-size: 0.62rem;
-            font-weight: 900;
-            padding: 3px 8px;
-            border-radius: 50px;
-            letter-spacing: 0.5px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            position: absolute !important;
+            top: 12px !important;
+            right: 12px !important;
+            width: auto !important;
+            max-width: fit-content !important;
+            font-size: 0.62rem !important;
+            font-weight: 900 !important;
+            padding: 3px 8px !important;
+            border-radius: 50px !important;
+            letter-spacing: 0.5px !important;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3) !important;
+            z-index: 5 !important;
+            box-sizing: border-box !important;
           }
 
           /* ===== STREAK HEADER PILL ===== */
@@ -7868,7 +7887,6 @@ export default function Dashboard() {
                 border-radius: 10px !important;
               }
             }
-          }
         `}</style>
       <PremiumModal
         isOpen={premiumModal.isOpen}
