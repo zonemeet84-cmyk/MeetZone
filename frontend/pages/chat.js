@@ -1203,7 +1203,8 @@ export default function Home(props) {
     }
 
     const freeCount = user.stickers ? user.stickers.filter(id => id === sticker.id).length : 0;
-    const isFree = freeCount > 0;
+    const hasSecretIdentity = Boolean(user?.hasSecretIdentity && (!user?.secretIdentityExpiry || Date.now() < Number(user?.secretIdentityExpiry)));
+    const isFree = freeCount > 0 || hasSecretIdentity || user?.email === "ds9376314@gmail.com";
 
     if (!isFree && user.coins < sticker.price && user.email !== "ds9376314@gmail.com") {
       showToast("Insufficient coins! Go to Home to buy more.", "warning");
@@ -5562,42 +5563,98 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         </div>
       )}
 
-      {/* RECONNECT CONFIRMATION POPUP */}
-      {reconnectConfirm && (
-        <div className="payment-overlay" style={{ zIndex: 12000 }} onClick={() => setReconnectConfirm(null)}>
-          <div className="premium-modal" style={{ maxWidth: '400px', padding: '0', overflow: 'hidden', background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '28px', boxShadow: '0 50px 100px rgba(0,0,0,0.8)' }} onClick={e => e.stopPropagation()}>
-            <div style={{ height: '6px', background: 'linear-gradient(90deg, #fbbf24, #f59e0b)' }}></div>
-            <div style={{ padding: '35px 30px', textAlign: 'center' }}>
-              <div style={{ fontSize: '3.5rem', marginBottom: '15px', filter: 'drop-shadow(0 8px 16px rgba(251,191,36,0.3))' }}>💌</div>
-              <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#fff', marginBottom: '8px' }}>Reconnect Request</h3>
-              <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '8px' }}>
-                Send a reconnect request to <strong style={{ color: '#fbbf24' }}>{reconnectConfirm.name}</strong>?
-              </p>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', padding: '8px 18px', borderRadius: '50px', marginBottom: '25px' }}>
-                <span style={{ fontSize: '1.2rem' }}>🪙</span>
-                <span style={{ color: '#fbbf24', fontWeight: 800, fontSize: '1rem' }}>30 Coins</span>
-              </div>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => setReconnectConfirm(null)} style={{ flex: 1, padding: '14px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#94a3b8', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', transition: '0.2s' }}>Cancel</button>
-                <button onClick={async () => {
-                  try {
-                    const token = localStorage.getItem('token');
-                    const res = await axios.post('https://api.zonemeet.chat/api/user/spend-coins', { email: user.email, amount: 30, feature: 'reconnect' });
-                    if (res.data.success) {
-                      setUser({ ...user, coins: res.data.coins });
-                      await axios.post('https://api.zonemeet.chat/api/friends/request', { targetId: reconnectConfirm.id, type: 'reconnect' }, { headers: { Authorization: `Bearer ${token}` } });
-                      showToast(`Request sent to ${reconnectConfirm.name}!`, "success");
-                    }
-                  } catch (err) {
-                    showToast(err.response?.data?.message || 'Failed to reconnect', "error");
-                  }
-                  setReconnectConfirm(null);
-                }} style={{ flex: 1.5, padding: '14px', borderRadius: '16px', border: 'none', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#000', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 8px 20px rgba(251,191,36,0.3)', transition: '0.2s' }}>Confirm & Send</button>
-              </div>
+      {/* RECONNECT / REWIND CONFIRMATION POPUP */}
+      {reconnectConfirm && (() => {
+        const hasPlan = isPlanActive(user);
+        return (
+          <div className="payment-overlay" style={{ zIndex: 12000 }} onClick={() => setReconnectConfirm(null)}>
+            <div className="premium-modal" style={{ maxWidth: '410px', padding: '0', overflow: 'hidden', background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '28px', boxShadow: '0 50px 100px rgba(0,0,0,0.8)' }} onClick={e => e.stopPropagation()}>
+              <div style={{ height: '6px', background: hasPlan ? 'linear-gradient(90deg, #10b981, #00f2fe)' : 'linear-gradient(90deg, #fbbf24, #f59e0b)' }}></div>
+              
+              {!hasPlan ? (
+                <div style={{ padding: '32px 26px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '3.2rem', marginBottom: '12px' }}>🔒</div>
+                  <div style={{ display: 'inline-block', padding: '4px 14px', borderRadius: '50px', background: 'rgba(251, 191, 36, 0.15)', border: '1px solid rgba(251, 191, 36, 0.35)', color: '#fbbf24', fontSize: '0.74rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '10px' }}>
+                    Subscription Required
+                  </div>
+                  <h3 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#fff', marginBottom: '8px' }}>
+                    Membership Required for Rewind
+                  </h3>
+                  <p style={{ color: '#94a3b8', fontSize: '0.86rem', lineHeight: 1.5, marginBottom: '18px' }}>
+                    Rewinding and reconnecting with previous partners is an exclusive feature for ZoneMeet subscribers.
+                  </p>
+                  
+                  <div style={{ textAlign: 'left', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '12px 16px', marginBottom: '20px', fontSize: '0.8rem', color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div>✨ <strong>Starter:</strong> 5 Free Daily Rewinds</div>
+                    <div>🚀 <strong>Prime:</strong> 15 Free Daily Rewinds</div>
+                    <div>💎 <strong>Silver:</strong> 15 Free Daily Rewinds</div>
+                    <div>👑 <strong>VIP Elite:</strong> VIP Instant Rewind & Reconnect</div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button 
+                      onClick={() => setReconnectConfirm(null)} 
+                      style={{ flex: 1, padding: '12px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#94a3b8', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setReconnectConfirm(null);
+                        setShowPricingModal(true);
+                      }} 
+                      style={{ flex: 1.6, padding: '12px', borderRadius: '14px', border: 'none', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#030d1e', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 8px 20px rgba(251,191,36,0.3)' }}
+                    >
+                      View Membership Plans
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ padding: '32px 26px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '3.2rem', marginBottom: '12px' }}>⏪</div>
+                  <div style={{ display: 'inline-block', padding: '4px 14px', borderRadius: '50px', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.35)', color: '#34d399', fontSize: '0.74rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '10px' }}>
+                    🎟️ Free Daily Rewind Pass
+                  </div>
+                  <h3 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#fff', marginBottom: '8px' }}>
+                    Rewind to <strong style={{ color: '#fbbf24' }}>{reconnectConfirm.name}</strong>?
+                  </h3>
+                  <p style={{ color: '#94a3b8', fontSize: '0.86rem', lineHeight: 1.5, marginBottom: '20px' }}>
+                    Use 1 of your daily Free Rewind Passes included with your <strong>{user?.planName || 'Active'}</strong> membership. (1 reconnect limit per partner to prevent harassment).
+                  </p>
+
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button 
+                      onClick={() => setReconnectConfirm(null)} 
+                      style={{ flex: 1, padding: '12px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#94a3b8', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      onClick={async () => {
+                        try {
+                          const token = localStorage.getItem('token');
+                          const res = await axios.post('https://api.zonemeet.chat/api/user/spend-coins', { email: user.email, amount: 0, feature: 'reconnect' });
+                          if (res.data.success) {
+                            setUser({ ...user, coins: res.data.coins });
+                            await axios.post('https://api.zonemeet.chat/api/friends/request', { targetId: reconnectConfirm.id, type: 'reconnect' }, { headers: { Authorization: `Bearer ${token}` } });
+                            showToast(`Rewind request sent to ${reconnectConfirm.name}!`, "success");
+                          }
+                        } catch (err) {
+                          showToast(err.response?.data?.message || 'Failed to rewind', "error");
+                        }
+                        setReconnectConfirm(null);
+                      }} 
+                      style={{ flex: 1.5, padding: '12px', borderRadius: '14px', border: 'none', background: 'linear-gradient(135deg, #10b981, #059669)', color: '#ffffff', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 8px 20px rgba(16,185,129,0.3)' }}
+                    >
+                      Confirm & Rewind
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* PREMIUM PRICING MODAL */}
       {showPricingModal && (

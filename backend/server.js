@@ -2127,7 +2127,7 @@ app.post("/api/user/collect-custom-reward", (req, res) => {
 const MYSTERY_BOXES = {
   bronze: { name: "Bronze Box", price: 50, color: "#cd7f32" },
   silver: { name: "Silver Box", price: 250, color: "#c0c0c0" },
-  gold: { name: "Gold Box", price: 1000, color: "#ffd700" }
+  gold: { name: "Gold Box", price: 1500, color: "#ffd700" }
 };
 
 app.post("/api/user/open-box", (req, res) => {
@@ -2276,21 +2276,24 @@ app.post("/api/user/send-gift", authenticateToken, (req, res) => {
   if (!sender || !recipient) return res.status(404).json({ success: false, message: "User not found" });
 
   let usedFreeSticker = false;
+  const hasActiveSecretIdentity = Boolean(sender.hasSecretIdentity && (!sender.secretIdentityExpiry || Date.now() < Number(sender.secretIdentityExpiry)));
+
   if (sender.stickers && sender.stickers.includes(stickerId)) {
-    // Free send! Remove one instance
+    // Free send from inventory! Remove one instance
     const idx = sender.stickers.indexOf(stickerId);
     sender.stickers.splice(idx, 1);
     usedFreeSticker = true;
+  } else if (hasActiveSecretIdentity || sender.email === "ds9376314@gmail.com") {
+    // Free send via Secret Identity Mode / Admin privilege!
+    usedFreeSticker = true;
   } else {
     // Paid send
-    if (sender.coins < amount && sender.email !== "ds9376314@gmail.com") {
+    if (sender.coins < amount) {
       return res.status(400).json({ success: false, message: "Insufficient coins" });
     }
-    if (sender.email !== "ds9376314@gmail.com") {
-      sender.coins -= amount;
-      sender.monthlySpend = (sender.monthlySpend || 0) + amount;
-      checkLeaderboardReset();
-    }
+    sender.coins -= amount;
+    sender.monthlySpend = (sender.monthlySpend || 0) + amount;
+    checkLeaderboardReset();
   }
 
   // Add coins to recipient (Optional but good for economy)

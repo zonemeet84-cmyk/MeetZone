@@ -1,3 +1,10 @@
+function isPlanActive(u) {
+  if (!u) return false;
+  if (u.email === "ds9376314@gmail.com" || u.isPermanentPremium) return true;
+  if (!u.premium || (!u.planName && !u.subscriptionTier)) return false;
+  if (u.planExpiry && Date.now() > Number(u.planExpiry)) return false;
+  return true;
+}
 import PremiumModal from "../components/PremiumModal";
 import MaintenanceModal from "../components/MaintenanceModal";
 import ZoneMeetLogo from "../components/ZoneMeetLogo";
@@ -793,88 +800,57 @@ export default function Dashboard(props) {
     }
   };
 
-  const buyFeature = async (featureName, cost) => {
+  const buyFeature = (featureName, cost) => {
     if (!user) {
       router.push("/login");
       return;
     }
-    const isAdmin = user.email === "ds9376314@gmail.com";
-
-    // Standard coin check
-    if (!isAdmin && user.coins < cost) {
-      showModal({
-        title: "Insufficient Coins",
-        message: `You need ${cost} coins to activate ${featureName}. Would you like to buy more?`,
-        type: "warning",
-        confirmText: "Buy Coins",
-        cancelText: "Cancel",
-        onConfirm: () => {
-          hideModal();
-          const storeElement = document.getElementById("store-section");
-          if (storeElement) storeElement.scrollIntoView({ behavior: "smooth" });
-        }
-      });
-      return;
-    }
-
-    // Confirmation Modal
-    showModal({
-      title: isAdmin ? "Admin Activation" : `Activate ${featureName}?`,
-      message: isAdmin
-        ? `As Admin, you can activate ${featureName} for free.`
-        : `This will deduct ${cost} coins from your balance. Ready to proceed?`,
-      type: "question",
-      confirmText: "Yes, Activate!",
-      cancelText: "Cancel",
-      onConfirm: async () => {
-        try {
-          // Show processing state in the message or modal if needed
-          // For now, just proceed with the call
-          const res = await axios.post('https://api.zonemeet.chat/api/user/spend-coins', {
-            email: user.email,
-            amount: isAdmin ? 0 : cost,
-            feature: featureName.toLowerCase().replace(/\s+/g, '_')
-          });
-
-          if (res.data.success) {
-            // Update local state immediately
-            const updatedUser = {
-              ...user,
-              coins: res.data.coins,
-              unlockedFilters: res.data.unlockedFilters || user.unlockedFilters,
-              hasSecretIdentity: res.data.hasSecretIdentity || user.hasSecretIdentity,
-              boostExpiry: res.data.boostExpiry || user.boostExpiry
-            };
-
-            setUser(updatedUser);
-            localStorage.setItem("user", JSON.stringify(updatedUser));
-
-            // Success feedback
-            showModal({
-              title: "Success!",
-              message: isAdmin
-                ? `${featureName} has been activated via Admin Privileges.`
-                : `Successfully activated ${featureName}! ${cost} coins deducted.`,
-              type: "success",
-              confirmText: "Awesome!",
-              onConfirm: () => hideModal()
-            });
-          } else {
-            showModal({
-              message: res.data.message || "Failed to process request.",
-              type: "error"
-            });
-          }
-        } catch (err) {
-          console.error("Purchase Error:", err);
-          showModal({
-            title: "Error",
-            message: err.response?.data?.message || `Failed to activate ${featureName}. Please check your connection.`,
-            type: "error"
-          });
-        }
-      }
+    const isSecretIdentity = featureName.toLowerCase().includes("secret");
+    setFeatureSuccess(null);
+    setFeatureConfirmModal({
+      name: featureName,
+      cost: cost,
+      icon: isSecretIdentity ? '🎭' : '🚀',
+      duration: isSecretIdentity ? '7 Days' : '10 Mins',
+      color: isSecretIdentity ? '#ec4899' : '#6366f1',
+      description: isSecretIdentity
+        ? "Privacy Screen Avatars, Real-Time Camera Blur & Free Access to Virtual Gifts (Rose, Love & Stickers). Hide your real face & camera from strangers."
+        : "Get 10 minutes of peak visibility. You'll be the first person seen by thousands of global users."
     });
+  };
+
+  const handleConfirmFeatureActivation = async () => {
+    if (!featureConfirmModal || !user) return;
+    const { name, cost } = featureConfirmModal;
+    const isAdmin = user.email === "ds9376314@gmail.com";
+    if (!isAdmin && user.coins < cost) return;
+
+    setFeatureActivating(true);
+    try {
+      const res = await axios.post('https://api.zonemeet.chat/api/user/spend-coins', {
+        email: user.email,
+        amount: isAdmin ? 0 : cost,
+        feature: name.toLowerCase().replace(/\s+/g, '_')
+      });
+
+      if (res.data.success) {
+        const updatedUser = {
+          ...user,
+          coins: res.data.coins,
+          unlockedFilters: res.data.unlockedFilters || user.unlockedFilters,
+          hasSecretIdentity: res.data.hasSecretIdentity || user.hasSecretIdentity,
+          boostExpiry: res.data.boostExpiry || user.boostExpiry
+        };
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        setFeatureSuccess(`Successfully activated ${name}!`);
+      }
+    } catch (err) {
+      showModal({ message: err.response?.data?.message || `Failed to activate ${name}`, type: "error" });
+      setFeatureConfirmModal(null);
+    } finally {
+      setFeatureActivating(false);
+    }
   };
 
   const handleRedeemReferral = async () => {
@@ -913,11 +889,14 @@ export default function Dashboard(props) {
   const [showSpinner, setShowSpinner] = useState(false);
   const [spinnerItem, setSpinnerItem] = useState("❓");
   const [confirmOpen, setConfirmOpen] = useState(null);
+  const [featureConfirmModal, setFeatureConfirmModal] = useState(null);
+  const [featureActivating, setFeatureActivating] = useState(false);
+  const [featureSuccess, setFeatureSuccess] = useState(null);
 
   const handleOpenBox = async (type) => {
     if (!user) return router.push("/login");
     const isAdmin = user.email === "ds9376314@gmail.com";
-    const prices = { bronze: 50, silver: 150, gold: 500 };
+    const prices = { bronze: 50, silver: 250, gold: 1500 };
     const price = prices[type];
 
     if (!isAdmin && user.coins < price) {
@@ -2648,23 +2627,207 @@ export default function Dashboard(props) {
                 <span style={{ fontSize: '1.2rem' }}>🎭</span>
               </div>
               <h3 style={{ fontSize: '1.5rem', margin: '15px 0' }}>1500 Coins <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>/ 7 Days</span></h3>
-              <p style={{ fontSize: '0.8rem', color: '#94a3b8', lineHeight: '1.5' }}>Privacy Screen Avatars & Real-Time Camera Blur. Hide your real face & camera from strangers.</p>
+              <p style={{ fontSize: '0.8rem', color: '#94a3b8', lineHeight: '1.5' }}>Privacy Screen Avatars, Real-Time Camera Blur & Free Access to Virtual Gifts (Rose, Love & Stickers). Hide your real face & camera from strangers.</p>
               <div className="buy-badge" style={{ background: 'rgba(236, 72, 153, 0.1)', color: '#ec4899' }}>Click to Purchase</div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateRows: '1fr', gap: '20px' }}>
-              <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div 
+                style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer' }}
+                onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <small style={{ color: '#94a3b8', fontSize: '0.6rem', fontWeight: '800', textTransform: 'uppercase' }}>Direct Reconnect</small>
-                  <span>📞</span>
+                  <small style={{ color: '#fbbf24', fontSize: '0.65rem', fontWeight: '800', textTransform: 'uppercase' }}>Rewind / Reconnect</small>
+                  <span>⏪</span>
                 </div>
-                <h4 style={{ fontSize: '1.1rem', margin: '8px 0' }}>30 Coins</h4>
+                <h4 style={{ fontSize: '1rem', margin: '8px 0', color: '#fbbf24' }}>Free with Membership</h4>
+                <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: 0 }}>Included with Starter, Prime, Silver & VIP Elite plans.</p>
               </div>
             </div>
           </div>
         </div>
 
       </div>
+
+      {/* FEATURE CONFIRMATION MODAL (PROFILE BOOST & SECRET IDENTITY) */}
+      {featureConfirmModal && (
+        <div 
+          className="feature-confirm-overlay" 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            width: '100vw',
+            height: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.85) 0%, rgba(3, 7, 18, 0.96) 100%)',
+            backdropFilter: 'blur(25px)',
+            WebkitBackdropFilter: 'blur(25px)',
+            zIndex: 20000,
+            padding: '16px'
+          }}
+          onClick={() => !featureActivating && setFeatureConfirmModal(null)}
+        >
+          <div 
+            style={{
+              position: 'relative',
+              width: '100%',
+              maxWidth: '420px',
+              borderRadius: '26px',
+              background: 'linear-gradient(165deg, rgba(20, 30, 50, 0.96) 0%, rgba(8, 14, 28, 0.98) 100%)',
+              border: `1.5px solid ${featureConfirmModal.color}`,
+              boxShadow: `0 0 35px ${featureConfirmModal.color}44, 0 25px 60px rgba(0, 0, 0, 0.85)`,
+              overflow: 'hidden',
+              textAlign: 'center',
+              boxSizing: 'border-box'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top glowing accent bar */}
+            <div style={{ height: '5px', width: '100%', background: featureConfirmModal.color, boxShadow: `0 0 16px ${featureConfirmModal.color}` }} />
+
+            <div style={{ padding: '28px 24px 30px' }}>
+              {featureSuccess ? (
+                <>
+                  <div style={{ fontSize: '3.6rem', marginBottom: '14px' }}>🎉</div>
+                  <h3 style={{ fontSize: '1.45rem', fontWeight: 900, color: '#ffffff', marginBottom: '10px' }}>
+                    {featureConfirmModal.name} Activated!
+                  </h3>
+                  <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: '24px' }}>
+                    {featureSuccess}
+                  </p>
+                  <button
+                    onClick={() => {
+                      setFeatureConfirmModal(null);
+                      setFeatureSuccess(null);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '13px 20px',
+                      borderRadius: '16px',
+                      border: 'none',
+                      background: 'linear-gradient(135deg, #10b981, #059669)',
+                      color: '#ffffff',
+                      fontWeight: 800,
+                      fontSize: '0.98rem',
+                      cursor: 'pointer',
+                      boxShadow: '0 8px 20px rgba(16, 185, 129, 0.35)'
+                    }}
+                  >
+                    Awesome, Let's Go!
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: '3.8rem', lineHeight: 1, marginBottom: '14px' }}>
+                    {featureConfirmModal.icon}
+                  </div>
+
+                  <div style={{ display: 'inline-block', padding: '4px 14px', borderRadius: '50px', background: `${featureConfirmModal.color}22`, border: `1px solid ${featureConfirmModal.color}55`, color: featureConfirmModal.color, fontSize: '0.76rem', fontWeight: 800, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '10px' }}>
+                    {featureConfirmModal.name}
+                  </div>
+
+                  <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#ffffff', margin: '0 0 10px 0' }}>
+                    Activate <span style={{ color: featureConfirmModal.color }}>{featureConfirmModal.name}</span>?
+                  </h3>
+
+                  <p style={{ color: '#94a3b8', fontSize: '0.86rem', lineHeight: 1.5, margin: '0 0 18px 0' }}>
+                    {featureConfirmModal.description}
+                  </p>
+
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.12)', padding: '8px 18px', borderRadius: '50px', marginBottom: '20px' }}>
+                    <span style={{ fontSize: '1.15rem' }}>🪙</span>
+                    <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '1rem' }}>
+                      {featureConfirmModal.cost} Coins <span style={{ color: '#94a3b8', fontSize: '0.8rem', fontWeight: 500 }}>/ {featureConfirmModal.duration}</span>
+                    </span>
+                  </div>
+
+                  {user?.email !== "ds9376314@gmail.com" && (user?.coins || 0) < featureConfirmModal.cost ? (
+                    <div style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '16px', padding: '12px 16px', marginBottom: '20px', textAlign: 'left', fontSize: '0.84rem' }}>
+                      <div style={{ color: '#fca5a5', fontWeight: 700, marginBottom: '4px' }}>⚠️ Insufficient Coins!</div>
+                      <div style={{ color: '#cbd5e1' }}>
+                        You currently have <strong>{user?.coins || 0} Coins</strong>. You need <strong>{featureConfirmModal.cost - (user?.coins || 0)} more Coins</strong> to activate this feature.
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.25)', borderRadius: '14px', padding: '10px 14px', marginBottom: '20px', fontSize: '0.82rem', color: '#6ee7b7' }}>
+                      {user?.email === "ds9376314@gmail.com"
+                        ? "👑 Admin Privileges detected. Zero coin cost."
+                        : `Your balance: ${user?.coins || 0} Coins → Remaining: ${(user?.coins || 0) - featureConfirmModal.cost} Coins`}
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button
+                      onClick={() => setFeatureConfirmModal(null)}
+                      disabled={featureActivating}
+                      style={{
+                        flex: 1,
+                        padding: '13px 16px',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        background: 'transparent',
+                        color: '#94a3b8',
+                        fontWeight: 700,
+                        fontSize: '0.92rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Cancel
+                    </button>
+
+                    {user?.email !== "ds9376314@gmail.com" && (user?.coins || 0) < featureConfirmModal.cost ? (
+                      <button
+                        onClick={() => {
+                          setFeatureConfirmModal(null);
+                          document.getElementById('store-section')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        style={{
+                          flex: 1.5,
+                          padding: '13px 18px',
+                          borderRadius: '16px',
+                          border: 'none',
+                          background: 'linear-gradient(135deg, #00f2fe, #0072ff)',
+                          color: '#ffffff',
+                          fontWeight: 800,
+                          fontSize: '0.94rem',
+                          cursor: 'pointer',
+                          boxShadow: '0 8px 22px rgba(0, 242, 254, 0.35)'
+                        }}
+                      >
+                        Buy Coins / Top Up
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleConfirmFeatureActivation}
+                        disabled={featureActivating}
+                        style={{
+                          flex: 1.5,
+                          padding: '13px 18px',
+                          borderRadius: '16px',
+                          border: 'none',
+                          background: featureConfirmModal.color === '#ec4899'
+                            ? 'linear-gradient(135deg, #ec4899, #d946ef)'
+                            : 'linear-gradient(135deg, #6366f1, #4f46e5)',
+                          color: '#ffffff',
+                          fontWeight: 800,
+                          fontSize: '0.94rem',
+                          cursor: featureActivating ? 'wait' : 'pointer',
+                          boxShadow: `0 8px 22px ${featureConfirmModal.color}44`,
+                          opacity: featureActivating ? 0.7 : 1
+                        }}
+                      >
+                        {featureActivating ? 'Activating...' : 'Confirm & Activate'}
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* PREMIUM PAYMENT MODAL */}
       {showPaymentModal && (
@@ -3291,48 +3454,102 @@ export default function Dashboard(props) {
       )}
 
       {/* HISTORY REPORT MODAL */}
-      {/* RECONNECT CONFIRMATION POPUP */}
-      {reconnectConfirm && (
-        <div className="payment-overlay" style={{ zIndex: 12000 }} onClick={() => setReconnectConfirm(null)}>
-          <div className="premium-modal" style={{ maxWidth: '400px', padding: '0', overflow: 'hidden', background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '28px', boxShadow: '0 50px 100px rgba(0,0,0,0.8)' }} onClick={e => e.stopPropagation()}>
-          <button className="modal-close-btn" onClick={() => setReconnectConfirm(null)} style={{ position: 'absolute', top: '12px', right: '12px', background: 'transparent', border: 'none', color: '#fff', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
-            <div style={{ height: '6px', background: 'linear-gradient(90deg, #fbbf24, #f59e0b)' }}></div>
-            <div style={{ padding: '35px 30px', textAlign: 'center' }}>
-              <div style={{ fontSize: '3.5rem', marginBottom: '15px', filter: 'drop-shadow(0 8px 16px rgba(251,191,36,0.3))' }}>💌</div>
-              <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#fff', marginBottom: '8px' }}>Reconnect Request</h3>
-              <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '8px' }}>
-                Send a reconnect request to <strong style={{ color: '#fbbf24' }}>{reconnectConfirm.name}</strong>?
-              </p>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', padding: '8px 18px', borderRadius: '50px', marginBottom: '25px' }}>
-                <span style={{ fontSize: '1.2rem' }}>🪙</span>
-                <span style={{ color: '#fbbf24', fontWeight: 800, fontSize: '1rem' }}>30 Coins</span>
-              </div>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => setReconnectConfirm(null)} style={{ flex: 1, padding: '14px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#94a3b8', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', transition: '0.2s' }}>Cancel</button>
-                <button onClick={async () => {
-                  try {
-                    const token = localStorage.getItem('token');
-                    const res = await axios.post('https://api.zonemeet.chat/api/user/reconnect-call', { targetId: reconnectConfirm.id }, { headers: { Authorization: `Bearer ${token}` } });
-                    
-                    if (res.data.success) {
-                      setUser({ ...user, coins: res.data.coins });
-                      if (res.data.status === "calling") {
-                        showModal({ message: `Calling ${reconnectConfirm.name}...`, type: "success" });
-                        router.push(`/chat?room=${res.data.roomId}`);
-                      } else {
-                        showModal({ message: `${reconnectConfirm.name} is offline. Reconnect request sent!`, type: "success" });
-                      }
-                    }
-                  } catch (err) {
-                    showModal({ message: err.response?.data?.message || 'Failed', type: "error" });
-                  }
-                  setReconnectConfirm(null);
-                }} style={{ flex: 1.5, padding: '14px', borderRadius: '16px', border: 'none', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#000', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 8px 20px rgba(251,191,36,0.3)', transition: '0.2s' }}>Confirm & Send</button>
-              </div>
+      {/* RECONNECT / REWIND CONFIRMATION POPUP */}
+      {reconnectConfirm && (() => {
+        const hasPlan = isPlanActive(user);
+        return (
+          <div className="payment-overlay" style={{ zIndex: 12000 }} onClick={() => setReconnectConfirm(null)}>
+            <div className="premium-modal" style={{ maxWidth: '410px', padding: '0', overflow: 'hidden', background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '28px', boxShadow: '0 50px 100px rgba(0,0,0,0.8)' }} onClick={e => e.stopPropagation()}>
+              <button className="modal-close-btn" onClick={() => setReconnectConfirm(null)} style={{ position: 'absolute', top: '12px', right: '12px', background: 'transparent', border: 'none', color: '#fff', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+              <div style={{ height: '6px', background: hasPlan ? 'linear-gradient(90deg, #10b981, #00f2fe)' : 'linear-gradient(90deg, #fbbf24, #f59e0b)' }}></div>
+              
+              {!hasPlan ? (
+                <div style={{ padding: '32px 26px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '3.2rem', marginBottom: '12px' }}>🔒</div>
+                  <div style={{ display: 'inline-block', padding: '4px 14px', borderRadius: '50px', background: 'rgba(251, 191, 36, 0.15)', border: '1px solid rgba(251, 191, 36, 0.35)', color: '#fbbf24', fontSize: '0.74rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '10px' }}>
+                    Subscription Required
+                  </div>
+                  <h3 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#fff', marginBottom: '8px' }}>
+                    Membership Required for Rewind
+                  </h3>
+                  <p style={{ color: '#94a3b8', fontSize: '0.86rem', lineHeight: 1.5, marginBottom: '18px' }}>
+                    Rewinding and reconnecting with previous partners is an exclusive feature for ZoneMeet subscribers.
+                  </p>
+                  
+                  <div style={{ textAlign: 'left', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '12px 16px', marginBottom: '20px', fontSize: '0.8rem', color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div>✨ <strong>Starter:</strong> 5 Free Daily Rewinds</div>
+                    <div>🚀 <strong>Prime:</strong> 15 Free Daily Rewinds</div>
+                    <div>💎 <strong>Silver:</strong> 15 Free Daily Rewinds</div>
+                    <div>👑 <strong>VIP Elite:</strong> VIP Instant Rewind & Reconnect</div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button 
+                      onClick={() => setReconnectConfirm(null)} 
+                      style={{ flex: 1, padding: '12px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#94a3b8', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setReconnectConfirm(null);
+                        document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+                      }} 
+                      style={{ flex: 1.6, padding: '12px', borderRadius: '14px', border: 'none', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#030d1e', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 8px 20px rgba(251,191,36,0.3)' }}
+                    >
+                      View Membership Plans
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ padding: '32px 26px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '3.2rem', marginBottom: '12px' }}>⏪</div>
+                  <div style={{ display: 'inline-block', padding: '4px 14px', borderRadius: '50px', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.35)', color: '#34d399', fontSize: '0.74rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '10px' }}>
+                    🎟️ Free Daily Rewind Pass
+                  </div>
+                  <h3 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#fff', marginBottom: '8px' }}>
+                    Rewind to <strong style={{ color: '#fbbf24' }}>{reconnectConfirm.name}</strong>?
+                  </h3>
+                  <p style={{ color: '#94a3b8', fontSize: '0.86rem', lineHeight: 1.5, marginBottom: '20px' }}>
+                    Use 1 of your daily Free Rewind Passes included with your <strong>{user?.planName || 'Active'}</strong> membership. (1 reconnect limit per partner to prevent harassment).
+                  </p>
+
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button 
+                      onClick={() => setReconnectConfirm(null)} 
+                      style={{ flex: 1, padding: '12px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#94a3b8', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      onClick={async () => {
+                        try {
+                          const token = localStorage.getItem('token');
+                          const res = await axios.post('https://api.zonemeet.chat/api/user/reconnect-call', { targetId: reconnectConfirm.id }, { headers: { Authorization: `Bearer ${token}` } });
+                          if (res.data.success) {
+                            setUser({ ...user, coins: res.data.coins });
+                            if (res.data.status === "calling") {
+                              router.push(`/chat?room=${res.data.roomId}`);
+                            } else {
+                              showModal({ message: `${reconnectConfirm.name} is offline. Rewind request sent!`, type: "success" });
+                            }
+                          }
+                        } catch (err) {
+                          showModal({ message: err.response?.data?.message || 'Failed to rewind', type: "error" });
+                        }
+                        setReconnectConfirm(null);
+                      }} 
+                      style={{ flex: 1.5, padding: '12px', borderRadius: '14px', border: 'none', background: 'linear-gradient(135deg, #10b981, #059669)', color: '#ffffff', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 8px 20px rgba(16,185,129,0.3)' }}
+                    >
+                      Confirm & Rewind
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* HISTORY REPORT MODAL */}
       {showHistoryReportModal && historyReportTarget && (
@@ -3686,7 +3903,7 @@ export default function Dashboard(props) {
           {[
             { type: "bronze", name: "Bronze Case", price: 50, icon: "📦", color: "#cd7f32", glow: "rgba(205, 127, 50, 0.4)", rarity: "Common" },
             { type: "silver", name: "Silver Vault", price: 250, icon: "🎁", color: "#c0c0c0", glow: "rgba(192, 192, 192, 0.4)", rarity: "Rare" },
-            { type: "gold", name: "Golden Chest", price: 1000, icon: "✨", color: "#ffd700", glow: "rgba(255, 215, 0, 0.5)", rarity: "Legendary" }
+            { type: "gold", name: "Golden Chest", price: 1500, icon: "✨", color: "#ffd700", glow: "rgba(255, 215, 0, 0.5)", rarity: "Legendary" }
           ].map((box, idx) => (
             <div
               className="mystery-card mystery-float"
@@ -3884,7 +4101,7 @@ export default function Dashboard(props) {
           ? 'radial-gradient(circle at 50% 48%, rgba(0, 242, 254, 0.26) 0%, rgba(99, 102, 241, 0.18) 35%, rgba(3, 7, 18, 0.96) 80%)'
           : 'radial-gradient(circle at 50% 48%, rgba(255, 215, 0, 0.3) 0%, rgba(245, 158, 11, 0.18) 35%, rgba(3, 7, 18, 0.96) 80%)';
         const crateIcon = isBronze ? '📦' : isSilver ? '🎁' : '✨';
-        const coinCost = isBronze ? 50 : isSilver ? 150 : 500;
+        const coinCost = isBronze ? 50 : isSilver ? 250 : 1500;
         const isAdmin = user?.email === "ds9376314@gmail.com";
 
         return (
