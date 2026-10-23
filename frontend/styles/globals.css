@@ -2381,54 +2381,130 @@ img, video {
 
   /* Daily Login Reward Modal (Concept 2 Battle-Pass Mobile Support) */
   .bp-streak-modal {
-    padding: 16px 12px !important;
-    width: 95% !important;
-    max-width: 380px !important;
-    max-height: 90vh !important;
+    padding: 12px 10px 14px !important;
+    width: 92% !important;
+    max-width: 330px !important;
+    max-height: 88vh !important;
     overflow-y: auto !important;
     border-radius: 20px !important;
+    position: relative !important;
+  }
+  .bp-modal-close {
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    max-width: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.16) !important;
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    color: #ffffff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    z-index: 9999 !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
   .bp-header {
-    flex-wrap: wrap !important;
-    gap: 6px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding-right: 36px !important; /* Prevents colliding with round close button */
+    gap: 4px !important;
+    margin-bottom: 6px !important;
+    padding-bottom: 6px !important;
   }
   .bp-pill {
-    padding: 4px 8px !important;
-    font-size: 0.72rem !important;
+    padding: 3px 6px !important;
+    font-size: 0.68rem !important;
+    gap: 3px !important;
+  }
+  .bp-utc-box {
+    text-align: right !important;
   }
   .bp-utc-clock {
-    font-size: 0.8rem !important;
+    font-size: 0.76rem !important;
+  }
+  .bp-utc-label {
+    font-size: 0.52rem !important;
+  }
+  .bp-streak-modal h2 {
+    font-size: 1.05rem !important;
+    margin: 0 0 2px !important;
+  }
+  .bp-streak-modal p {
+    font-size: 0.68rem !important;
+    margin: 0 0 6px !important;
+    line-height: 1.25 !important;
   }
   .bp-journey-container {
     grid-template-columns: repeat(3, 1fr) !important;
-    gap: 6px !important;
+    gap: 5px !important;
+    margin-bottom: 8px !important;
   }
   .bp-node {
-    padding: 6px 2px !important;
-    min-height: 70px !important;
+    padding: 5px 2px !important;
+    min-height: 56px !important;
+    border-radius: 10px !important;
+  }
+  .bp-node-icon {
+    font-size: 1.15rem !important;
+    margin-bottom: 1px !important;
+  }
+  .bp-node-title {
+    font-size: 0.56rem !important;
+    margin-bottom: 1px !important;
+  }
+  .bp-node-reward {
+    font-size: 0.52rem !important;
+  }
+  .bp-node-badge {
+    width: 14px !important;
+    height: 14px !important;
+    font-size: 0.52rem !important;
+    top: -4px !important;
+    right: -4px !important;
   }
   .bp-node.grand {
     grid-column: 1 / -1 !important;
     grid-row: auto !important;
-    min-height: 95px !important;
+    min-height: 50px !important;
     flex-direction: row !important;
-    gap: 12px !important;
-    padding: 8px 14px !important;
+    gap: 8px !important;
+    padding: 4px 10px !important;
+    border-radius: 12px !important;
+    justify-content: center !important;
   }
   .bp-node.grand .bp-node-icon {
-    font-size: 2rem !important;
+    font-size: 1.4rem !important;
     margin-bottom: 0 !important;
   }
+  .bp-node.grand .bp-node-title {
+    font-size: 0.66rem !important;
+  }
+  .bp-node.grand .bp-node-reward {
+    font-size: 0.6rem !important;
+  }
   .roulette-viewport {
-    height: 104px !important;
+    height: 98px !important;
+    margin: 8px 0 !important;
   }
   .roulette-tile {
-    width: 80px !important;
-    height: 84px !important;
+    width: 76px !important;
+    height: 80px !important;
   }
   .bp-cta-btn {
-    padding: 10px !important;
-    font-size: 0.82rem !important;
+    padding: 8px 10px !important;
+    font-size: 0.78rem !important;
+    border-radius: 12px !important;
+    min-height: 38px !important;
   }
 
   /* Payment / Checkout Modal */

@@ -2923,6 +2923,33 @@ export default function Dashboard(props) {
                   onClick={(e) => { e.stopPropagation(); setShowStreakModal(false); setRollingReel(null); }} 
                   className="bp-modal-close" 
                   title="Close"
+                  style={{
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                    width: '30px',
+                    height: '30px',
+                    minWidth: '30px',
+                    maxWidth: '30px',
+                    minHeight: '30px',
+                    maxHeight: '30px',
+                    borderRadius: '50%',
+                    background: 'rgba(255, 255, 255, 0.16)',
+                    border: '1px solid rgba(255, 255, 255, 0.25)',
+                    color: '#ffffff',
+                    fontSize: '1.2rem',
+                    fontWeight: '700',
+                    lineHeight: '1',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    zIndex: 9999,
+                    pointerEvents: 'auto',
+                    padding: 0,
+                    margin: 0,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                  }}
                 >×</button>
               )}
 
@@ -5337,20 +5364,22 @@ export default function Dashboard(props) {
             box-sizing: border-box;
           }
           .bp-modal-close {
-            position: absolute; top: 1rem; right: 1rem;
-            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #94a3b8; width: 32px; height: 32px;
-            border-radius: 50%; font-size: 1.2rem; cursor: pointer;
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff; width: 30px; height: 30px; min-width: 30px; max-width: 30px; min-height: 30px; max-height: 30px;
+            border-radius: 50%; font-size: 1.2rem; font-weight: 700; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s; z-index: 10;
+            transition: all 0.2s; z-index: 9999; padding: 0; margin: 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
           }
-          .bp-modal-close:hover { background: rgba(255, 255, 255, 0.2); color: #fff; transform: scale(1.08); }
+          .bp-modal-close:hover { background: rgba(255, 255, 255, 0.28); color: #fff; transform: scale(1.08); }
           
           /* Header Pills & UTC Clock */
           .bp-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            padding-right: 42px; /* Dedicated space so close button never overlaps */
             gap: 10px;
             margin-bottom: 1.1rem;
             padding-bottom: 0.85rem;
