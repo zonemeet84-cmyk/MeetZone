@@ -11,6 +11,7 @@ import { useRouter } from 'next/router'
 import Script from 'next/script'
 import CyberNotification from '../components/CyberNotification'
 import MaintenanceBanner from '../components/MaintenanceBanner'
+import { checkSessionInactivity, recordUserActivity } from '../lib/authSession'
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }) {
   const router = useRouter();
@@ -63,6 +64,23 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
       return config;
     });
 
+    // Check 24-hour inactivity session timeout on initial mount
+    checkSessionInactivity(router);
+
+    // Throttled activity tracker (records at most once every 30s upon user interaction)
+    let lastActiveRecord = Date.now();
+    const handleUserInteraction = () => {
+      const now = Date.now();
+      if (now - lastActiveRecord > 30000) {
+        lastActiveRecord = now;
+        recordUserActivity();
+      }
+    };
+
+    window.addEventListener("click", handleUserInteraction, { passive: true });
+    window.addEventListener("keydown", handleUserInteraction, { passive: true });
+    window.addEventListener("touchstart", handleUserInteraction, { passive: true });
+
     // Setup Google Analytics page tracking on route change
     const handleRouteChange = (url) => {
       if (window.gtag) {
@@ -70,12 +88,17 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
           page_path: url,
         });
       }
+      checkSessionInactivity(router);
+      recordUserActivity();
     };
     router.events.on('routeChangeComplete', handleRouteChange);
 
     return () => {
       axios.interceptors.response.eject(interceptor);
       router.events.off('routeChangeComplete', handleRouteChange);
+      window.removeEventListener("click", handleUserInteraction);
+      window.removeEventListener("keydown", handleUserInteraction);
+      window.removeEventListener("touchstart", handleUserInteraction);
     };
   }, [router]);
 

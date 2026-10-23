@@ -9,6 +9,7 @@ import Script from "next/script";
 import { FaceMaskArEngine, is3dArMask } from "../lib/faceMaskAr";
 import MaintenanceModal from "../components/MaintenanceModal";
 import { isSiteAdmin } from "../lib/admin";
+import { recordUserActivity } from "../lib/authSession";
 // MediaPipe + Three.js 3D AR (free stack, no DeepAR)
 
 let socket;
@@ -1600,6 +1601,7 @@ export default function Home(props) {
               localStorage.setItem("token", res.data.token);
               localStorage.setItem("user", JSON.stringify(res.data.user));
               localStorage.removeItem("referral");
+              recordUserActivity();
               let userData = res.data.user;
               if (userData.email?.toLowerCase() === "ds9376314@gmail.com") {
                 userData.premium = true;

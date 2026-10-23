@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { auth, googleProvider } from "../firebaseConfig";
 import { signInWithPopup } from "firebase/auth";
 import ReCAPTCHA from "react-google-recaptcha";
+import { recordUserActivity } from "../lib/authSession";
 
 export default function Login() {
   const router = useRouter();
@@ -44,6 +45,9 @@ export default function Login() {
   }, [backupCooldown]);
 
   useEffect(() => {
+    if (router.query?.reason === "inactivity") {
+      setError("⏱️ Your session has expired after 24 hours of inactivity. Please log in again.");
+    }
     const token = localStorage.getItem("token");
     if (token && token !== "undefined" && token !== "null") {
       router.push("/");
@@ -92,6 +96,7 @@ export default function Login() {
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
+      recordUserActivity();
       router.push("/");
     } catch (err) {
       if (recaptchaRef.current) recaptchaRef.current.reset();
@@ -119,6 +124,7 @@ export default function Login() {
       }, { withCredentials: true });
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
+      recordUserActivity();
       router.push("/");
     } catch (err) {
       setError(err.response?.data?.message || "Invalid code");
@@ -196,6 +202,7 @@ export default function Login() {
         localStorage.removeItem("referral");
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
+        recordUserActivity();
         router.push("/");
       }
     } catch (err) {

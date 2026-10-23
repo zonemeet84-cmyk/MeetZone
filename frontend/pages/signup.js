@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { auth, googleProvider } from "../firebaseConfig";
 import { signInWithPopup } from "firebase/auth";
 import ReCAPTCHA from "react-google-recaptcha";
+import { recordUserActivity } from "../lib/authSession";
 
 export default function Signup() {
   const router = useRouter();
@@ -79,6 +80,7 @@ export default function Signup() {
       });
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
+      recordUserActivity();
       router.push("/");
     } catch (err) {
       if (recaptchaRef.current) recaptchaRef.current.reset();
@@ -116,6 +118,7 @@ export default function Signup() {
         localStorage.removeItem("referral");
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
+        recordUserActivity();
         router.push("/");
       }
     } catch (err) {

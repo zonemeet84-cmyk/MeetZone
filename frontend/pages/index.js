@@ -10,6 +10,7 @@ import { useRouter } from "next/router";
 import axios from "axios";
 import { useSession, signOut } from "next-auth/react";
 import { isSiteAdmin } from "../lib/admin";
+import { recordUserActivity, checkSessionInactivity } from "../lib/authSession";
 import io from "socket.io-client";
 
 let socket;
@@ -505,6 +506,19 @@ export default function Dashboard(props) {
     axios.get("https://api.zonemeet.chat/api/ping").catch(() => { });
 
     const checkAuth = async () => {
+      // Check for inactivity timeout
+      if (checkSessionInactivity(router)) {
+        setUser(null);
+        setAuthLoading(false);
+        return;
+      }
+      if (typeof window !== "undefined" && sessionStorage.getItem("justLoggedOutDueToInactivity")) {
+        sessionStorage.removeItem("justLoggedOutDueToInactivity");
+        setUser(null);
+        setAuthLoading(false);
+        return;
+      }
+
       // 0. IMMEDIATE CACHE LOAD (Fast UI)
       const stored = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
       if (stored && stored.email) {
@@ -528,6 +542,7 @@ export default function Dashboard(props) {
               localStorage.setItem("token", res.data.token);
               localStorage.setItem("user", JSON.stringify(res.data.user));
               localStorage.removeItem("referral");
+              recordUserActivity();
               setUser(res.data.user);
             }
           } catch (e) {
