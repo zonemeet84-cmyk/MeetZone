@@ -146,7 +146,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
         }
       `}</style>
       <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
         <link rel="preconnect" href="https://api.zonemeet.chat" />
         <link rel="dns-prefetch" href="https://api.zonemeet.chat" />
         <link rel="preconnect" href="https://www.googletagmanager.com" />

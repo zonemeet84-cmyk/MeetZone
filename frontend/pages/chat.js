@@ -302,6 +302,25 @@ export default function Home(props) {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [historyList, setHistoryList] = useState([]);
   const [reconnectConfirm, setReconnectConfirm] = useState(null);
+  const [lastPartner, setLastPartner] = useState(null);
+  const lastPartnerRef = useRef(null);
+  const partnerInfoRef = useRef(null);
+  useEffect(() => {
+    partnerInfoRef.current = partnerInfo;
+  }, [partnerInfo]);
+
+  const handleRewindClick = () => {
+    const candidate = lastPartner || lastPartnerRef.current || (user?.recentStrangers && user.recentStrangers.length > 0 ? user.recentStrangers[0] : null);
+    if (!candidate) {
+      showToast("No previous partner to rewind to yet! Match someone first.", "warning");
+      return;
+    }
+    if (partnerId && String(candidate.id) === String(partnerId)) {
+      showToast("You are already connected to this partner!", "info");
+      return;
+    }
+    setReconnectConfirm(candidate);
+  };
   const [reportTargetFromHistory, setReportTargetFromHistory] = useState(null);
   const [showPremiumMiniBar, setShowPremiumMiniBar] = useState(false);
   const [translateLang, setTranslateLang] = useState("off");
@@ -2017,6 +2036,10 @@ export default function Home(props) {
 
 
       socket.on("matched", async ({ partnerId, initiator, partnerInfo, chatMode }) => {
+        if (partnerInfoRef.current && partnerInfoRef.current.id && String(partnerInfoRef.current.id) !== String(partnerId)) {
+          setLastPartner(partnerInfoRef.current);
+          lastPartnerRef.current = partnerInfoRef.current;
+        }
         // STRICT CLIENT CIRCUIT BREAKER: Never connect to yourself!
         const myUserId = user?.id || (typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).id : null);
         const myEmail = user?.email || (typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).email : null);
@@ -2147,6 +2170,10 @@ export default function Home(props) {
       });
 
       socket.on("partner-disconnected", () => {
+        if (partnerInfoRef.current) {
+          setLastPartner(partnerInfoRef.current);
+          lastPartnerRef.current = partnerInfoRef.current;
+        }
         // Instantly clear the partner's video feed so frozen frame doesn't linger
         if (remoteVideo.current && remoteVideo.current.srcObject) {
           remoteVideo.current.srcObject.getTracks().forEach(track => track.stop());
@@ -2169,6 +2196,10 @@ export default function Home(props) {
       });
 
       socket.on("partner-stopped", () => {
+        if (partnerInfoRef.current) {
+          setLastPartner(partnerInfoRef.current);
+          lastPartnerRef.current = partnerInfoRef.current;
+        }
         // Instantly clear the partner's video feed
         if (remoteVideo.current && remoteVideo.current.srcObject) {
           remoteVideo.current.srcObject.getTracks().forEach(track => track.stop());
@@ -2641,6 +2672,10 @@ export default function Home(props) {
   };
 
   const closeConnection = () => {
+    if (partnerInfoRef.current) {
+      setLastPartner(partnerInfoRef.current);
+      lastPartnerRef.current = partnerInfoRef.current;
+    }
     // Instantly stop & clear remote video to prevent frozen frame
     if (remoteVideo.current && remoteVideo.current.srcObject) {
       remoteVideo.current.srcObject.getTracks().forEach(track => track.stop());
@@ -3634,7 +3669,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
       <div className="container chat-page-v2">
         <Head>
           <title>Live Video Chat | ZoneMeet</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
         </Head>
         <Script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js" strategy="lazyOnload" crossOrigin="anonymous" />
         <Script src="https://cdn.jsdelivr.net/npm/jeelizfacefilter/dist/jeelizFaceFilter.js" strategy="lazyOnload" crossOrigin="anonymous" />
@@ -3975,9 +4010,17 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     type="button" 
                     className="btn-composer-stop"
                     onClick={handleTextChatStopAndGoHome}
-                    title="Stop Chat & Return to Home"
+                    title="Home / Stop Chat"
                   >
-                    🛑 Stop
+                    🏠 Home
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn-composer-rewind"
+                    onClick={handleRewindClick}
+                    title="Rewind to previous partner"
+                  >
+                    ⏪ Rewind
                   </button>
                   <input
                     type="text"
@@ -3985,6 +4028,12 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     placeholder={partnerId ? "Type a message to stranger..." : "Type a message here (sends once connected)..."}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
+                    onFocus={() => {
+                      if (typeof window !== "undefined") {
+                        window.scrollTo(0, 0);
+                        document.body.scrollTop = 0;
+                      }
+                    }}
                     autoFocus
                   />
                   <button 
@@ -4414,11 +4463,19 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     <button type="submit" disabled={!message.trim()} title="Send message">💬</button>
                     <button 
                       type="button" 
+                      className="inline-rewind-btn"
+                      onClick={handleRewindClick}
+                      title="Rewind to previous partner"
+                    >
+                      ⏪
+                    </button>
+                    <button 
+                      type="button" 
                       className="inline-stop-btn"
                       onClick={() => router.push("/")}
-                      title="Quit / Disconnect"
+                      title="Home / Disconnect"
                     >
-                      🛑
+                      🏠
                     </button>
                   </form>
                 </div>
@@ -5158,6 +5215,15 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                 <span className="icon">🚨</span> <span className="text">Report</span>
               </button>
             </div>
+            <button 
+              type="button" 
+              className="rewind-btn" 
+              onClick={handleRewindClick} 
+              disabled={quizState !== "idle"}
+              title="Rewind to previous partner"
+            >
+              <span className="icon">⏪</span> <span className="text">Rewind</span>
+            </button>
             <button className="next-btn" onClick={nextPartner} disabled={quizState !== "idle"}>
               <span className="icon">⏭️</span> <span className="text">Skip</span>
             </button>
@@ -6288,7 +6354,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           gap: 12px;
         }
         .btn-composer-stop {
-          padding: 10px 18px;
+          padding: 9px 15px;
           border-radius: 12px;
           background: rgba(239, 68, 68, 0.16);
           border: 1px solid rgba(239, 68, 68, 0.35);
@@ -6300,7 +6366,61 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           transition: all 0.2s ease;
           display: inline-flex;
           align-items: center;
-          gap: 6px;
+          gap: 5px;
+        }
+        .btn-composer-rewind {
+          padding: 9px 15px;
+          border-radius: 12px;
+          background: rgba(251, 191, 36, 0.16);
+          border: 1px solid rgba(251, 191, 36, 0.35);
+          color: #fbbf24;
+          font-weight: 700;
+          font-size: 0.85rem;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.2s ease;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .btn-composer-rewind:hover {
+          background: rgba(251, 191, 36, 0.28);
+          border-color: #f59e0b;
+          color: #ffffff;
+          transform: translateY(-1px);
+        }
+        .rewind-btn {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(251, 191, 36, 0.22));
+          border: 1px solid rgba(251, 191, 36, 0.4);
+          color: #fbbf24;
+          padding: 0.75rem 1.3rem;
+          border-radius: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          transition: all 0.2s;
+        }
+        .rewind-btn:hover {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(251, 191, 36, 0.35));
+          border-color: #fbbf24;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+        .inline-rewind-btn {
+          background: rgba(245, 158, 11, 0.85) !important;
+          border: 1px solid rgba(255, 255, 255, 0.25) !important;
+          flex-shrink: 0 !important;
+          width: 32px !important;
+          height: 32px !important;
+          border-radius: 50% !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          cursor: pointer !important;
+          font-size: 0.85rem !important;
+          color: #ffffff !important;
         }
         .btn-composer-stop:hover {
           background: rgba(239, 68, 68, 0.28);
@@ -9629,15 +9749,59 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         /* Mobile Phone Screens (<= 768px) */
         @media (max-width: 768px) {
           /* Mobile Text Chat & Mascot Responsiveness */
+          .chat-page-v2 {
+            height: 100dvh !important;
+            height: 100vh !important;
+            max-height: 100dvh !important;
+            overflow: hidden !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100% !important;
+            overscroll-behavior: none !important;
+          }
+          .text-mode-active-layout {
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+            height: 100dvh !important;
+            height: 100% !important;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+          }
           .text-mode-container {
-            height: calc(100dvh - 65px) !important;
+            height: 100dvh !important;
+            height: 100% !important;
+            max-height: 100dvh !important;
             border: none !important;
             border-radius: 0 !important;
             background: transparent !important;
             width: 100% !important;
             max-width: 100vw !important;
-            overflow-x: hidden !important;
+            overflow: hidden !important;
             box-sizing: border-box !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            position: relative !important;
+            bottom: 0 !important;
+            margin: 0 !important;
+          }
+          .text-mode-partner-card {
+            flex-shrink: 0 !important;
+          }
+          .text-mode-chat-body {
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            -webkit-overflow-scrolling: touch !important;
+            overscroll-behavior-y: contain !important;
+            display: flex !important;
+            flex-direction: column !important;
           }
           .text-mode-partner-card {
             padding: 4px 8px !important;
@@ -9797,10 +9961,13 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             margin-top: 3px !important;
           }
 
-          /* Text Mode Composer on Phones: Stop Button, Input & Send Button Fit Cleanly */
+          /* Text Mode Composer on Phones: Glued to Bottom with Safe-Area, Home + Rewind + Input + Send */
           .text-mode-composer {
+            flex-shrink: 0 !important;
             padding: 8px 10px !important;
-            gap: 8px !important;
+            padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
+            margin: 0 !important;
+            gap: 6px !important;
             box-sizing: border-box !important;
             width: 100% !important;
             max-width: 100vw !important;
@@ -9808,31 +9975,62 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             display: flex !important;
             flex-direction: row !important;
             align-items: center !important;
+            background: rgba(15, 23, 42, 0.98) !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+            position: relative !important;
+            bottom: 0 !important;
+            z-index: 100 !important;
           }
           .text-mode-composer .btn-composer-stop {
             width: auto !important;
             max-width: fit-content !important;
             flex: 0 0 auto !important;
             margin: 0 !important;
-            padding: 6px 12px !important;
+            padding: 6px 8px !important;
             height: 36px !important;
-            font-size: 0.76rem !important;
+            font-size: 0.72rem !important;
+            font-weight: 700 !important;
             border-radius: 10px !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 4px !important;
+            gap: 3px !important;
             white-space: nowrap !important;
             box-sizing: border-box !important;
+            background: rgba(239, 68, 68, 0.16) !important;
+            border: 1px solid rgba(239, 68, 68, 0.35) !important;
+            color: #fca5a5 !important;
+          }
+          .text-mode-composer .btn-composer-rewind {
+            width: auto !important;
+            max-width: fit-content !important;
+            flex: 0 0 auto !important;
+            margin: 0 !important;
+            padding: 6px 8px !important;
+            height: 36px !important;
+            font-size: 0.72rem !important;
+            font-weight: 700 !important;
+            border-radius: 10px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 3px !important;
+            white-space: nowrap !important;
+            box-sizing: border-box !important;
+            background: rgba(251, 191, 36, 0.16) !important;
+            border: 1px solid rgba(251, 191, 36, 0.35) !important;
+            color: #fbbf24 !important;
+            cursor: pointer;
+            transition: all 0.2s ease;
           }
           .text-mode-composer .text-mode-input-field {
             flex: 1 1 auto !important;
             min-width: 0 !important;
             width: auto !important;
             margin: 0 !important;
-            padding: 6px 12px !important;
+            padding: 6px 10px !important;
             height: 36px !important;
-            font-size: 0.82rem !important;
+            font-size: 0.8rem !important;
             border-radius: 10px !important;
             box-sizing: border-box !important;
           }
@@ -9841,20 +10039,49 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             max-width: fit-content !important;
             flex: 0 0 auto !important;
             margin: 0 !important;
-            padding: 6px 14px !important;
+            padding: 6px 10px !important;
             height: 36px !important;
-            font-size: 0.76rem !important;
+            font-size: 0.74rem !important;
             border-radius: 10px !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 4px !important;
+            gap: 3px !important;
             white-space: nowrap !important;
             box-sizing: border-box !important;
           }
           .text-mode-composer .btn-composer-send svg {
-            width: 14px !important;
-            height: 14px !important;
+            width: 13px !important;
+            height: 13px !important;
+          }
+          .bottom-actions .rewind-btn {
+            position: absolute !important;
+            right: 15px !important;
+            left: auto !important;
+            top: 140px !important;
+            bottom: auto !important;
+            width: 42px !important;
+            height: 42px !important;
+            min-width: 42px !important;
+            max-width: 42px !important;
+            padding: 0 !important;
+            background: rgba(245, 158, 11, 0.35) !important;
+            border: 1px solid rgba(251, 191, 36, 0.5) !important;
+            color: #fbbf24 !important;
+            backdrop-filter: blur(6px) !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 250 !important;
+            pointer-events: auto !important;
+            cursor: pointer !important;
+          }
+          .bottom-actions .rewind-btn .text {
+            display: none !important;
+          }
+          .bottom-actions .rewind-btn .icon {
+            font-size: 1.05rem !important;
           }
         }
 
@@ -9906,15 +10133,37 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             flex-shrink: 0 !important;
           }
           .text-mode-composer .btn-composer-stop {
-            height: 48px !important;
-            padding: 12px 24px !important;
-            font-size: 0.95rem !important;
-            border-radius: 14px !important;
-            min-width: 110px !important;
+            height: 46px !important;
+            padding: 10px 18px !important;
+            font-size: 0.92rem !important;
+            border-radius: 12px !important;
+            min-width: 90px !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 8px !important;
+            gap: 6px !important;
+          }
+          .text-mode-composer .btn-composer-rewind {
+            height: 46px !important;
+            padding: 10px 18px !important;
+            font-size: 0.92rem !important;
+            border-radius: 12px !important;
+            min-width: 105px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 6px !important;
+            background: rgba(251, 191, 36, 0.16) !important;
+            border: 1px solid rgba(251, 191, 36, 0.35) !important;
+            color: #fbbf24 !important;
+            cursor: pointer;
+            font-weight: 700;
+          }
+          .text-mode-composer .btn-composer-rewind:hover {
+            background: rgba(251, 191, 36, 0.28) !important;
+            border-color: #f59e0b !important;
+            color: #ffffff !important;
+            transform: translateY(-1px);
           }
           .text-mode-composer .text-mode-input-field {
             height: 48px !important;
