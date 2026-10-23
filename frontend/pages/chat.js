@@ -4467,14 +4467,6 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     <button type="submit" disabled={!message.trim()} title="Send message">💬</button>
                     <button 
                       type="button" 
-                      className="inline-rewind-btn"
-                      onClick={handleRewindClick}
-                      title="Rewind to previous partner"
-                    >
-                      ⏪
-                    </button>
-                    <button 
-                      type="button" 
                       className="inline-stop-btn"
                       onClick={() => router.push("/")}
                       title="Home / Disconnect"
@@ -5198,13 +5190,6 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
               By continuing with Camera/Mic, you agree to our <a href="/terms" target="_blank" style={{ color: '#6366f1' }}>Terms</a> and <a href="/guidelines" target="_blank" style={{ color: '#6366f1' }}>Community Guidelines</a>.
             </div>
             <div className="mobile-action-stack">
-              <button 
-                className={`quiz-trigger-btn ${quizState === "queued" ? "cancel" : ""}`} 
-                onClick={handleBrainClashClick}
-                disabled={quizState !== "idle" && quizState !== "queued"}
-              >
-                <span className="icon">{quizState === "queued" ? "❌" : "🧠"}</span> <span className="text">{quizState === "queued" ? "Cancel Duel" : "Quiz Rooms"}</span>
-              </button>
               <button 
                 className="gift-trigger-btn" 
                 onClick={() => {
@@ -9409,7 +9394,8 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             border-color: rgba(239, 68, 68, 0.35) !important;
           }
           .bottom-actions .next-btn,
-          .bottom-actions .mobile-filter-btn {
+          .bottom-actions .mobile-filter-btn,
+          .bottom-actions .rewind-btn {
             position: absolute !important;
             right: 15px !important;
             left: auto !important;
@@ -9418,8 +9404,9 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             min-width: 42px !important;
             max-width: 42px !important;
             padding: 0 !important;
-            background: rgba(0,0,0,0.55) !important;
-            border: 1px solid rgba(255,255,255,0.22) !important;
+            background: rgba(0, 0, 0, 0.55) !important;
+            border: 1px solid rgba(255, 255, 255, 0.22) !important;
+            color: #ffffff !important;
             backdrop-filter: blur(6px) !important;
             border-radius: 50% !important;
             display: flex !important;
@@ -9437,11 +9424,17 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             top: 90px !important;
             bottom: auto !important;
           }
+          .bottom-actions .rewind-btn {
+            top: 140px !important;
+            bottom: auto !important;
+          }
           .bottom-actions .next-btn .text,
-          .bottom-actions .mobile-filter-btn .text {
+          .bottom-actions .mobile-filter-btn .text,
+          .bottom-actions .rewind-btn .text {
             display: none !important;
           }
-          .bottom-actions .mobile-filter-btn .icon {
+          .bottom-actions .mobile-filter-btn .icon,
+          .bottom-actions .rewind-btn .icon {
             font-size: 1.05rem !important;
           }
           .header-actions .filters-row-v2 {
@@ -10131,33 +10124,14 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             }
           }
           .bottom-actions .rewind-btn {
-            position: absolute !important;
-            right: 15px !important;
-            left: auto !important;
-            top: 140px !important;
-            bottom: auto !important;
-            width: 42px !important;
-            height: 42px !important;
-            min-width: 42px !important;
-            max-width: 42px !important;
-            padding: 0 !important;
-            background: rgba(245, 158, 11, 0.35) !important;
-            border: 1px solid rgba(251, 191, 36, 0.5) !important;
-            color: #fbbf24 !important;
-            backdrop-filter: blur(6px) !important;
-            border-radius: 50% !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            z-index: 250 !important;
-            pointer-events: auto !important;
-            cursor: pointer !important;
+            background: rgba(0, 0, 0, 0.55) !important;
+            border: 1px solid rgba(255, 255, 255, 0.22) !important;
+            color: #ffffff !important;
           }
-          .bottom-actions .rewind-btn .text {
-            display: none !important;
-          }
-          .bottom-actions .rewind-btn .icon {
-            font-size: 1.05rem !important;
+          .bottom-actions .rewind-btn:hover {
+            background: rgba(0, 0, 0, 0.75) !important;
+            border-color: rgba(255, 255, 255, 0.4) !important;
+            color: #ffffff !important;
           }
         }
 
