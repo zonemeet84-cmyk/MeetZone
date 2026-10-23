@@ -483,8 +483,8 @@ function normalizeUsers(targetUsers) {
 const SUBSCRIPTION_PLANS = {
   "Starter": { days: 7, bundledCoins: 50, tier: "starter" },
   "Prime": { days: 30, bundledCoins: 150, tier: "prime" },
-  "Silver": { days: 90, bundledCoins: 500, tier: "silver" },
-  "VIP Elite": { days: 30, bundledCoins: 400, tier: "elite" },
+  "Silver": { days: 90, bundledCoins: 600, tier: "silver" },
+  "VIP Elite": { days: 30, bundledCoins: 500, tier: "elite" },
 };
 
 const COIN_PACKS = {
@@ -579,9 +579,9 @@ function applySubscriptionPurchase(user, planName, options = {}) {
   } else if (planName === "Prime") {
      user.premiumFeatures = ["gender_filter", "country_filter", "instant_priority", "unlimited_requests", "auto_translate", "live_subtitles", "ad_free"];
   } else if (planName === "Silver") {
-     user.premiumFeatures = ["elite_badge", "gender_filter", "country_filter", "priority_matching", "unlimited_requests", "auto_translate", "live_subtitles", "ad_free"];
+     user.premiumFeatures = ["elite_badge", "gender_filter", "country_filter", "priority_matching", "unlimited_requests", "auto_translate", "live_subtitles", "ad_free", "vip_streak_2x"];
   } else if (planName === "VIP Elite") {
-     user.premiumFeatures = ["exact_age_filter", "instant_zero_wait", "all_face_filters", "voice_changer", "privacy_tools", "auto_translate", "live_subtitles", "ad_free"];
+     user.premiumFeatures = ["exact_age_filter", "instant_zero_wait", "all_face_filters", "privacy_avatars", "camera_blur", "vip_streak_2x", "privacy_tools", "auto_translate", "live_subtitles", "ad_free"];
      user.unlockedFilters = ["None", "Smooth", "Retro", "B&W", "Blur", "Neon", "Cyberpunk"];
   }
 
@@ -1888,15 +1888,23 @@ app.post("/api/user/collect-daily-reward", (req, res) => {
   let wonBoxType = null;
   let boxPrize = null;
 
+  // VIP 2X Daily Streak Multiplier Check
+  const isVipUser = Boolean(user.premium && (user.planName === "VIP Elite" || user.planName === "Silver" || user.subscriptionTier === "elite" || user.subscriptionTier === "silver" || user.currentPlan === "VIP Elite" || user.currentPlan === "Silver"));
+  const streakMultiplier = isVipUser ? 2 : 1;
+
   // Apply reward
   if (reward.type === "coins") {
-    user.coins = (user.coins || 0) + reward.value;
+    const coinsToCredit = reward.value * streakMultiplier;
+    user.coins = (user.coins || 0) + coinsToCredit;
+    if (isVipUser) rewardMessage = `${reward.label} (2X VIP Double Streak Active! 🔥)`;
   } else if (reward.type === "boost") {
     const currentExpiry = user.boostExpiry > Date.now() ? user.boostExpiry : Date.now();
     user.boostExpiry = currentExpiry + (reward.value * 60 * 1000);
   } else if (reward.type === "grand") {
-    // 100 Guaranteed Coins
-    user.coins = (user.coins || 0) + reward.coins;
+    // 100 Guaranteed Coins (200 Coins for VIP)
+    const grandCoins = reward.coins * streakMultiplier;
+    user.coins = (user.coins || 0) + grandCoins;
+    if (isVipUser) rewardMessage = `${reward.label} (2X VIP Double Streak Active! 🔥)`;
 
     // Mystery Crate Lottery: Bronze (65%), Silver (25%), Gold (10%)
     const roll = Math.random() * 100;
@@ -1972,7 +1980,9 @@ app.post("/api/user/collect-daily-reward", (req, res) => {
   }
 
   // Record Coin Activity log if coins are earned
-  const baseEarned = reward.type === "coins" ? reward.value : (reward.type === "grand" ? reward.coins : 0);
+  const isVipForLog = Boolean(user.premium && (user.planName === "VIP Elite" || user.planName === "Silver" || user.subscriptionTier === "elite" || user.subscriptionTier === "silver" || user.currentPlan === "VIP Elite" || user.currentPlan === "Silver"));
+  const streakMult = isVipForLog ? 2 : 1;
+  const baseEarned = reward.type === "coins" ? (reward.value * streakMult) : (reward.type === "grand" ? (reward.coins * streakMult) : 0);
   const extraEarned = (boxPrize && boxPrize.type === "coins") ? boxPrize.value : 0;
   const totalEarned = baseEarned + extraEarned;
 
@@ -2463,6 +2473,13 @@ app.post("/api/friends/request", authenticateToken, (req, res) => {
     return res.status(400).json({ message: "Request already sent or already friends" });
   }
 
+  if (type === 'reconnect') {
+    req.user.reconnectedTargetIds = req.user.reconnectedTargetIds || [];
+    if (req.user.reconnectedTargetIds.includes(targetId)) {
+      return res.status(400).json({ message: "Anti-Spam Protection: You can only reconnect with the same user once to prevent harassment." });
+    }
+    req.user.reconnectedTargetIds.push(targetId);
+  }
   const requestObj = type === 'reconnect' ? { id: req.user.id, type: 'reconnect' } : req.user.id;
   targetUser.friendRequests.push(requestObj);
   saveUsers();
@@ -4184,25 +4201,52 @@ function endQuiz(roomId) {
       const targetUser = users.find(u => u.id === targetId);
       if (!targetUser) return res.status(404).json({ message: "Target user not found" });
 
-      if (user.email !== "ds9376314@gmail.com") {
+      // Anti-Harassment: 1-time reconnect limit per target
+      user.reconnectedTargetIds = user.reconnectedTargetIds || [];
+      if (user.reconnectedTargetIds.includes(targetId)) {
+        return res.status(400).json({ success: false, message: "Anti-Spam Protection: You can only reconnect with the same user once to prevent harassment." });
+      }
+
+      // Check daily free reconnect passes based on subscription tier
+      const today = getUTCDate();
+      if (user.lastReconnectDate !== today) {
+        user.lastReconnectDate = today;
+        user.dailyReconnectsCount = 0;
+      }
+      let freePassLimit = 0;
+      if (user.premium) {
+        if (user.planName === "Starter") freePassLimit = 5;
+        else if (user.planName === "Prime") freePassLimit = 15;
+        else if (user.planName === "Silver" || user.planName === "VIP Elite") freePassLimit = 15;
+      }
+
+      const usesFreePass = (user.dailyReconnectsCount || 0) < freePassLimit;
+      let coinsDeducted = 0;
+      if (usesFreePass) {
+        user.dailyReconnectsCount = (user.dailyReconnectsCount || 0) + 1;
+      } else if (user.email !== "ds9376314@gmail.com") {
         if (user.coins < 30) {
           return res.status(400).json({ success: false, message: "Not enough coins!" });
         }
         user.coins -= 30;
         user.monthlySpend = (user.monthlySpend || 0) + 30;
-        // checkLeaderboardReset(); // assuming this is global
+        coinsDeducted = 30;
       }
 
-      // Track coin spend
-      coinActivity.push({
-        id: Date.now() + Math.random(),
-        email: user.email,
-        name: user.name,
-        feature: "reconnect",
-        amount: 30,
-        timestamp: Date.now()
-      });
-      saveCoinActivity();
+      user.reconnectedTargetIds.push(targetId);
+
+      // Track coin spend if deducted
+      if (coinsDeducted > 0) {
+        coinActivity.push({
+          id: Date.now() + Math.random(),
+          email: user.email,
+          name: user.name,
+          feature: "reconnect",
+          amount: coinsDeducted,
+          timestamp: Date.now()
+        });
+        saveCoinActivity();
+      }
       saveUsers();
 
       const targetSocketId = onlineUsers.get(targetId);
@@ -4237,6 +4281,26 @@ function endQuiz(roomId) {
       if (!user) {
         console.log("Spend-coins error: User not found for", { email, userId });
         return res.status(404).json({ message: "User not found" });
+      }
+
+      // Free reconnect passes bypass coin deduction
+      if (feature === "reconnect") {
+        const today = getUTCDate();
+        if (user.lastReconnectDate !== today) {
+          user.lastReconnectDate = today;
+          user.dailyReconnectsCount = 0;
+        }
+        let freePassLimit = 0;
+        if (user.premium) {
+          if (user.planName === "Starter") freePassLimit = 5;
+          else if (user.planName === "Prime") freePassLimit = 15;
+          else if (user.planName === "Silver" || user.planName === "VIP Elite") freePassLimit = 15;
+        }
+        if ((user.dailyReconnectsCount || 0) < freePassLimit) {
+          user.dailyReconnectsCount = (user.dailyReconnectsCount || 0) + 1;
+          saveUsers();
+          return res.json({ success: true, coins: user.coins, freePassUsed: true, remainingFreePasses: freePassLimit - user.dailyReconnectsCount });
+        }
       }
 
       // Admin Immunity: ds9376314@gmail.com uses coins for free

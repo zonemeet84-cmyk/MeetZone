@@ -546,7 +546,6 @@ export default function Home(props) {
           <div className="mobile-gift-tabs">
             {[
               { id: "avatars", label: "Avatar", icon: "👤" },
-              { id: "voice", label: "Voice", icon: "🎙️" },
               { id: "privacy", label: "Privacy", icon: "🌫️" },
               { id: "gifts", label: "Stickers", icon: "🎁" }
             ].map(tab => (
@@ -5030,13 +5029,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     >
                       👤 Avatars
                     </button>
-                    <button
-                      type="button"
-                      className={`tool-btn ${activeIdentityMenu === "voice" ? "active" : ""}`}
-                      onClick={() => openTool("voice")}
-                    >
-                      🎙 Voice
-                    </button>
+{/* Voice changer disabled as per privacy upgrade */}
                     <button
                       type="button"
                       className={`tool-btn ${activeIdentityMenu === "privacy" ? "active" : ""}`}

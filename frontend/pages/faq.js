@@ -20,25 +20,25 @@ export default function FAQ() {
         },
         {
           q: "Is it free to use?",
-          a: "Yes, you can start matching on ZoneMeet for free. However, premium options like selective gender and country filtering, auto-translation, custom voice changers, and AR masks require Coins or an active Premium subscription."
+          a: "Yes, you can start matching on ZoneMeet for free. However, premium options like selective gender and country filtering, auto-translation, privacy avatars, and camera blur require Coins or an active Premium subscription."
         }
       ]
     },
     {
-      category: "Voice Changer & AR Filters",
-      icon: "🎙️",
+      category: "Privacy Screen Avatars & Camera Blur",
+      icon: "🎭",
       items: [
         {
-          q: "How does the Voice Changer work?",
-          a: "Our Voice Changer uses the low-latency Web Audio API (AudioWorklet) to process your microphone input in real-time. By applying high-quality pitch-shifting and filter coefficients (such as Baby, Girl, Cartoon, or Sigma Deep Voice), it transforms your voice before transmitting it to your call partner."
+          q: "How do Privacy Screen Avatars work?",
+          a: "ZoneMeet lets you replace your camera feed with an animated privacy avatar so strangers cannot see your real face or physical surroundings. This enables 100% anonymous, safe chatting while maintaining interactive visual presence."
         },
         {
-          q: "My partner hears my original voice instead of the voice changer. How do I fix it?",
-          a: "If the voice changer behaves incorrectly, please click or touch anywhere on the page to resume the browser's audio processing engine. Some mobile browsers (like iOS Safari) suspend audio nodes until an explicit user interaction occurs. Also, make sure you clicked 'Apply' after selecting your voice."
+          q: "How does Real-Time Camera Blur work?",
+          a: "Our real-time privacy blur applies hardware-accelerated background filtering directly in your browser. It blurs your background or entire camera stream to keep your room, family members, or sensitive surroundings private."
         },
         {
-          q: "How do AR masks and blur filters work?",
-          a: "We use lightweight client-side AI (MediaPipe FaceMesh and TensorFlow) to detect your facial coordinates. The mask or blur filter is rendered on HTML Canvas overlays. This processing happens entirely on your device, ensuring maximum privacy and zero latency."
+          q: "How does the Anti-Harassment Reconnect limit work?",
+          a: "To prevent spam and unwanted contact, ZoneMeet enforces a strict 1-time reconnect limit per chat partner. You cannot repeatedly request or disturb the same user once disconnected, ensuring a respectful community."
         }
       ]
     },
@@ -109,7 +109,7 @@ export default function FAQ() {
     <div className="container">
       <Head>
         <title>FAQs - Frequently Asked Questions | ZoneMeet</title>
-        <meta name="description" content="Find answers to all your questions about ZoneMeet features, safety policies, voice changer settings, pricing plans, and camera/microphone troubleshooting." />
+        <meta name="description" content="Find answers to all your questions about ZoneMeet features, safety policies, privacy avatars, camera blur, pricing plans, and camera/microphone troubleshooting." />
       </Head>
 
       <div className="bg-gradient" />

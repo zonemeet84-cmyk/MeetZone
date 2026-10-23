@@ -394,8 +394,8 @@ export default function Dashboard(props) {
         },
         vip: {
           keywords: ['vip', 'premium', 'elite', 'plan', 'membership', 'filter', 'gender', 'country', 'age', 'pricing', 'starter', 'prime', 'silver', 'price', 'kharch', 'subscription'],
-          en: "Our Premium Plans are designed for the best experience: \n\n✨ **Starter (₹149 / 7 days):** Gender & Country filters, priority matching, unlimited friends, 50 coins.\n🚀 **Prime (₹599 / 30 days):** Same filters + auto-translate, stronger priority, 150 coins.\n💎 **Silver (₹1599 / 90 days):** All Prime perks + badge, 500 coins.\n👑 **VIP Elite (₹999 / 30 days):** Gender, Country, State & Age filters + avatars/voice/privacy tools, 400 coins. \n\nCheck the 'Pricing' section for full details!",
-          hi: "Humare VIP plans: \n\n✨ **Starter (₹149 / 7 din):** Gender & Country filter, priority matching, unlimited friends, 50 coins.\n🚀 **Prime (₹599 / 30 din):** Wahi filters + auto-translate, zyada priority, 150 coins.\n💎 **Silver (₹1599 / 90 din):** Prime ke saare fayde + badge, 500 coins.\n👑 **VIP Elite (₹999 / 30 din):** Gender, Country, State & Age + elite tools, 400 coins. \n\nPoori detail 'Pricing' section mein hai!"
+          en: "Our Premium Plans are designed for the best experience: \n\n✨ **Starter (₹149 / 7 days):** Gender & Country filters, 5 free daily reconnects, 50 coins.\n🚀 **Prime (₹599 / 30 days):** State filters + auto-translate, 15 free daily reconnects, 0-sec skip, 150 coins.\n💎 **Silver (₹1599 / 90 days):** All VIP Elite perks for 90 days, 2X daily streak coins, 600 coins.\n👑 **VIP Elite (₹999 / 30 days):** Age filter, 1080p HD, Privacy Screen Avatars & Camera Blur, 2X streak multiplier, 500 coins + 1 Key. \n\nCheck the 'Pricing' section for full details!",
+          hi: "Humare VIP plans: \n\n✨ **Starter (₹149 / 7 din):** Gender & Country filter, 5 free daily reconnects, 50 coins.\n🚀 **Prime (₹599 / 30 din):** State filters + auto-translate, 15 free daily reconnects, 0-sec skip, 150 coins.\n💎 **Silver (₹1599 / 90 din):** Saare VIP Elite fayde 90 din ke liye, 2X daily streak coins, 600 coins.\n👑 **VIP Elite (₹999 / 30 din):** Exact Age filter, 1080p HD, Privacy Screen Avatars & Camera Blur, 2X daily streak, 500 coins + 1 Key. \n\nPoori detail 'Pricing' section mein hai!"
         },
         mystery: {
           keywords: ['box', 'mystery', 'gift', 'dabba', 'reward', 'win', 'bronze', 'silver', 'gold', 'luck', 'chest'],
@@ -2295,6 +2295,8 @@ export default function Dashboard(props) {
             <ul className="premium-features">
               <li><span>✓</span> Gender & Country Filters</li>
               <li><span>✓</span> Priority Matching</li>
+              <li><span>✓</span> 5 Free Reconnect Passes / Day</li>
+              <li><span>✓</span> 1-Time Reconnect Limit (Anti-Spam)</li>
               <li><span>✓</span> Unlimited Friend Requests</li>
               <li><span>★</span> 50 ZoneMeet Coins (Free)</li>
             </ul>
@@ -2319,9 +2321,11 @@ export default function Dashboard(props) {
               <div className="savings">~6% OFF</div>
             </div>
             <ul className="premium-features">
-              <li><span>✓</span> Gender & Country Filters</li>
+              <li><span>✓</span> Gender, Country & State Filters</li>
+              <li><span>✓</span> 0-Sec Skip Cooldown (Instant Next)</li>
+              <li><span>✓</span> 15 Free Reconnect Passes / Day</li>
+              <li><span>✓</span> 1-Time Reconnect Limit (Anti-Spam)</li>
               <li><span>✓</span> Instant Priority Matching</li>
-              <li><span>✓</span> Unlimited Friend Requests</li>
               <li><span>🌐</span> Auto-Translate Chats & Live Subtitles</li>
               <li><span>★</span> 150 ZoneMeet Coins (Free)</li>
               <li className="feature-coming-soon"><span>🕒</span> Ad-Free Experience <em>(Coming Soon)</em></li>
@@ -2339,19 +2343,20 @@ export default function Dashboard(props) {
             <div className="plan-icon">💎</div>
             <div className="card-header">
               <h3>Silver</h3>
-              <div className="duration">90 Days of Pro Access</div>
+              <div className="duration">90 Days Full Access</div>
             </div>
             <div className="price-tag">
               <span className="amount">{currency === "INR" ? "₹1599" : "$19.17"}</span>
-              <div className="savings">~16.5% OFF</div>
+              <div className="savings">~35% SAVINGS</div>
             </div>
             <ul className="premium-features">
-              <li><span>✓</span> Season-Long Pro Access (90 Days)</li>
-              <li><span>✓</span> Gender & Country Filters (Prime jaisa)</li>
-              <li><span>✓</span> Elite Identity Badge</li>
-              <li><span>✓</span> All Prime Benefits (Translate, Priority, Friends)</li>
+              <li><span>👑</span> 90 Days All VIP Elite Perks Included</li>
+              <li><span>🔥</span> 2X Daily Streak Multiplier (Double Coins)</li>
+              <li><span>🛡️</span> 15 Free Reconnect Passes / Day (Anti-Spam)</li>
+              <li><span>🎭</span> Privacy Screen Avatars & Camera Blur</li>
+              <li><span>✨</span> Mythic Royal Identity Badge</li>
               <li><span>🌐</span> Auto-Translate Chats & Live Subtitles</li>
-              <li><span>★</span> 500 ZoneMeet Coins (Free)</li>
+              <li><span>★</span> 600 ZoneMeet Coins (Free)</li>
               <li className="feature-coming-soon"><span>🕒</span> Ad-Free Experience <em>(Coming Soon)</em></li>
             </ul>
             <button className="premium-btn" onClick={() => {
@@ -2369,7 +2374,7 @@ export default function Dashboard(props) {
             <div className="elite-badge-v3">👑 VIP ELITE</div>
             <div className="elite-main-info">
               <h2>Master the <span>ZoneMeet</span></h2>
-              <p>The ultimate membership for those who want everything. Zero limits, maximum control.</p>
+              <p>The ultimate membership for those who want everything. Zero limits, maximum control & privacy.</p>
               <div className="elite-price-group">
                 <span className="price">{currency === "INR" ? "₹999" : "$11.99"}</span>
                 <span className="duration">/ 30 Days</span>
@@ -2386,32 +2391,39 @@ export default function Dashboard(props) {
           <div className="elite-features-grid">
             <div className="elite-feature-item">
               <strong>🎯 Exact Age Filter</strong>
-              <p>Find exactly who you're looking for</p>
+              <p>Find matches in your exact age group</p>
             </div>
             <div className="elite-feature-item">
-              <strong>💰 400 Free Coins</strong>
-              <p>Boost & Reconnect instantly</p>
+              <strong>💰 500 Free Coins + 1 Key</strong>
+              <p>500 Coins + 1 Free Legendary Mystery Box Key</p>
+            </div>
+            <div className="elite-feature-item">
+              <strong>🔥 2X Daily Streak Multiplier</strong>
+              <p>Double daily login streak coins automatically</p>
+            </div>
+            <div className="elite-feature-item">
+              <strong>🎭 Privacy Screen Avatars</strong>
+              <p>Animated avatar covers screen to hide real face & camera</p>
+            </div>
+            <div className="elite-feature-item">
+              <strong>🌫️ Real-Time Camera Blur</strong>
+              <p>Instant privacy blur for your camera background</p>
             </div>
             <div className="elite-feature-item">
               <strong>⚡ Instant Zero-Wait</strong>
-              <p>Never wait for a match again</p>
-            </div>
-
-            <div className="elite-feature-item">
-              <strong>🎨 Free Filters & Avatars</strong>
-              <p>All face filters & animated avatars unlocked</p>
+              <p>Skip queue and match with people immediately</p>
             </div>
             <div className="elite-feature-item">
-              <strong>🎤 Voice Changer</strong>
-              <p>Change your voice in real-time</p>
+              <strong>🎥 1080p Ultra-HD Video</strong>
+              <p>Crystal clear video quality on all connections</p>
             </div>
             <div className="elite-feature-item">
-              <strong>🔒 Privacy Tools</strong>
-              <p>Blur, mask & identity protection box</p>
+              <strong>✨ Glowing Border & Gold Text</strong>
+              <p>Exclusive gold chat messages & camera highlight</p>
             </div>
             <div className="elite-feature-item">
               <strong>🌐 Auto-Translate & CC</strong>
-              <p>Live translated subtitles & chats</p>
+              <p>Live translated subtitles & instant text translation</p>
             </div>
             <div className="elite-feature-item feature-coming-soon-box">
               <strong>📺 Ad-Free Experience</strong>
@@ -4809,45 +4821,45 @@ export default function Dashboard(props) {
             gap: 1rem !important;
           }
 
-          .premium-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 32px; padding: 2rem 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; transition: all 0.5s cubic-bezier(0.4,0,0.2,1); backdrop-filter: blur(10px); }
-          .premium-card:hover { transform: translateY(-15px) scale(1.02); background: rgba(255,255,255,0.04); border-color: rgba(99,102,241,0.4); box-shadow: 0 30px 60px -12px rgba(0,0,0,0.5); }
-          .premium-card.featured { background: linear-gradient(180deg, rgba(99,102,241,0.1) 0%, rgba(236,72,153,0.05) 100%); border: 1px solid rgba(99,102,241,0.5); transform: scale(1.04); z-index: 10; }
-          .premium-card.featured:hover { transform: scale(1.06) translateY(-10px); }
-          .popular-ribbon { position: absolute; top: -15px; background: linear-gradient(90deg, #6366f1, #ec4899); color: white; padding: 0.4rem 1.2rem; border-radius: 50px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 20px rgba(99,102,241,0.4); }
-          .plan-icon { font-size: 2.5rem; margin-bottom: 1rem; }
-          .card-header h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.25rem; color: white; }
-          .card-header .duration { color: #64748b; font-size: 0.9rem; font-weight: 500; }
-          .price-tag { margin: 2rem 0; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
-          .amount { font-size: 3.5rem; font-weight: 900; color: white; letter-spacing: -0.02em; }
-          .savings { background: rgba(16,185,129,0.1); color: #10b981; padding: 0.3rem 1rem; border-radius: 50px; font-size: 0.85rem; font-weight: 700; }
-          .premium-features { list-style: none; padding: 0; margin: 0 0 2.5rem 0; width: 100%; display: flex; flex-direction: column; gap: 1rem; text-align: left; }
-          .premium-features li { font-size: 0.95rem; color: #94a3b8; display: flex; align-items: center; gap: 0.75rem; }
+          .premium-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; padding: 1.4rem 1.25rem; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; transition: all 0.4s cubic-bezier(0.4,0,0.2,1); backdrop-filter: blur(10px); }
+          .premium-card:hover { transform: translateY(-8px) scale(1.01); background: rgba(255,255,255,0.04); border-color: rgba(99,102,241,0.4); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5); }
+          .premium-card.featured { background: linear-gradient(180deg, rgba(99,102,241,0.1) 0%, rgba(236,72,153,0.05) 100%); border: 1px solid rgba(99,102,241,0.5); transform: scale(1.02); z-index: 10; }
+          .premium-card.featured:hover { transform: scale(1.03) translateY(-6px); }
+          .popular-ribbon { position: absolute; top: -13px; background: linear-gradient(90deg, #6366f1, #ec4899); color: white; padding: 0.3rem 1rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 8px 16px rgba(99,102,241,0.4); }
+          .plan-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+          .card-header h3 { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.2rem; color: white; }
+          .card-header .duration { color: #64748b; font-size: 0.8rem; font-weight: 500; }
+          .price-tag { margin: 1rem 0; display: flex; flex-direction: column; align-items: center; gap: 0.35rem; }
+          .amount { font-size: 2.4rem; font-weight: 900; color: white; letter-spacing: -0.02em; }
+          .savings { background: rgba(16,185,129,0.1); color: #10b981; padding: 0.25rem 0.85rem; border-radius: 50px; font-size: 0.75rem; font-weight: 700; }
+          .premium-features { list-style: none; padding: 0; margin: 0 0 1.3rem 0; width: 100%; display: flex; flex-direction: column; gap: 0.65rem; text-align: left; }
+          .premium-features li { font-size: 0.84rem; color: #94a3b8; display: flex; align-items: center; gap: 0.6rem; }
           .premium-features li span { color: #6366f1; font-weight: 900; }
           .feature-coming-soon { opacity: 0.45 !important; }
           .feature-coming-soon span { color: #64748b !important; }
           .feature-coming-soon em { font-style: italic; font-size: 0.8em; color: #64748b; }
-          .premium-btn { width: 100%; padding: 1.25rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: all 0.3s; }
+          .premium-btn { width: 100%; padding: 0.85rem 1.2rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; font-weight: 800; font-size: 0.95rem; cursor: pointer; transition: all 0.3s; }
           .premium-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
-          .premium-btn.primary { background: linear-gradient(135deg, #6366f1, #4f46e5); border: none; box-shadow: 0 15px 30px rgba(99,102,241,0.3); }
-          .premium-btn.primary:hover { transform: scale(1.02); box-shadow: 0 20px 40px rgba(99,102,241,0.4); }
+          .premium-btn.primary { background: linear-gradient(135deg, #6366f1, #4f46e5); border: none; box-shadow: 0 12px 24px rgba(99,102,241,0.3); }
+          .premium-btn.primary:hover { transform: scale(1.02); box-shadow: 0 16px 32px rgba(99,102,241,0.4); }
 
-          .elite-hero-banner { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); border: 1px solid rgba(139,92,246,0.3); border-radius: 40px; padding: 4rem; display: flex; gap: 4rem; position: relative; overflow: hidden; box-shadow: 0 40px 100px -20px rgba(0,0,0,0.6); }
+          .elite-hero-banner { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); border: 1px solid rgba(139,92,246,0.3); border-radius: 28px; padding: 2.2rem 2.5rem; display: flex; gap: 2.5rem; position: relative; overflow: hidden; box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6); }
           .elite-hero-banner::before { content: ''; position: absolute; top: -50%; right: -10%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%); filter: blur(40px); }
-          .elite-content { flex: 1.5; position: relative; z-index: 2; }
-          .elite-badge-v3 { background: linear-gradient(90deg, #f59e0b, #fbbf24); color: #000; display: inline-block; padding: 0.6rem 1.5rem; border-radius: 50px; font-weight: 900; font-size: 0.9rem; margin-bottom: 1.5rem; letter-spacing: 0.05em; animation: glow 2s infinite; }
-          .elite-main-info h2 { font-size: 3rem; font-weight: 900; margin-bottom: 1rem; color: white; line-height: 1.1; }
+          .elite-content { flex: 1.3; position: relative; z-index: 2; }
+          .elite-badge-v3 { background: linear-gradient(90deg, #f59e0b, #fbbf24); color: #000; display: inline-block; padding: 0.45rem 1.2rem; border-radius: 50px; font-weight: 900; font-size: 0.8rem; margin-bottom: 1rem; letter-spacing: 0.05em; animation: glow 2s infinite; }
+          .elite-main-info h2 { font-size: 2.2rem; font-weight: 900; margin-bottom: 0.6rem; color: white; line-height: 1.15; }
           .elite-main-info h2 span { background: linear-gradient(90deg, #f59e0b, #fbbf24); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-          .elite-main-info p { color: #94a3b8; font-size: 1.1rem; margin-bottom: 2rem; max-width: 450px; }
-          .elite-price-group { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 2.5rem; }
-          .elite-price-group .price { font-size: 3rem; font-weight: 900; color: white; }
-          .elite-price-group .duration { color: #64748b; font-size: 1.2rem; }
-          .elite-btn-v3 { background: linear-gradient(90deg, #f59e0b, #fbbf24); color: #000; border: none; padding: 1.25rem 2.5rem; border-radius: 20px; font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: all 0.3s; box-shadow: 0 20px 40px rgba(245,158,11,0.2); }
-          .elite-btn-v3:hover { transform: translateY(-5px); box-shadow: 0 25px 50px rgba(245,158,11,0.3); }
-          .elite-features-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; position: relative; z-index: 2; }
-          .elite-feature-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 1.2rem; border-radius: 20px; transition: all 0.3s; }
-          .elite-feature-item:hover { background: rgba(255,255,255,0.05); border-color: rgba(245,158,11,0.3); transform: translateX(5px); }
-          .elite-feature-item strong { display: block; color: white; font-size: 1rem; margin-bottom: 0.25rem; }
-          .elite-feature-item p { color: #64748b; font-size: 0.85rem; margin: 0; }
+          .elite-main-info p { color: #94a3b8; font-size: 0.95rem; margin-bottom: 1.4rem; max-width: 450px; }
+          .elite-price-group { display: flex; align-items: baseline; gap: 0.4rem; margin-bottom: 1.4rem; }
+          .elite-price-group .price { font-size: 2.4rem; font-weight: 900; color: white; }
+          .elite-price-group .duration { color: #64748b; font-size: 1rem; }
+          .elite-btn-v3 { background: linear-gradient(90deg, #f59e0b, #fbbf24); color: #000; border: none; padding: 0.85rem 1.8rem; border-radius: 14px; font-weight: 800; font-size: 0.98rem; cursor: pointer; transition: all 0.3s; box-shadow: 0 15px 30px rgba(245,158,11,0.2); }
+          .elite-btn-v3:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(245,158,11,0.3); }
+          .elite-features-grid { flex: 1.3; display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; position: relative; z-index: 2; }
+          .elite-feature-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 0.85rem 1rem; border-radius: 14px; transition: all 0.3s; }
+          .elite-feature-item:hover { background: rgba(255,255,255,0.05); border-color: rgba(245,158,11,0.3); transform: translateX(3px); }
+          .elite-feature-item strong { display: block; color: white; font-size: 0.88rem; margin-bottom: 0.2rem; }
+          .elite-feature-item p { color: #64748b; font-size: 0.78rem; margin: 0; line-height: 1.35; }
           .feature-coming-soon-box { opacity: 0.4; border-style: dashed !important; }
           .feature-coming-soon-box em { font-size: 0.75em; color: #64748b; }
 
