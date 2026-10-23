@@ -4010,9 +4010,10 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     type="button" 
                     className="btn-composer-stop"
                     onClick={handleTextChatStopAndGoHome}
-                    title="Home / Stop Chat"
+                    title="Home / Leave Chat"
                   >
-                    🏠 Home
+                    <span className="btn-composer-icon">🏠</span>
+                    <span className="btn-composer-label">Home</span>
                   </button>
                   <button 
                     type="button" 
@@ -4020,12 +4021,13 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     onClick={handleRewindClick}
                     title="Rewind to previous partner"
                   >
-                    ⏪ Rewind
+                    <span className="btn-composer-icon">⏪</span>
+                    <span className="btn-composer-label">Rewind</span>
                   </button>
                   <input
                     type="text"
                     className="text-mode-input-field"
-                    placeholder={partnerId ? "Type a message to stranger..." : "Type a message here (sends once connected)..."}
+                    placeholder="Type a message..."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onFocus={() => {
@@ -4040,9 +4042,10 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     type="submit" 
                     className="btn-composer-send"
                     disabled={!message.trim()}
+                    title="Send message"
                   >
-                    <span>Send</span>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <span className="btn-send-label">Send</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                     </svg>
                   </button>
@@ -6511,35 +6514,40 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             max-width: 100vw !important;
             overflow: hidden !important;
           }
-          .btn-composer-stop {
-            padding: 5px 9px !important;
-            font-size: 0.72rem !important;
-            border-radius: 8px !important;
-            flex-shrink: 0 !important;
-            white-space: nowrap !important;
-            height: 34px !important;
+          .btn-composer-stop,
+          .btn-composer-rewind {
+            width: 36px !important;
+            min-width: 36px !important;
+            max-width: 36px !important;
+            height: 36px !important;
+            padding: 0 !important;
+            border-radius: 10px !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 3px !important;
+            flex: 0 0 36px !important;
+            font-size: 1.05rem !important;
+          }
+          .btn-composer-label {
+            display: none !important;
           }
           .text-mode-input-field {
-            padding: 6px 10px !important;
-            font-size: 0.78rem !important;
-            border-radius: 8px !important;
+            padding: 8px 12px !important;
+            font-size: 0.88rem !important;
+            border-radius: 10px !important;
             flex: 1 1 auto !important;
             min-width: 0 !important;
-            height: 34px !important;
+            height: 36px !important;
             box-sizing: border-box !important;
           }
           .btn-composer-send {
-            padding: 5px 10px !important;
-            font-size: 0.72rem !important;
-            border-radius: 8px !important;
+            padding: 6px 12px !important;
+            font-size: 0.76rem !important;
+            border-radius: 10px !important;
             flex-shrink: 0 !important;
             white-space: nowrap !important;
             gap: 4px !important;
-            height: 34px !important;
+            height: 36px !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
@@ -9961,10 +9969,10 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             margin-top: 3px !important;
           }
 
-          /* Text Mode Composer on Phones: Glued to Bottom with Safe-Area, Home + Rewind + Input + Send */
+          /* Text Mode Composer on Phones: Glued to Bottom with Safe-Area, Compact Home + Compact Rewind + Max Input Width + Send */
           .text-mode-composer {
             flex-shrink: 0 !important;
-            padding: 8px 10px !important;
+            padding: 6px 8px !important;
             padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
             margin: 0 !important;
             gap: 6px !important;
@@ -9982,55 +9990,55 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             z-index: 100 !important;
           }
           .text-mode-composer .btn-composer-stop {
-            width: auto !important;
-            max-width: fit-content !important;
-            flex: 0 0 auto !important;
-            margin: 0 !important;
-            padding: 6px 8px !important;
+            width: 36px !important;
+            min-width: 36px !important;
+            max-width: 36px !important;
             height: 36px !important;
-            font-size: 0.72rem !important;
-            font-weight: 700 !important;
+            flex: 0 0 36px !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: 1.05rem !important;
             border-radius: 10px !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 3px !important;
-            white-space: nowrap !important;
             box-sizing: border-box !important;
             background: rgba(239, 68, 68, 0.16) !important;
             border: 1px solid rgba(239, 68, 68, 0.35) !important;
             color: #fca5a5 !important;
+            cursor: pointer !important;
           }
           .text-mode-composer .btn-composer-rewind {
-            width: auto !important;
-            max-width: fit-content !important;
-            flex: 0 0 auto !important;
-            margin: 0 !important;
-            padding: 6px 8px !important;
+            width: 36px !important;
+            min-width: 36px !important;
+            max-width: 36px !important;
             height: 36px !important;
-            font-size: 0.72rem !important;
-            font-weight: 700 !important;
+            flex: 0 0 36px !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: 1.05rem !important;
             border-radius: 10px !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 3px !important;
-            white-space: nowrap !important;
             box-sizing: border-box !important;
             background: rgba(251, 191, 36, 0.16) !important;
             border: 1px solid rgba(251, 191, 36, 0.35) !important;
             color: #fbbf24 !important;
-            cursor: pointer;
+            cursor: pointer !important;
             transition: all 0.2s ease;
+          }
+          .text-mode-composer .btn-composer-label {
+            display: none !important;
           }
           .text-mode-composer .text-mode-input-field {
             flex: 1 1 auto !important;
             min-width: 0 !important;
-            width: auto !important;
+            width: 100% !important;
             margin: 0 !important;
-            padding: 6px 10px !important;
+            padding: 8px 12px !important;
             height: 36px !important;
-            font-size: 0.8rem !important;
+            font-size: 0.88rem !important;
             border-radius: 10px !important;
             box-sizing: border-box !important;
           }
@@ -10039,20 +10047,31 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             max-width: fit-content !important;
             flex: 0 0 auto !important;
             margin: 0 !important;
-            padding: 6px 10px !important;
+            padding: 6px 12px !important;
             height: 36px !important;
-            font-size: 0.74rem !important;
+            font-size: 0.76rem !important;
             border-radius: 10px !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 3px !important;
+            gap: 4px !important;
             white-space: nowrap !important;
             box-sizing: border-box !important;
           }
           .text-mode-composer .btn-composer-send svg {
             width: 13px !important;
             height: 13px !important;
+          }
+          @media (max-width: 375px) {
+            .text-mode-composer .btn-send-label {
+              display: none !important;
+            }
+            .text-mode-composer .btn-composer-send {
+              width: 36px !important;
+              min-width: 36px !important;
+              max-width: 36px !important;
+              padding: 0 !important;
+            }
           }
           .bottom-actions .rewind-btn {
             position: absolute !important;
@@ -10128,36 +10147,36 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             min-height: 42px !important;
           }
           .text-mode-composer {
-            padding: 14px 24px !important;
-            gap: 14px !important;
+            padding: 12px 20px !important;
+            gap: 10px !important;
             flex-shrink: 0 !important;
           }
           .text-mode-composer .btn-composer-stop {
-            height: 46px !important;
-            padding: 10px 18px !important;
-            font-size: 0.92rem !important;
-            border-radius: 12px !important;
-            min-width: 90px !important;
+            height: 42px !important;
+            padding: 8px 14px !important;
+            font-size: 0.86rem !important;
+            border-radius: 11px !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 6px !important;
+            gap: 5px !important;
+            flex-shrink: 0 !important;
           }
           .text-mode-composer .btn-composer-rewind {
-            height: 46px !important;
-            padding: 10px 18px !important;
-            font-size: 0.92rem !important;
-            border-radius: 12px !important;
-            min-width: 105px !important;
+            height: 42px !important;
+            padding: 8px 14px !important;
+            font-size: 0.86rem !important;
+            border-radius: 11px !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 6px !important;
+            gap: 5px !important;
             background: rgba(251, 191, 36, 0.16) !important;
             border: 1px solid rgba(251, 191, 36, 0.35) !important;
             color: #fbbf24 !important;
             cursor: pointer;
             font-weight: 700;
+            flex-shrink: 0 !important;
           }
           .text-mode-composer .btn-composer-rewind:hover {
             background: rgba(251, 191, 36, 0.28) !important;
@@ -10166,26 +10185,26 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             transform: translateY(-1px);
           }
           .text-mode-composer .text-mode-input-field {
-            height: 48px !important;
-            padding: 12px 20px !important;
-            font-size: 1.02rem !important;
-            border-radius: 14px !important;
+            height: 44px !important;
+            padding: 10px 18px !important;
+            font-size: 0.98rem !important;
+            border-radius: 12px !important;
             flex: 1 1 auto !important;
           }
           .text-mode-composer .btn-composer-send {
-            height: 48px !important;
-            padding: 12px 28px !important;
-            font-size: 0.95rem !important;
-            border-radius: 14px !important;
-            min-width: 110px !important;
+            height: 44px !important;
+            padding: 10px 22px !important;
+            font-size: 0.92rem !important;
+            border-radius: 12px !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 8px !important;
+            gap: 6px !important;
+            flex-shrink: 0 !important;
           }
           .text-mode-composer .btn-composer-send svg {
-            width: 18px !important;
-            height: 18px !important;
+            width: 16px !important;
+            height: 16px !important;
           }
         }
       `}</style>
