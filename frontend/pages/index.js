@@ -207,12 +207,43 @@ export default function Dashboard(props) {
   const [dailyStatus, setDailyStatus] = useState(null);
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [showDailyModal, setShowDailyModal] = useState(false);
+  const [rollingReel, setRollingReel] = useState(null);
+  const [utcCountdown, setUtcCountdown] = useState("00:00:00");
+  const [spinOffset, setSpinOffset] = useState(0);
+  const rouletteViewportRef = useRef(null);
   const [currentTime, setCurrentTime] = useState(Date.now());
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Universal Time (UTC) Countdown Ticker (00:00:00 UTC = 05:30 AM IST)
+  useEffect(() => {
+    const updateUtcCountdown = () => {
+      const now = new Date();
+      const nextUtc = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0));
+      const diff = Math.max(0, nextUtc.getTime() - now.getTime());
+      const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
+      const minutes = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+      const seconds = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, '0');
+      setUtcCountdown(`${hours}:${minutes}:${seconds}`);
+
+      // Auto-refresh daily streak eligibility when UTC flips to 00:00:00
+      if (diff <= 1000 && dailyStatus && !dailyStatus.canCollect && user) {
+        axios.post("https://api.zonemeet.chat/api/user/daily-check", { email: user.email, phone: user.phone })
+          .then(res => {
+            if (res.data.success) {
+              setDailyStatus(res.data);
+            }
+          })
+          .catch(() => {});
+      }
+    };
+    updateUtcCountdown();
+    const timer = setInterval(updateUtcCountdown, 1000);
+    return () => clearInterval(timer);
+  }, [dailyStatus, user]);
 
   useEffect(() => {
     if (showProfileDrop && news.length === 0) {
@@ -691,6 +722,7 @@ export default function Dashboard(props) {
     try {
       const res = await axios.post("https://api.zonemeet.chat/api/user/collect-daily-reward", { email: user.email, phone: user.phone });
       if (res.data.success) {
+        // 1-second instant state & localStorage balance sync
         const updated = { 
           ...user, 
           coins: res.data.coins, 
@@ -702,13 +734,57 @@ export default function Dashboard(props) {
         if (res.data.boostExpiry) updated.boostExpiry = res.data.boostExpiry;
         setUser(updated);
         localStorage.setItem("user", JSON.stringify(updated));
-        setDailyStatus({ ...dailyStatus, canCollect: false, streak_day: res.data.streak_day || res.data.streak, streak_broken: false });
-        setShowStreakModal(false);
-        // Show a toast-style success
-        showModal({
-          message: `✅ ${res.data.message} Your new balance: ${res.data.coins} coins.`,
-          type: "success"
+        setDailyStatus({ 
+          ...dailyStatus, 
+          canCollect: false, 
+          streak_day: res.data.streak_day || res.data.streak, 
+          streak_broken: false,
+          nextResetMs: res.data.nextResetMs 
         });
+
+        // Day 7 Grand Reward: Trigger Mystery Crate Rolling Reel Animation!
+        if (res.data.wonBoxType && res.data.boxPrize) {
+          const pool = ["bronze", "silver", "bronze", "gold", "bronze", "silver", "bronze", "bronze", "silver", "gold"];
+          const track = [];
+          for (let i = 0; i < 35; i++) {
+            if (i === 28) {
+              track.push(res.data.wonBoxType);
+            } else {
+              track.push(pool[i % pool.length]);
+            }
+          }
+
+          setSpinOffset(0);
+          setRollingReel({
+            active: true,
+            wonBoxType: res.data.wonBoxType,
+            boxPrize: res.data.boxPrize,
+            isSpinning: false,
+            revealed: false,
+            track
+          });
+
+          // Trigger smooth decelerating spin
+          setTimeout(() => {
+            const vpWidth = rouletteViewportRef.current ? rouletteViewportRef.current.clientWidth : 440;
+            const tileStep = 102; // 90px width + 12px gap
+            const winningCenter = 12 + (28 * tileStep) + 45;
+            const targetX = -(winningCenter - (vpWidth / 2));
+            setSpinOffset(targetX);
+            setRollingReel(prev => prev ? { ...prev, isSpinning: true } : null);
+          }, 120);
+
+          // Decelerate and reveal winning crate after 3.3s
+          setTimeout(() => {
+            setRollingReel(prev => prev ? { ...prev, isSpinning: false, revealed: true } : null);
+          }, 3300);
+        } else {
+          // Day 1 to 6 reward: Celebratory toast notification
+          showModal({
+            message: `✅ ${res.data.message} Your new balance: ${res.data.coins} coins.`,
+            type: "success"
+          });
+        }
       } else {
         showModal({ message: res.data.message || "Could not collect reward.", type: "info" });
       }
@@ -2818,7 +2894,7 @@ export default function Dashboard(props) {
         </div>
       )}
 
-      {/* DAILY STREAK MODAL */}
+      {/* DAILY STREAK BATTLE-PASS MODAL (CONCEPT 2) */}
       {showStreakModal && (() => {
         const currentStreak = dailyStatus?.streak_day || user?.streak_day || 1;
         const coinsBalance = user?.coins || 0;
@@ -2830,143 +2906,249 @@ export default function Dashboard(props) {
           { day: 1, text: "10 Coins", icon: "🪙", label: "Day 1" },
           { day: 2, text: "20 Coins", icon: "🪙", label: "Day 2" },
           { day: 3, text: "30 Coins", icon: "🪙", label: "Day 3" },
-          { day: 4, text: "10 Min Boost", icon: "🚀", label: "Day 4" },
+          { day: 4, text: "10m Boost", icon: "🚀", label: "Day 4" },
           { day: 5, text: "50 Coins", icon: "🪙", label: "Day 5" },
           { day: 6, text: "75 Coins", icon: "🪙", label: "Day 6" },
-          { day: 7, text: "Grand Reward", icon: "👑", label: "Day 7" }
+          { day: 7, text: "100 Coins + Crate", icon: "👑", label: "Day 7" }
         ];
 
         const todayRewardText = DAILY_REWARDS[currentStreak - 1]?.text || "";
 
         return (
-          <div className="payment-overlay" style={{ zIndex: 11000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', overflow: 'hidden' }} onClick={() => setShowStreakModal(false)}>
-            <div className="streak-reward-modal" onClick={e => e.stopPropagation()}>
-              <button type="button" onClick={(e) => { e.stopPropagation(); setShowStreakModal(false); }} className="streak-modal-close" style={{ position: 'absolute', top: '10px', right: '10px', width: '32px', height: '32px', minWidth: '32px', maxWidth: '32px', minHeight: '32px', maxHeight: '32px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.16)', border: '1px solid rgba(255, 255, 255, 0.25)', color: '#ffffff', fontSize: '1.25rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0, margin: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>×</button>
-              
-              <div className="streak-modal-top">
-                <div className="streak-big-fire">{isBroken ? '💔' : currentStreak >= 7 ? '👑' : '🔥'}</div>
-                <h2 className="streak-modal-title">
-                  {isBroken ? 'Streak Broken!' : currentStreak >= 7 && !canCollect ? '🎉 Cycle Complete!' : 'Daily Login Streak'}
-                </h2>
-                <p className="streak-modal-sub">
-                  {isBroken
-                    ? `Your streak has been broken 🔥`
-                    : canCollect
-                      ? `Collect your Day ${currentStreak} reward today!`
-                      : `You claimed Day ${currentStreak} reward. Come back tomorrow!`}
-                </p>
-              </div>
-
-              {/* Mobile-first Reward Card Stats */}
-              <div className="streak-stats-card">
-                <div className="streak-stat-box">
-                  <span className="streak-stat-icon">🔥</span>
-                  <div className="streak-stat-info">
-                    <small>Streak</small>
-                    <strong>Day {isBroken ? (dailyStatus?.oldStreak || currentStreak) : currentStreak}</strong>
-                  </div>
-                </div>
-                <div className="streak-stat-box">
-                  <span className="streak-stat-icon">🎁</span>
-                  <div className="streak-stat-info">
-                    <small>Today's Reward</small>
-                    <strong style={{ fontSize: '0.72rem' }}>
-                      {isBroken ? 'Pending Savior' : (canCollect ? todayRewardText : 'Completed')}
-                    </strong>
-                  </div>
-                </div>
-                <div className="streak-stat-box">
-                  <span className="streak-stat-icon">💰</span>
-                  <div className="streak-stat-info">
-                    <small>Coins</small>
-                    <strong>{coinsBalance}</strong>
-                  </div>
-                </div>
-              </div>
-
-              {/* 7-Day Grid */}
-              <div className="streak-days-grid">
-                {DAILY_REWARDS.map(({ day, text, icon, label }) => {
-                  const done = isBroken ? false : (day < currentStreak || (day === currentStreak && !canCollect));
-                  const isToday = !isBroken && (day === currentStreak && canCollect);
-                  const isLocked = isBroken ? true : (day > currentStreak);
-                  const isGrand = day === 7;
-
-                  return (
-                    <div key={day} className={`streak-day-card ${done ? 'done' : ''} ${isToday ? 'today' : ''} ${isLocked ? 'locked' : ''} ${isGrand ? 'grand' : ''}`}>
-                      {done && <div className="streak-check">✓</div>}
-                      {isLocked && <div className="streak-lock-overlay">🔒</div>}
-                      <div className="streak-day-icon" style={{ filter: isLocked ? 'grayscale(100%)' : 'none' }}>{icon}</div>
-                      <div className="streak-day-coins" style={{ fontSize: '0.6rem', whiteSpace: 'nowrap' }}>{text}</div>
-                      <div className="streak-day-label">{label}</div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Progress bar */}
-              {!isBroken && (
-                <div className="streak-progress-wrap" style={{ marginBottom: '1rem' }}>
-                  <div className="streak-progress-fill" style={{ width: `${Math.min(((canCollect ? currentStreak - 1 : currentStreak) / 7) * 100, 100)}%` }} />
-                  <span className="streak-progress-text">
-                    {canCollect ? currentStreak - 1 : currentStreak}/7 days completed
-                  </span>
-                </div>
+          <div className="payment-overlay" style={{ zIndex: 11000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', overflow: 'hidden' }} onClick={() => !rollingReel?.isSpinning && setShowStreakModal(false)}>
+            <div className="bp-streak-modal" onClick={e => e.stopPropagation()}>
+              {!rollingReel?.isSpinning && (
+                <button 
+                  type="button" 
+                  onClick={(e) => { e.stopPropagation(); setShowStreakModal(false); setRollingReel(null); }} 
+                  className="bp-modal-close" 
+                  title="Close"
+                >×</button>
               )}
 
-              {/* Action Buttons / Broken Screen */}
-              {isBroken ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.6rem', background: 'rgba(239, 68, 68, 0.06)', border: '1px solid rgba(239, 68, 68, 0.18)', padding: '12px 14px', borderRadius: '18px', textAlign: 'center' }}>
-                  <p style={{ margin: '0 0 8px 0', fontSize: '0.82rem', color: '#fca5a5', lineHeight: '1.4' }}>
-                    Spend <strong style={{ color: '#fff' }}>100 Coins</strong> to save your streak?
-                  </p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <button 
-                      className="streak-cta-btn broken" 
-                      onClick={saveStreak}
-                      disabled={!hasEnoughToSave}
-                      style={{ 
-                        background: hasEnoughToSave ? 'linear-gradient(135deg, #fbbf24, #f59e0b)' : '#334155', 
-                        color: hasEnoughToSave ? '#000' : '#94a3b8',
-                        cursor: hasEnoughToSave ? 'pointer' : 'not-allowed',
-                        fontWeight: '800',
-                        padding: '10px 14px',
-                        fontSize: '0.88rem'
-                      }}
-                    >
-                      🛡️ Save Streak (100 Coins)
-                    </button>
-                    {!hasEnoughToSave && (
-                      <p style={{ margin: '0', fontSize: '0.72rem', color: '#f87171' }}>
-                        Insufficient coins to save streak.
-                      </p>
-                    )}
-                    <button 
-                      className="streak-skip-btn" 
-                      onClick={resetStreak}
-                      style={{ 
-                        background: 'rgba(255,255,255,0.05)', 
-                        border: '1px solid rgba(255,255,255,0.1)', 
-                        color: '#cbd5e1', 
-                        padding: '8px 12px', 
-                        borderRadius: '12px',
-                        cursor: 'pointer',
-                        fontWeight: '700',
-                        fontSize: '0.8rem'
-                      }}
-                    >
-                      Reset Streak (Start fresh from Day 1)
-                    </button>
+              {/* STAGE A: DAY 7 MYSTERY CRATE ROULETTE */}
+              {rollingReel?.active ? (
+                <div className="roulette-modal-stage">
+                  <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                    <div style={{ fontSize: '2.4rem', filter: 'drop-shadow(0 0 20px rgba(255,215,0,0.6))', marginBottom: '4px' }}>🎰</div>
+                    <h2 style={{ fontSize: '1.35rem', fontWeight: '900', color: '#fff', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
+                      {rollingReel.revealed ? '🎉 MYSTERY CRATE UNLOCKED!' : 'ROLLING MYSTERY CRATE...'}
+                    </h2>
+                    <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: 0 }}>
+                      {rollingReel.revealed
+                        ? 'Your crate loot and 100 bonus coins have been added to your account!'
+                        : 'Rolling chances: Bronze Case (65%) • Silver Vault (25%) • Golden Chest (10%)'}
+                    </p>
                   </div>
+
+                  {/* Horizontal Roulette Viewport */}
+                  <div className="roulette-viewport" ref={rouletteViewportRef}>
+                    <div className="roulette-needle" />
+                    <div 
+                      className="roulette-track"
+                      style={{
+                        transform: `translateX(${rollingReel.isSpinning ? spinOffset : 0}px)`,
+                        transition: rollingReel.isSpinning ? 'transform 3.2s cubic-bezier(0.12, 0.85, 0.15, 1)' : 'none'
+                      }}
+                    >
+                      {rollingReel.track.map((type, idx) => {
+                        const isGold = type === 'gold';
+                        const isSilver = type === 'silver';
+                        const color = isGold ? '#ffd700' : isSilver ? '#00f2fe' : '#cd7f32';
+                        const icon = isGold ? '👑' : isSilver ? '🎁' : '📦';
+                        const name = isGold ? 'Gold Chest' : isSilver ? 'Silver Vault' : 'Bronze Case';
+                        const rarity = isGold ? '10% Epic' : isSilver ? '25% Rare' : '65% Common';
+
+                        return (
+                          <div key={idx} className={`roulette-tile ${type}`}>
+                            <span style={{ fontSize: '1.8rem', lineHeight: 1 }}>{icon}</span>
+                            <strong style={{ fontSize: '0.68rem', color: '#fff', whiteSpace: 'nowrap' }}>{name}</strong>
+                            <small style={{ fontSize: '0.55rem', color, fontWeight: '700' }}>{rarity}</small>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Revealed Loot Card */}
+                  {rollingReel.revealed ? (
+                    <div className="roulette-reveal-card" style={{
+                      background: rollingReel.wonBoxType === 'gold' 
+                        ? 'radial-gradient(circle at 50% 50%, rgba(255,215,0,0.18) 0%, rgba(15,23,42,0.9) 100%)'
+                        : rollingReel.wonBoxType === 'silver'
+                        ? 'radial-gradient(circle at 50% 50%, rgba(0,242,254,0.18) 0%, rgba(15,23,42,0.9) 100%)'
+                        : 'radial-gradient(circle at 50% 50%, rgba(205,127,50,0.18) 0%, rgba(15,23,42,0.9) 100%)',
+                      border: `1.5px solid ${rollingReel.wonBoxType === 'gold' ? '#ffd700' : rollingReel.wonBoxType === 'silver' ? '#00f2fe' : '#cd7f32'}`,
+                      borderRadius: '18px',
+                      padding: '16px',
+                      textAlign: 'center',
+                      boxShadow: `0 0 30px ${rollingReel.wonBoxType === 'gold' ? 'rgba(255,215,0,0.3)' : rollingReel.wonBoxType === 'silver' ? 'rgba(0,242,254,0.3)' : 'rgba(205,127,50,0.3)'}`,
+                      marginBottom: '1rem',
+                      animation: 'modalSlideUp 0.4s ease'
+                    }}>
+                      <div style={{ fontSize: '2.5rem', marginBottom: '4px' }}>
+                        {rollingReel.wonBoxType === 'gold' ? '👑' : rollingReel.wonBoxType === 'silver' ? '🎁' : '📦'}
+                      </div>
+                      <h3 style={{ 
+                        margin: '0 0 6px', 
+                        fontSize: '1.15rem', 
+                        fontWeight: '900',
+                        color: rollingReel.wonBoxType === 'gold' ? '#ffd700' : rollingReel.wonBoxType === 'silver' ? '#00f2fe' : '#cd7f32' 
+                      }}>
+                        {rollingReel.wonBoxType === 'gold' ? 'Legendary Golden Chest Unlocked!' : rollingReel.wonBoxType === 'silver' ? 'Rare Silver Vault Unlocked!' : 'Common Bronze Case Unlocked!'}
+                      </h3>
+                      <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.08)', padding: '6px 14px', borderRadius: '12px', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '0.92rem', fontWeight: '800', color: '#fff' }}>
+                          🎁 Crate Loot: {rollingReel.boxPrize?.name}
+                        </span>
+                      </div>
+                      <p style={{ margin: '0', fontSize: '0.8rem', color: '#fbbf24', fontWeight: '700' }}>
+                        🪙 +100 Milestone Coins added to your balance!
+                      </p>
+                    </div>
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '12px', color: '#cbd5e1', fontSize: '0.85rem', fontWeight: '600' }}>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" style={{ display: 'inline-block', width: '1rem', height: '1rem', border: '2px solid #ffd700', borderRightColor: 'transparent', borderRadius: '50%', animation: 'spin 0.75s linear infinite', verticalAlign: 'middle', marginRight: '8px' }} />
+                      Decelerating on your winning crate...
+                    </div>
+                  )}
+
+                  {rollingReel.revealed && (
+                    <button 
+                      className="bp-cta-btn grand" 
+                      onClick={() => { setShowStreakModal(false); setRollingReel(null); }}
+                    >
+                      🎉 Claim & Continue to ZoneMeet
+                    </button>
+                  )}
                 </div>
-              ) : canCollect ? (
-                <button className={`streak-cta-btn ${currentStreak >= 7 ? 'grand' : 'normal'}`} onClick={collectDailyReward}>
-                  {currentStreak >= 7 ? `👑 Claim Grand Prize — +100 Coins & Boost!` : `🎁 Collect Today's Reward — ${todayRewardText}`}
-                </button>
               ) : (
-                <button className="streak-cta-btn normal" style={{ opacity: 0.7, cursor: 'default' }} onClick={() => setShowStreakModal(false)}>
-                  ✅ Already Claimed Today! Come back tomorrow
-                </button>
+                /* STAGE B: CONCEPT 2 BATTLE-PASS MAIN VIEW */
+                <>
+                  {/* Top Bar: Streak Pill, Coins Pill, UTC Ticker */}
+                  <div className="bp-header">
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <div className="bp-pill streak">
+                        <span>🔥</span>
+                        <span>STREAK: {isBroken ? (dailyStatus?.oldStreak || currentStreak) : currentStreak}</span>
+                      </div>
+                      <div className="bp-pill coins">
+                        <span>🪙</span>
+                        <span>{coinsBalance.toLocaleString()}</span>
+                      </div>
+                    </div>
+
+                    <div className="bp-utc-box">
+                      <span className="bp-utc-clock">00:00:00 UTC</span>
+                      <span className="bp-utc-label">Next in: {utcCountdown}</span>
+                    </div>
+                  </div>
+
+                  {/* Title & Subtitle */}
+                  <div style={{ textAlign: 'center', marginBottom: '1.2rem' }}>
+                    <h2 style={{ fontSize: '1.3rem', fontWeight: '900', color: '#fff', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
+                      {isBroken ? '💔 Streak Broken!' : currentStreak >= 7 && !canCollect ? '🎉 Battle-Pass Cycle Complete!' : 'Daily Login Streak'}
+                    </h2>
+                    <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: 0 }}>
+                      {isBroken
+                        ? `Spend 100 coins to save your continuous streak!`
+                        : canCollect
+                          ? `Claim your Day ${currentStreak} reward today!`
+                          : `You claimed Day ${currentStreak} reward. Next resets in ${utcCountdown} at 00:00 UTC.`}
+                    </p>
+                  </div>
+
+                  {/* Battle-Pass Journey Grid */}
+                  <div className="bp-journey-container">
+                    {DAILY_REWARDS.map(({ day, text, icon, label }) => {
+                      const done = isBroken ? false : (day < currentStreak || (day === currentStreak && !canCollect));
+                      const isToday = !isBroken && (day === currentStreak && canCollect);
+                      const isLocked = isBroken ? true : (day > currentStreak);
+                      const isGrand = day === 7;
+
+                      return (
+                        <div 
+                          key={day} 
+                          className={`bp-node ${done ? 'completed' : ''} ${isToday ? 'today' : ''} ${isLocked ? 'locked' : ''} ${isGrand ? 'grand' : ''}`}
+                        >
+                          {done && <div className="bp-node-badge done">✓</div>}
+                          {isLocked && <div className="bp-node-badge lock">🔒</div>}
+                          {isToday && <div className="bp-node-badge today">★</div>}
+
+                          <div className="bp-node-icon">{icon}</div>
+                          <div className="bp-node-title">{label}</div>
+                          <div className="bp-node-reward">{text}</div>
+                          {isGrand && (
+                            <span style={{ fontSize: '0.52rem', color: '#ffd700', fontWeight: '800', marginTop: '2px', textTransform: 'uppercase' }}>
+                              Crate Roll
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Progress Bar */}
+                  {!isBroken && (
+                    <div style={{ marginBottom: '1rem' }}>
+                      <div className="streak-progress-wrap" style={{ margin: '0 0 4px 0' }}>
+                        <div 
+                          className="streak-progress-fill" 
+                          style={{ width: `${Math.min(((canCollect ? currentStreak - 1 : currentStreak) / 7) * 100, 100)}%` }} 
+                        />
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#64748b', fontWeight: '700' }}>
+                        <span>Day 1 Start</span>
+                        <span>{canCollect ? currentStreak - 1 : currentStreak}/7 Days Completed</span>
+                        <span style={{ color: '#ffd700' }}>Day 7 Crate Roll</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action Buttons Area */}
+                  {isBroken ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', padding: '12px 14px', borderRadius: '18px', textAlign: 'center' }}>
+                      <p style={{ margin: '0 0 8px 0', fontSize: '0.82rem', color: '#fca5a5', lineHeight: '1.4' }}>
+                        Spend <strong style={{ color: '#fff' }}>100 Coins</strong> to save your streak and continue?
+                      </p>
+                      <button 
+                        className="bp-cta-btn grand" 
+                        onClick={saveStreak}
+                        disabled={!hasEnoughToSave}
+                        style={{ opacity: hasEnoughToSave ? 1 : 0.6 }}
+                      >
+                        🛡️ Save Streak (100 Coins)
+                      </button>
+                      {!hasEnoughToSave && (
+                        <p style={{ margin: '0', fontSize: '0.72rem', color: '#f87171' }}>
+                          Insufficient coins to save streak.
+                        </p>
+                      )}
+                      <button 
+                        className="streak-skip-btn" 
+                        onClick={resetStreak}
+                      >
+                        Reset Streak (Start fresh from Day 1)
+                      </button>
+                    </div>
+                  ) : canCollect ? (
+                    <button 
+                      className={`bp-cta-btn ${currentStreak >= 7 ? 'grand' : 'normal'}`} 
+                      onClick={collectDailyReward}
+                    >
+                      {currentStreak >= 7 
+                        ? `👑 Claim Day 7 Grand Prize — +100 Coins & Roll Crate!` 
+                        : `🎁 Claim Day ${currentStreak} Reward — +${todayRewardText}`}
+                    </button>
+                  ) : (
+                    <button 
+                      className="bp-cta-btn claimed" 
+                      onClick={() => setShowStreakModal(false)}
+                    >
+                      ⏱️ Claimed Today! Next in {utcCountdown} (at 00:00 UTC)
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -5140,165 +5322,289 @@ export default function Dashboard(props) {
           .streak-bar-wrap { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.06); border-radius: 0 0 50px 50px; }
           .streak-bar-fill { height: 100%; background: linear-gradient(90deg, #ff4500, #ff9500); border-radius: inherit; transition: width 0.6s ease; }
 
-          /* ===== 7-DAY STREAK REWARD MODAL (COMPACT & CENTERED) ===== */
-          .streak-reward-modal {
-            background: linear-gradient(180deg, #0d1117 0%, #0f172a 100%);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 24px;
-            padding: 1.25rem 1.4rem;
+          /* ===== CONCEPT 2: BATTLE-PASS STREAK MODAL & DAY 7 ROULETTE ===== */
+          .bp-streak-modal {
+            background: linear-gradient(180deg, #090e1a 0%, #040812 100%);
+            border: 1.5px solid rgba(245, 158, 11, 0.45);
+            border-radius: 26px;
+            padding: 1.5rem 1.6rem;
             width: 100%;
-            max-width: 410px;
+            max-width: 530px;
             position: relative;
-            animation: modalSlideUp 0.35s cubic-bezier(0.16,1,0.3,1);
-            box-shadow: 0 30px 80px rgba(0,0,0,0.85);
+            animation: modalSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 0 50px rgba(245, 158, 11, 0.16), 0 35px 80px rgba(0, 0, 0, 0.95);
+            color: #fff;
+            box-sizing: border-box;
           }
-          .streak-modal-close {
+          .bp-modal-close {
             position: absolute; top: 1rem; right: 1rem;
-            background: rgba(255,255,255,0.06); border: none;
+            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);
             color: #94a3b8; width: 32px; height: 32px;
             border-radius: 50%; font-size: 1.2rem; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            transition: 0.2s;
+            transition: all 0.2s; z-index: 10;
           }
-          .streak-modal-close:hover { background: rgba(255,255,255,0.15); color: #fff; }
-          .streak-modal-top { text-align: center; margin-bottom: 0.8rem; }
-          .streak-big-fire { font-size: 2.2rem; margin-bottom: 0.3rem; filter: drop-shadow(0 0 16px rgba(255,100,0,0.6)); animation: pulse 2s infinite; }
-          @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-          .streak-modal-title { font-size: 1.25rem; font-weight: 900; color: #fff; margin: 0 0 0.2rem; letter-spacing: -0.02em; }
-          .streak-modal-sub { font-size: 0.8rem; color: #94a3b8; margin: 0; font-weight: 500; }
-
-          /* Day Cards Grid */
-          .streak-days-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(2, 1fr);
+          .bp-modal-close:hover { background: rgba(255, 255, 255, 0.2); color: #fff; transform: scale(1.08); }
+          
+          /* Header Pills & UTC Clock */
+          .bp-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 1.1rem;
+            padding-bottom: 0.85rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          }
+          .bp-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
             gap: 6px;
-            margin-bottom: 0.8rem;
+            font-size: 0.82rem;
+            font-weight: 800;
           }
-          .streak-day-card:nth-child(1) { grid-area: 1 / 1 / 2 / 2; }
-          .streak-day-card:nth-child(2) { grid-area: 1 / 2 / 2 / 3; }
-          .streak-day-card:nth-child(3) { grid-area: 1 / 3 / 2 / 4; }
-          .streak-day-card:nth-child(4) { grid-area: 2 / 1 / 3 / 2; }
-          .streak-day-card:nth-child(5) { grid-area: 2 / 2 / 3 / 3; }
-          .streak-day-card:nth-child(6) { grid-area: 2 / 3 / 3 / 4; }
-          .streak-day-card:nth-child(7) { 
-            grid-area: 1 / 4 / 3 / 5;
+          .bp-pill.streak {
+            border-color: rgba(255, 106, 0, 0.45);
+            background: rgba(255, 106, 0, 0.1);
+            color: #ff944d;
+          }
+          .bp-pill.coins {
+            border-color: rgba(251, 191, 36, 0.45);
+            background: rgba(251, 191, 36, 0.1);
+            color: #fbbf24;
+          }
+          .bp-utc-box {
+            text-align: right;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
           }
-          .streak-day-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 10px;
-            padding: 6px 2px 5px;
+          .bp-utc-clock {
+            font-family: monospace;
+            font-size: 0.92rem;
+            font-weight: 900;
+            color: #38bdf8;
+            letter-spacing: 0.6px;
+          }
+          .bp-utc-label {
+            font-size: 0.62rem;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+          }
+
+          /* Battle-Pass Journey Grid */
+          .bp-journey-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 1rem;
+            position: relative;
+          }
+          .bp-node {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1.5px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 8px 4px;
             text-align: center;
             position: relative;
-            transition: all 0.3s;
-          }
-          .streak-day-card.done {
-            background: rgba(99,102,241,0.12);
-            border-color: rgba(99,102,241,0.35);
-          }
-          .streak-day-card.today {
-            background: rgba(255,100,0,0.1);
-            border-color: rgba(255,100,0,0.5);
-            box-shadow: 0 0 14px rgba(255,100,0,0.25);
-            transform: scale(1.04);
-          }
-          .streak-day-card.locked {
-            background: rgba(255,255,255,0.01);
-            border-color: rgba(255,255,255,0.04);
-            opacity: 0.5;
-          }
-          .streak-day-card.grand {
-            background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(251,191,36,0.06));
-            border-color: rgba(245,158,11,0.5);
-          }
-          .streak-day-card.grand .streak-day-icon {
-            font-size: 1.35rem;
-            margin-bottom: 3px;
-          }
-          .streak-day-card.grand .streak-day-coins {
-            font-size: 0.68rem !important;
-          }
-          .streak-day-card.grand .streak-day-label {
-            font-size: 0.62rem !important;
-          }
-          .streak-day-card.grand.done {
-            box-shadow: 0 0 20px rgba(245,158,11,0.35);
-          }
-          .streak-lock-overlay {
-            position: absolute; top: -5px; right: -5px;
-            font-size: 0.6rem;
-            width: 16px; height: 16px;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(30,41,59,0.9); border-radius: 50%; border: 1px solid rgba(255,255,255,0.08);
-          }
-          .streak-check {
-            position: absolute; top: -7px; right: -7px;
-            background: #6366f1; color: #fff;
-            width: 18px; height: 18px;
-            border-radius: 50%; font-size: 0.6rem;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 900; border: 2px solid #0f172a;
-          }
-          .streak-day-icon { font-size: 1.4rem; line-height: 1; margin-bottom: 4px; }
-          .streak-day-coins { font-size: 0.65rem; font-weight: 900; color: #fbbf24; margin-bottom: 3px; }
-          .streak-day-label { font-size: 0.58rem; color: #475569; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-
-          /* Streak Stats Card */
-          .streak-stats-card {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;
-            gap: 10px;
-            margin-bottom: 1.25rem;
-            background: rgba(255,255,255,0.025);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 20px;
-            padding: 14px 16px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
           }
-          .streak-stat-box {
-            flex: 1;
+          .bp-node.completed {
+            background: rgba(14, 165, 233, 0.12);
+            border-color: #0ea5e9;
+            box-shadow: 0 0 16px rgba(14, 165, 233, 0.25);
+          }
+          .bp-node.today {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: #f59e0b;
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.4);
+            transform: scale(1.04);
+            z-index: 2;
+          }
+          .bp-node.locked {
+            opacity: 0.45;
+            background: rgba(255, 255, 255, 0.015);
+          }
+          .bp-node.grand {
+            grid-column: 4 / 5;
+            grid-row: 1 / 3;
+            background: radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.25) 0%, rgba(15, 23, 42, 0.95) 100%);
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 35px rgba(255, 215, 0, 0.4);
+            min-height: 168px;
+          }
+          .bp-node-icon {
+            font-size: 1.5rem;
+            line-height: 1;
+            margin-bottom: 4px;
+          }
+          .bp-node.grand .bp-node-icon {
+            font-size: 2.6rem;
+            filter: drop-shadow(0 0 16px rgba(255, 215, 0, 0.7));
+            animation: crownPulse 2s infinite ease-in-out;
+          }
+          @keyframes crownPulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.6)); }
+            50% { transform: scale(1.12); filter: drop-shadow(0 0 24px rgba(255, 215, 0, 0.95)); }
+          }
+          .bp-node-title {
+            font-size: 0.68rem;
+            font-weight: 800;
+            color: #f1f5f9;
+            margin-bottom: 2px;
+          }
+          .bp-node-reward {
+            font-size: 0.62rem;
+            font-weight: 800;
+            color: #fbbf24;
+          }
+          .bp-node-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 0 6px;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 900;
           }
-          .streak-stat-box:not(:last-child) {
-            border-right: 1px solid rgba(255,255,255,0.06);
-            padding-right: 12px;
+          .bp-node-badge.done {
+            background: #0ea5e9;
+            color: #fff;
+            border: 2px solid #090e1a;
           }
-          .streak-stat-icon { font-size: 1.3rem; flex-shrink: 0; }
-          .streak-stat-info { display: flex; flex-direction: column; }
-          .streak-stat-info small { font-size: 0.6rem; color: #475569; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-          .streak-stat-info strong { font-size: 0.9rem; color: #f8fafc; font-weight: 900; line-height: 1.2; }
+          .bp-node-badge.lock {
+            background: #1e293b;
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+          }
+          .bp-node-badge.today {
+            background: #f59e0b;
+            color: #000;
+            border: 2px solid #090e1a;
+          }
 
           /* Progress Bar */
           .streak-progress-wrap {
             height: 6px; background: rgba(255,255,255,0.06);
-            border-radius: 10px; margin-bottom: 0.6rem; position: relative; overflow: hidden;
+            border-radius: 10px; margin-bottom: 0.4rem; position: relative; overflow: hidden;
           }
           .streak-progress-fill {
             height: 100%; background: linear-gradient(90deg, #ff4500, #f59e0b);
             border-radius: inherit; transition: width 0.8s ease;
             box-shadow: 0 0 10px rgba(255,100,0,0.5);
           }
-          .streak-progress-text { font-size: 0.75rem; color: #475569; font-weight: 600; display: block; text-align: right; margin-bottom: 1.25rem; }
 
           /* CTA Buttons */
-          .streak-cta-btn {
-            width: 100%; padding: 1rem; border-radius: 16px; border: none;
-            font-size: 1rem; font-weight: 800; cursor: pointer; transition: all 0.3s;
+          .bp-cta-btn {
+            width: 100%; padding: 0.95rem; border-radius: 16px; border: none;
+            font-size: 0.96rem; font-weight: 800; cursor: pointer; transition: all 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
           }
-          .streak-cta-btn.normal { background: linear-gradient(135deg, #ff4500, #ff9500); color: #fff; box-shadow: 0 10px 30px rgba(255,69,0,0.3); }
-          .streak-cta-btn.normal:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(255,69,0,0.45); }
-          .streak-cta-btn.grand { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #000; box-shadow: 0 10px 30px rgba(245,158,11,0.4); animation: shimmer 2s infinite; }
-          .streak-cta-btn.grand:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(245,158,11,0.6); }
-          .streak-cta-btn.broken { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; box-shadow: 0 10px 30px rgba(251,191,36,0.35); }
-          .streak-cta-btn.broken:hover { transform: translateY(-3px); }
-          .streak-skip-btn { background: none; border: none; color: #475569; font-size: 0.85rem; font-weight: 600; cursor: pointer; width: 100%; padding: 0.5rem; transition: color 0.2s; }
+          .bp-cta-btn.normal { 
+            background: linear-gradient(135deg, #ff4500, #ff9500); 
+            color: #fff; 
+            box-shadow: 0 10px 30px rgba(255,69,0,0.35); 
+          }
+          .bp-cta-btn.normal:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(255,69,0,0.5); }
+          .bp-cta-btn.grand { 
+            background: linear-gradient(135deg, #f59e0b, #fbbf24); 
+            color: #000; 
+            box-shadow: 0 10px 30px rgba(245,158,11,0.45); 
+            animation: shimmer 2s infinite; 
+          }
+          .bp-cta-btn.grand:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(245,158,11,0.65); }
+          .bp-cta-btn.claimed {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #94a3b8;
+            cursor: default;
+          }
+          .streak-skip-btn { 
+            background: none; border: none; color: #475569; 
+            font-size: 0.82rem; font-weight: 600; cursor: pointer; 
+            width: 100%; padding: 0.4rem; transition: color 0.2s; 
+          }
           .streak-skip-btn:hover { color: #94a3b8; }
+
+          /* Day 7 Roulette Rolling Reel Styles */
+          .roulette-viewport {
+            position: relative;
+            width: 100%;
+            height: 116px;
+            background: #030712;
+            border: 2px solid rgba(255, 215, 0, 0.45);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.95), 0 0 25px rgba(255, 215, 0, 0.2);
+            margin: 1.2rem 0;
+          }
+          .roulette-needle {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 100%;
+            background: #ffd700;
+            box-shadow: 0 0 12px #ffd700, 0 0 24px #ffd700;
+            z-index: 10;
+          }
+          .roulette-needle::before {
+            content: '▼';
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ffd700;
+            font-size: 0.85rem;
+          }
+          .roulette-track {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            height: 100%;
+            padding: 0 12px;
+            will-change: transform;
+          }
+          .roulette-tile {
+            width: 90px;
+            height: 94px;
+            flex-shrink: 0;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+          }
+          .roulette-tile.bronze {
+            border-color: #cd7f32;
+            background: radial-gradient(circle, rgba(205, 127, 50, 0.25) 0%, rgba(20, 15, 10, 0.85) 100%);
+          }
+          .roulette-tile.silver {
+            border-color: #00f2fe;
+            background: radial-gradient(circle, rgba(0, 242, 254, 0.25) 0%, rgba(10, 20, 30, 0.85) 100%);
+          }
+          .roulette-tile.gold {
+            border-color: #ffd700;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.3) 0%, rgba(30, 25, 10, 0.85) 100%);
+          }
+          @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
           @keyframes shimmer { 0%,100% { box-shadow: 0 10px 30px rgba(245,158,11,0.4); } 50% { box-shadow: 0 10px 50px rgba(245,158,11,0.7); } }
           /* ZoneMeetBot Widget Styles */
           .zonemeetbot-widget {

@@ -1742,22 +1742,24 @@ app.post("/api/user/transfer-coins", (req, res) => {
   return res.status(400).json({ message: "Coin transfers are disabled." });
 });
 
-// DAILY LOGIN & STREAK SYSTEM
+// DAILY LOGIN & STREAK SYSTEM (UTC Standard)
 
-// Timezone Asia/Kolkata date format helpers
-function getKolkataDate(date = new Date()) {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Kolkata',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).format(date); // YYYY-MM-DD
+// Universal Timezone (UTC) date helpers - 00:00:00 UTC (05:30 AM IST)
+function getUTCDate(date = new Date()) {
+  const d = new Date(date);
+  return d.toISOString().slice(0, 10); // YYYY-MM-DD in UTC
 }
 
-function getKolkataYesterdayDate(todayStr) {
-  const date = new Date(todayStr + 'T12:00:00'); // Use noon to avoid DST or boundary issues
-  date.setDate(date.getDate() - 1);
-  return getKolkataDate(date);
+function getUTCYesterdayDate(todayStr) {
+  const date = new Date(todayStr + 'T12:00:00Z');
+  date.setUTCDate(date.getUTCDate() - 1);
+  return date.toISOString().slice(0, 10);
+}
+
+function getNextUTCResetMs() {
+  const now = new Date();
+  const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0));
+  return Math.max(0, next.getTime() - now.getTime());
 }
 
 // Rewards Catalog
@@ -1768,7 +1770,7 @@ const REWARDS = {
   4: { type: "boost", value: 10, label: "Profile Boost (10 min)" },
   5: { type: "coins", value: 50, label: "50 Coins" },
   6: { type: "coins", value: 75, label: "75 Coins" },
-  7: { type: "both", coins: 100, boost: 10, label: "100 Coins & Profile Boost (10 min)" }
+  7: { type: "grand", coins: 100, label: "100 Coins + Mystery Crate" }
 };
 
 app.post("/api/user/daily-check", (req, res) => {
@@ -1782,8 +1784,9 @@ app.post("/api/user/daily-check", (req, res) => {
   if (user.streak_broken === undefined) user.streak_broken = false;
   if (user.streak_protection_used === undefined) user.streak_protection_used = false;
 
-  const today = getKolkataDate();
-  const yesterday = getKolkataYesterdayDate(today);
+  const today = getUTCDate();
+  const yesterday = getUTCYesterdayDate(today);
+  const nextResetMs = getNextUTCResetMs();
 
   // If already claimed today
   if (user.last_claim_date === today) {
@@ -1795,6 +1798,7 @@ app.post("/api/user/daily-check", (req, res) => {
       streak_protection_used: user.streak_protection_used,
       coins: user.coins,
       canCollect: false,
+      nextResetMs,
       status: "already_checked",
       coinActivity: coinActivity.filter(a => (user.email && a.email === user.email) || (user.phone && a.email === user.phone)).slice(-10)
     });
@@ -1817,6 +1821,7 @@ app.post("/api/user/daily-check", (req, res) => {
       streak_protection_used: user.streak_protection_used,
       coins: user.coins,
       canCollect: false,
+      nextResetMs,
       status: "streak_broken",
       coinActivity: coinActivity.filter(a => (user.email && a.email === user.email) || (user.phone && a.email === user.phone)).slice(-10)
     });
@@ -1838,6 +1843,7 @@ app.post("/api/user/daily-check", (req, res) => {
     streak_protection_used: user.streak_protection_used,
     coins: user.coins,
     canCollect: true,
+    nextResetMs,
     status: "eligible",
     coinActivity: coinActivity.filter(a => (user.email && a.email === user.email) || (user.phone && a.email === user.phone)).slice(-10)
   });
@@ -1854,12 +1860,13 @@ app.post("/api/user/collect-daily-reward", (req, res) => {
   if (user.streak_broken === undefined) user.streak_broken = false;
   if (user.streak_protection_used === undefined) user.streak_protection_used = false;
 
-  const today = getKolkataDate();
-  const yesterday = getKolkataYesterdayDate(today);
+  const today = getUTCDate();
+  const yesterday = getUTCYesterdayDate(today);
+  const nextResetMs = getNextUTCResetMs();
 
   // Prevent multiple claims on same day
   if (user.last_claim_date === today) {
-    return res.json({ success: false, message: "Already collected today! Come back tomorrow." });
+    return res.json({ success: false, message: "Already collected today! Come back at 00:00 UTC." });
   }
 
   if (user.streak_broken) {
@@ -1873,12 +1880,13 @@ app.post("/api/user/collect-daily-reward", (req, res) => {
   } else if (user.last_claim_date === yesterday) {
     claimDay = user.streak_day >= 7 ? 1 : user.streak_day + 1;
   } else {
-    // If they missed the streak but somehow API is hit without saving, force Day 1
     claimDay = 1;
   }
 
   const reward = REWARDS[claimDay];
   let rewardMessage = reward.label;
+  let wonBoxType = null;
+  let boxPrize = null;
 
   // Apply reward
   if (reward.type === "coins") {
@@ -1886,21 +1894,95 @@ app.post("/api/user/collect-daily-reward", (req, res) => {
   } else if (reward.type === "boost") {
     const currentExpiry = user.boostExpiry > Date.now() ? user.boostExpiry : Date.now();
     user.boostExpiry = currentExpiry + (reward.value * 60 * 1000);
-  } else if (reward.type === "both") {
+  } else if (reward.type === "grand") {
+    // 100 Guaranteed Coins
     user.coins = (user.coins || 0) + reward.coins;
-    const currentExpiry = user.boostExpiry > Date.now() ? user.boostExpiry : Date.now();
-    user.boostExpiry = currentExpiry + (reward.boost * 60 * 1000);
+
+    // Mystery Crate Lottery: Bronze (65%), Silver (25%), Gold (10%)
+    const roll = Math.random() * 100;
+    if (roll < 65) {
+      wonBoxType = "bronze";
+    } else if (roll < 90) {
+      wonBoxType = "silver";
+    } else {
+      wonBoxType = "gold";
+    }
+
+    // Free Crate Loot Roll
+    const rand = Math.random() * 100;
+    if (wonBoxType === "bronze") {
+      if (rand < 45) {
+        boxPrize = { name: "25 Coins", type: "coins", value: 25 };
+      } else if (rand < 85) {
+        const val = Math.floor(Math.random() * (35 - 20 + 1)) + 20;
+        boxPrize = { name: `${val} Coins`, type: "coins", value: val };
+      } else if (rand < 97.4) {
+        const val = Math.floor(Math.random() * (10 - 5 + 1)) + 5;
+        boxPrize = { name: `${val} Mins Boost`, type: "boost", value: val };
+      } else if (rand < 99) {
+        boxPrize = { name: "Heart Sticker", type: "sticker", value: "heart" };
+      } else {
+        boxPrize = { name: "1 Hour VIP Pass", type: "vip", value: 1 };
+      }
+    } else if (wonBoxType === "silver") {
+      if (rand < 35) {
+        boxPrize = { name: "50 Coins", type: "coins", value: 50 };
+      } else if (rand < 75) {
+        const val = Math.floor(Math.random() * (90 - 50 + 1)) + 50;
+        boxPrize = { name: `${val} Coins`, type: "coins", value: val };
+      } else if (rand < 94) {
+        const val = Math.floor(Math.random() * (25 - 15 + 1)) + 15;
+        boxPrize = { name: `${val} Mins Boost`, type: "boost", value: val };
+      } else if (rand < 98) {
+        boxPrize = { name: "Rose Sticker", type: "sticker", value: "rose" };
+      } else {
+        boxPrize = { name: "6 Hours VIP Pass", type: "vip", value: 6 };
+      }
+    } else if (wonBoxType === "gold") {
+      if (rand < 80) {
+        const val = Math.floor(Math.random() * (120 - 60 + 1)) + 60;
+        boxPrize = { name: `${Math.floor(val / 60)} Hour ${val % 60} Mins Boost`, type: "boost", value: val };
+      } else if (rand < 93) {
+        boxPrize = { name: "Crown Sticker", type: "sticker", value: "crown" };
+      } else if (rand < 98) {
+        boxPrize = { name: "Supercar Sticker", type: "sticker", value: "car" };
+      } else {
+        boxPrize = { name: "2 Days VIP Elite Pass", type: "vip", value: 48 };
+      }
+    }
+
+    // Apply Crate Prize to user immediately
+    if (boxPrize) {
+      if (boxPrize.type === "coins") {
+        user.coins = (user.coins || 0) + boxPrize.value;
+      } else if (boxPrize.type === "boost") {
+        const currentExp = user.boostExpiry > Date.now() ? user.boostExpiry : Date.now();
+        user.boostExpiry = currentExp + (boxPrize.value * 60 * 1000);
+      } else if (boxPrize.type === "vip") {
+        const currentVip = user.vipExpiry > Date.now() ? user.vipExpiry : Date.now();
+        user.vipExpiry = currentVip + (boxPrize.value * 3600 * 1000);
+        user.premium = true;
+      } else if (boxPrize.type === "sticker") {
+        user.unlockedStickers = user.unlockedStickers || [];
+        if (!user.unlockedStickers.includes(boxPrize.value)) {
+          user.unlockedStickers.push(boxPrize.value);
+        }
+      }
+    }
   }
 
   // Record Coin Activity log if coins are earned
-  const earnedCoins = reward.type === "coins" ? reward.value : (reward.type === "both" ? reward.coins : 0);
-  if (earnedCoins > 0) {
+  const baseEarned = reward.type === "coins" ? reward.value : (reward.type === "grand" ? reward.coins : 0);
+  const extraEarned = (boxPrize && boxPrize.type === "coins") ? boxPrize.value : 0;
+  const totalEarned = baseEarned + extraEarned;
+
+  if (totalEarned > 0) {
     const activity = {
       id: "act" + Date.now(),
       email: user.email || user.phone,
       type: "earn",
-      amount: earnedCoins,
-      feature: `Day ${claimDay} Login Reward`,
+      amount: totalEarned,
+      feature: `Day ${claimDay} Login Reward${boxPrize ? ` + ${wonBoxType.toUpperCase()} Box` : ''}`,
       timestamp: new Date().toISOString()
     };
     coinActivity.push(activity);
@@ -1926,7 +2008,12 @@ app.post("/api/user/collect-daily-reward", (req, res) => {
     streak: user.streak,
     boostExpiry: user.boostExpiry,
     rewardGiven: rewardMessage,
-    message: `${rewardMessage} claimed!`,
+    wonBoxType,
+    boxPrize,
+    nextResetMs,
+    message: claimDay === 7
+      ? `👑 Day 7 Grand Reward Claimed! +100 Coins & ${wonBoxType ? wonBoxType.toUpperCase() : 'Mystery'} Crate!`
+      : `${rewardMessage} claimed!`,
     coinActivity: coinActivity.filter(a => (user.email && a.email === user.email) || (user.phone && a.email === user.phone)).slice(-10)
   });
 });
@@ -1947,9 +2034,9 @@ app.post("/api/user/save-streak", (req, res) => {
   user.streak_broken = false;
   user.streak_protection_used = true;
 
-  // Set last_claim_date to yesterday, enabling immediate check-in for next day today
-  const today = getKolkataDate();
-  const yesterday = getKolkataYesterdayDate(today);
+  // Set last_claim_date to UTC yesterday, enabling immediate check-in for next day today
+  const today = getUTCDate();
+  const yesterday = getUTCYesterdayDate(today);
   user.last_claim_date = yesterday;
   user.lastClaimDate = yesterday;
 
@@ -1974,6 +2061,7 @@ app.post("/api/user/save-streak", (req, res) => {
     coins: user.coins,
     streak_broken: false,
     canCollect: true,
+    nextResetMs: getNextUTCResetMs(),
     message: "Streak saved! You continue from where you left off.",
     coinActivity: coinActivity.filter(a => (user.email && a.email === user.email) || (user.phone && a.email === user.phone)).slice(-10)
   });

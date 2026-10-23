@@ -2379,42 +2379,56 @@ img, video {
     background: rgba(0,0,0,0.5) !important;
   }
 
-  /* Daily Login Reward Modal */
-  .streak-reward-modal {
-    padding: 20px 12px !important;
+  /* Daily Login Reward Modal (Concept 2 Battle-Pass Mobile Support) */
+  .bp-streak-modal {
+    padding: 16px 12px !important;
     width: 95% !important;
-    max-width: 330px !important;
-    max-height: 85vh !important;
+    max-width: 380px !important;
+    max-height: 90vh !important;
     overflow-y: auto !important;
+    border-radius: 20px !important;
   }
-  .streak-modal-title {
-    font-size: 1.3rem !important;
-  }
-  .streak-modal-sub {
-    font-size: 0.75rem !important;
-  }
-  .streak-days-grid {
-    gap: 4px !important;
+  .bp-header {
     flex-wrap: wrap !important;
-    justify-content: center !important;
+    gap: 6px !important;
   }
-  .streak-day-card {
-    padding: 6px 4px !important;
-    min-width: 45px !important;
-    flex: 1 !important;
+  .bp-pill {
+    padding: 4px 8px !important;
+    font-size: 0.72rem !important;
   }
-  .streak-day-card.grand {
-    min-width: 100% !important;
-  }
-  .streak-day-coins {
-    font-size: 0.65rem !important;
-  }
-  .streak-day-label {
-    font-size: 0.55rem !important;
-  }
-  .streak-cta-btn {
-    padding: 10px !important;
+  .bp-utc-clock {
     font-size: 0.8rem !important;
+  }
+  .bp-journey-container {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+  }
+  .bp-node {
+    padding: 6px 2px !important;
+    min-height: 70px !important;
+  }
+  .bp-node.grand {
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+    min-height: 95px !important;
+    flex-direction: row !important;
+    gap: 12px !important;
+    padding: 8px 14px !important;
+  }
+  .bp-node.grand .bp-node-icon {
+    font-size: 2rem !important;
+    margin-bottom: 0 !important;
+  }
+  .roulette-viewport {
+    height: 104px !important;
+  }
+  .roulette-tile {
+    width: 80px !important;
+    height: 84px !important;
+  }
+  .bp-cta-btn {
+    padding: 10px !important;
+    font-size: 0.82rem !important;
   }
 
   /* Payment / Checkout Modal */
