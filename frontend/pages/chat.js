@@ -5552,34 +5552,27 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
       {reconnectConfirm && (() => {
         const hasPlan = isPlanActive(user);
         return (
-          <div className="payment-overlay" style={{ zIndex: 12000 }} onClick={() => setReconnectConfirm(null)}>
-            <div className="premium-modal" style={{ maxWidth: '410px', padding: '0', overflow: 'hidden', background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '28px', boxShadow: '0 50px 100px rgba(0,0,0,0.8)' }} onClick={e => e.stopPropagation()}>
-              <div style={{ height: '6px', background: hasPlan ? 'linear-gradient(90deg, #10b981, #00f2fe)' : 'linear-gradient(90deg, #fbbf24, #f59e0b)' }}></div>
+          <div className="payment-overlay reconnect-overlay" style={{ zIndex: 12000 }} onClick={() => setReconnectConfirm(null)}>
+            <div className="reconnect-modal-card" onClick={e => e.stopPropagation()}>
+              <div style={{ height: '5px', background: hasPlan ? 'linear-gradient(90deg, #10b981, #00f2fe)' : 'linear-gradient(90deg, #fbbf24, #f59e0b)' }}></div>
               
               {!hasPlan ? (
-                <div style={{ padding: '32px 26px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '3.2rem', marginBottom: '12px' }}>🔒</div>
-                  <div style={{ display: 'inline-block', padding: '4px 14px', borderRadius: '50px', background: 'rgba(251, 191, 36, 0.15)', border: '1px solid rgba(251, 191, 36, 0.35)', color: '#fbbf24', fontSize: '0.74rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '10px' }}>
+                <div className="reconnect-modal-body">
+                  <div className="reconnect-modal-icon">🔒</div>
+                  <div className="reconnect-modal-badge">
                     Subscription Required
                   </div>
-                  <h3 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#fff', marginBottom: '8px' }}>
-                    Membership Required for Rewind
+                  <h3 className="reconnect-modal-title">
+                    Membership Required
                   </h3>
-                  <p style={{ color: '#94a3b8', fontSize: '0.86rem', lineHeight: 1.5, marginBottom: '18px' }}>
-                    Rewinding and reconnecting with previous partners is an exclusive feature for ZoneMeet subscribers.
+                  <p className="reconnect-modal-desc">
+                    Rewind and reconnecting with previous partners requires an active membership subscription (Starter, Prime, Silver or VIP Elite).
                   </p>
-                  
-                  <div style={{ textAlign: 'left', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '12px 16px', marginBottom: '20px', fontSize: '0.8rem', color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div>✨ <strong>Starter:</strong> 5 Free Daily Rewinds</div>
-                    <div>🚀 <strong>Prime:</strong> 15 Free Daily Rewinds</div>
-                    <div>💎 <strong>Silver:</strong> 15 Free Daily Rewinds</div>
-                    <div>👑 <strong>VIP Elite:</strong> VIP Instant Rewind & Reconnect</div>
-                  </div>
 
-                  <div style={{ display: 'flex', gap: '10px' }}>
+                  <div className="reconnect-modal-actions">
                     <button 
                       onClick={() => setReconnectConfirm(null)} 
-                      style={{ flex: 1, padding: '12px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#94a3b8', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
+                      className="reconnect-btn-cancel"
                     >
                       Cancel
                     </button>
@@ -5588,29 +5581,29 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                         setReconnectConfirm(null);
                         setShowPricingModal(true);
                       }} 
-                      style={{ flex: 1.6, padding: '12px', borderRadius: '14px', border: 'none', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#030d1e', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 8px 20px rgba(251,191,36,0.3)' }}
+                      className="reconnect-btn-upgrade"
                     >
-                      View Membership Plans
+                      View Plans
                     </button>
                   </div>
                 </div>
               ) : (
-                <div style={{ padding: '32px 26px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '3.2rem', marginBottom: '12px' }}>⏪</div>
-                  <div style={{ display: 'inline-block', padding: '4px 14px', borderRadius: '50px', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.35)', color: '#34d399', fontSize: '0.74rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '10px' }}>
+                <div className="reconnect-modal-body reconnect-subscriber-body">
+                  <div className="reconnect-modal-icon">⏪</div>
+                  <div className="reconnect-modal-badge" style={{ background: 'rgba(16, 185, 129, 0.15)', borderColor: 'rgba(16, 185, 129, 0.35)', color: '#34d399' }}>
                     🎟️ Free Daily Rewind Pass
                   </div>
-                  <h3 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#fff', marginBottom: '8px' }}>
+                  <h3 className="reconnect-modal-title">
                     Rewind to <strong style={{ color: '#fbbf24' }}>{reconnectConfirm.name}</strong>?
                   </h3>
-                  <p style={{ color: '#94a3b8', fontSize: '0.86rem', lineHeight: 1.5, marginBottom: '20px' }}>
+                  <p className="reconnect-modal-desc">
                     Use 1 of your daily Free Rewind Passes included with your <strong>{user?.planName || 'Active'}</strong> membership. (1 reconnect limit per partner to prevent harassment).
                   </p>
 
-                  <div style={{ display: 'flex', gap: '10px' }}>
+                  <div className="reconnect-modal-actions">
                     <button 
                       onClick={() => setReconnectConfirm(null)} 
-                      style={{ flex: 1, padding: '12px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#94a3b8', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
+                      className="reconnect-btn-cancel"
                     >
                       Cancel
                     </button>
@@ -5629,7 +5622,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                         }
                         setReconnectConfirm(null);
                       }} 
-                      style={{ flex: 1.5, padding: '12px', borderRadius: '14px', border: 'none', background: 'linear-gradient(135deg, #10b981, #059669)', color: '#ffffff', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 8px 20px rgba(16,185,129,0.3)' }}
+                      className="reconnect-btn-confirm"
                     >
                       Confirm & Rewind
                     </button>
@@ -7727,6 +7720,103 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         .payment-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(15px); z-index: 100000; display: flex; align-items: center; justify-content: center; padding: 2rem; }
         .premium-modal { background: #0f172a; border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 500px; border-radius: 40px; position: relative; overflow: hidden; box-shadow: 0 50px 100px rgba(0,0,0,0.5); animation: modalSlideUp 0.6s cubic-bezier(0.16,1,0.3,1); }
         .premium-modal.pricing-wide { max-width: 800px; }
+
+        /* RECONNECT CONFIRMATION MODAL */
+        .reconnect-overlay {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 16px !important;
+        }
+        .reconnect-modal-card {
+          width: 100%;
+          max-width: 380px;
+          border-radius: 24px;
+          overflow: hidden;
+          background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          box-shadow: 0 40px 90px rgba(0, 0, 0, 0.85);
+          position: relative;
+          text-align: center;
+          margin: auto;
+          box-sizing: border-box;
+        }
+        .reconnect-modal-body {
+          padding: 26px 22px;
+          text-align: center;
+        }
+        .reconnect-modal-icon {
+          font-size: 2.8rem;
+          margin-bottom: 8px;
+          line-height: 1;
+        }
+        .reconnect-modal-badge {
+          display: inline-block;
+          padding: 4px 14px;
+          border-radius: 50px;
+          background: rgba(251, 191, 36, 0.15);
+          border: 1px solid rgba(251, 191, 36, 0.35);
+          color: #fbbf24;
+          font-size: 0.72rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 8px;
+        }
+        .reconnect-modal-title {
+          font-size: 1.25rem;
+          font-weight: 900;
+          color: #ffffff;
+          margin: 0 0 8px 0;
+        }
+        .reconnect-modal-desc {
+          color: #94a3b8;
+          font-size: 0.84rem;
+          line-height: 1.45;
+          margin: 0 0 18px 0;
+        }
+        .reconnect-modal-actions {
+          display: flex;
+          gap: 10px;
+        }
+        .reconnect-btn-cancel {
+          flex: 1;
+          padding: 11px 14px;
+          border-radius: 14px;
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          background: transparent;
+          color: #94a3b8;
+          font-weight: 700;
+          font-size: 0.88rem;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .reconnect-btn-upgrade {
+          flex: 1.4;
+          padding: 11px 14px;
+          border-radius: 14px;
+          border: none;
+          background: linear-gradient(135deg, #fbbf24, #f59e0b);
+          color: #030d1e;
+          font-weight: 800;
+          font-size: 0.88rem;
+          cursor: pointer;
+          box-shadow: 0 6px 18px rgba(251, 191, 36, 0.3);
+          transition: all 0.2s;
+        }
+        .reconnect-btn-confirm {
+          flex: 1.5;
+          padding: 11px 14px;
+          border-radius: 14px;
+          border: none;
+          background: linear-gradient(135deg, #10b981, #059669);
+          color: #ffffff;
+          font-weight: 800;
+          font-size: 0.88rem;
+          cursor: pointer;
+          box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);
+          transition: all 0.2s;
+        }
         @keyframes modalSlideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
         .modal-close-btn { position: absolute; top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.05); border: none; color: #94a3b8; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
         .modal-header-premium { padding: 4rem 2rem 2rem; text-align: center; }
@@ -8113,6 +8203,46 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           .pricing-modal-content {
             padding: 1.5rem !important;
             width: 95% !important;
+          }
+          /* PHONE COMPACT RECONNECT MODAL */
+          .reconnect-overlay {
+            padding: 12px !important;
+          }
+          .reconnect-modal-card {
+            max-width: 310px !important;
+            border-radius: 20px !important;
+            margin: auto !important;
+          }
+          .reconnect-modal-body {
+            padding: 18px 16px 20px !important;
+          }
+          .reconnect-modal-icon {
+            font-size: 2.2rem !important;
+            margin-bottom: 6px !important;
+          }
+          .reconnect-modal-badge {
+            font-size: 0.68rem !important;
+            padding: 3px 10px !important;
+            margin-bottom: 6px !important;
+          }
+          .reconnect-modal-title {
+            font-size: 1.15rem !important;
+            margin-bottom: 6px !important;
+          }
+          .reconnect-modal-desc {
+            font-size: 0.78rem !important;
+            line-height: 1.35 !important;
+            margin-bottom: 14px !important;
+          }
+          .reconnect-modal-actions {
+            gap: 8px !important;
+          }
+          .reconnect-btn-cancel,
+          .reconnect-btn-upgrade,
+          .reconnect-btn-confirm {
+            padding: 9px 12px !important;
+            font-size: 0.82rem !important;
+            border-radius: 12px !important;
           }
           .pricing-grid-premium {
             grid-template-columns: 1fr 1fr !important;

@@ -2652,49 +2652,28 @@ export default function Dashboard(props) {
       {/* FEATURE CONFIRMATION MODAL (PROFILE BOOST & SECRET IDENTITY) */}
       {featureConfirmModal && (
         <div 
-          className="feature-confirm-overlay" 
-          style={{
-            position: 'fixed',
-            inset: 0,
-            width: '100vw',
-            height: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.85) 0%, rgba(3, 7, 18, 0.96) 100%)',
-            backdropFilter: 'blur(25px)',
-            WebkitBackdropFilter: 'blur(25px)',
-            zIndex: 20000,
-            padding: '16px'
-          }}
+          className="feature-confirm-overlay"
           onClick={() => !featureActivating && setFeatureConfirmModal(null)}
         >
           <div 
+            className="feature-modal-card"
             style={{
-              position: 'relative',
-              width: '100%',
-              maxWidth: '420px',
-              borderRadius: '26px',
-              background: 'linear-gradient(165deg, rgba(20, 30, 50, 0.96) 0%, rgba(8, 14, 28, 0.98) 100%)',
-              border: `1.5px solid ${featureConfirmModal.color}`,
-              boxShadow: `0 0 35px ${featureConfirmModal.color}44, 0 25px 60px rgba(0, 0, 0, 0.85)`,
-              overflow: 'hidden',
-              textAlign: 'center',
-              boxSizing: 'border-box'
+              borderColor: featureConfirmModal.color,
+              boxShadow: `0 0 35px ${featureConfirmModal.color}44, 0 25px 60px rgba(0, 0, 0, 0.85)`
             }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Top glowing accent bar */}
             <div style={{ height: '5px', width: '100%', background: featureConfirmModal.color, boxShadow: `0 0 16px ${featureConfirmModal.color}` }} />
 
-            <div style={{ padding: '28px 24px 30px' }}>
+            <div className="feature-modal-inner">
               {featureSuccess ? (
                 <>
-                  <div style={{ fontSize: '3.6rem', marginBottom: '14px' }}>🎉</div>
-                  <h3 style={{ fontSize: '1.45rem', fontWeight: 900, color: '#ffffff', marginBottom: '10px' }}>
+                  <div className="feature-modal-icon">🎉</div>
+                  <h3 className="feature-modal-title">
                     {featureConfirmModal.name} Activated!
                   </h3>
-                  <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: '24px' }}>
+                  <p className="feature-modal-desc">
                     {featureSuccess}
                   </p>
                   <button
@@ -2702,77 +2681,63 @@ export default function Dashboard(props) {
                       setFeatureConfirmModal(null);
                       setFeatureSuccess(null);
                     }}
-                    style={{
-                      width: '100%',
-                      padding: '13px 20px',
-                      borderRadius: '16px',
-                      border: 'none',
-                      background: 'linear-gradient(135deg, #10b981, #059669)',
-                      color: '#ffffff',
-                      fontWeight: 800,
-                      fontSize: '0.98rem',
-                      cursor: 'pointer',
-                      boxShadow: '0 8px 20px rgba(16, 185, 129, 0.35)'
-                    }}
+                    className="feature-modal-success-btn"
                   >
                     Awesome, Let's Go!
                   </button>
                 </>
               ) : (
                 <>
-                  <div style={{ fontSize: '3.8rem', lineHeight: 1, marginBottom: '14px' }}>
+                  <div className="feature-modal-icon">
                     {featureConfirmModal.icon}
                   </div>
 
-                  <div style={{ display: 'inline-block', padding: '4px 14px', borderRadius: '50px', background: `${featureConfirmModal.color}22`, border: `1px solid ${featureConfirmModal.color}55`, color: featureConfirmModal.color, fontSize: '0.76rem', fontWeight: 800, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '10px' }}>
+                  <div 
+                    className="feature-modal-badge"
+                    style={{
+                      background: `${featureConfirmModal.color}22`,
+                      borderColor: `${featureConfirmModal.color}55`,
+                      color: featureConfirmModal.color
+                    }}
+                  >
                     {featureConfirmModal.name}
                   </div>
 
-                  <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#ffffff', margin: '0 0 10px 0' }}>
+                  <h3 className="feature-modal-title">
                     Activate <span style={{ color: featureConfirmModal.color }}>{featureConfirmModal.name}</span>?
                   </h3>
 
-                  <p style={{ color: '#94a3b8', fontSize: '0.86rem', lineHeight: 1.5, margin: '0 0 18px 0' }}>
+                  <p className="feature-modal-desc">
                     {featureConfirmModal.description}
                   </p>
 
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.12)', padding: '8px 18px', borderRadius: '50px', marginBottom: '20px' }}>
-                    <span style={{ fontSize: '1.15rem' }}>🪙</span>
-                    <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '1rem' }}>
-                      {featureConfirmModal.cost} Coins <span style={{ color: '#94a3b8', fontSize: '0.8rem', fontWeight: 500 }}>/ {featureConfirmModal.duration}</span>
+                  <div className="feature-modal-cost-pill">
+                    <span className="pill-coin-icon">🪙</span>
+                    <span className="pill-cost-val">
+                      {featureConfirmModal.cost} Coins <span className="pill-duration-val">/ {featureConfirmModal.duration}</span>
                     </span>
                   </div>
 
                   {user?.email !== "ds9376314@gmail.com" && (user?.coins || 0) < featureConfirmModal.cost ? (
-                    <div style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '16px', padding: '12px 16px', marginBottom: '20px', textAlign: 'left', fontSize: '0.84rem' }}>
-                      <div style={{ color: '#fca5a5', fontWeight: 700, marginBottom: '4px' }}>⚠️ Insufficient Coins!</div>
-                      <div style={{ color: '#cbd5e1' }}>
+                    <div className="feature-modal-alert insufficient">
+                      <div className="alert-heading">⚠️ Insufficient Coins!</div>
+                      <div className="alert-text">
                         You currently have <strong>{user?.coins || 0} Coins</strong>. You need <strong>{featureConfirmModal.cost - (user?.coins || 0)} more Coins</strong> to activate this feature.
                       </div>
                     </div>
                   ) : (
-                    <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.25)', borderRadius: '14px', padding: '10px 14px', marginBottom: '20px', fontSize: '0.82rem', color: '#6ee7b7' }}>
+                    <div className="feature-modal-alert balance">
                       {user?.email === "ds9376314@gmail.com"
                         ? "👑 Admin Privileges detected. Zero coin cost."
                         : `Your balance: ${user?.coins || 0} Coins → Remaining: ${(user?.coins || 0) - featureConfirmModal.cost} Coins`}
                     </div>
                   )}
 
-                  <div style={{ display: 'flex', gap: '12px' }}>
+                  <div className="feature-modal-actions">
                     <button
                       onClick={() => setFeatureConfirmModal(null)}
                       disabled={featureActivating}
-                      style={{
-                        flex: 1,
-                        padding: '13px 16px',
-                        borderRadius: '16px',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
-                        background: 'transparent',
-                        color: '#94a3b8',
-                        fontWeight: 700,
-                        fontSize: '0.92rem',
-                        cursor: 'pointer'
-                      }}
+                      className="feature-modal-cancel-btn"
                     >
                       Cancel
                     </button>
@@ -2783,18 +2748,7 @@ export default function Dashboard(props) {
                           setFeatureConfirmModal(null);
                           document.getElementById('store-section')?.scrollIntoView({ behavior: 'smooth' });
                         }}
-                        style={{
-                          flex: 1.5,
-                          padding: '13px 18px',
-                          borderRadius: '16px',
-                          border: 'none',
-                          background: 'linear-gradient(135deg, #00f2fe, #0072ff)',
-                          color: '#ffffff',
-                          fontWeight: 800,
-                          fontSize: '0.94rem',
-                          cursor: 'pointer',
-                          boxShadow: '0 8px 22px rgba(0, 242, 254, 0.35)'
-                        }}
+                        className="feature-modal-buy-btn"
                       >
                         Buy Coins / Top Up
                       </button>
@@ -2802,20 +2756,14 @@ export default function Dashboard(props) {
                       <button
                         onClick={handleConfirmFeatureActivation}
                         disabled={featureActivating}
+                        className="feature-modal-confirm-btn"
                         style={{
-                          flex: 1.5,
-                          padding: '13px 18px',
-                          borderRadius: '16px',
-                          border: 'none',
                           background: featureConfirmModal.color === '#ec4899'
                             ? 'linear-gradient(135deg, #ec4899, #d946ef)'
                             : 'linear-gradient(135deg, #6366f1, #4f46e5)',
-                          color: '#ffffff',
-                          fontWeight: 800,
-                          fontSize: '0.94rem',
-                          cursor: featureActivating ? 'wait' : 'pointer',
                           boxShadow: `0 8px 22px ${featureConfirmModal.color}44`,
-                          opacity: featureActivating ? 0.7 : 1
+                          opacity: featureActivating ? 0.7 : 1,
+                          cursor: featureActivating ? 'wait' : 'pointer'
                         }}
                       >
                         {featureActivating ? 'Activating...' : 'Confirm & Activate'}
@@ -3458,35 +3406,28 @@ export default function Dashboard(props) {
       {reconnectConfirm && (() => {
         const hasPlan = isPlanActive(user);
         return (
-          <div className="payment-overlay" style={{ zIndex: 12000 }} onClick={() => setReconnectConfirm(null)}>
-            <div className="premium-modal" style={{ maxWidth: '410px', padding: '0', overflow: 'hidden', background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '28px', boxShadow: '0 50px 100px rgba(0,0,0,0.8)' }} onClick={e => e.stopPropagation()}>
-              <button className="modal-close-btn" onClick={() => setReconnectConfirm(null)} style={{ position: 'absolute', top: '12px', right: '12px', background: 'transparent', border: 'none', color: '#fff', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
-              <div style={{ height: '6px', background: hasPlan ? 'linear-gradient(90deg, #10b981, #00f2fe)' : 'linear-gradient(90deg, #fbbf24, #f59e0b)' }}></div>
+          <div className="payment-overlay reconnect-overlay" style={{ zIndex: 12000 }} onClick={() => setReconnectConfirm(null)}>
+            <div className="reconnect-modal-card" onClick={e => e.stopPropagation()}>
+              <button className="modal-close-btn reconnect-close-btn" onClick={() => setReconnectConfirm(null)}>×</button>
+              <div style={{ height: '5px', background: hasPlan ? 'linear-gradient(90deg, #10b981, #00f2fe)' : 'linear-gradient(90deg, #fbbf24, #f59e0b)' }}></div>
               
               {!hasPlan ? (
-                <div style={{ padding: '32px 26px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '3.2rem', marginBottom: '12px' }}>🔒</div>
-                  <div style={{ display: 'inline-block', padding: '4px 14px', borderRadius: '50px', background: 'rgba(251, 191, 36, 0.15)', border: '1px solid rgba(251, 191, 36, 0.35)', color: '#fbbf24', fontSize: '0.74rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '10px' }}>
+                <div className="reconnect-modal-body">
+                  <div className="reconnect-modal-icon">🔒</div>
+                  <div className="reconnect-modal-badge">
                     Subscription Required
                   </div>
-                  <h3 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#fff', marginBottom: '8px' }}>
-                    Membership Required for Rewind
+                  <h3 className="reconnect-modal-title">
+                    Membership Required
                   </h3>
-                  <p style={{ color: '#94a3b8', fontSize: '0.86rem', lineHeight: 1.5, marginBottom: '18px' }}>
-                    Rewinding and reconnecting with previous partners is an exclusive feature for ZoneMeet subscribers.
+                  <p className="reconnect-modal-desc">
+                    Rewind and reconnecting with previous partners requires an active membership subscription (Starter, Prime, Silver or VIP Elite).
                   </p>
-                  
-                  <div style={{ textAlign: 'left', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '12px 16px', marginBottom: '20px', fontSize: '0.8rem', color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div>✨ <strong>Starter:</strong> 5 Free Daily Rewinds</div>
-                    <div>🚀 <strong>Prime:</strong> 15 Free Daily Rewinds</div>
-                    <div>💎 <strong>Silver:</strong> 15 Free Daily Rewinds</div>
-                    <div>👑 <strong>VIP Elite:</strong> VIP Instant Rewind & Reconnect</div>
-                  </div>
 
-                  <div style={{ display: 'flex', gap: '10px' }}>
+                  <div className="reconnect-modal-actions">
                     <button 
                       onClick={() => setReconnectConfirm(null)} 
-                      style={{ flex: 1, padding: '12px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#94a3b8', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
+                      className="reconnect-btn-cancel"
                     >
                       Cancel
                     </button>
@@ -3495,29 +3436,29 @@ export default function Dashboard(props) {
                         setReconnectConfirm(null);
                         document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
                       }} 
-                      style={{ flex: 1.6, padding: '12px', borderRadius: '14px', border: 'none', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#030d1e', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 8px 20px rgba(251,191,36,0.3)' }}
+                      className="reconnect-btn-upgrade"
                     >
-                      View Membership Plans
+                      View Plans
                     </button>
                   </div>
                 </div>
               ) : (
-                <div style={{ padding: '32px 26px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '3.2rem', marginBottom: '12px' }}>⏪</div>
-                  <div style={{ display: 'inline-block', padding: '4px 14px', borderRadius: '50px', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.35)', color: '#34d399', fontSize: '0.74rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '10px' }}>
+                <div className="reconnect-modal-body reconnect-subscriber-body">
+                  <div className="reconnect-modal-icon">⏪</div>
+                  <div className="reconnect-modal-badge" style={{ background: 'rgba(16, 185, 129, 0.15)', borderColor: 'rgba(16, 185, 129, 0.35)', color: '#34d399' }}>
                     🎟️ Free Daily Rewind Pass
                   </div>
-                  <h3 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#fff', marginBottom: '8px' }}>
+                  <h3 className="reconnect-modal-title">
                     Rewind to <strong style={{ color: '#fbbf24' }}>{reconnectConfirm.name}</strong>?
                   </h3>
-                  <p style={{ color: '#94a3b8', fontSize: '0.86rem', lineHeight: 1.5, marginBottom: '20px' }}>
+                  <p className="reconnect-modal-desc">
                     Use 1 of your daily Free Rewind Passes included with your <strong>{user?.planName || 'Active'}</strong> membership. (1 reconnect limit per partner to prevent harassment).
                   </p>
 
-                  <div style={{ display: 'flex', gap: '10px' }}>
+                  <div className="reconnect-modal-actions">
                     <button 
                       onClick={() => setReconnectConfirm(null)} 
-                      style={{ flex: 1, padding: '12px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#94a3b8', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
+                      className="reconnect-btn-cancel"
                     >
                       Cancel
                     </button>
@@ -3539,7 +3480,7 @@ export default function Dashboard(props) {
                         }
                         setReconnectConfirm(null);
                       }} 
-                      style={{ flex: 1.5, padding: '12px', borderRadius: '14px', border: 'none', background: 'linear-gradient(135deg, #10b981, #059669)', color: '#ffffff', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 8px 20px rgba(16,185,129,0.3)' }}
+                      className="reconnect-btn-confirm"
                     >
                       Confirm & Rewind
                     </button>
@@ -5264,6 +5205,279 @@ export default function Dashboard(props) {
             transform: translateY(-1px);
           }
 
+          .mobile-swipe-hint {
+            display: none !important;
+          }
+
+          /* RECONNECT CONFIRMATION MODAL */
+          .reconnect-overlay {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 16px !important;
+          }
+          .reconnect-modal-card {
+            width: 100%;
+            max-width: 380px;
+            border-radius: 24px;
+            overflow: hidden;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 40px 90px rgba(0, 0, 0, 0.85);
+            position: relative;
+            text-align: center;
+            margin: auto;
+            box-sizing: border-box;
+          }
+          .reconnect-close-btn {
+            position: absolute !important;
+            top: 10px !important;
+            right: 12px !important;
+            background: transparent !important;
+            border: none !important;
+            color: #94a3b8 !important;
+            font-size: 1.4rem !important;
+            cursor: pointer !important;
+            width: 32px !important;
+            height: 32px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+          }
+          .reconnect-modal-body {
+            padding: 26px 22px;
+            text-align: center;
+          }
+          .reconnect-modal-icon {
+            font-size: 2.8rem;
+            margin-bottom: 8px;
+            line-height: 1;
+          }
+          .reconnect-modal-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 50px;
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.35);
+            color: #fbbf24;
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+          }
+          .reconnect-modal-title {
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: #ffffff;
+            margin: 0 0 8px 0;
+          }
+          .reconnect-modal-desc {
+            color: #94a3b8;
+            font-size: 0.84rem;
+            line-height: 1.45;
+            margin: 0 0 18px 0;
+          }
+          .reconnect-modal-actions {
+            display: flex;
+            gap: 10px;
+          }
+          .reconnect-btn-cancel {
+            flex: 1;
+            padding: 11px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: transparent;
+            color: #94a3b8;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+          .reconnect-btn-upgrade {
+            flex: 1.4;
+            padding: 11px 14px;
+            border-radius: 14px;
+            border: none;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #030d1e;
+            font-weight: 800;
+            font-size: 0.88rem;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(251, 191, 36, 0.3);
+            transition: all 0.2s;
+          }
+          .reconnect-btn-confirm {
+            flex: 1.5;
+            padding: 11px 14px;
+            border-radius: 14px;
+            border: none;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 0.88rem;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);
+            transition: all 0.2s;
+          }
+
+          /* FEATURE CONFIRMATION MODAL */
+          .feature-confirm-overlay {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.85) 0%, rgba(3, 7, 18, 0.96) 100%);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            z-index: 20000;
+            padding: 16px;
+          }
+          .feature-modal-card {
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 26px;
+            background: linear-gradient(165deg, rgba(20, 30, 50, 0.96) 0%, rgba(8, 14, 28, 0.98) 100%);
+            border: 1.5px solid #6366f1;
+            overflow: hidden;
+            text-align: center;
+            box-sizing: border-box;
+            animation: modalSlideUp 0.3s ease-out;
+            margin: auto;
+          }
+          .feature-modal-inner {
+            padding: 28px 24px 30px;
+          }
+          .feature-modal-icon {
+            font-size: 3.8rem;
+            line-height: 1;
+            margin-bottom: 14px;
+          }
+          .feature-modal-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 50px;
+            font-size: 0.76rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            border: 1px solid;
+          }
+          .feature-modal-title {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #ffffff;
+            margin: 0 0 10px 0;
+          }
+          .feature-modal-desc {
+            color: #94a3b8;
+            font-size: 0.86rem;
+            line-height: 1.5;
+            margin: 0 0 18px 0;
+          }
+          .feature-modal-cost-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 8px 18px;
+            border-radius: 50px;
+            margin-bottom: 20px;
+          }
+          .feature-modal-cost-pill .pill-coin-icon {
+            font-size: 1.15rem;
+          }
+          .feature-modal-cost-pill .pill-cost-val {
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 1rem;
+          }
+          .feature-modal-cost-pill .pill-duration-val {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            font-weight: 500;
+          }
+          .feature-modal-alert.insufficient {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            text-align: left;
+            font-size: 0.84rem;
+          }
+          .feature-modal-alert.insufficient .alert-heading {
+            color: #fca5a5;
+            font-weight: 700;
+            margin-bottom: 4px;
+          }
+          .feature-modal-alert.insufficient .alert-text {
+            color: #cbd5e1;
+          }
+          .feature-modal-alert.balance {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 14px;
+            padding: 10px 14px;
+            margin-bottom: 20px;
+            font-size: 0.82rem;
+            color: #6ee7b7;
+          }
+          .feature-modal-actions {
+            display: flex;
+            gap: 12px;
+          }
+          .feature-modal-cancel-btn {
+            flex: 1;
+            padding: 13px 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: transparent;
+            color: #94a3b8;
+            font-weight: 700;
+            font-size: 0.92rem;
+            cursor: pointer;
+          }
+          .feature-modal-buy-btn {
+            flex: 1.5;
+            padding: 13px 18px;
+            border-radius: 16px;
+            border: none;
+            background: linear-gradient(135deg, #00f2fe, #0072ff);
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 0.94rem;
+            cursor: pointer;
+            box-shadow: 0 8px 22px rgba(0, 242, 254, 0.35);
+          }
+          .feature-modal-confirm-btn {
+            flex: 1.5;
+            padding: 13px 18px;
+            border-radius: 16px;
+            border: none;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 0.94rem;
+          }
+          .feature-modal-success-btn {
+            width: 100%;
+            padding: 13px 20px;
+            border-radius: 16px;
+            border: none;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 0.98rem;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+          }
+
           .payment-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(15px); z-index: 100000; display: flex; align-items: flex-start; justify-content: center; padding: 2rem; overflow-y: auto; }
           .premium-modal { background: #0f172a; border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 500px; border-radius: 40px; position: relative; box-shadow: 0 50px 100px rgba(0,0,0,0.5); animation: modalSlideUp 0.6s cubic-bezier(0.16,1,0.3,1); margin: 2rem 0; }
           @keyframes modalSlideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
@@ -6720,6 +6934,113 @@ export default function Dashboard(props) {
               overflow-y: auto !important;
               padding: 20px 15px !important;
               margin: auto !important;
+            }
+
+            /* PHONE COMPACT RECONNECT MODAL */
+            .reconnect-overlay {
+              padding: 12px !important;
+            }
+            .reconnect-modal-card {
+              max-width: 310px !important;
+              border-radius: 20px !important;
+              margin: auto !important;
+            }
+            .reconnect-modal-body {
+              padding: 18px 16px 20px !important;
+            }
+            .reconnect-modal-icon {
+              font-size: 2.2rem !important;
+              margin-bottom: 6px !important;
+            }
+            .reconnect-modal-badge {
+              font-size: 0.68rem !important;
+              padding: 3px 10px !important;
+              margin-bottom: 6px !important;
+            }
+            .reconnect-modal-title {
+              font-size: 1.15rem !important;
+              margin-bottom: 6px !important;
+            }
+            .reconnect-modal-desc {
+              font-size: 0.78rem !important;
+              line-height: 1.35 !important;
+              margin-bottom: 14px !important;
+            }
+            .reconnect-modal-actions {
+              gap: 8px !important;
+            }
+            .reconnect-btn-cancel,
+            .reconnect-btn-upgrade,
+            .reconnect-btn-confirm {
+              padding: 9px 12px !important;
+              font-size: 0.82rem !important;
+              border-radius: 12px !important;
+            }
+
+            /* PHONE COMPACT FEATURE CONFIRMATION MODAL */
+            .feature-confirm-overlay {
+              padding: 12px !important;
+            }
+            .feature-modal-card {
+              max-width: 310px !important;
+              border-radius: 20px !important;
+              margin: auto !important;
+            }
+            .feature-modal-inner {
+              padding: 18px 16px 20px !important;
+            }
+            .feature-modal-icon {
+              font-size: 2.3rem !important;
+              margin-bottom: 6px !important;
+            }
+            .feature-modal-badge {
+              font-size: 0.68rem !important;
+              padding: 3px 10px !important;
+              margin-bottom: 6px !important;
+            }
+            .feature-modal-title {
+              font-size: 1.15rem !important;
+              margin-bottom: 6px !important;
+            }
+            .feature-modal-desc {
+              font-size: 0.78rem !important;
+              line-height: 1.35 !important;
+              margin-bottom: 12px !important;
+            }
+            .feature-modal-cost-pill {
+              padding: 5px 14px !important;
+              margin-bottom: 12px !important;
+            }
+            .feature-modal-cost-pill .pill-coin-icon {
+              font-size: 0.95rem !important;
+            }
+            .feature-modal-cost-pill .pill-cost-val {
+              font-size: 0.88rem !important;
+            }
+            .feature-modal-cost-pill .pill-duration-val {
+              font-size: 0.74rem !important;
+            }
+            .feature-modal-alert.insufficient {
+              padding: 8px 12px !important;
+              margin-bottom: 12px !important;
+              font-size: 0.76rem !important;
+              border-radius: 12px !important;
+            }
+            .feature-modal-alert.balance {
+              padding: 7px 10px !important;
+              margin-bottom: 12px !important;
+              font-size: 0.75rem !important;
+              border-radius: 10px !important;
+            }
+            .feature-modal-actions {
+              gap: 8px !important;
+            }
+            .feature-modal-cancel-btn,
+            .feature-modal-buy-btn,
+            .feature-modal-confirm-btn {
+              padding: 9px 12px !important;
+              font-size: 0.82rem !important;
+              border-radius: 12px !important;
             }
             .leaderboard-modal {
               width: 95% !important;
