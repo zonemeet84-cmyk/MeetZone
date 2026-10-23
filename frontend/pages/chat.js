@@ -5597,7 +5597,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                 <div className="feature-item"><span>✓</span> Gender & Country Filters</div>
                 <div className="feature-item"><span>✓</span> Unlimited Interactions</div>
                 <div className="feature-item"><span>✓</span> Priority Support</div>
-                <div className="feature-item"><span>✓</span> Ad-Free Experience</div>
+
               </div>
 
               {/* CTA to go to home */}

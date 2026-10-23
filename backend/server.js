@@ -575,13 +575,13 @@ function applySubscriptionPurchase(user, planName, options = {}) {
   
   user.premiumFeatures = [];
   if (planName === "Starter") {
-     user.premiumFeatures = ["gender_filter", "country_filter", "priority_matching", "unlimited_requests"];
+     user.premiumFeatures = ["gender_filter", "country_filter", "free_rewind_5"];
   } else if (planName === "Prime") {
-     user.premiumFeatures = ["gender_filter", "country_filter", "instant_priority", "unlimited_requests", "auto_translate", "live_subtitles", "ad_free"];
+     user.premiumFeatures = ["gender_filter", "country_filter", "instant_priority", "auto_translate", "live_subtitles", "free_rewind_15"];
   } else if (planName === "Silver") {
-     user.premiumFeatures = ["elite_badge", "gender_filter", "country_filter", "priority_matching", "unlimited_requests", "auto_translate", "live_subtitles", "ad_free", "vip_streak_2x"];
+     user.premiumFeatures = ["elite_badge", "gender_filter", "country_filter", "priority_matching", "auto_translate", "live_subtitles", "free_rewind_15"];
   } else if (planName === "VIP Elite") {
-     user.premiumFeatures = ["exact_age_filter", "instant_zero_wait", "all_face_filters", "privacy_avatars", "camera_blur", "vip_streak_2x", "privacy_tools", "auto_translate", "live_subtitles", "ad_free"];
+     user.premiumFeatures = ["exact_age_filter", "instant_zero_wait", "all_face_filters", "privacy_avatars", "camera_blur", "vip_streak_2x", "privacy_tools", "auto_translate", "live_subtitles", "free_rewind_15"];
      user.unlockedFilters = ["None", "Smooth", "Retro", "B&W", "Blur", "Neon", "Cyberpunk"];
   }
 
@@ -1888,8 +1888,8 @@ app.post("/api/user/collect-daily-reward", (req, res) => {
   let wonBoxType = null;
   let boxPrize = null;
 
-  // VIP 2X Daily Streak Multiplier Check
-  const isVipUser = Boolean(user.premium && (user.planName === "VIP Elite" || user.planName === "Silver" || user.subscriptionTier === "elite" || user.subscriptionTier === "silver" || user.currentPlan === "VIP Elite" || user.currentPlan === "Silver"));
+  // VIP 2X Daily Streak Multiplier Check (Exclusive to VIP Elite)
+  const isVipUser = Boolean(user.premium && (user.planName === "VIP Elite" || user.subscriptionTier === "elite" || user.currentPlan === "VIP Elite"));
   const streakMultiplier = isVipUser ? 2 : 1;
 
   // Apply reward
@@ -1980,7 +1980,7 @@ app.post("/api/user/collect-daily-reward", (req, res) => {
   }
 
   // Record Coin Activity log if coins are earned
-  const isVipForLog = Boolean(user.premium && (user.planName === "VIP Elite" || user.planName === "Silver" || user.subscriptionTier === "elite" || user.subscriptionTier === "silver" || user.currentPlan === "VIP Elite" || user.currentPlan === "Silver"));
+  const isVipForLog = Boolean(user.premium && (user.planName === "VIP Elite" || user.subscriptionTier === "elite" || user.currentPlan === "VIP Elite"));
   const streakMult = isVipForLog ? 2 : 1;
   const baseEarned = reward.type === "coins" ? (reward.value * streakMult) : (reward.type === "grand" ? (reward.coins * streakMult) : 0);
   const extraEarned = (boxPrize && boxPrize.type === "coins") ? boxPrize.value : 0;
@@ -2126,8 +2126,8 @@ app.post("/api/user/collect-custom-reward", (req, res) => {
 // MYSTERY BOX SYSTEM
 const MYSTERY_BOXES = {
   bronze: { name: "Bronze Box", price: 50, color: "#cd7f32" },
-  silver: { name: "Silver Box", price: 150, color: "#c0c0c0" },
-  gold: { name: "Gold Box", price: 500, color: "#ffd700" }
+  silver: { name: "Silver Box", price: 250, color: "#c0c0c0" },
+  gold: { name: "Gold Box", price: 1000, color: "#ffd700" }
 };
 
 app.post("/api/user/open-box", (req, res) => {
@@ -2453,17 +2453,7 @@ app.post("/api/friends/request", authenticateToken, (req, res) => {
   const targetUser = users.find(u => u.id === targetId);
   if (!targetUser) return res.status(404).json({ message: "User not found" });
 
-  const isPremium = req.user.premium || (req.user.planName && req.user.planName !== "Free");
-  const isAdmin = req.user.email === "ds9376314@gmail.com";
-  if (!isPremium && !isAdmin && req.user.friends && req.user.friends.length >= 5) {
-    return res.status(403).json({ message: "Free plan allows a maximum of 5 friends. Upgrade to add more!", requiresPremium: true });
-  }
-
-  const targetIsPremium = targetUser.premium || (targetUser.planName && targetUser.planName !== "Free");
-  const targetIsAdmin = targetUser.email === "ds9376314@gmail.com";
-  if (!targetIsPremium && !targetIsAdmin && targetUser.friends && targetUser.friends.length >= 5) {
-    return res.status(400).json({ message: "This user has reached their maximum friend limit." });
-  }
+  // Friend requests are 100% free and unlimited for all users
 
   if (!targetUser.friendRequests) targetUser.friendRequests = [];
 
@@ -2491,17 +2481,7 @@ app.post("/api/friends/accept", authenticateToken, (req, res) => {
   const requester = users.find(u => u.id === requesterId);
   if (!requester) return res.status(404).json({ message: "Requester not found" });
 
-  const isPremium = req.user.premium || (req.user.planName && req.user.planName !== "Free");
-  const isAdmin = req.user.email === "ds9376314@gmail.com";
-  if (!isPremium && !isAdmin && req.user.friends && req.user.friends.length >= 5) {
-    return res.status(403).json({ message: "Free plan allows a maximum of 5 friends. Upgrade to add more!", requiresPremium: true });
-  }
-
-  const reqUserIsPremium = requester.premium || (requester.planName && requester.planName !== "Free");
-  const reqUserIsAdmin = requester.email === "ds9376314@gmail.com";
-  if (!reqUserIsPremium && !reqUserIsAdmin && requester.friends && requester.friends.length >= 5) {
-    return res.status(400).json({ message: "The requester has reached their maximum friend limit." });
-  }
+  // Accepting friends is 100% free and unlimited for all users
 
   // Reconnect logic: Check if requester sent a reconnect request
   const request = (req.user.friendRequests || []).find(r => (typeof r === 'string' ? r : r.id) === requesterId);

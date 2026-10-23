@@ -394,13 +394,13 @@ export default function Dashboard(props) {
         },
         vip: {
           keywords: ['vip', 'premium', 'elite', 'plan', 'membership', 'filter', 'gender', 'country', 'age', 'pricing', 'starter', 'prime', 'silver', 'price', 'kharch', 'subscription'],
-          en: "Our Premium Plans are designed for the best experience: \n\n✨ **Starter (₹149 / 7 days):** Gender & Country filters, 5 free daily reconnects, 50 coins.\n🚀 **Prime (₹599 / 30 days):** State filters + auto-translate, 15 free daily reconnects, 0-sec skip, 150 coins.\n💎 **Silver (₹1599 / 90 days):** All VIP Elite perks for 90 days, 2X daily streak coins, 600 coins.\n👑 **VIP Elite (₹999 / 30 days):** Age filter, 1080p HD, Privacy Screen Avatars & Camera Blur, 2X streak multiplier, 500 coins + 1 Key. \n\nCheck the 'Pricing' section for full details!",
-          hi: "Humare VIP plans: \n\n✨ **Starter (₹149 / 7 din):** Gender & Country filter, 5 free daily reconnects, 50 coins.\n🚀 **Prime (₹599 / 30 din):** State filters + auto-translate, 15 free daily reconnects, 0-sec skip, 150 coins.\n💎 **Silver (₹1599 / 90 din):** Saare VIP Elite fayde 90 din ke liye, 2X daily streak coins, 600 coins.\n👑 **VIP Elite (₹999 / 30 din):** Exact Age filter, 1080p HD, Privacy Screen Avatars & Camera Blur, 2X daily streak, 500 coins + 1 Key. \n\nPoori detail 'Pricing' section mein hai!"
+          en: "Our Premium Plans are designed for the best experience: \n\n✨ **Starter (₹149 / 7 days):** Gender & Country filters, 5 free daily reconnects, 50 coins.\n🚀 **Prime (₹599 / 30 days):** State filters + auto-translate, 15 free daily reconnects, 0-sec skip, 150 coins.\n💎 **Silver (₹1599 / 90 days):** All VIP Elite perks for 90 days, 600 coins.\n👑 **VIP Elite (₹999 / 30 days):** Age filter, 1080p HD, Privacy Screen Avatars & Camera Blur, 2X streak multiplier, 500 coins + 1 Key. \n\nCheck the 'Pricing' section for full details!",
+          hi: "Humare VIP plans: \n\n✨ **Starter (₹149 / 7 din):** Gender & Country filter, 5 free daily reconnects, 50 coins.\n🚀 **Prime (₹599 / 30 din):** State filters + auto-translate, 15 free daily reconnects, 0-sec skip, 150 coins.\n💎 **Silver (₹1599 / 90 din):** Saare VIP Elite fayde 90 din ke liye, 600 coins.\n👑 **VIP Elite (₹999 / 30 din):** Exact Age filter, 1080p HD, Privacy Screen Avatars & Camera Blur, 2X daily streak, 500 coins + 1 Key. \n\nPoori detail 'Pricing' section mein hai!"
         },
         mystery: {
           keywords: ['box', 'mystery', 'gift', 'dabba', 'reward', 'win', 'bronze', 'silver', 'gold', 'luck', 'chest'],
-          en: "Try your luck with Mystery Boxes! 📦 Bronze (50 coins), Silver (150 coins), and the Legendary Golden Chest (500 coins). The **Golden Chest** is high-tier—it has NO coins and NO losses, meaning you always win a premium Boost or VIP Elite pass!",
-          hi: "Mystery Boxes se prizes jeetein! 📦 Bronze (50 coins), Silver (150 coins), aur Legendary Gold Box (500 coins). **Gold Box** sabse khaas hai—isme koi loss nahi hota aur coins ki jagah hamesha bade prizes jaise VIP ya Boost milta hai!"
+          en: "Try your luck with Mystery Boxes! 📦 Bronze (50 coins), Silver (250 coins), and the Legendary Golden Chest (1000 coins). The **Golden Chest** is high-tier—it has NO coins and NO losses, meaning you always win a premium Boost or VIP Elite pass!",
+          hi: "Mystery Boxes se prizes jeetein! 📦 Bronze (50 coins), Silver (250 coins), aur Legendary Gold Box (1000 coins). **Gold Box** sabse khaas hai—isme koi loss nahi hota aur coins ki jagah hamesha bade prizes jaise VIP ya Boost milta hai!"
         },
         leaderboard: {
           keywords: ['leaderboard', 'rank', 'top', 'spender', 'hall of fame', 'monthly', 'prize', 'reward', 'paisa milega', '1st', '2nd', '3rd', 'reset'],
@@ -2294,10 +2294,8 @@ export default function Dashboard(props) {
             </div>
             <ul className="premium-features">
               <li><span>✓</span> Gender & Country Filters</li>
-              <li><span>✓</span> Priority Matching</li>
-              <li><span>✓</span> 5 Free Reconnect Passes / Day</li>
-              <li><span>✓</span> 1-Time Reconnect Limit (Anti-Spam)</li>
-              <li><span>✓</span> Unlimited Friend Requests</li>
+              <li><span>⏪</span> 5 Free Rewind Passes / Day (Reconnect with previous match)</li>
+              <li><span>🛡️</span> 1-Time Limit per Person (Anti-Spam)</li>
               <li><span>★</span> 50 ZoneMeet Coins (Free)</li>
             </ul>
             <button className="premium-btn" onClick={() => {
@@ -2323,12 +2321,11 @@ export default function Dashboard(props) {
             <ul className="premium-features">
               <li><span>✓</span> Gender, Country & State Filters</li>
               <li><span>✓</span> 0-Sec Skip Cooldown (Instant Next)</li>
-              <li><span>✓</span> 15 Free Reconnect Passes / Day</li>
-              <li><span>✓</span> 1-Time Reconnect Limit (Anti-Spam)</li>
-              <li><span>✓</span> Instant Priority Matching</li>
+              <li><span>⏪</span> 15 Free Rewind Passes / Day (Reconnect with previous match)</li>
+              <li><span>🛡️</span> 1-Time Limit per Person (Anti-Spam)</li>
+              <li><span>⚡</span> Instant Priority Matching</li>
               <li><span>🌐</span> Auto-Translate Chats & Live Subtitles</li>
               <li><span>★</span> 150 ZoneMeet Coins (Free)</li>
-              <li className="feature-coming-soon"><span>🕒</span> Ad-Free Experience <em>(Coming Soon)</em></li>
             </ul>
             <button className="premium-btn primary" onClick={() => {
               setSelectedPlan({ name: "Prime", price: currency === "INR" ? "₹599" : "$7.17" });
@@ -2351,13 +2348,12 @@ export default function Dashboard(props) {
             </div>
             <ul className="premium-features">
               <li><span>👑</span> 90 Days All VIP Elite Perks Included</li>
-              <li><span>🔥</span> 2X Daily Streak Multiplier (Double Coins)</li>
-              <li><span>🛡️</span> 15 Free Reconnect Passes / Day (Anti-Spam)</li>
+              <li><span>⏪</span> 15 Free Rewind Passes / Day (Reconnect with previous match)</li>
+              <li><span>🛡️</span> 1-Time Limit per Person (Anti-Spam)</li>
               <li><span>🎭</span> Privacy Screen Avatars & Camera Blur</li>
               <li><span>✨</span> Mythic Royal Identity Badge</li>
               <li><span>🌐</span> Auto-Translate Chats & Live Subtitles</li>
               <li><span>★</span> 600 ZoneMeet Coins (Free)</li>
-              <li className="feature-coming-soon"><span>🕒</span> Ad-Free Experience <em>(Coming Soon)</em></li>
             </ul>
             <button className="premium-btn" onClick={() => {
               setSelectedPlan({ name: "Silver", price: currency === "INR" ? "₹1599" : "$19.17" });
@@ -2399,7 +2395,7 @@ export default function Dashboard(props) {
             </div>
             <div className="elite-feature-item">
               <strong>🔥 2X Daily Streak Multiplier</strong>
-              <p>Double daily login streak coins automatically</p>
+              <p>Exclusive: Double daily login streak coins automatically</p>
             </div>
             <div className="elite-feature-item">
               <strong>🎭 Privacy Screen Avatars</strong>
@@ -2408,6 +2404,10 @@ export default function Dashboard(props) {
             <div className="elite-feature-item">
               <strong>🌫️ Real-Time Camera Blur</strong>
               <p>Instant privacy blur for your camera background</p>
+            </div>
+            <div className="elite-feature-item">
+              <strong>⏪ Rewind & Direct Reconnect</strong>
+              <p>Rewind to instantly reconnect with your previous match</p>
             </div>
             <div className="elite-feature-item">
               <strong>⚡ Instant Zero-Wait</strong>
@@ -2424,10 +2424,6 @@ export default function Dashboard(props) {
             <div className="elite-feature-item">
               <strong>🌐 Auto-Translate & CC</strong>
               <p>Live translated subtitles & instant text translation</p>
-            </div>
-            <div className="elite-feature-item feature-coming-soon-box">
-              <strong>📺 Ad-Free Experience</strong>
-              <p>Zero interruptions <em>(Coming Soon)</em></p>
             </div>
           </div>
         </div>
@@ -2644,15 +2640,15 @@ export default function Dashboard(props) {
 
             <div
               className="transparency-card"
-              onClick={() => buyFeature('Secret Identity', 500)}
+              onClick={() => buyFeature('Secret Identity', 1500)}
               style={{ padding: '25px', background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.05), rgba(168, 85, 247, 0.05))', borderRadius: '24px', border: '1px solid rgba(236, 72, 153, 0.2)', cursor: 'pointer', transition: '0.3s' }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <small style={{ color: '#ec4899', fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase' }}>Secret Identity Mode</small>
                 <span style={{ fontSize: '1.2rem' }}>🎭</span>
               </div>
-              <h3 style={{ fontSize: '1.5rem', margin: '15px 0' }}>500 Coins <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>/ 7 Days</span></h3>
-              <p style={{ fontSize: '0.8rem', color: '#94a3b8', lineHeight: '1.5' }}>Voice Change, Animated Avatars, Blurred Face & Animated Masks. The ultimate ninja mode.</p>
+              <h3 style={{ fontSize: '1.5rem', margin: '15px 0' }}>1500 Coins <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>/ 7 Days</span></h3>
+              <p style={{ fontSize: '0.8rem', color: '#94a3b8', lineHeight: '1.5' }}>Privacy Screen Avatars & Real-Time Camera Blur. Hide your real face & camera from strangers.</p>
               <div className="buy-badge" style={{ background: 'rgba(236, 72, 153, 0.1)', color: '#ec4899' }}>Click to Purchase</div>
             </div>
 
@@ -3689,8 +3685,8 @@ export default function Dashboard(props) {
         <div className="mystery-grid">
           {[
             { type: "bronze", name: "Bronze Case", price: 50, icon: "📦", color: "#cd7f32", glow: "rgba(205, 127, 50, 0.4)", rarity: "Common" },
-            { type: "silver", name: "Silver Vault", price: 150, icon: "🎁", color: "#c0c0c0", glow: "rgba(192, 192, 192, 0.4)", rarity: "Rare" },
-            { type: "gold", name: "Golden Chest", price: 500, icon: "✨", color: "#ffd700", glow: "rgba(255, 215, 0, 0.5)", rarity: "Legendary" }
+            { type: "silver", name: "Silver Vault", price: 250, icon: "🎁", color: "#c0c0c0", glow: "rgba(192, 192, 192, 0.4)", rarity: "Rare" },
+            { type: "gold", name: "Golden Chest", price: 1000, icon: "✨", color: "#ffd700", glow: "rgba(255, 215, 0, 0.5)", rarity: "Legendary" }
           ].map((box, idx) => (
             <div
               className="mystery-card mystery-float"
