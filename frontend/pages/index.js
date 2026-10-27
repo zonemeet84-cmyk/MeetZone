@@ -2780,8 +2780,8 @@ export default function Dashboard(props) {
       {/* PREMIUM PAYMENT MODAL */}
       {showPaymentModal && (
         <div className="payment-overlay" onClick={() => setShowPaymentModal(false)}>
-          <div className="premium-modal" onClick={(e) => e.stopPropagation()}>
-            <button type="button" className="modal-close-btn" onClick={(e) => { e.stopPropagation(); setShowPaymentModal(false); }} style={{ position: 'absolute', top: '14px', right: '14px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.18)', border: '1px solid rgba(255, 255, 255, 0.25)', color: '#ffffff', fontSize: '1.4rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0 }}>×</button>
+          <div className="premium-modal payment-checkout-modal" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="modal-close-btn" onClick={(e) => { e.stopPropagation(); setShowPaymentModal(false); }} style={{ position: 'absolute', top: '10px', right: '10px', width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.14)', border: '1px solid rgba(255, 255, 255, 0.22)', color: '#ffffff', fontSize: '1.2rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0 }}>×</button>
 
             <div className="modal-header-premium">
               <div className="plan-pill">{selectedPlan?.name}</div>
@@ -2794,28 +2794,28 @@ export default function Dashboard(props) {
                 <div className="payment-flow">
                   <h3 className="flow-title">Select Payment Method</h3>
 
-                  {/* Gifting Toggle */}
-                  <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', padding: '15px', borderRadius: '20px', marginBottom: '1.5rem' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: isGifting ? '15px' : '0' }}>
+                  {/* Gifting & Auto-Renew Options */}
+                  <div className="payment-options-box" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', padding: '10px 12px', borderRadius: '14px', marginBottom: '0.75rem' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: isGifting ? '8px' : '0' }}>
                       <input
                         type="checkbox"
                         checked={isGifting}
                         onChange={(e) => setIsGifting(e.target.checked)}
-                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                        style={{ width: '16px', height: '16px', accentColor: '#6366f1', cursor: 'pointer' }}
                       />
-                      <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: '700' }}>🎁 Gift this to a friend?</span>
+                      <span style={{ fontSize: '0.82rem', color: '#fff', fontWeight: '600' }}>🎁 Gift this to a friend?</span>
                     </label>
 
                     {isGifting && (
-                      <div style={{ animation: 'fadeIn 0.3s' }}>
+                      <div style={{ animation: 'fadeIn 0.3s', marginBottom: '6px' }}>
                         <input
                           type="text"
                           placeholder="Friend's User ID or Email"
                           value={giftRecipientId}
                           onChange={(e) => setGiftRecipientId(e.target.value)}
-                          style={{ width: '100%', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '10px 15px', color: '#fff', fontSize: '0.85rem', outline: 'none' }}
+                          style={{ width: '100%', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '7px 12px', color: '#fff', fontSize: '0.8rem', outline: 'none' }}
                         />
-                        <p style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '8px', padding: '0 5px' }}>
+                        <p style={{ fontSize: '0.68rem', color: '#94a3b8', marginTop: '4px', padding: '0 4px', margin: 0 }}>
                           The coins/plan will be credited to this user instantly after payment.
                         </p>
                       </div>
@@ -2823,16 +2823,16 @@ export default function Dashboard(props) {
 
                     {/* Auto Renew Toggle (Only for Subscriptions) */}
                     {selectedPlan && !selectedPlan.name.includes("Coins") && (
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginTop: '15px', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: isGifting ? '6px' : '6px', paddingTop: '6px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                         <input
                           type="checkbox"
                           checked={isAutoRenew}
                           onChange={(e) => setIsAutoRenew(e.target.checked)}
-                          style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                          style={{ width: '16px', height: '16px', accentColor: '#6366f1', cursor: 'pointer' }}
                         />
-                        <div>
-                          <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: '700', display: 'block' }}>🔄 Auto-Renew Subscription</span>
-                          <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Automatically renew this plan. Cancel anytime.</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.82rem', color: '#fff', fontWeight: '600' }}>🔄 Auto-Renew</span>
+                          <span style={{ fontSize: '0.68rem', color: '#94a3b8' }}>(Cancel anytime)</span>
                         </div>
                       </label>
                     )}
@@ -5478,8 +5478,227 @@ export default function Dashboard(props) {
             box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
           }
 
-          .payment-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(15px); z-index: 100000; display: flex; align-items: flex-start; justify-content: center; padding: 2rem; overflow-y: auto; }
+          .payment-overlay { 
+            position: fixed; 
+            top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(0,0,0,0.88); 
+            backdrop-filter: blur(14px); 
+            z-index: 100000; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 12px; 
+            overflow-y: auto; 
+          }
           .premium-modal { background: #0f172a; border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 500px; border-radius: 40px; position: relative; box-shadow: 0 50px 100px rgba(0,0,0,0.5); animation: modalSlideUp 0.6s cubic-bezier(0.16,1,0.3,1); margin: 2rem 0; }
+          
+          /* COMPACT PAYMENT CHECKOUT MODAL (NO SCROLL ON DESKTOP & PHONE) */
+          .payment-checkout-modal {
+            background: #0f172a !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            width: 100% !important;
+            max-width: 420px !important;
+            border-radius: 22px !important;
+            position: relative !important;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.75) !important;
+            animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            margin: auto !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+            max-height: 94vh !important;
+            display: flex !important;
+            flex-direction: column !important;
+          }
+          .payment-checkout-modal .modal-header-premium {
+            padding: 1.15rem 1.25rem 0.5rem !important;
+            text-align: center !important;
+            background: linear-gradient(180deg, rgba(99, 102, 241, 0.12) 0%, transparent 100%) !important;
+            flex-shrink: 0 !important;
+          }
+          .payment-checkout-modal .plan-pill {
+            background: rgba(99, 102, 241, 0.15) !important;
+            color: #818cf8 !important;
+            display: inline-block !important;
+            padding: 0.18rem 0.8rem !important;
+            border-radius: 50px !important;
+            font-weight: 800 !important;
+            font-size: 0.7rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            margin-bottom: 0.3rem !important;
+            border: 1px solid rgba(99, 102, 241, 0.25) !important;
+          }
+          .payment-checkout-modal .total-amount {
+            font-size: 2.1rem !important;
+            font-weight: 900 !important;
+            color: white !important;
+            margin: 0 !important;
+            letter-spacing: -0.03em !important;
+            line-height: 1.15 !important;
+          }
+          .payment-checkout-modal .modal-subtitle {
+            color: #64748b !important;
+            font-size: 0.74rem !important;
+            margin-top: 0.2rem !important;
+            margin-bottom: 0 !important;
+          }
+          .payment-checkout-modal .modal-body-premium {
+            padding: 0.4rem 1.15rem 0.75rem !important;
+            overflow-y: auto !important;
+            scrollbar-width: thin !important;
+            scrollbar-color: rgba(255, 255, 255, 0.15) transparent !important;
+            flex: 1 1 auto !important;
+          }
+          .payment-checkout-modal .flow-title {
+            font-size: 0.85rem !important;
+            font-weight: 700 !important;
+            color: #94a3b8 !important;
+            margin-bottom: 0.55rem !important;
+            text-align: center !important;
+          }
+          .payment-checkout-modal .methods-list-premium {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.42rem !important;
+          }
+          .payment-checkout-modal .gateway-section-label {
+            font-size: 0.65rem !important;
+            font-weight: 800 !important;
+            color: #475569 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.06em !important;
+            padding: 2px 2px !important;
+            margin-bottom: 0.15rem !important;
+          }
+          .payment-checkout-modal .pay-method-item {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            padding: 0.52rem 0.8rem !important;
+            border-radius: 13px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.7rem !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            width: 100% !important;
+            text-align: left !important;
+          }
+          .payment-checkout-modal .pay-method-item:hover {
+            background: rgba(255, 255, 255, 0.06) !important;
+            border-color: #6366f1 !important;
+            transform: translateY(-1px) !important;
+          }
+          .payment-checkout-modal .pay-icon-box {
+            font-size: 1.15rem !important;
+            background: #020617 !important;
+            width: 35px !important;
+            height: 35px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border-radius: 10px !important;
+            flex-shrink: 0 !important;
+            border: 1px solid rgba(255, 255, 255, 0.06) !important;
+          }
+          .payment-checkout-modal .pay-details {
+            flex: 1 !important;
+          }
+          .payment-checkout-modal .pay-details strong {
+            display: block !important;
+            color: white !important;
+            font-size: 0.85rem !important;
+            line-height: 1.2 !important;
+          }
+          .payment-checkout-modal .pay-details span {
+            color: #64748b !important;
+            font-size: 0.7rem !important;
+            line-height: 1.2 !important;
+          }
+          .payment-checkout-modal .pay-badge {
+            font-size: 0.62rem !important;
+            font-weight: 700 !important;
+            padding: 2px 7px !important;
+            border-radius: 12px !important;
+            white-space: nowrap !important;
+          }
+          .payment-checkout-modal .pay-arrow {
+            color: #475569 !important;
+            font-size: 1.05rem !important;
+            margin-left: 2px !important;
+          }
+          .payment-checkout-modal .modal-footer-premium {
+            padding: 0.45rem 1rem !important;
+            background: rgba(0, 0, 0, 0.25) !important;
+            text-align: center !important;
+            flex-shrink: 0 !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.04) !important;
+          }
+          .payment-checkout-modal .security-tag {
+            color: #475569 !important;
+            font-size: 0.7rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 0.35rem !important;
+            font-weight: 600 !important;
+          }
+          @media (max-width: 640px) {
+            .payment-overlay {
+              padding: 8px !important;
+              align-items: center !important;
+            }
+            .payment-checkout-modal {
+              max-width: 95% !important;
+              max-height: 95vh !important;
+              border-radius: 18px !important;
+            }
+            .payment-checkout-modal .modal-header-premium {
+              padding: 0.95rem 0.9rem 0.35rem !important;
+            }
+            .payment-checkout-modal .total-amount {
+              font-size: 1.7rem !important;
+            }
+            .payment-checkout-modal .plan-pill {
+              font-size: 0.64rem !important;
+              padding: 0.15rem 0.6rem !important;
+              margin-bottom: 0.2rem !important;
+            }
+            .payment-checkout-modal .modal-subtitle {
+              font-size: 0.68rem !important;
+              margin-top: 0.15rem !important;
+            }
+            .payment-checkout-modal .modal-body-premium {
+              padding: 0.25rem 0.8rem 0.6rem !important;
+            }
+            .payment-checkout-modal .flow-title {
+              font-size: 0.78rem !important;
+              margin-bottom: 0.4rem !important;
+            }
+            .payment-checkout-modal .pay-method-item {
+              padding: 0.45rem 0.65rem !important;
+              border-radius: 11px !important;
+              gap: 0.55rem !important;
+            }
+            .payment-checkout-modal .pay-icon-box {
+              width: 30px !important;
+              height: 30px !important;
+              font-size: 1rem !important;
+              border-radius: 8px !important;
+            }
+            .payment-checkout-modal .pay-details strong {
+              font-size: 0.8rem !important;
+            }
+            .payment-checkout-modal .pay-details span {
+              font-size: 0.65rem !important;
+            }
+            .payment-checkout-modal .modal-footer-premium {
+              padding: 0.35rem 0.65rem !important;
+            }
+            .payment-checkout-modal .security-tag {
+              font-size: 0.64rem !important;
+            }
+          }
+
           @keyframes modalSlideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
           .modal-close-btn { position: absolute; top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.05); border: none; color: #94a3b8; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; z-index: 10; }
           .modal-close-btn:hover { background: rgba(255,255,255,0.1); color: white; }

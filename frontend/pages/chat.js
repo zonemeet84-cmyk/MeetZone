@@ -5352,8 +5352,8 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
       {/* PREMIUM PAYMENT MODAL */}
       {showPaymentModal && (
         <div className="payment-overlay" onClick={() => setShowPaymentModal(false)}>
-          <div className="premium-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close-btn" onClick={() => setShowPaymentModal(false)}>×</button>
+          <div className="premium-modal payment-checkout-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={() => setShowPaymentModal(false)} style={{ position: 'absolute', top: '10px', right: '10px', width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.14)', border: '1px solid rgba(255, 255, 255, 0.22)', color: '#ffffff', fontSize: '1.2rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0 }}>×</button>
 
             <div className="modal-header-premium">
               <div className="plan-pill">{selectedPlan?.name}</div>
@@ -7817,21 +7817,189 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);
           transition: all 0.2s;
         }
-        @keyframes modalSlideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
-        .modal-close-btn { position: absolute; top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.05); border: none; color: #94a3b8; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
-        .modal-header-premium { padding: 4rem 2rem 2rem; text-align: center; }
-        .plan-pill { background: rgba(99,102,241,0.1); color: #6366f1; display: inline-block; padding: 0.4rem 1.2rem; border-radius: 50px; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 1rem; }
-        .total-amount { font-size: 3.5rem; font-weight: 900; color: white; margin: 0; letter-spacing: -0.04em; }
-        .modal-subtitle { color: #64748b; font-size: 0.9rem; margin-top: 0.5rem; }
-        .modal-body-premium { padding: 0 3rem 3rem; }
-        
-        .methods-list-premium { display: flex; flex-direction: column; gap: 1rem; }
-        .pay-method-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1.25rem; border-radius: 24px; display: flex; align-items: center; gap: 1.25rem; cursor: pointer; transition: all 0.3s; width: 100%; text-align: left; }
-        .pay-method-item:hover { background: rgba(255,255,255,0.06); border-color: #6366f1; transform: translateX(10px); }
-        .pay-icon-box { font-size: 1.75rem; background: #000; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; border-radius: 16px; flex-shrink: 0; }
-        .pay-details strong { display: block; color: white; font-size: 1.1rem; }
-        .pay-details span { color: #64748b; font-size: 0.85rem; }
-        .pay-arrow { color: #475569; font-size: 1.5rem; margin-left: auto; }
+        /* COMPACT PAYMENT CHECKOUT MODAL (NO SCROLL ON DESKTOP & PHONE) */
+        .payment-checkout-modal {
+          background: #0f172a !important;
+          border: 1px solid rgba(255, 255, 255, 0.12) !important;
+          width: 100% !important;
+          max-width: 420px !important;
+          border-radius: 22px !important;
+          position: relative !important;
+          box-shadow: 0 25px 70px rgba(0, 0, 0, 0.75) !important;
+          animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+          margin: auto !important;
+          padding: 0 !important;
+          overflow: hidden !important;
+          max-height: 94vh !important;
+          display: flex !important;
+          flex-direction: column !important;
+        }
+        .payment-checkout-modal .modal-header-premium {
+          padding: 1.15rem 1.25rem 0.5rem !important;
+          text-align: center !important;
+          background: linear-gradient(180deg, rgba(99, 102, 241, 0.12) 0%, transparent 100%) !important;
+          flex-shrink: 0 !important;
+        }
+        .payment-checkout-modal .plan-pill {
+          background: rgba(99, 102, 241, 0.15) !important;
+          color: #818cf8 !important;
+          display: inline-block !important;
+          padding: 0.18rem 0.8rem !important;
+          border-radius: 50px !important;
+          font-weight: 800 !important;
+          font-size: 0.7rem !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.05em !important;
+          margin-bottom: 0.3rem !important;
+          border: 1px solid rgba(99, 102, 241, 0.25) !important;
+        }
+        .payment-checkout-modal .total-amount {
+          font-size: 2.1rem !important;
+          font-weight: 900 !important;
+          color: white !important;
+          margin: 0 !important;
+          letter-spacing: -0.03em !important;
+          line-height: 1.15 !important;
+        }
+        .payment-checkout-modal .modal-subtitle {
+          color: #64748b !important;
+          font-size: 0.74rem !important;
+          margin-top: 0.2rem !important;
+          margin-bottom: 0 !important;
+        }
+        .payment-checkout-modal .modal-body-premium {
+          padding: 0.4rem 1.15rem 0.75rem !important;
+          overflow-y: auto !important;
+          scrollbar-width: thin !important;
+          scrollbar-color: rgba(255, 255, 255, 0.15) transparent !important;
+          flex: 1 1 auto !important;
+        }
+        .payment-checkout-modal .flow-title {
+          font-size: 0.85rem !important;
+          font-weight: 700 !important;
+          color: #94a3b8 !important;
+          margin-bottom: 0.55rem !important;
+          text-align: center !important;
+        }
+        .payment-checkout-modal .methods-list-premium {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 0.42rem !important;
+        }
+        .payment-checkout-modal .pay-method-item {
+          background: rgba(255, 255, 255, 0.03) !important;
+          border: 1px solid rgba(255, 255, 255, 0.08) !important;
+          padding: 0.52rem 0.8rem !important;
+          border-radius: 13px !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 0.7rem !important;
+          cursor: pointer !important;
+          transition: all 0.2s ease !important;
+          width: 100% !important;
+          text-align: left !important;
+        }
+        .payment-checkout-modal .pay-method-item:hover {
+          background: rgba(255, 255, 255, 0.06) !important;
+          border-color: #6366f1 !important;
+          transform: translateY(-1px) !important;
+        }
+        .payment-checkout-modal .pay-icon-box {
+          font-size: 1.15rem !important;
+          background: #020617 !important;
+          width: 35px !important;
+          height: 35px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          border-radius: 10px !important;
+          flex-shrink: 0 !important;
+          border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        }
+        .payment-checkout-modal .pay-details strong {
+          display: block !important;
+          color: white !important;
+          font-size: 0.85rem !important;
+          line-height: 1.2 !important;
+        }
+        .payment-checkout-modal .pay-details span {
+          color: #64748b !important;
+          font-size: 0.7rem !important;
+          line-height: 1.2 !important;
+        }
+        .payment-checkout-modal .pay-arrow {
+          color: #475569 !important;
+          font-size: 1.05rem !important;
+          margin-left: auto !important;
+        }
+        .payment-checkout-modal .modal-footer-premium {
+          padding: 0.45rem 1rem !important;
+          background: rgba(0, 0, 0, 0.25) !important;
+          text-align: center !important;
+          flex-shrink: 0 !important;
+          border-top: 1px solid rgba(255, 255, 255, 0.04) !important;
+        }
+        .payment-checkout-modal .security-tag {
+          color: #475569 !important;
+          font-size: 0.7rem !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 0.35rem !important;
+          font-weight: 600 !important;
+        }
+        @media (max-width: 640px) {
+          .payment-checkout-modal {
+            max-width: 95% !important;
+            max-height: 95vh !important;
+            border-radius: 18px !important;
+          }
+          .payment-checkout-modal .modal-header-premium {
+            padding: 0.95rem 0.9rem 0.35rem !important;
+          }
+          .payment-checkout-modal .total-amount {
+            font-size: 1.7rem !important;
+          }
+          .payment-checkout-modal .plan-pill {
+            font-size: 0.64rem !important;
+            padding: 0.15rem 0.6rem !important;
+            margin-bottom: 0.2rem !important;
+          }
+          .payment-checkout-modal .modal-subtitle {
+            font-size: 0.68rem !important;
+            margin-top: 0.15rem !important;
+          }
+          .payment-checkout-modal .modal-body-premium {
+            padding: 0.25rem 0.8rem 0.6rem !important;
+          }
+          .payment-checkout-modal .flow-title {
+            font-size: 0.78rem !important;
+            margin-bottom: 0.4rem !important;
+          }
+          .payment-checkout-modal .pay-method-item {
+            padding: 0.45rem 0.65rem !important;
+            border-radius: 11px !important;
+            gap: 0.55rem !important;
+          }
+          .payment-checkout-modal .pay-icon-box {
+            width: 30px !important;
+            height: 30px !important;
+            font-size: 1rem !important;
+            border-radius: 8px !important;
+          }
+          .payment-checkout-modal .pay-details strong {
+            font-size: 0.8rem !important;
+          }
+          .payment-checkout-modal .pay-details span {
+            font-size: 0.65rem !important;
+          }
+          .payment-checkout-modal .modal-footer-premium {
+            padding: 0.35rem 0.65rem !important;
+          }
+          .payment-checkout-modal .security-tag {
+            font-size: 0.64rem !important;
+          }
+        }
 
         .status-container { text-align: center; padding: 2rem 0; }
         .premium-loader { width: 60px; height: 60px; border: 4px solid rgba(99,102,241,0.1); border-top-color: #6366f1; border-radius: 50%; animation: premiumSpin 1s linear infinite; margin: 0 auto 2rem; }
