@@ -5353,7 +5353,39 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
       {showPaymentModal && (
         <div className="payment-overlay" onClick={() => setShowPaymentModal(false)}>
           <div className="premium-modal payment-checkout-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close-btn" onClick={() => setShowPaymentModal(false)} style={{ position: 'absolute', top: '10px', right: '10px', width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.14)', border: '1px solid rgba(255, 255, 255, 0.22)', color: '#ffffff', fontSize: '1.2rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0 }}>×</button>
+            <button
+              type="button"
+              className="modal-close-btn payment-close-btn"
+              onClick={() => setShowPaymentModal(false)}
+              style={{
+                position: 'absolute',
+                top: '12px',
+                right: '12px',
+                width: '32px',
+                minWidth: '32px',
+                maxWidth: '32px',
+                height: '32px',
+                minHeight: '32px',
+                maxHeight: '32px',
+                borderRadius: '50%',
+                background: 'rgba(255, 255, 255, 0.16)',
+                border: '1px solid rgba(255, 255, 255, 0.25)',
+                color: '#ffffff',
+                fontSize: '1.25rem',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                zIndex: 99999,
+                pointerEvents: 'auto',
+                padding: 0,
+                margin: 0,
+                lineHeight: 1
+              }}
+            >
+              ×
+            </button>
 
             <div className="modal-header-premium">
               <div className="plan-pill">{selectedPlan?.name}</div>
@@ -7948,11 +7980,57 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           gap: 0.35rem !important;
           font-weight: 600 !important;
         }
+        .payment-checkout-modal .payment-close-btn,
+        .payment-checkout-modal .modal-close-btn {
+          position: absolute !important;
+          top: 12px !important;
+          right: 12px !important;
+          width: 32px !important;
+          min-width: 32px !important;
+          max-width: 32px !important;
+          height: 32px !important;
+          min-height: 32px !important;
+          max-height: 32px !important;
+          border-radius: 50% !important;
+          background: rgba(255, 255, 255, 0.16) !important;
+          border: 1px solid rgba(255, 255, 255, 0.25) !important;
+          color: #ffffff !important;
+          font-size: 1.25rem !important;
+          line-height: 1 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          cursor: pointer !important;
+          z-index: 99999 !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          box-sizing: border-box !important;
+        }
+        .payment-checkout-modal .payment-close-btn:hover,
+        .payment-checkout-modal .modal-close-btn:hover {
+          background: rgba(255, 255, 255, 0.28) !important;
+          color: #ffffff !important;
+        }
         @media (max-width: 640px) {
           .payment-checkout-modal {
             max-width: 95% !important;
             max-height: 95vh !important;
             border-radius: 18px !important;
+          }
+          .payment-checkout-modal .payment-close-btn,
+          .payment-checkout-modal .modal-close-btn {
+            top: 10px !important;
+            right: 10px !important;
+            width: 30px !important;
+            min-width: 30px !important;
+            max-width: 30px !important;
+            height: 30px !important;
+            min-height: 30px !important;
+            max-height: 30px !important;
+            font-size: 1.15rem !important;
+            border-radius: 50% !important;
+            padding: 0 !important;
+            margin: 0 !important;
           }
           .payment-checkout-modal .modal-header-premium {
             padding: 0.95rem 0.9rem 0.35rem !important;

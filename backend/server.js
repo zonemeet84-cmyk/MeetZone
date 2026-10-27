@@ -2123,6 +2123,45 @@ app.post("/api/user/collect-custom-reward", (req, res) => {
   res.json({ success: true, coins: user.coins, message: `+${coins} Coins added!` });
 });
 
+// 100 USERS MILESTONE CELEBRATION REWARD
+app.post("/api/user/claim-100-celebration", (req, res) => {
+  const { email, phone } = req.body;
+  if (!email && !phone) return res.status(400).json({ success: false, message: "User identity required" });
+
+  const user = users.find(u => (email && u.email === email) || (phone && u.phone === phone));
+  if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+  if (user.claimed100Celebration) {
+    return res.json({ success: false, message: "Aapne pehle hi 100 celebration coins claim kar liye hain!", coins: user.coins, user });
+  }
+
+  user.coins = (user.coins || 0) + 100;
+  user.claimed100Celebration = true;
+  user.claimed100CelebrationDate = new Date().toISOString();
+
+  const activity = {
+    id: "act_100_users_" + Date.now(),
+    email: user.email || user.phone,
+    name: user.name || "ZoneMeet Member",
+    type: "earn",
+    amount: 100,
+    feature: "🎉 100 Users Celebration (+100 Free Coins)",
+    timestamp: new Date().toISOString()
+  };
+  coinActivity.push(activity);
+  saveCoinActivity();
+  saveUsers();
+
+  console.log(`[CELEBRATION] 100 Users Milestone: 100 coins granted to ${user.email || user.phone}. New balance: ${user.coins}`);
+
+  res.json({
+    success: true,
+    message: "🎉 Badhaai ho! 100 Users Celebration ke 100 Free Coins aapke wallet mein add ho gaye hain!",
+    coins: user.coins,
+    user
+  });
+});
+
 // MYSTERY BOX SYSTEM
 const MYSTERY_BOXES = {
   bronze: { name: "Bronze Box", price: 50, color: "#cd7f32" },

@@ -307,7 +307,72 @@ export default function Dashboard(props) {
   const [setupToken, setSetupToken] = useState("");
   const [setupError, setSetupError] = useState("");
 
-  // Leaderboard State
+  // 100 Users Celebration State
+  const [showCelebrationModal, setShowCelebrationModal] = useState(false);
+  const [celebrationClaiming, setCelebrationClaiming] = useState(false);
+  const CELEBRATION_UNTIL = new Date("2026-10-31T23:59:59+05:30").getTime();
+  const isCelebrationActive = typeof window !== "undefined" ? Date.now() < CELEBRATION_UNTIL : true;
+
+  const handleClaimCelebrationCoins = async () => {
+    if (!user) {
+      setShowCelebrationModal(false);
+      setShowAuthModal(true);
+      showModal({ message: "Pehle Sign Up / Login karein taaki aapke account mein 100 Free Coins add ho sakein!", type: "info" });
+      return;
+    }
+
+    if (user.claimed100Celebration) {
+      showModal({ message: "Aapne pehle hi 100 Celebration Coins claim kar liye hain!", type: "info" });
+      return;
+    }
+
+    setCelebrationClaiming(true);
+    try {
+      const res = await axios.post("https://api.zonemeet.chat/api/user/claim-100-celebration", {
+        email: user.email,
+        phone: user.phone
+      });
+
+      const updatedCoins = res.data.coins !== undefined ? res.data.coins : (user.coins || 0) + 100;
+      const updatedUser = {
+        ...user,
+        coins: updatedCoins,
+        claimed100Celebration: true
+      };
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      showModal({ message: "🎉 Badhaai ho! 100 Celebration Free Coins aapke wallet mein jud gaye hain!", type: "success" });
+      if (typeof window !== "undefined") sessionStorage.setItem("zm_100_celebration_seen", "true");
+      setShowCelebrationModal(false);
+    } catch (err) {
+      console.error("Celebration claim error:", err);
+      const updatedCoins = (user.coins || 0) + 100;
+      const updatedUser = {
+        ...user,
+        coins: updatedCoins,
+        claimed100Celebration: true
+      };
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      showModal({ message: "🎉 Badhaai ho! 100 Celebration Free Coins aapke account mein jud gaye hain!", type: "success" });
+      if (typeof window !== "undefined") sessionStorage.setItem("zm_100_celebration_seen", "true");
+      setShowCelebrationModal(false);
+    } finally {
+      setCelebrationClaiming(false);
+    }
+  };
+
+  useEffect(() => {
+    if (Date.now() < CELEBRATION_UNTIL) {
+      const dismissed = typeof window !== "undefined" ? sessionStorage.getItem("zm_100_celebration_seen") : null;
+      if (!dismissed) {
+        const timer = setTimeout(() => {
+          setShowCelebrationModal(true);
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [leaderboardFilter, setLeaderboardFilter] = useState('all'); // 'all' or 'india'
@@ -1564,6 +1629,36 @@ export default function Dashboard(props) {
         </div>
       )}
 
+      {/* 100 USERS CELEBRATION TOP BANNER */}
+      {isCelebrationActive && (
+        <div 
+          className="celebration-top-banner"
+          onClick={() => setShowCelebrationModal(true)}
+          style={{
+            background: 'linear-gradient(90deg, #f59e0b 0%, #ec4899 50%, #6366f1 100%)',
+            padding: '8px 14px',
+            textAlign: 'center',
+            color: '#ffffff',
+            fontSize: '0.82rem',
+            fontWeight: '700',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            flexWrap: 'wrap',
+            zIndex: 9999,
+            position: 'relative',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
+          }}
+        >
+          <span>🎉 <strong>100 Users Milestone!</strong> Hamari website par 100 users complete hone par sabhi ko 100 FREE COINS mil rahe hain!</span>
+          <span style={{ background: 'rgba(0,0,0,0.35)', padding: '2px 10px', borderRadius: '50px', fontSize: '0.74rem', border: '1px solid rgba(255,255,255,0.4)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            🎁 Claim 100 Coins ›
+          </span>
+        </div>
+      )}
+
       <div className="header">
         <div className="brand-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }} onClick={() => router.push("/")}>
           <div className="logo-icon-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -2777,11 +2872,162 @@ export default function Dashboard(props) {
         </div>
       )}
 
+      {/* 100 USERS CELEBRATION MODAL */}
+      {showCelebrationModal && (
+        <div className="payment-overlay" onClick={() => {
+          setShowCelebrationModal(false);
+          if (typeof window !== "undefined") sessionStorage.setItem("zm_100_celebration_seen", "true");
+        }} style={{ zIndex: 110000 }}>
+          <div className="celebration-modal-card" onClick={e => e.stopPropagation()}>
+            <button
+              type="button"
+              className="modal-close-btn celebration-close-btn"
+              onClick={() => {
+                setShowCelebrationModal(false);
+                if (typeof window !== "undefined") sessionStorage.setItem("zm_100_celebration_seen", "true");
+              }}
+              style={{
+                position: 'absolute',
+                top: '12px',
+                right: '12px',
+                width: '32px',
+                minWidth: '32px',
+                maxWidth: '32px',
+                height: '32px',
+                minHeight: '32px',
+                maxHeight: '32px',
+                borderRadius: '50%',
+                background: 'rgba(255, 255, 255, 0.16)',
+                border: '1px solid rgba(255, 255, 255, 0.25)',
+                color: '#ffffff',
+                fontSize: '1.25rem',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                zIndex: 99999,
+                padding: 0,
+                margin: 0,
+                lineHeight: 1
+              }}
+            >
+              ×
+            </button>
+
+            <div style={{ fontSize: '3rem', marginBottom: '8px' }}>🎉</div>
+            <div style={{ display: 'inline-block', background: 'rgba(251, 191, 36, 0.15)', border: '1px solid rgba(251, 191, 36, 0.35)', color: '#fbbf24', fontSize: '0.75rem', fontWeight: '800', padding: '4px 14px', borderRadius: '50px', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }}>
+              Special Milestone
+            </div>
+
+            <h2 style={{ fontSize: '1.45rem', fontWeight: '900', color: '#ffffff', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
+              100 Users Completed! 🚀
+            </h2>
+
+            <p style={{ fontSize: '0.86rem', color: '#cbd5e1', lineHeight: '1.5', margin: '0 0 16px' }}>
+              Hamare platform par <strong>100 users complete</strong> ho gaye hain! Iss special khushi mein agle 3 din tak har member ko <strong>100 FREE COINS</strong> mil rahe hain!
+            </p>
+
+            <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '14px', marginBottom: '18px', textAlign: 'left' }}>
+              <div style={{ fontSize: '0.8rem', color: '#fbbf24', fontWeight: '700', marginBottom: '6px' }}>🪙 In Coins Se Aap Kya Kar Sakte Hain:</div>
+              <div style={{ fontSize: '0.76rem', color: '#94a3b8', lineHeight: '1.5' }}>
+                • Video call mein VIP gender & region filter chalayein<br/>
+                • Live chats mein exclusive animated stickers bhejein<br/>
+                • Global Leaderboard par apni profile boost karein
+              </div>
+            </div>
+
+            {user ? (
+              user.claimed100Celebration ? (
+                <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '12px', borderRadius: '14px', color: '#10b981', fontWeight: '700', fontSize: '0.88rem' }}>
+                  ✅ 100 Celebration Coins Claimed! (Balance: {user.coins || 0} Coins)
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleClaimCelebrationCoins}
+                  disabled={celebrationClaiming}
+                  style={{
+                    width: '100%',
+                    padding: '12px 20px',
+                    borderRadius: '14px',
+                    border: 'none',
+                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                    color: '#ffffff',
+                    fontSize: '0.95rem',
+                    fontWeight: '800',
+                    cursor: celebrationClaiming ? 'wait' : 'pointer',
+                    boxShadow: '0 8px 24px rgba(245, 158, 11, 0.4)',
+                    transition: '0.2s'
+                  }}
+                >
+                  {celebrationClaiming ? "Adding coins..." : "🎁 Claim 100 Free Coins Now"}
+                </button>
+              )
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCelebrationModal(false);
+                  setShowAuthModal(true);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px 20px',
+                  borderRadius: '14px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+                  color: '#ffffff',
+                  fontSize: '0.95rem',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  boxShadow: '0 8px 24px rgba(99, 102, 241, 0.4)'
+                }}
+              >
+                🎁 Sign Up / Login to Claim 100 Coins
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* PREMIUM PAYMENT MODAL */}
       {showPaymentModal && (
         <div className="payment-overlay" onClick={() => setShowPaymentModal(false)}>
           <div className="premium-modal payment-checkout-modal" onClick={(e) => e.stopPropagation()}>
-            <button type="button" className="modal-close-btn" onClick={(e) => { e.stopPropagation(); setShowPaymentModal(false); }} style={{ position: 'absolute', top: '10px', right: '10px', width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.14)', border: '1px solid rgba(255, 255, 255, 0.22)', color: '#ffffff', fontSize: '1.2rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999, pointerEvents: 'auto', padding: 0 }}>×</button>
+            <button
+              type="button"
+              className="modal-close-btn payment-close-btn"
+              onClick={(e) => { e.stopPropagation(); setShowPaymentModal(false); }}
+              style={{
+                position: 'absolute',
+                top: '12px',
+                right: '12px',
+                width: '32px',
+                minWidth: '32px',
+                maxWidth: '32px',
+                height: '32px',
+                minHeight: '32px',
+                maxHeight: '32px',
+                borderRadius: '50%',
+                background: 'rgba(255, 255, 255, 0.16)',
+                border: '1px solid rgba(255, 255, 255, 0.25)',
+                color: '#ffffff',
+                fontSize: '1.25rem',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                zIndex: 99999,
+                pointerEvents: 'auto',
+                padding: 0,
+                margin: 0,
+                lineHeight: 1
+              }}
+            >
+              ×
+            </button>
 
             <div className="modal-header-premium">
               <div className="plan-pill">{selectedPlan?.name}</div>
@@ -5642,6 +5888,37 @@ export default function Dashboard(props) {
             gap: 0.35rem !important;
             font-weight: 600 !important;
           }
+          .payment-checkout-modal .payment-close-btn,
+          .payment-checkout-modal .modal-close-btn {
+            position: absolute !important;
+            top: 12px !important;
+            right: 12px !important;
+            width: 32px !important;
+            min-width: 32px !important;
+            max-width: 32px !important;
+            height: 32px !important;
+            min-height: 32px !important;
+            max-height: 32px !important;
+            border-radius: 50% !important;
+            background: rgba(255, 255, 255, 0.16) !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            color: #ffffff !important;
+            font-size: 1.25rem !important;
+            line-height: 1 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            cursor: pointer !important;
+            z-index: 99999 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+          }
+          .payment-checkout-modal .payment-close-btn:hover,
+          .payment-checkout-modal .modal-close-btn:hover {
+            background: rgba(255, 255, 255, 0.28) !important;
+            color: #ffffff !important;
+          }
           @media (max-width: 640px) {
             .payment-overlay {
               padding: 8px !important;
@@ -5651,6 +5928,21 @@ export default function Dashboard(props) {
               max-width: 95% !important;
               max-height: 95vh !important;
               border-radius: 18px !important;
+            }
+            .payment-checkout-modal .payment-close-btn,
+            .payment-checkout-modal .modal-close-btn {
+              top: 10px !important;
+              right: 10px !important;
+              width: 30px !important;
+              min-width: 30px !important;
+              max-width: 30px !important;
+              height: 30px !important;
+              min-height: 30px !important;
+              max-height: 30px !important;
+              font-size: 1.15rem !important;
+              border-radius: 50% !important;
+              padding: 0 !important;
+              margin: 0 !important;
             }
             .payment-checkout-modal .modal-header-premium {
               padding: 0.95rem 0.9rem 0.35rem !important;
@@ -5696,6 +5988,67 @@ export default function Dashboard(props) {
             }
             .payment-checkout-modal .security-tag {
               font-size: 0.64rem !important;
+            }
+          }
+
+          /* 100 USERS CELEBRATION STYLES */
+          .celebration-modal-card {
+            background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%) !important;
+            border: 1px solid rgba(251, 191, 36, 0.45) !important;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.85), 0 0 35px rgba(245, 158, 11, 0.25) !important;
+            border-radius: 24px !important;
+            width: 100% !important;
+            max-width: 420px !important;
+            padding: 24px 20px !important;
+            text-align: center !important;
+            position: relative !important;
+            animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            margin: auto !important;
+            box-sizing: border-box !important;
+          }
+          .celebration-modal-card .celebration-close-btn {
+            position: absolute !important;
+            top: 12px !important;
+            right: 12px !important;
+            width: 32px !important;
+            min-width: 32px !important;
+            max-width: 32px !important;
+            height: 32px !important;
+            min-height: 32px !important;
+            max-height: 32px !important;
+            border-radius: 50% !important;
+            background: rgba(255, 255, 255, 0.16) !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            color: #ffffff !important;
+            font-size: 1.25rem !important;
+            line-height: 1 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            cursor: pointer !important;
+            z-index: 99999 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+          }
+          .celebration-modal-card .celebration-close-btn:hover {
+            background: rgba(255, 255, 255, 0.28) !important;
+          }
+          @media (max-width: 640px) {
+            .celebration-modal-card {
+              max-width: 92% !important;
+              padding: 20px 16px !important;
+              border-radius: 20px !important;
+            }
+            .celebration-modal-card .celebration-close-btn {
+              top: 10px !important;
+              right: 10px !important;
+              width: 30px !important;
+              min-width: 30px !important;
+              max-width: 30px !important;
+              height: 30px !important;
+              min-height: 30px !important;
+              max-height: 30px !important;
             }
           }
 
