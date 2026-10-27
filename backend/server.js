@@ -2123,16 +2123,22 @@ app.post("/api/user/collect-custom-reward", (req, res) => {
   res.json({ success: true, coins: user.coins, message: `+${coins} Coins added!` });
 });
 
-// 100 USERS MILESTONE CELEBRATION REWARD
+// 100 USERS MILESTONE CELEBRATION REWARD (OCT 27 - NOV 6, 2026)
+const CELEBRATION_EVENT_EXPIRY = new Date("2026-11-06T23:59:59+05:30").getTime();
+
 app.post("/api/user/claim-100-celebration", (req, res) => {
+  if (Date.now() > CELEBRATION_EVENT_EXPIRY) {
+    return res.status(400).json({ success: false, message: "This 100 Users Celebration event ended on November 6, 2026." });
+  }
+
   const { email, phone } = req.body;
-  if (!email && !phone) return res.status(400).json({ success: false, message: "User identity required" });
+  if (!email && !phone) return res.status(400).json({ success: false, message: "User identification required" });
 
   const user = users.find(u => (email && u.email === email) || (phone && u.phone === phone));
-  if (!user) return res.status(404).json({ success: false, message: "User not found" });
+  if (!user) return res.status(404).json({ success: false, message: "User account not found" });
 
   if (user.claimed100Celebration) {
-    return res.json({ success: false, message: "Aapne pehle hi 100 celebration coins claim kar liye hain!", coins: user.coins, user });
+    return res.json({ success: false, message: "You have already claimed your 100 celebration coins! Limit is strictly 1 claim per user.", coins: user.coins, user });
   }
 
   user.coins = (user.coins || 0) + 100;
@@ -2145,7 +2151,7 @@ app.post("/api/user/claim-100-celebration", (req, res) => {
     name: user.name || "ZoneMeet Member",
     type: "earn",
     amount: 100,
-    feature: "🎉 100 Users Celebration (+100 Free Coins)",
+    feature: "🎉 100 Users Celebration Reward (+100 Coins)",
     timestamp: new Date().toISOString()
   };
   coinActivity.push(activity);
@@ -2156,7 +2162,7 @@ app.post("/api/user/claim-100-celebration", (req, res) => {
 
   res.json({
     success: true,
-    message: "🎉 Badhaai ho! 100 Users Celebration ke 100 Free Coins aapke wallet mein add ho gaye hain!",
+    message: "🎉 Congratulations! 100 Celebration Coins have been added to your balance!",
     coins: user.coins,
     user
   });

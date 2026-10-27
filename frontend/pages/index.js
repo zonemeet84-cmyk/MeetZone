@@ -307,22 +307,22 @@ export default function Dashboard(props) {
   const [setupToken, setSetupToken] = useState("");
   const [setupError, setSetupError] = useState("");
 
-  // 100 Users Celebration State
+  // 100 Users Celebration State (Limited 10-Day Event: Oct 27 - Nov 6, 2026)
   const [showCelebrationModal, setShowCelebrationModal] = useState(false);
   const [celebrationClaiming, setCelebrationClaiming] = useState(false);
-  const CELEBRATION_UNTIL = new Date("2026-10-31T23:59:59+05:30").getTime();
+  const CELEBRATION_UNTIL = new Date("2026-11-06T23:59:59+05:30").getTime();
   const isCelebrationActive = typeof window !== "undefined" ? Date.now() < CELEBRATION_UNTIL : true;
 
   const handleClaimCelebrationCoins = async () => {
     if (!user) {
       setShowCelebrationModal(false);
       setShowAuthModal(true);
-      showModal({ message: "Pehle Sign Up / Login karein taaki aapke account mein 100 Free Coins add ho sakein!", type: "info" });
+      showModal({ message: "Please Sign Up or Log In to claim your 100 Free Celebration Coins!", type: "info" });
       return;
     }
 
     if (user.claimed100Celebration) {
-      showModal({ message: "Aapne pehle hi 100 Celebration Coins claim kar liye hain!", type: "info" });
+      showModal({ message: "You have already claimed your 100 Celebration Coins! Limit is strictly 1 claim per user.", type: "info" });
       return;
     }
 
@@ -341,7 +341,7 @@ export default function Dashboard(props) {
       };
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      showModal({ message: "🎉 Badhaai ho! 100 Celebration Free Coins aapke wallet mein jud gaye hain!", type: "success" });
+      showModal({ message: "🎉 Congratulations! 100 Free Celebration Coins have been added to your balance!", type: "success" });
       if (typeof window !== "undefined") sessionStorage.setItem("zm_100_celebration_seen", "true");
       setShowCelebrationModal(false);
     } catch (err) {
@@ -354,7 +354,7 @@ export default function Dashboard(props) {
       };
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      showModal({ message: "🎉 Badhaai ho! 100 Celebration Free Coins aapke account mein jud gaye hain!", type: "success" });
+      showModal({ message: "🎉 Congratulations! 100 Free Celebration Coins have been added to your balance!", type: "success" });
       if (typeof window !== "undefined") sessionStorage.setItem("zm_100_celebration_seen", "true");
       setShowCelebrationModal(false);
     } finally {
@@ -1629,36 +1629,6 @@ export default function Dashboard(props) {
         </div>
       )}
 
-      {/* 100 USERS CELEBRATION TOP BANNER */}
-      {isCelebrationActive && (
-        <div 
-          className="celebration-top-banner"
-          onClick={() => setShowCelebrationModal(true)}
-          style={{
-            background: 'linear-gradient(90deg, #f59e0b 0%, #ec4899 50%, #6366f1 100%)',
-            padding: '8px 14px',
-            textAlign: 'center',
-            color: '#ffffff',
-            fontSize: '0.82rem',
-            fontWeight: '700',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            flexWrap: 'wrap',
-            zIndex: 9999,
-            position: 'relative',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
-          }}
-        >
-          <span>🎉 <strong>100 Users Milestone!</strong> Hamari website par 100 users complete hone par sabhi ko 100 FREE COINS mil rahe hain!</span>
-          <span style={{ background: 'rgba(0,0,0,0.35)', padding: '2px 10px', borderRadius: '50px', fontSize: '0.74rem', border: '1px solid rgba(255,255,255,0.4)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-            🎁 Claim 100 Coins ›
-          </span>
-        </div>
-      )}
-
       <div className="header">
         <div className="brand-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }} onClick={() => router.push("/")}>
           <div className="logo-icon-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -2916,24 +2886,36 @@ export default function Dashboard(props) {
             </button>
 
             <div style={{ fontSize: '3rem', marginBottom: '8px' }}>🎉</div>
-            <div style={{ display: 'inline-block', background: 'rgba(251, 191, 36, 0.15)', border: '1px solid rgba(251, 191, 36, 0.35)', color: '#fbbf24', fontSize: '0.75rem', fontWeight: '800', padding: '4px 14px', borderRadius: '50px', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }}>
-              Special Milestone
+            <div style={{ display: 'inline-block', background: 'rgba(251, 191, 36, 0.15)', border: '1px solid rgba(251, 191, 36, 0.35)', color: '#fbbf24', fontSize: '0.72rem', fontWeight: '800', padding: '4px 14px', borderRadius: '50px', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }}>
+              Limited 10-Day Event
             </div>
 
             <h2 style={{ fontSize: '1.45rem', fontWeight: '900', color: '#ffffff', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
-              100 Users Completed! 🚀
+              100 Users Milestone! 🚀
             </h2>
 
-            <p style={{ fontSize: '0.86rem', color: '#cbd5e1', lineHeight: '1.5', margin: '0 0 16px' }}>
-              Hamare platform par <strong>100 users complete</strong> ho gaye hain! Iss special khushi mein agle 3 din tak har member ko <strong>100 FREE COINS</strong> mil rahe hain!
+            <p style={{ fontSize: '0.86rem', color: '#cbd5e1', lineHeight: '1.5', margin: '0 0 14px' }}>
+              ZoneMeet has officially reached <strong>100 active community members</strong>! To celebrate this special occasion, every user can claim <strong>100 FREE COINS</strong>!
             </p>
 
-            <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '14px', marginBottom: '18px', textAlign: 'left' }}>
-              <div style={{ fontSize: '0.8rem', color: '#fbbf24', fontWeight: '700', marginBottom: '6px' }}>🪙 In Coins Se Aap Kya Kar Sakte Hain:</div>
-              <div style={{ fontSize: '0.76rem', color: '#94a3b8', lineHeight: '1.5' }}>
-                • Video call mein VIP gender & region filter chalayein<br/>
-                • Live chats mein exclusive animated stickers bhejein<br/>
-                • Global Leaderboard par apni profile boost karein
+            {/* Event Dates & Rules Box */}
+            <div style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '14px', padding: '10px 14px', marginBottom: '14px', textAlign: 'left' }}>
+              <div style={{ fontSize: '0.78rem', color: '#fbbf24', fontWeight: '800', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>📅 Event Duration: October 27 – November 6, 2026</span>
+              </div>
+              <div style={{ fontSize: '0.72rem', color: '#cbd5e1', lineHeight: '1.4' }}>
+                • <strong>1 Claim Per User:</strong> Each account can redeem this gift once.<br/>
+                • <strong>Deadline:</strong> Offer ends on November 6, 2026. Unclaimed rewards will expire.
+              </div>
+            </div>
+
+            {/* Perks Preview */}
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', padding: '12px 14px', marginBottom: '18px', textAlign: 'left' }}>
+              <div style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: '700', marginBottom: '5px' }}>🪙 What You Can Do With 100 Coins:</div>
+              <div style={{ fontSize: '0.74rem', color: '#64748b', lineHeight: '1.5' }}>
+                • Unlock VIP Gender & Region matching filters<br/>
+                • Send premium animated stickers in live video calls<br/>
+                • Boost your profile visibility on the Global Leaderboard
               </div>
             </div>
 
@@ -2984,7 +2966,7 @@ export default function Dashboard(props) {
                   boxShadow: '0 8px 24px rgba(99, 102, 241, 0.4)'
                 }}
               >
-                🎁 Sign Up / Login to Claim 100 Coins
+                🎁 Sign Up / Log In to Claim 100 Coins
               </button>
             )}
           </div>
