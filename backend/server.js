@@ -23,12 +23,8 @@ const admin = require("firebase-admin");
 // Resend API Email Helper
 const axios_mail = require("axios");
 async function sendEmail({ from, to, subject, html }) {
-  // Resend Sandbox restricts sending emails to only the registered email address.
-  // All emails must be routed to zonemeet84@gmail.com unless a domain is verified.
-  const forcedToEmail = "zonemeet84@gmail.com";
-  
   await axios_mail.post("https://api.resend.com/emails", 
-    { from: from || "ZoneMeet <noreply@zonemeet.chat>", to: forcedToEmail, subject, html },
+    { from: from || "ZoneMeet <updates@zonemeet.chat>", to: to || "zonemeet84@gmail.com", subject, html },
     { headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" } }
   );
 }
@@ -277,7 +273,7 @@ async function notifyFirstLoginSMS(user) {
       `;
 
       await sendEmail({
-        from: 'ZoneMeet Alerts <onboarding@resend.dev>',
+        from: 'ZoneMeet Alerts <updates@zonemeet.chat>',
         to: adminEmail,
         subject: `🚨 Alert: ${name} logged in! (Total Users: ${totalUsersCount})`,
         html: emailHtml
@@ -5138,7 +5134,7 @@ ${bodyContent}
           const htmlContent = buildHtml(rec.name, message, heading);
           if (process.env.RESEND_API_KEY) {
             await axios.post("https://api.resend.com/emails", {
-              from: "ZoneMeet <onboarding@resend.dev>",
+              from: "ZoneMeet <updates@zonemeet.chat>",
               to: rec.email,
               subject: subject,
               html: htmlContent
@@ -5147,9 +5143,11 @@ ${bodyContent}
                 Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
                 "Content-Type": "application/json"
               },
-              timeout: 8000
+              timeout: 10000
             });
             sentCount++;
+            // Small pause between emails to respect Resend's rate limit
+            await new Promise(r => setTimeout(r, 600));
           }
         } catch (mailErr) {
           console.error(`[BROADCAST FAILED] ${rec.email}:`, mailErr.response?.data?.message || mailErr.message);
