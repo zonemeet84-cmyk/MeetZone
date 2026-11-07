@@ -2208,6 +2208,9 @@ export default function Home(props) {
         if (partnerTypingTimeoutRef.current) clearTimeout(partnerTypingTimeoutRef.current);
         setPartnerId(null);
         setPartnerInfo(null);
+        setMessages([]);
+        setMessage("");
+        setCurrentSubtitle("");
         setPartnerWantsSubtitles(false);
         setPartnerAvatar("None");
         setPartnerIsBlurred(false);
@@ -2236,6 +2239,9 @@ export default function Home(props) {
         if (partnerTypingTimeoutRef.current) clearTimeout(partnerTypingTimeoutRef.current);
         setPartnerId(null);
         setPartnerInfo(null);
+        setMessages([]);
+        setMessage("");
+        setCurrentSubtitle("");
         setPartnerWantsSubtitles(false);
         setPartnerAvatar("None");
         setPartnerIsBlurred(false);
@@ -2725,6 +2731,9 @@ export default function Home(props) {
     isTypingRef.current = false;
     setPartnerId(null);
     setPartnerInfo(null);
+    setMessages([]);
+    setMessage("");
+    setCurrentSubtitle("");
     setPartnerMicOn(true);
     setPartnerCameraOn(true);
   };
@@ -3974,7 +3983,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                       {partnerId ? (
                         <>
                           <span className="partner-connected-heading">
-                            You are connected with{" "}
+                            <span className="connected-prefix-desktop">You are connected with </span>
                             <strong className="partner-connected-name">{partnerInfo?.name || "Stranger"}</strong>
                           </span>
                           {partnerInfo?.country && (
@@ -3983,15 +3992,16 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                                 <img 
                                   src={getFlagUrl(partnerInfo.country)} 
                                   alt="" 
-                                  style={{ width: '16px', height: '11px', marginRight: '5px', verticalAlign: 'middle', borderRadius: '2px' }} 
+                                  style={{ width: '15px', height: '11px', marginRight: '3px', verticalAlign: 'middle', borderRadius: '2px' }} 
                                 />
                               )}
-                              {getCountryName(partnerInfo.country)}
+                              <span className="country-name-desktop">{getCountryName(partnerInfo.country)}</span>
                             </span>
                           )}
                           {partnerInfo?.gender && (
                             <span className={`gender-tag ${partnerInfo.gender.toLowerCase()}`}>
-                              {partnerInfo.gender === "Female" ? "👩 Female" : partnerInfo.gender === "Male" ? "👨 Male" : partnerInfo.gender}
+                              <span className="gender-tag-icon">{partnerInfo.gender === "Female" ? "👩" : partnerInfo.gender === "Male" ? "👨" : ""}</span>
+                              <span className="gender-tag-desktop">{partnerInfo.gender === "Female" ? " Female" : partnerInfo.gender === "Male" ? " Male" : partnerInfo.gender}</span>
                             </span>
                           )}
                         </>
@@ -4023,19 +4033,21 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                   {partnerId && (
                     <>
                       <button 
-                        className={`action-pill-btn ${friendReqStatus ? "friend-sent" : ""}`}
+                        className={`action-pill-btn friend-pill-btn ${friendReqStatus ? "friend-sent" : ""}`}
                         onClick={addFriend}
                         disabled={friendReqStatus}
-                        title="Add as Friend"
+                        title={friendReqStatus ? "Friend request sent" : "Add as Friend"}
                       >
-                        {friendReqStatus ? "✅ Sent" : "👤+ Friend"}
+                        <span className="pill-icon">{friendReqStatus ? "✅" : "👤+"}</span>
+                        <span className="pill-text-desktop">{friendReqStatus ? " Sent" : " Friend"}</span>
                       </button>
                       <button 
                         className="action-pill-btn report-pill-btn"
                         onClick={() => setShowReportModal(true)}
                         title="Report Partner"
                       >
-                        🚨 Report
+                        <span className="pill-icon">🚨</span>
+                        <span className="pill-text-desktop"> Report</span>
                       </button>
                     </>
                   )}
@@ -4044,9 +4056,10 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     onClick={nextPartner}
                     title="Skip to next stranger"
                   >
-                    ⏭️ Next
+                    <span className="pill-icon">⏭️</span>
+                    <span className="pill-text"> Next</span>
                   </button>
-                  </div>
+                </div>
               </div>
 
               {/* Chat Messages Body */}
@@ -6247,6 +6260,15 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           background: rgba(239, 68, 68, 0.1) !important;
           border-color: rgba(239, 68, 68, 0.25) !important;
           color: #fca5a5 !important;
+        }
+        .friend-pill-btn {
+          background: rgba(99, 102, 241, 0.15) !important;
+          border-color: rgba(99, 102, 241, 0.35) !important;
+          color: #c7d2fe !important;
+        }
+        .friend-pill-btn:hover {
+          background: rgba(99, 102, 241, 0.25) !important;
+          color: #ffffff !important;
         }
         .action-pill-btn.friend-sent {
           background: rgba(34, 197, 94, 0.2) !important;
@@ -10477,47 +10499,172 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             flex-direction: column !important;
           }
           .text-mode-partner-card {
-            padding: 4px 8px !important;
-            min-height: 34px !important;
-            background: transparent !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+            padding: 6px 8px !important;
+            min-height: 38px !important;
+            background: rgba(10, 18, 36, 0.4) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
             box-sizing: border-box !important;
             width: 100% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 6px !important;
+            flex-shrink: 0 !important;
+            overflow: hidden !important;
           }
           .partner-identity-left {
-            gap: 8px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            min-width: 0 !important;
+            flex: 1 1 auto !important;
+            overflow: hidden !important;
           }
           .partner-avatar-circle {
-            width: 26px !important;
-            height: 26px !important;
-            font-size: 0.74rem !important;
+            width: 28px !important;
+            height: 28px !important;
+            font-size: 0.8rem !important;
+            flex-shrink: 0 !important;
           }
-          .partner-display-name {
-            font-size: 0.76rem !important;
-            font-weight: 700 !important;
+          .partner-meta-info {
+            display: flex !important;
+            flex-direction: column !important;
+            min-width: 0 !important;
+            flex: 1 1 auto !important;
+            gap: 1px !important;
+            overflow: hidden !important;
+          }
+          .partner-name-row {
+            display: flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+            flex-wrap: nowrap !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            line-height: 1.2 !important;
+          }
+          .connected-prefix-desktop {
+            display: none !important;
+          }
+          .country-name-desktop {
+            display: none !important;
+          }
+          .gender-tag-desktop {
+            display: none !important;
+          }
+          .pill-text-desktop {
+            display: none !important;
           }
           .partner-connected-heading {
-            font-size: 0.74rem !important;
+            font-size: 0.82rem !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            min-width: 0 !important;
+            max-width: 110px !important;
+            display: inline-block !important;
+          }
+          .partner-connected-name {
+            font-size: 0.82rem !important;
+            color: #00f2fe !important;
+            font-weight: 700 !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            display: inline-block !important;
+            max-width: 100px !important;
+          }
+          .country-tag {
+            padding: 2px 5px !important;
+            font-size: 0.65rem !important;
+            flex-shrink: 0 !important;
+            line-height: 1 !important;
+          }
+          .country-tag img {
+            margin-right: 0 !important;
+            width: 13px !important;
+            height: 9px !important;
+          }
+          .gender-tag {
+            padding: 2px 5px !important;
+            font-size: 0.65rem !important;
+            flex-shrink: 0 !important;
+            line-height: 1 !important;
+          }
+          .partner-display-name {
+            font-size: 0.8rem !important;
+            font-weight: 600 !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
           }
           .partner-status-row {
-            font-size: 0.64rem !important;
+            font-size: 0.62rem !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            line-height: 1.1 !important;
           }
           .typing-status-active {
-            font-size: 0.68rem !important;
+            font-size: 0.64rem !important;
+            gap: 4px !important;
           }
           .searching-status {
-            font-size: 0.64rem !important;
+            font-size: 0.62rem !important;
+            gap: 4px !important;
+          }
+          .connected-status {
+            font-size: 0.62rem !important;
+            gap: 4px !important;
+          }
+          .text-mode-actions-right {
+            display: flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+            flex-shrink: 0 !important;
+            margin-left: auto !important;
+            white-space: nowrap !important;
           }
           .action-pill-btn {
-            padding: 4px 8px !important;
-            font-size: 0.7rem !important;
+            width: auto !important;
+            height: 28px !important;
+            min-height: 28px !important;
+            margin: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            line-height: 1 !important;
             border-radius: 8px !important;
+            box-sizing: border-box !important;
+            flex-shrink: 0 !important;
+          }
+          .friend-pill-btn {
+            padding: 0 7px !important;
+            font-size: 0.72rem !important;
+            background: rgba(99, 102, 241, 0.18) !important;
+            border: 1px solid rgba(99, 102, 241, 0.4) !important;
+            color: #c7d2fe !important;
+          }
+          .report-pill-btn {
+            padding: 0 7px !important;
+            font-size: 0.72rem !important;
+            background: rgba(239, 68, 68, 0.16) !important;
+            border: 1px solid rgba(239, 68, 68, 0.35) !important;
+            color: #fca5a5 !important;
           }
           .skip-pill-btn {
-            padding: 4px 9px !important;
-            font-size: 0.7rem !important;
-            border-radius: 8px !important;
-            box-shadow: 0 2px 8px rgba(0, 242, 254, 0.25) !important;
+            padding: 0 10px !important;
+            height: 28px !important;
+            font-size: 0.76rem !important;
+            font-weight: 700 !important;
+            background: linear-gradient(135deg, #00f2fe, #0072ff) !important;
+            border: none !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 10px rgba(0, 114, 255, 0.35) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 3px !important;
           }
           /* Mobile Stop Button Relocation & Floating Stack Cleaned */
           .bottom-actions .mobile-action-stack .stop-btn {

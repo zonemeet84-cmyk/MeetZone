@@ -3664,15 +3664,9 @@ function endQuiz(roomId) {
         if (socket.partner) {
           const partner = socket.partner;
           partner.emit("partner-stop-typing");
-          partner.emit("partner-reconnecting");
-          setTimeout(() => {
-            if (!socket.connected && partner.partner === socket) {
-              partner.emit("partner-stop-typing");
-              partner.emit("partner-disconnected");
-              partner.partner = null;
-              queueUser(partner);
-            }
-          }, 8000);
+          partner.emit("partner-disconnected");
+          partner.partner = null;
+          queueUser(partner);
         }
       });
 
