@@ -5585,7 +5585,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             <div className="modal-footer-premium">
               <div className="security-tag">
                 <span className="lock-icon">🔒</span>
-                End-to-end 256-bit encrypted
+                End-to-end 256-bit encrypted • Strict No-Refund Policy
               </div>
             </div>
           </div>

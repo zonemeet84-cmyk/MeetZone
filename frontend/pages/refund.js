@@ -5,7 +5,7 @@ export default function Refund() {
   return (
     <div className="container">
       <Head>
-        <title>Refund Policy | ZoneMeet</title>
+        <title>Strict No-Refund Policy | ZoneMeet</title>
       </Head>
 
       <div className="bg-gradient" />
@@ -15,36 +15,46 @@ export default function Refund() {
           ← Back to Home
         </Link>
 
-        <h1>Refund Policy</h1>
-        <div className="last-updated">Last Updated: May 2026</div>
+        <h1>Refund &amp; Cancellation Policy</h1>
+        <div className="last-updated">Last Updated: November 2026</div>
 
-        <h2>1. General Policy</h2>
+        <div className="alert-box">
+          <strong>⚠️ IMPORTANT NOTICE:</strong> All purchases on ZoneMeet are final. Once payment is completed for any service, coins, or subscription, it is 100% strictly non-refundable under any circumstances.
+        </div>
+
+        <h2>1. Strict No-Refund Policy</h2>
         <p>
-          All purchases made on the ZoneMeet platform, including but not limited to ZoneMeet Coins, ZoneMeet Premium subscriptions (Starter, Prime, Silver), and VIP Elite upgrades, are generally non-refundable. 
+          At ZoneMeet, all sales are strictly final. Once a transaction is completed and payment is successfully processed for any product, feature, or service on the platform—including but not limited to <strong>ZoneMeet Coins</strong>, <strong>VIP Elite</strong>, <strong>Starter / Prime / Silver Subscriptions</strong>, <strong>Match Boosts</strong>, and <strong>Virtual Gifts</strong>—it is <strong>100% strictly non-refundable under any circumstances</strong>.
         </p>
 
-        <h2>2. ZoneMeet Coins</h2>
+        <h2>2. Immediate Consumption of Digital Goods</h2>
         <p>
-          ZoneMeet Coins are a digital currency used within our ecosystem. Once purchased and credited to your account, they cannot be refunded, exchanged for fiat currency, or transferred to another user under any circumstances.
+          ZoneMeet provides real-time access to digital communications, instant video &amp; text matchmaking, virtual currencies, and premium filters. Because these services and virtual digital items are delivered, activated, and made available for immediate consumption the moment payment is verified, we do not provide refunds, returns, exchanges, or store credits once payment is made.
         </p>
 
-        <h2>3. Subscriptions</h2>
+        <h2>3. ZoneMeet Coins</h2>
         <p>
-          If you cancel your auto-renewing subscription, you will continue to have access to the premium features until the end of your current billing period. We do not provide prorated refunds for partially used billing periods.
+          ZoneMeet Coins are virtual digital tokens designed solely for use within the ZoneMeet ecosystem. Coins possess no real-world monetary value, cannot be redeemed for fiat currency, cannot be transferred to any third party, and cannot be refunded or cancelled once credited to your account.
         </p>
 
-        <h2>4. Exceptions</h2>
+        <h2>4. Subscriptions &amp; Cancellation</h2>
         <p>
-          We may grant exceptions to this no-refund policy at our sole discretion in the following circumstances:
+          You may cancel your auto-renewing subscription at any time to avoid future recurring billing cycles. Cancellation stops upcoming automated renewals; however, cancellation does not generate a full, partial, or prorated refund for the current or past billing cycles. You will retain access to the paid features until the active billing cycle concludes.
+        </p>
+
+        <h2>5. Prohibition of Fraudulent Chargebacks</h2>
+        <p>
+          Initiating an unwarranted or fraudulent payment dispute, chargeback, or reversal with your bank, card issuer, or UPI payment provider is a direct violation of ZoneMeet's Terms of Service. In the event of an unauthorized chargeback:
         </p>
         <ul>
-          <li><strong>Technical Errors:</strong> If a technical issue on our end prevents you from accessing the service or features you purchased, and we are unable to resolve the issue within a reasonable timeframe.</li>
-          <li><strong>Fraudulent Charges:</strong> If you believe your payment method was used fraudulently without your authorization, please contact us immediately. We will investigate and may process a refund if the fraud is confirmed.</li>
+          <li>Your ZoneMeet account will be immediately and permanently banned.</li>
+          <li>Your IP address and associated devices will be permanently blacklisted.</li>
+          <li>All remaining coins, purchases, and privileges will be immediately forfeited without appeal.</li>
         </ul>
 
-        <h2>5. How to Request a Refund</h2>
+        <h2>6. Failed Payments &amp; Technical Delivery Inquiries</h2>
         <p>
-          If you believe you meet the criteria for an exception, please contact our support team at <strong>support@zonemeet.live</strong> within 7 days of the transaction date. Please include your registered email address, transaction ID, and a detailed explanation of the issue.
+          In rare circumstances where your bank debits your account but an unexpected network error prevents coins or premium plans from appearing immediately, our automated systems will verify the transaction and credit the purchased items to your account. If your coins or plan are not credited within 1 hour, please email our support team with your Transaction ID / UTR and registered email at <strong>updates@zonemeet.chat</strong> so we can promptly credit your balance.
         </p>
       </div>
 
@@ -88,9 +98,19 @@ export default function Refund() {
           color: #64748b;
           font-size: 0.95rem;
           font-weight: 500;
-          margin-bottom: 3rem;
+          margin-bottom: 2rem;
           text-transform: uppercase;
           letter-spacing: 0.05em;
+        }
+        .alert-box {
+          background: rgba(239, 68, 68, 0.12);
+          border: 1px solid rgba(239, 68, 68, 0.35);
+          color: #fca5a5;
+          padding: 1.1rem 1.3rem;
+          border-radius: 14px;
+          margin-bottom: 2.5rem;
+          font-size: 0.95rem;
+          line-height: 1.6;
         }
         h2 {
           font-size: 1.5rem;

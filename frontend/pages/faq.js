@@ -74,7 +74,7 @@ export default function FAQ() {
         },
         {
           q: "What is your refund policy?",
-          a: "Refunds are generally not provided for consumed digital items or active subscription periods. For detailed conditions or subscription cancellations, please review our Refund Policy page or contact support."
+          a: "All sales on ZoneMeet are final. Once payment is processed for coins or subscriptions, purchases are strictly non-refundable under any circumstances due to the instant delivery and consumption of digital services. Please refer to our Refund Policy page for complete details."
         }
       ]
     },

@@ -38,12 +38,12 @@ export default function Terms() {
 
         <h2>3. Virtual Currency (ZoneMeet Coins)</h2>
         <p>
-          ZoneMeet Coins are a virtual currency used within the platform to access premium features. They have no real-world monetary value, are non-transferable, and cannot be redeemed for cash. All sales of ZoneMeet Coins are final and non-refundable, except as required by law or as explicitly stated in our Refund Policy.
+          ZoneMeet Coins are a virtual currency used within the platform to access premium features. They have no real-world monetary value, are non-transferable, and cannot be redeemed for cash. All sales of ZoneMeet Coins and digital purchases on ZoneMeet are final and strictly non-refundable under any circumstances once payment is completed.
         </p>
 
         <h2>4. Subscriptions (ZoneMeet Pro & VIP Elite)</h2>
         <p>
-          ZoneMeet offers auto-renewing premium subscriptions. Payment will be charged to your chosen payment method at confirmation of purchase. Subscriptions automatically renew unless cancelled at least 24 hours before the end of the current period.
+          ZoneMeet offers auto-renewing premium subscriptions. Payment will be charged to your chosen payment method at confirmation of purchase. All subscription purchases are final and non-refundable. Subscriptions automatically renew unless cancelled at least 24 hours before the end of the current period. Cancellation stops future renewals but does not entitle you to any full or partial refund for active billing periods.
         </p>
 
         <h2>5. Automated Moderation & Strike System</h2>
