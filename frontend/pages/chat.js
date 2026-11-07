@@ -1285,6 +1285,10 @@ export default function Home(props) {
   // Chat
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
+  const [isPartnerTyping, setIsPartnerTyping] = useState(false);
+  const partnerTypingTimeoutRef = useRef(null);
+  const userTypingTimerRef = useRef(null);
+  const isTypingRef = useRef(false);
   const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
   const chatEndRef = useRef(null);
 
@@ -1529,7 +1533,7 @@ export default function Home(props) {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, [messages, isPartnerTyping]);
 
   // Close identity popup on outside click
   useEffect(() => {
@@ -2133,7 +2137,22 @@ export default function Home(props) {
         }
       });
 
+      socket.on("partner-typing", () => {
+        setIsPartnerTyping(true);
+        if (partnerTypingTimeoutRef.current) clearTimeout(partnerTypingTimeoutRef.current);
+        partnerTypingTimeoutRef.current = setTimeout(() => {
+          setIsPartnerTyping(false);
+        }, 4000);
+      });
+
+      socket.on("partner-stop-typing", () => {
+        setIsPartnerTyping(false);
+        if (partnerTypingTimeoutRef.current) clearTimeout(partnerTypingTimeoutRef.current);
+      });
+
       socket.on("receive-message", ({ text }) => {
+        setIsPartnerTyping(false);
+        if (partnerTypingTimeoutRef.current) clearTimeout(partnerTypingTimeoutRef.current);
         setMessages((prev) => [...prev, { text, sender: "partner" }]);
         if (typeof window !== 'undefined' && window.innerWidth < 768) {
           setCurrentSubtitle(`💬 ${text}`);
@@ -2180,6 +2199,8 @@ export default function Home(props) {
           remoteVideo.current.srcObject.getTracks().forEach(track => track.stop());
           remoteVideo.current.srcObject = null;
         }
+        setIsPartnerTyping(false);
+        if (partnerTypingTimeoutRef.current) clearTimeout(partnerTypingTimeoutRef.current);
         setPartnerId(null);
         setPartnerInfo(null);
         setPartnerWantsSubtitles(false);
@@ -2206,6 +2227,8 @@ export default function Home(props) {
           remoteVideo.current.srcObject.getTracks().forEach(track => track.stop());
           remoteVideo.current.srcObject = null;
         }
+        setIsPartnerTyping(false);
+        if (partnerTypingTimeoutRef.current) clearTimeout(partnerTypingTimeoutRef.current);
         setPartnerId(null);
         setPartnerInfo(null);
         setPartnerWantsSubtitles(false);
@@ -2412,6 +2435,8 @@ export default function Home(props) {
         }
         audioCtx.current = null;
       }
+      if (partnerTypingTimeoutRef.current) clearTimeout(partnerTypingTimeoutRef.current);
+      if (userTypingTimerRef.current) clearTimeout(userTypingTimerRef.current);
       if (socket) socket.disconnect();
     };
   }, [session, sessionStatus]);
@@ -2686,6 +2711,13 @@ export default function Home(props) {
       peerConnection.current.close();
       peerConnection.current = null;
     }
+    setIsPartnerTyping(false);
+    if (partnerTypingTimeoutRef.current) clearTimeout(partnerTypingTimeoutRef.current);
+    if (userTypingTimerRef.current) clearTimeout(userTypingTimerRef.current);
+    if (isTypingRef.current && socket && (partnerIdRef.current || partnerId)) {
+      socket.emit("stop-typing", { to: partnerIdRef.current || partnerId });
+    }
+    isTypingRef.current = false;
     setPartnerId(null);
     setPartnerInfo(null);
     setPartnerMicOn(true);
@@ -2708,8 +2740,48 @@ export default function Home(props) {
     }
   };
 
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    setMessage(val);
+
+    const targetPartner = partnerIdRef.current || partnerId;
+    if (!targetPartner || !socket) return;
+
+    if (val.trim().length > 0) {
+      if (!isTypingRef.current) {
+        isTypingRef.current = true;
+        socket.emit("typing", { to: targetPartner });
+      }
+
+      if (userTypingTimerRef.current) clearTimeout(userTypingTimerRef.current);
+      userTypingTimerRef.current = setTimeout(() => {
+        isTypingRef.current = false;
+        if (socket && (partnerIdRef.current || partnerId)) {
+          socket.emit("stop-typing", { to: partnerIdRef.current || partnerId });
+        }
+      }, 2500);
+    } else {
+      if (isTypingRef.current) {
+        isTypingRef.current = false;
+        if (userTypingTimerRef.current) clearTimeout(userTypingTimerRef.current);
+        if (socket && (partnerIdRef.current || partnerId)) {
+          socket.emit("stop-typing", { to: partnerIdRef.current || partnerId });
+        }
+      }
+    }
+  };
+
   const sendMessage = (e) => {
     e.preventDefault();
+
+    // Immediately stop typing indicator for partner
+    if (isTypingRef.current) {
+      isTypingRef.current = false;
+      if (userTypingTimerRef.current) clearTimeout(userTypingTimerRef.current);
+      if (socket && (partnerIdRef.current || partnerId)) {
+        socket.emit("stop-typing", { to: partnerIdRef.current || partnerId });
+      }
+    }
 
     // BAD WORD DETECTION
     const badWords = ["abuse", "fake", "sex", "scam", "nude", "porn", "pussy", "dick", "lund", "chod", "gand"];
@@ -2740,6 +2812,14 @@ export default function Home(props) {
 
   const confirmAndSendMessage = async (pendingText) => {
     if (!pendingText) return;
+
+    if (isTypingRef.current) {
+      isTypingRef.current = false;
+      if (userTypingTimerRef.current) clearTimeout(userTypingTimerRef.current);
+      if (socket && (partnerIdRef.current || partnerId)) {
+        socket.emit("stop-typing", { to: partnerIdRef.current || partnerId });
+      }
+    }
 
     try {
       const token = localStorage.getItem("token");
@@ -3894,7 +3974,11 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                       )}
                     </div>
                     <div className="partner-status-row">
-                      {partnerId ? (
+                      {isPartnerTyping ? (
+                        <span className="typing-status-active">
+                          <span className="typing-pulse-dot"></span> typing...
+                        </span>
+                      ) : partnerId ? (
                         <span className="connected-status">
                           <span className="live-dot"></span> Online & Connected • Say hi!
                         </span>
@@ -3979,6 +4063,21 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                       </div>
                     </div>
                   ))}
+                  {isPartnerTyping && (
+                    <div className="text-msg-item partner typing-bubble-item">
+                      <div className="msg-sender-name">
+                        {partnerInfo?.name || "Stranger"}
+                      </div>
+                      <div className="msg-bubble-content typing-bubble">
+                        <div className="typing-dots-wave">
+                          <span className="wave-dot"></span>
+                          <span className="wave-dot"></span>
+                          <span className="wave-dot"></span>
+                        </div>
+                        <span className="typing-text-hint">typing...</span>
+                      </div>
+                    </div>
+                  )}
                   <div ref={chatEndRef} />
                 </div>
 
@@ -4030,7 +4129,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     className="text-mode-input-field"
                     placeholder="Type a message..."
                     value={message}
-                    onChange={(e) => setMessage(e.target.value)}
+                    onChange={handleInputChange}
                     onFocus={() => {
                       if (typeof window !== "undefined") {
                         window.scrollTo(0, 0);
@@ -4461,7 +4560,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                       type="text" 
                       placeholder="Type message..." 
                       value={message}
-                      onChange={(e) => setMessage(e.target.value)}
+                      onChange={handleInputChange}
                       onClick={(e) => e.stopPropagation()}
                     />
                     <button type="submit" disabled={!message.trim()} title="Send message">💬</button>
@@ -5331,12 +5430,24 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                   )}
                 </div>
               ))}
+              {isPartnerTyping && (
+                <div className="msg partner typing-msg-preview">
+                  <div className="msg-content typing-bubble-content">
+                    <div className="typing-dots-wave">
+                      <span className="wave-dot"></span>
+                      <span className="wave-dot"></span>
+                      <span className="wave-dot"></span>
+                    </div>
+                    <span className="typing-text-hint">typing...</span>
+                  </div>
+                </div>
+              )}
               <div ref={chatEndRef} />
             </div>
             <form className="chat-box-input" onSubmit={sendMessage}>
               <input
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={handleInputChange}
                 placeholder="Aa"
               />
               <button type="submit" disabled={!partnerId || !message}>
@@ -6028,6 +6139,27 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         .partner-status-row {
           font-size: 0.8rem;
         }
+        .typing-status-active {
+          color: #38bdf8;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-weight: 600;
+          font-style: italic;
+          animation: fadeInMsg 0.2s ease-out;
+        }
+        .typing-pulse-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #38bdf8;
+          box-shadow: 0 0 8px #38bdf8;
+          animation: pulseDot 1.2s infinite ease-in-out;
+        }
+        @keyframes pulseDot {
+          0%, 100% { transform: scale(0.8); opacity: 0.5; }
+          50% { transform: scale(1.3); opacity: 1; }
+        }
         .connected-status {
           color: #10b981;
           display: flex;
@@ -6383,6 +6515,70 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           border: 1px solid rgba(255, 255, 255, 0.08);
           box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
           word-break: break-word;
+        }
+        .text-msg-item.partner .msg-bubble-content.typing-bubble {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 14px;
+          background: rgba(30, 41, 59, 0.95);
+          border: 1px solid rgba(56, 189, 248, 0.35);
+          border-radius: 18px 18px 18px 4px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 10px rgba(56, 189, 248, 0.15);
+        }
+        .typing-bubble-item {
+          animation: fadeInMsg 0.25s ease-out;
+        }
+        .typing-dots-wave {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          height: 14px;
+        }
+        .typing-dots-wave .wave-dot {
+          width: 6.5px;
+          height: 6.5px;
+          background: #38bdf8;
+          border-radius: 50%;
+          display: inline-block;
+          animation: waveBounce 1.4s infinite ease-in-out both;
+        }
+        .typing-dots-wave .wave-dot:nth-child(1) {
+          animation-delay: -0.32s;
+        }
+        .typing-dots-wave .wave-dot:nth-child(2) {
+          animation-delay: -0.16s;
+          background: #818cf8;
+        }
+        .typing-dots-wave .wave-dot:nth-child(3) {
+          animation-delay: 0s;
+          background: #c084fc;
+        }
+        @keyframes waveBounce {
+          0%, 80%, 100% {
+            transform: scale(0.7) translateY(0);
+            opacity: 0.45;
+          }
+          40% {
+            transform: scale(1.15) translateY(-4px);
+            opacity: 1;
+          }
+        }
+        .typing-text-hint {
+          font-size: 0.8rem;
+          font-weight: 500;
+          color: #cbd5e1;
+          font-style: italic;
+          letter-spacing: 0.3px;
+        }
+        .typing-msg-preview .typing-bubble-content {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 12px;
+          background: rgba(30, 41, 59, 0.9);
+          border-radius: 14px 14px 14px 4px;
+          border: 1px solid rgba(56, 189, 248, 0.3);
         }
         .translated-subtext {
           font-size: 0.75rem;
@@ -10262,6 +10458,9 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           }
           .partner-status-row {
             font-size: 0.64rem !important;
+          }
+          .typing-status-active {
+            font-size: 0.68rem !important;
           }
           .searching-status {
             font-size: 0.64rem !important;

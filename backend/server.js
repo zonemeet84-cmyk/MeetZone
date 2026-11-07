@@ -3270,6 +3270,26 @@ function endQuiz(roomId) {
           originalText: originalText,
           senderId: socket.id,
         });
+
+        // Automatically stop typing indicator on message sent
+        const targetId = to || (socket.partner ? socket.partner.id : null);
+        if (targetId) {
+          io.to(targetId).emit("partner-stop-typing", { from: socket.id });
+        }
+      });
+
+      socket.on("typing", ({ to }) => {
+        const targetId = to || (socket.partner ? socket.partner.id : null);
+        if (targetId) {
+          io.to(targetId).emit("partner-typing", { from: socket.id });
+        }
+      });
+
+      socket.on("stop-typing", ({ to }) => {
+        const targetId = to || (socket.partner ? socket.partner.id : null);
+        if (targetId) {
+          io.to(targetId).emit("partner-stop-typing", { from: socket.id });
+        }
       });
 
       socket.on("send-subtitle", async ({ text, to }) => {
@@ -3374,6 +3394,7 @@ function endQuiz(roomId) {
 
       socket.on("next", () => {
         if (socket.partner) {
+          socket.partner.emit("partner-stop-typing");
           socket.partner.emit("partner-disconnected");
           socket.partner.partner = null;
           queueUser(socket.partner);
@@ -3385,6 +3406,7 @@ function endQuiz(roomId) {
 
       socket.on("stop-matching", () => {
         if (socket.partner) {
+          socket.partner.emit("partner-stop-typing");
           socket.partner.emit("partner-stopped");
           socket.partner.partner = null;
           queueUser(socket.partner);
@@ -3641,9 +3663,11 @@ function endQuiz(roomId) {
 
         if (socket.partner) {
           const partner = socket.partner;
+          partner.emit("partner-stop-typing");
           partner.emit("partner-reconnecting");
           setTimeout(() => {
             if (!socket.connected && partner.partner === socket) {
+              partner.emit("partner-stop-typing");
               partner.emit("partner-disconnected");
               partner.partner = null;
               queueUser(partner);
