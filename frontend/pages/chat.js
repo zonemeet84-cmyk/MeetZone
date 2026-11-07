@@ -3816,49 +3816,49 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         )}
 
         <div className="header-v2">
-          <div className="brand" onClick={() => router.push("/")} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-            <div className="logo-icon-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg viewBox="0 0 32 32" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="2" y="5" width="20" height="20" rx="6" fill="url(#brand-grad)" />
-              <path d="M22 11L28 7V23L22 19V11Z" fill="url(#brand-grad)" />
-              <path d="M9 11H15L9 19H15" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                <defs>
-                  <linearGradient id="brand-grad" x1="2" y1="5" x2="28" y2="25" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#2563eb" />
-                    <stop offset="0.5" stopColor="#a855f7" />
-                    <stop offset="1" stopColor="#ec4899" />
-                  </linearGradient>
-                </defs>
-              </svg>
+          <div className="header-left-group" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="brand" onClick={() => router.push("/")} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <div className="logo-icon-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg viewBox="0 0 32 32" width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="2" y="5" width="20" height="20" rx="6" fill="url(#brand-grad)" />
+                  <path d="M22 11L28 7V23L22 19V11Z" fill="url(#brand-grad)" />
+                  <path d="M9 11H15L9 19H15" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                  <defs>
+                    <linearGradient id="brand-grad" x1="2" y1="5" x2="28" y2="25" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#2563eb" />
+                      <stop offset="0.5" stopColor="#a855f7" />
+                      <stop offset="1" stopColor="#ec4899" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              <h1 className="logo-text" style={{ margin: 0, fontSize: '1.2rem', fontWeight: '800', display: 'flex', alignItems: 'center', letterSpacing: '-0.02em' }}>
+                <span style={{ color: '#ffffff' }}>Zone</span>
+                <span style={{ background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Meet</span>
+                {(user?.activeSubscription || user?.premium) && (user?.userBadge || user?.planName) && (
+                  <span className="header-badge" style={{ marginLeft: '6px', fontSize: '0.62rem', background: 'rgba(59, 130, 246, 0.2)', border: '1px solid rgba(59, 130, 246, 0.5)', color: '#60a5fa', padding: '1px 5px', borderRadius: '8px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
+                    {user.userBadge || user.planName}
+                  </span>
+                )}
+              </h1>
             </div>
-            <h1 className="logo-text" style={{ margin: 0, fontSize: '1.4rem', fontWeight: '800', display: 'flex', alignItems: 'center', letterSpacing: '-0.02em' }}>
-              <span style={{ color: '#ffffff' }}>Zone</span>
-              <span style={{ background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Meet</span>
-              {(user?.activeSubscription || user?.premium) && (user?.userBadge || user?.planName) && (
-                <span className="header-badge" style={{ marginLeft: '8px', fontSize: '0.7rem', background: 'rgba(59, 130, 246, 0.2)', border: '1px solid rgba(59, 130, 246, 0.5)', color: '#60a5fa', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
-                  {user.userBadge || user.planName}
-                </span>
-              )}
-            </h1>
             <div className="eighteen-plus-badge" style={{
               background: 'rgba(239, 68, 68, 0.15)',
               border: '1px solid rgba(239, 68, 68, 0.4)',
               borderRadius: '50px',
-              padding: '4px 10px',
+              padding: '2px 7px',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '4px',
-              fontSize: '0.75rem',
+              gap: '3px',
+              fontSize: '0.66rem',
               fontWeight: '900',
               color: '#f87171',
-              boxShadow: '0 0 10px rgba(239, 68, 68, 0.2)'
+              boxShadow: '0 0 8px rgba(239, 68, 68, 0.2)'
             }}>
               <span>🔞</span>
-              <span style={{ letterSpacing: '0.05em' }}>18+ ONLY</span>
+              <span style={{ letterSpacing: '0.04em' }}>18+ ONLY</span>
             </div>
-          </div>
 
-          <div className="header-actions">
             <div className="filters-row-v2" style={{ padding: '0', background: 'transparent', border: 'none', margin: '0' }}>
               <button 
                 className="filter-settings-trigger-btn" 
@@ -3883,7 +3883,9 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                 </div>
               )}
             </div>
+          </div>
 
+          <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
             <div className="header-coins-pill" onClick={() => router.push("/#coins-section")}>
               <span className="coin-icon">💰</span>
               <span className="coin-count">{user?.coins || 0}</span>
@@ -3895,17 +3897,17 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                 {user?.name?.charAt(0) || "?"}
               </div>
               <div className="user-details">
-                <span className="user-name" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span className="user-name" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   {user?.name || "ZoneMeet User"}
                   {user?.email === "ds9376314@gmail.com" && <span className="vip-badge-inline">VIP</span>}
                   {(user?.activeSubscription || user?.premium) && (user?.userBadge || user?.planName) && user?.email !== "ds9376314@gmail.com" && (
-                    <span className="pro-badge-v2" style={{ padding: '0.1rem 0.4rem', fontSize: '0.65rem', margin: 0 }}>
+                    <span className="pro-badge-v2" style={{ padding: '0.08rem 0.35rem', fontSize: '0.62rem', margin: 0 }}>
                       🛡️ {user.userBadge || user.planName}
                     </span>
                   )}
                 </span>
                 <span className="user-sub">
-                  {user?.gender || "Guest"} • {getFlagUrl(user?.country) && <img src={getFlagUrl(user?.country)} alt={`${user?.country || "User Country"} flag`} style={{ width: '14px', height: '10px', marginRight: '4px', verticalAlign: 'middle', borderRadius: '1px' }} />}
+                  {user?.gender || "Guest"} • {getFlagUrl(user?.country) && <img src={getFlagUrl(user?.country)} alt={`${user?.country || "User Country"} flag`} style={{ width: '13px', height: '9px', marginRight: '3px', verticalAlign: 'middle', borderRadius: '1px' }} />}
                   {user?.country || "Earth"}
                 </span>
               </div>
@@ -3922,19 +3924,8 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
               )}
             </div>
 
-            <button className="btn-home" onClick={() => router.push("/friends")} style={{ marginRight: '6px' }} title="Friends">
-              <span className="icon">👥</span>
-              <span className="text">Friends</span>
-            </button>
-
-            <button className="btn-home" onClick={() => { fetchHistory(); setShowHistoryModal(true); }} style={{ marginRight: '6px' }} title="History">
-              <span className="icon">🕒</span>
-              <span className="text">History</span>
-            </button>
-
-            <button className="btn-home" onClick={() => router.push("/")} title="Home">
+            <button className="btn-home circular-home-btn" onClick={() => router.push("/")} title="Home">
               <span className="icon">🏠</span>
-              <span className="text">Home</span>
             </button>
           </div>
         </div>
@@ -7244,74 +7235,80 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 0.5rem;
+          margin-bottom: 6px;
           background: rgba(255, 255, 255, 0.03);
-          padding: 0.5rem 1.25rem;
-          border-radius: 16px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          padding: 4px 14px;
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          min-height: 42px;
+          box-sizing: border-box;
+        }
+
+        .header-left-group {
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
 
         .header-actions {
           display: flex;
           align-items: center;
-          gap: 1.5rem;
+          gap: 8px;
+          margin-left: auto;
         }
 
         .user-profile-tag {
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.1);
-          padding: 0.4rem 1.2rem 0.4rem 0.5rem;
+          padding: 2px 10px 2px 4px;
           border-radius: 100px;
           display: flex;
           align-items: center;
-          gap: 0.75rem;
+          gap: 0.5rem;
           transition: all 0.3s;
+          height: 32px;
+          box-sizing: border-box;
         }
 
         .btn-home {
-          background: rgba(99, 102, 241, 0.1);
-          border: 1px solid rgba(99, 102, 241, 0.3);
-          color: #fff;
-          padding: 0.5rem 1.25rem;
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          cursor: pointer;
-          transition: all 0.3s;
-          font-weight: 700;
-          font-size: 0.9rem;
+          background: rgba(99, 102, 241, 0.15) !important;
+          border: 1px solid rgba(99, 102, 241, 0.35) !important;
+          color: #fff !important;
+          width: 32px !important;
+          height: 32px !important;
+          min-width: 32px !important;
+          border-radius: 50% !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          cursor: pointer !important;
+          transition: all 0.25s ease !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          box-sizing: border-box !important;
         }
 
         .btn-home:hover {
-          background: #6366f1;
-          border-color: #6366f1;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-        }
-
-        .btn-quiz:hover {
-          background: rgba(245, 158, 11, 0.3) !important;
-          border-color: #f59e0b !important;
-          color: #fbbf24 !important;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4) !important;
-        }
-        .btn-quiz-queued {
-          animation: pulseQuiz 1.5s infinite;
-        }
-        @keyframes pulseQuiz {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.06); }
+          background: #6366f1 !important;
+          border-color: #6366f1 !important;
+          transform: scale(1.08) !important;
+          box-shadow: 0 0 15px rgba(99, 102, 241, 0.45) !important;
         }
 
         .btn-home .icon {
-          font-size: 1.1rem;
+          font-size: 1rem !important;
+          line-height: 1 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+        }
+        .btn-home .text {
+          display: none !important;
         }
 
         .avatar {
-          width: 32px;
-          height: 32px;
+          width: 24px;
+          height: 24px;
           background: #6366f1;
           color: white;
           border-radius: 50%;
@@ -7319,26 +7316,30 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           align-items: center;
           justify-content: center;
           font-weight: 800;
-          font-size: 0.9rem;
-          box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+          font-size: 0.78rem;
+          box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+          flex-shrink: 0;
         }
 
         .user-details {
           display: flex;
           flex-direction: column;
+          line-height: 1.1;
         }
 
         .user-name {
-          font-size: 0.9rem;
+          font-size: 0.8rem;
           font-weight: 700;
           color: #fff;
+          white-space: nowrap;
         }
 
         .user-sub {
-          font-size: 0.65rem;
+          font-size: 0.6rem;
           color: #94a3b8;
           font-weight: 600;
           text-transform: uppercase;
+          white-space: nowrap;
         }
 
         .vip-badge-inline {
@@ -8340,20 +8341,22 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #d97706 100%);
           color: #000;
           font-weight: 900;
-          font-size: 0.7rem;
-          padding: 0.3rem 0.9rem;
-          border-radius: 8px;
-          margin-left: 8px;
+          font-size: 0.62rem;
+          padding: 2px 7px;
+          border-radius: 6px;
+          margin-left: 6px;
           text-transform: uppercase;
-          letter-spacing: 0.08em;
-          box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+          letter-spacing: 0.05em;
+          box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
           border: 1px solid rgba(255, 255, 255, 0.4);
           position: relative;
           overflow: hidden;
           animation: vipPulse 2s infinite ease-in-out;
           display: inline-flex;
           align-items: center;
-          gap: 5px;
+          gap: 3px;
+          height: 22px;
+          box-sizing: border-box;
         }
 
         .vip-crown-tag::after {
@@ -8774,22 +8777,36 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         .header-coins-pill {
            background: rgba(255, 255, 255, 0.05);
            border: 1px solid rgba(255, 255, 255, 0.1);
-           padding: 6px 14px;
+           padding: 2px 10px;
+           height: 30px;
+           box-sizing: border-box;
            border-radius: 50px;
            display: flex;
            align-items: center;
-           gap: 8px;
+           gap: 6px;
            cursor: pointer;
-           transition: 0.3s;
+           transition: 0.25s ease;
            backdrop-filter: blur(10px);
         }
         .header-coins-pill:hover {
-           background: rgba(255, 255, 255, 0.1);
-           transform: translateY(-2px);
+           background: rgba(255, 255, 255, 0.12);
+           transform: translateY(-1px);
            border-color: #fbbf24;
         }
-        .coin-icon { font-size: 1.2rem; }
-        .coin-count { color: #fff; font-weight: 800; font-size: 0.9rem; }
+        .coin-icon { font-size: 0.95rem; }
+        .coin-count { color: #fff; font-weight: 800; font-size: 0.8rem; }
+        .header-coins-pill .plus-icon {
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background: #fbbf24;
+          color: #000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 9px;
+          font-weight: 900;
+        }
         
         /* USER REQUESTED BOTTOM BAR & POPUPS CSS */
         .identity-container {
@@ -9328,26 +9345,28 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         .filter-settings-trigger-btn {
           display: inline-flex;
           align-items: center;
-          gap: 12px;
+          gap: 6px;
           background: rgba(99, 102, 241, 0.1);
-          border: 1px solid rgba(99, 102, 241, 0.35);
-          border-radius: 12px;
-          padding: 8px 16px;
+          border: 1px solid rgba(99, 102, 241, 0.3);
+          border-radius: 8px;
+          padding: 4px 10px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
           color: white;
           font-weight: 700;
-          font-size: 0.9rem;
-          box-shadow: 0 4px 15px rgba(99, 102, 241, 0.05);
+          font-size: 0.78rem;
+          height: 30px;
+          box-sizing: border-box;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
         .filter-settings-trigger-btn:hover {
-          background: rgba(99, 102, 241, 0.2);
+          background: rgba(99, 102, 241, 0.22);
           border-color: #6366f1;
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(99, 102, 241, 0.15);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
         }
         .filter-settings-trigger-btn .icon {
-          font-size: 1.1rem;
+          font-size: 0.85rem;
           animation: spin-gear 6s linear infinite;
         }
         @keyframes spin-gear {
@@ -9357,11 +9376,11 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         .active-filters-preview-badge {
           background: #6366f1;
           color: white;
-          font-size: 0.7rem;
+          font-size: 0.62rem;
           font-weight: 800;
-          padding: 2px 8px;
+          padding: 1px 6px;
           border-radius: 20px;
-          letter-spacing: 0.3px;
+          letter-spacing: 0.2px;
         }
 
         /* Modal Overlay */
