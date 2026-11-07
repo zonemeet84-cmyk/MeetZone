@@ -3922,21 +3922,6 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
               )}
             </div>
 
-            <button 
-              className={`btn-home btn-quiz ${quizState === 'queued' ? 'btn-quiz-queued' : ''}`} 
-              onClick={handleBrainClashClick} 
-              style={{ 
-                marginRight: '6px', 
-                background: quizState === 'queued' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.15)', 
-                borderColor: quizState === 'queued' ? 'rgba(239, 68, 68, 0.4)' : 'rgba(245, 158, 11, 0.4)', 
-                color: quizState === 'queued' ? '#fca5a5' : '#f59e0b' 
-              }}
-              title="Quiz Arena"
-            >
-              <span className="icon">⚔️</span>
-              <span className="text">{quizState === 'queued' ? 'Cancel' : 'Quiz'}</span>
-            </button>
-
             <button className="btn-home" onClick={() => router.push("/friends")} style={{ marginRight: '6px' }} title="Friends">
               <span className="icon">👥</span>
               <span className="text">Friends</span>

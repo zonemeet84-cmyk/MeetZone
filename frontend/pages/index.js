@@ -1677,6 +1677,14 @@ export default function Dashboard(props) {
           </div>
         ) : user ? (
           <div className="user-dashboard-row header-actions-group" style={{ display: 'flex', alignItems: 'center', gap: '20px', flexShrink: 0 }}>
+            <div 
+              className="header-quiz-pill" 
+              onClick={() => router.push("/chat?quiz=true")}
+              title="Quiz Duel Arena"
+            >
+              <span className="quiz-pill-icon">⚔️</span>
+              <span className="quiz-pill-label">Quiz</span>
+            </div>
             <div
               className="header-streak-pill"
               onClick={() => setShowStreakModal(true)}
@@ -1965,12 +1973,6 @@ export default function Dashboard(props) {
                         <span>›</span>
                       </button>
 
-                      {/* Quiz Duel Arena Button */}
-                      <button className="profile-more-btn" onClick={() => { setShowProfileDrop(false); router.push("/chat?quiz=true"); }} style={{ marginTop: '10px', background: 'rgba(245, 158, 11, 0.08)', borderColor: 'rgba(245, 158, 11, 0.25)' }}>
-                        <div className="profile-detail-left" style={{ color: '#f59e0b' }}>⚔️ Quiz Duel Arena</div>
-                        <span style={{ color: '#f59e0b' }}>›</span>
-                      </button>
-
                       {isSiteAdmin(user?.email) && (
                         <button className="profile-more-btn" onClick={() => router.push("/admin")} style={{ marginTop: '10px', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
                           <div className="profile-detail-left">⚡ Admin Dashboard</div>
@@ -2041,6 +2043,14 @@ export default function Dashboard(props) {
           </div>
         ) : (
           <div className="auth-buttons">
+            <div 
+              className="header-quiz-pill" 
+              onClick={() => router.push("/chat?quiz=true")}
+              title="Quiz Duel Arena"
+            >
+              <span className="quiz-pill-icon">⚔️</span>
+              <span className="quiz-pill-label">Quiz</span>
+            </div>
             <button className="btn btn-secondary btn-sm" onClick={() => router.push("/login")}>Login</button>
             <button className="btn btn-primary btn-sm" onClick={() => router.push("/login")}>Sign Up</button>
           </div>
@@ -6072,6 +6082,11 @@ export default function Dashboard(props) {
           .modal-footer-premium { padding: 2rem; background: rgba(0,0,0,0.2); text-align: center; }
           .security-tag { color: #475569; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 600; }
 
+          /* QUIZ HEADER PILL */
+          .header-quiz-pill {
+            display: none;
+          }
+
           /* COIN HEADER PILL */
           .header-coins-pill {
             background: rgba(255, 255, 255, 0.05);
@@ -7411,6 +7426,24 @@ export default function Dashboard(props) {
             .header .profile-dropdown-container,
             .header .profile-trigger {
               width: auto !important;
+            }
+            .header-quiz-pill {
+              display: inline-flex !important;
+              align-items: center !important;
+              gap: 3px !important;
+              padding: 3px 8px !important;
+              background: rgba(245, 158, 11, 0.15) !important;
+              border: 1px solid rgba(245, 158, 11, 0.4) !important;
+              border-radius: 999px !important;
+              color: #f59e0b !important;
+              font-size: 0.72rem !important;
+              font-weight: 700 !important;
+              cursor: pointer !important;
+              flex-shrink: 0 !important;
+              line-height: 1 !important;
+            }
+            .header-quiz-pill:active {
+              transform: scale(0.95);
             }
             .header-coins-pill, .header-streak-pill {
               padding: 3px 7px !important;
