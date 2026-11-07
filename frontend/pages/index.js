@@ -1651,6 +1651,7 @@ export default function Dashboard(props) {
           <div className="nav-link" onClick={() => router.push("/")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Home</div>
           <div className="nav-link" onClick={() => router.push("/friends")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Friends</div>
           <div className="nav-link" onClick={() => setShowHistoryModal(true)} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>History</div>
+          <div className="nav-link" onClick={() => router.push("/chat?quiz=true")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: '#f59e0b', transition: 'all 0.3s', display: 'flex', alignItems: 'center', gap: '4px' }}>⚔️ Quiz</div>
           <div className="nav-link" onClick={() => document.getElementById("coins-section")?.scrollIntoView({ behavior: 'smooth' })} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Coins</div>
           <div className="nav-link" onClick={() => {
             if (!user) {
@@ -1962,6 +1963,12 @@ export default function Dashboard(props) {
                       <button className="profile-more-btn" onClick={() => { setShowProfileDrop(false); setShowHistoryModal(true); }} style={{ marginTop: '10px' }}>
                         <div className="profile-detail-left">🕒 Match History</div>
                         <span>›</span>
+                      </button>
+
+                      {/* Quiz Duel Arena Button */}
+                      <button className="profile-more-btn" onClick={() => { setShowProfileDrop(false); router.push("/chat?quiz=true"); }} style={{ marginTop: '10px', background: 'rgba(245, 158, 11, 0.08)', borderColor: 'rgba(245, 158, 11, 0.25)' }}>
+                        <div className="profile-detail-left" style={{ color: '#f59e0b' }}>⚔️ Quiz Duel Arena</div>
+                        <span style={{ color: '#f59e0b' }}>›</span>
                       </button>
 
                       {isSiteAdmin(user?.email) && (

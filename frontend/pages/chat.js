@@ -265,8 +265,13 @@ export default function Home(props) {
       const urlMode = urlParams.get("mode");
       const mode = urlMode || router.query.mode || localStorage.getItem("preferredChatMode") || "video";
       setActiveChatMode(mode);
+
+      if (urlParams.get("quiz") === "true" || router.query.quiz === "true") {
+        if (mode === "text") setActiveChatMode("video");
+        setShowQuizRoomsModal(true);
+      }
     }
-  }, [router.query.mode, router.isReady]);
+  }, [router.query.mode, router.query.quiz, router.isReady]);
 
   // Rotating tips ticker for matchmaking mascot
   const [searchingTipIdx, setSearchingTipIdx] = useState(0);
@@ -2889,6 +2894,9 @@ export default function Home(props) {
     if (quizState === "queued") {
       socket?.emit("leave-quiz-queue");
     } else {
+      if (activeChatMode === "text") {
+        setActiveChatMode("video");
+      }
       setShowQuizRoomsModal(true);
     }
   };
@@ -3905,12 +3913,32 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
               )}
             </div>
 
-            <button className="btn-home" onClick={() => { fetchHistory(); setShowHistoryModal(true); }} style={{ marginRight: '6px' }}>
+            <button 
+              className={`btn-home btn-quiz ${quizState === 'queued' ? 'btn-quiz-queued' : ''}`} 
+              onClick={handleBrainClashClick} 
+              style={{ 
+                marginRight: '6px', 
+                background: quizState === 'queued' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.15)', 
+                borderColor: quizState === 'queued' ? 'rgba(239, 68, 68, 0.4)' : 'rgba(245, 158, 11, 0.4)', 
+                color: quizState === 'queued' ? '#fca5a5' : '#f59e0b' 
+              }}
+              title="Quiz Arena"
+            >
+              <span className="icon">⚔️</span>
+              <span className="text">{quizState === 'queued' ? 'Cancel' : 'Quiz'}</span>
+            </button>
+
+            <button className="btn-home" onClick={() => router.push("/friends")} style={{ marginRight: '6px' }} title="Friends">
+              <span className="icon">👥</span>
+              <span className="text">Friends</span>
+            </button>
+
+            <button className="btn-home" onClick={() => { fetchHistory(); setShowHistoryModal(true); }} style={{ marginRight: '6px' }} title="History">
               <span className="icon">🕒</span>
               <span className="text">History</span>
             </button>
 
-            <button className="btn-home" onClick={() => router.push("/")}>
+            <button className="btn-home" onClick={() => router.push("/")} title="Home">
               <span className="icon">🏠</span>
               <span className="text">Home</span>
             </button>
@@ -7253,6 +7281,21 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           border-color: #6366f1;
           transform: translateY(-2px);
           box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-quiz:hover {
+          background: rgba(245, 158, 11, 0.3) !important;
+          border-color: #f59e0b !important;
+          color: #fbbf24 !important;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4) !important;
+        }
+        .btn-quiz-queued {
+          animation: pulseQuiz 1.5s infinite;
+        }
+        @keyframes pulseQuiz {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.06); }
         }
 
         .btn-home .icon {
