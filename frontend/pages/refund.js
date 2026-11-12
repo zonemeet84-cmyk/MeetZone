@@ -54,7 +54,7 @@ export default function Refund() {
 
         <h2>6. Failed Payments &amp; Technical Delivery Inquiries</h2>
         <p>
-          In rare circumstances where your bank debits your account but an unexpected network error prevents coins or premium plans from appearing immediately, our automated systems will verify the transaction and credit the purchased items to your account. If your coins or plan are not credited within 1 hour, please email our support team with your Transaction ID / UTR and registered email at <strong>updates@zonemeet.chat</strong> so we can promptly credit your balance.
+          In rare circumstances where your bank debits your account but an unexpected network error prevents coins or premium plans from appearing immediately, our automated systems will verify the transaction and credit the purchased items to your account. If your coins or plan are not credited within 1 hour, please email our support team with your Transaction ID / UTR and registered email at <strong>zonemeet84@gmail.com</strong> so we can promptly credit your balance.
         </p>
       </div>
 

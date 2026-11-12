@@ -212,7 +212,7 @@ export default function About() {
                   </div>
                   <div className="contact-right">
                     <p className="contact-label">For support, partnerships, business inquiries, or any important concerns, please contact:</p>
-                    <a href="mailto:support@zonemeet.chat" className="contact-email">support@zonemeet.chat</a>
+                    <a href="mailto:zonemeet84@gmail.com" className="contact-email">zonemeet84@gmail.com</a>
                   </div>
                 </div>
               </div>

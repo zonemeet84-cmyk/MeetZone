@@ -3619,7 +3619,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           }}>
             <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px", lineHeight: 1.7, margin: 0 }}>
               🛡️ Our AI Guardian system detected a violation of ZoneMeet's safety guidelines.
-              If you believe this is a mistake, please contact us at <span style={{ color: "#818cf8" }}>support@zonemeet.chat</span>
+              If you believe this is a mistake, please contact us at <span style={{ color: "#818cf8" }}>zonemeet84@gmail.com</span>
             </p>
           </div>
 

@@ -22,9 +22,9 @@ const path = require("path");
 const admin = require("firebase-admin");
 // Resend API Email Helper
 const axios_mail = require("axios");
-async function sendEmail({ from, to, subject, html }) {
+async function sendEmail({ from, to, replyTo, subject, html }) {
   await axios_mail.post("https://api.resend.com/emails", 
-    { from: from || "ZoneMeet <updates@zonemeet.chat>", to: to || "zonemeet84@gmail.com", subject, html },
+    { from: from || "ZoneMeet <updates@zonemeet.chat>", to: to || "zonemeet84@gmail.com", reply_to: replyTo || "zonemeet84@gmail.com", subject, html },
     { headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" } }
   );
 }
@@ -2405,7 +2405,7 @@ app.post("/api/contact", async (req, res) => {
   // --- REAL EMAIL NOTIFICATION ---
   const GMAIL_AUTH_USER = "zonemeet84@gmail.com";   // Gmail account used for SMTP authentication
   const GMAIL_PASS = "qedv lgzt zlgr upxk";    // App Password from Google (16-char)
-  const SUPPORT_EMAIL = "support@zonemeet.chat";  // Custom domain shown to users
+  const SUPPORT_EMAIL = "zonemeet84@gmail.com";
 
   if (GMAIL_PASS) {
     const mailOptions = {
@@ -2429,7 +2429,7 @@ app.post("/api/contact", async (req, res) => {
           <div style="margin-top:25px;text-align:center;">
             <a href="mailto:${email}?subject=RE: ${subject || 'General Inquiry'}" style="background:#6366f1;color:white;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:bold;display:inline-block;">↩ Reply to ${name}</a>
           </div>
-          <p style="color:#475569;font-size:11px;text-align:center;margin-top:20px;">ZoneMeet Admin Panel • support@zonemeet.chat</p>
+          <p style="color:#475569;font-size:11px;text-align:center;margin-top:20px;">ZoneMeet Admin Panel • zonemeet84@gmail.com</p>
         </div>
       `
     };
@@ -2437,6 +2437,7 @@ app.post("/api/contact", async (req, res) => {
     sendEmail({
       from: 'ZoneMeet Support <noreply@zonemeet.chat>',
       to: GMAIL_AUTH_USER,
+      replyTo: email,
       subject: `📩 New Support Message: ${subject || "General Inquiry"}`,
       html: mailOptions.html
     }).then(() => console.log("✅ Contact email sent")).catch(e => console.error("Email send error:", e.message));
@@ -5154,6 +5155,7 @@ ${bodyContent}
             await axios.post("https://api.resend.com/emails", {
               from: "ZoneMeet <updates@zonemeet.chat>",
               to: rec.email,
+              reply_to: "zonemeet84@gmail.com",
               subject: subject,
               html: htmlContent
             }, {

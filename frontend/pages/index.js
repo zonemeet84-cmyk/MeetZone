@@ -1483,7 +1483,7 @@ export default function Dashboard(props) {
           )}
           <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "16px 20px", marginBottom: "28px", textAlign: "left" }}>
             <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px", lineHeight: 1.7, margin: 0 }}>
-              🛡️ Our AI Guardian detected a safety violation. To appeal, contact <span style={{ color: "#818cf8" }}>support@zonemeet.chat</span>
+              🛡️ Our AI Guardian detected a safety violation. To appeal, contact <span style={{ color: "#818cf8" }}>zonemeet84@gmail.com</span>
             </p>
           </div>
           <button

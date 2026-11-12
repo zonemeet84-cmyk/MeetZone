@@ -66,7 +66,7 @@ export default function Contact() {
             </p>
             <div className="hero-btns">
               <a href="#message-form" className="btn-primary">Write a Message</a>
-              <a href="mailto:support@zonemeet.chat" className="btn-outline">Quick Email</a>
+              <a href="mailto:zonemeet84@gmail.com" className="btn-outline">Quick Email</a>
             </div>
           </div>
           <div className="hero-visual">
@@ -171,7 +171,7 @@ export default function Contact() {
               <div className="icon-circ">✉️</div>
               <div>
                 <h5>Official Support</h5>
-                <p>support@zonemeet.chat</p>
+                <p>zonemeet84@gmail.com</p>
               </div>
             </div>
           </div>
@@ -199,8 +199,8 @@ export default function Contact() {
             <span style={{ color: '#c4b5fd', fontWeight: 700 }}>ZoneMeet</span> is independently developed and managed by{' '}
             <span style={{ color: '#a5b4fc', fontWeight: 700 }}>Davinder Singh</span>.
             For support, partnerships, business inquiries, or any important concerns, please contact:{' '}
-            <a href="mailto:support@zonemeet.chat" style={{ color: '#818cf8', fontWeight: 700, textDecoration: 'none' }}>
-              support@zonemeet.chat
+            <a href="mailto:zonemeet84@gmail.com" style={{ color: '#818cf8', fontWeight: 700, textDecoration: 'none' }}>
+              zonemeet84@gmail.com
             </a>
           </div>
         </footer>
