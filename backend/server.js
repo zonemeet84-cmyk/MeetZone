@@ -30,33 +30,6 @@ async function sendEmail({ from, to, replyTo, subject, html }) {
 }
 
 const axios = require("axios");
-const FormData = require("form-data");
-const HIVE_SECRET_KEY = process.env.HIVE_SECRET_KEY || "aBlpX1DmnQBS+EmOsL7rDw==";
-const HIVE_ACCESS_SECRET_KEY = process.env.HIVE_ACCESS_SECRET_KEY || "Hg2sWxi1CAURw7eb";
-
-async function verifyWithHiveAI(base64Image) {
-  if (!base64Image) return null;
-  try {
-    const cleanBase64 = base64Image.replace(/^data:image\/jpeg;base64,/, "").replace(/^data:image\/png;base64,/, "");
-    const buffer = Buffer.from(cleanBase64, "base64");
-    const form = new FormData();
-    form.append("media", buffer, { filename: "frame.jpg", contentType: "image/jpeg" });
-
-    console.log("[HIVE AI] Sending frame to Hive API for verification...");
-    const response = await axios.post("https://api.thehive.ai/api/v2/task/sync", form, {
-      headers: {
-        ...form.getHeaders(),
-        "Authorization": `Token ${HIVE_SECRET_KEY}`
-      },
-      timeout: 8000
-    });
-
-    return response.data;
-  } catch (err) {
-    console.error("[HIVE AI ERROR]:", err.response ? err.response.data : err.message);
-    return null;
-  }
-}
 
 const app = express();
 app.set("trust proxy", true); // Trust reverse proxies (Cloudflare/Render/Nginx)
@@ -674,13 +647,18 @@ function banUser(email, reason, screenshot = null) {
     saveBanned();
     console.log(`[BAN] ${email} permanently removed. Reason: ${reason}`);
 
-    // Disconnect if online
+    // Disconnect if online and ban IP
     const user = users.find(u => u.email === email);
     if (user) {
       const socketId = onlineUsers.get(user.id);
       if (socketId) {
         const socket = io.sockets.sockets.get(socketId);
         if (socket) {
+          const ip = socket.handshake.address;
+          if (ip && !bannedIps.includes(ip)) {
+            bannedIps.push(ip);
+            saveBannedIps();
+          }
           socket.emit("banned-alert", { reason, screenshot });
           setTimeout(() => socket.disconnect(), 500);
         }
@@ -689,8 +667,8 @@ function banUser(email, reason, screenshot = null) {
   }
 }
 
-// Run Guardian every 2 seconds
-setInterval(zonemeetGuardianDetect, 2000);
+// Automatic AI Guardian interval disabled - final bans are controlled via Admin Panel
+// setInterval(zonemeetGuardianDetect, 2000);
 
 let bannedIps = [];
 if (fs.existsSync(BANNED_IPS_FILE)) {
@@ -2581,31 +2559,8 @@ app.post("/api/report", authenticateToken, (req, res) => {
   });
   saveReports();
 
-  // Auto-ban if 3 reports reached
-  if (targetUser.reportCount >= 3) {
-    console.log(`User ${targetUser.email} has reached 3 reports. Banning permanently...`);
-    if (!bannedEmails.includes(targetUser.email)) {
-      bannedEmails.push(targetUser.email);
-      saveBanned();
-    }
-
-    const targetSocketId = onlineUsers.get(targetId);
-    if (targetSocketId) {
-      const socket = io.sockets.sockets.get(targetSocketId);
-      if (socket) {
-        const ip = socket.handshake.address;
-        if (!bannedIps.includes(ip)) {
-          bannedIps.push(ip);
-          saveBannedIps();
-        }
-        socket.emit("banned-alert", { reason: "Your account has been permanently banned due to multiple reports.", screenshot: null });
-        setTimeout(() => socket.disconnect(), 500);
-      }
-    }
-  }
-
   saveUsers();
-  res.json({ success: true, message: "User reported successfully" });
+  res.json({ success: true, message: "User reported successfully. Sent to admin for review." });
 });
 
 app.get("/api/friends/list", authenticateToken, (req, res) => {
@@ -3194,64 +3149,6 @@ function endQuiz(roomId) {
       });
 
       socket.on("send-message", async ({ text, to }) => {
-        if (socket.user) {
-          const email = socket.user.email;
-          const lowerText = text.toLowerCase();
-          
-          let isToxic = false;
-          let violationCategory = "";
-
-          // 1. Local Word Scanner (Robust word/phrase match)
-          const hasBadWord = BAD_WORDS_LIST.some(word => {
-            const regex = new RegExp(`\\b${word}\\b|${word}`, "i");
-            return regex.test(lowerText);
-          });
-
-          if (hasBadWord) {
-            isToxic = true;
-            violationCategory = "Restricted language/slurs";
-          }
-
-          // 2. OpenAI Moderation API Check (if key is set)
-          if (!isToxic && process.env.OPENAI_API_KEY) {
-            try {
-              const res = await fetch("https://api.openai.com/v1/moderations", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-                },
-                body: JSON.stringify({ input: text })
-              });
-              const data = await res.json();
-              if (data.results && data.results[0]?.flagged) {
-                isToxic = true;
-                const categories = data.results[0].categories;
-                violationCategory = Object.keys(categories).filter(c => categories[c]).join(", ");
-              }
-            } catch (err) {
-              console.error("OpenAI Moderation API call failed:", err);
-            }
-          }
-
-          // Handle Toxicity / Abuse
-          if (isToxic) {
-            let strikes = (userStrikes.get(email) || 0) + 1;
-            userStrikes.set(email, strikes);
-
-            console.log(`[GUARDIAN] CHAT ABUSE strike for ${email}: Strike ${strikes}/3. Category: ${violationCategory}`);
-
-            if (strikes >= 3) {
-              console.log(`[GUARDIAN] CHAT ABUSE threshold exceeded: ${email}. Banning permanently...`);
-              banUser(email, `AI Detection: Repeated chat abuse and toxicity (${violationCategory})`);
-              return;
-            } else {
-              socket.emit("warning-alert", `Warning: Your message violates our safety guidelines (${violationCategory}). Strike ${strikes}/3. Continued abuse will lead to a permanent account ban.`);
-              return; // Block the message from being sent!
-            }
-          }
-        }
-
         let finalText = text;
         let originalText = null;
 
@@ -3422,166 +3319,6 @@ function endQuiz(roomId) {
         const index = waitingUsers.indexOf(socket);
         if (index !== -1) {
           waitingUsers.splice(index, 1);
-        }
-      });
-
-      // NSFW Multi-Layer Moderation Handler (Hybrid NSFWJS client-side fast scan + Hive AI backend-side verification)
-      socket.on("nsfw-suspicious-verify", async ({ screenshot }) => {
-        if (!socket.user) return;
-        const email = socket.user.email;
-
-        // Rate-limit Hive AI API requests per socket to protect bandwidth & API usage limits
-        const now = Date.now();
-        if (socket.lastHiveScanTime && now - socket.lastHiveScanTime < 3000) {
-          console.log(`[HIVE AI RATELIMIT] Skipping verification for ${email} (too frequent).`);
-          return;
-        }
-        socket.lastHiveScanTime = now;
-
-        console.log(`[HIVE AI MODERATION] Running accurate sync verification for suspicious frame from ${email}...`);
-        const hiveResult = await verifyWithHiveAI(screenshot);
-
-        if (!hiveResult) {
-          console.warn(`[HIVE AI ERROR] Verification failed or timed out for ${email}. Skipping action.`);
-          return;
-        }
-
-        let isPornViolated = false;
-        let isSexualViolated = false;
-        let isSexyViolated = false;
-
-        let maxPornScore = 0;
-        let maxSexualScore = 0;
-        let maxSexyScore = 0;
-
-        let matchedClass = "";
-        let matchedScore = 0;
-
-        if (hiveResult.output && Array.isArray(hiveResult.output)) {
-          hiveResult.output.forEach(out => {
-            if (out.classes && Array.isArray(out.classes)) {
-              out.classes.forEach(c => {
-                const className = c.class.toLowerCase();
-                const score = c.score;
-
-                // 1. Sexual Activity (Recommended Threshold: 0.85)
-                if (className === "sexual_activity" || className.includes("sexual_act")) {
-                  maxSexualScore = Math.max(maxSexualScore, score);
-                  if (score > 0.85) {
-                    isSexualViolated = true;
-                    if (score > matchedScore) {
-                      matchedClass = c.class;
-                      matchedScore = score;
-                    }
-                  }
-                }
-                // 2. Porn / Explicit Nudity (Recommended Threshold: 0.88)
-                else if (className === "general_nsfw" || className.includes("genitalia") || className.includes("breast") || className.includes("buttocks") || className.includes("porn")) {
-                  maxPornScore = Math.max(maxPornScore, score);
-                  if (score > 0.88) {
-                    isPornViolated = true;
-                    if (score > matchedScore) {
-                      matchedClass = c.class;
-                      matchedScore = score;
-                    }
-                  }
-                }
-                // 3. Sexy / Suggestive (Recommended Threshold: 0.95)
-                else if (className === "general_suggestive" || className.includes("sexy") || className.includes("underwear") || className.includes("suggestive")) {
-                  maxSexyScore = Math.max(maxSexyScore, score);
-                  if (score > 0.95) {
-                    isSexyViolated = true;
-                    if (score > matchedScore) {
-                      matchedClass = c.class;
-                      matchedScore = score;
-                    }
-                  }
-                }
-              });
-            }
-          });
-        }
-
-        const isViolated = isPornViolated || isSexualViolated || isSexyViolated;
-
-        if (isViolated) {
-          const reason = `Hive AI: Explicit content detected (${matchedClass} with confidence ${matchedScore.toFixed(3)})`;
-          console.log(`[NSFW HYBRID VIOLATION] Verified violation for ${email}. Reason: ${reason}`);
-
-          // Save Screenshot Evidence of confirmed violation to local folder
-          if (screenshot) {
-            try {
-              const evidenceDir = path.join(__dirname, "moderation_evidence");
-              if (!fs.existsSync(evidenceDir)) {
-                fs.mkdirSync(evidenceDir, { recursive: true });
-              }
-              const base64Data = screenshot.replace(/^data:image\/jpeg;base64,/, "").replace(/^data:image\/png;base64,/, "");
-              const filename = `evidence_${email.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}.jpg`;
-              const filePath = path.join(evidenceDir, filename);
-              fs.writeFileSync(filePath, base64Data, "base64");
-              console.log(`[NSFW EVIDENCE SAVED] Verified evidence screenshot written to ${filePath}`);
-            } catch (err) {
-              console.error("Failed to save verified NSFW screenshot evidence:", err);
-            }
-          }
-
-          // Save Report to database/json so it shows in Admin Panel
-          const targetUserObj = users.find(u => u.email === email) || {};
-          reports.push({
-            id: Date.now(),
-            reporterId: "AI_GUARDIAN",
-            targetId: socket.userId || "unknown",
-            targetName: targetUserObj.name || email.split("@")[0],
-            targetEmail: email,
-            reason: "AI Moderator: Explicit Content Detected",
-            details: reason,
-            evidence: screenshot, // Base64 screenshot displays natively in the admin.js UI!
-            timestamp: new Date().toISOString()
-          });
-          saveReports();
-
-          // Strike Escalation System
-          let strikes = (userStrikes.get(email) || 0) + 1;
-          userStrikes.set(email, strikes);
-
-          console.log(`[NSFW STRIKE UPDATED] User: ${email} - Strike ${strikes}/3.`);
-
-          if (strikes >= 3) {
-            console.log(`[NSFW BANNING USER] ${email} banned for 1 day.`);
-            banUser(email, `AI Detection: 3 consecutive safety violations. Banned for 1 day.`, screenshot);
-            // Auto unban after 24 hours
-            setTimeout(() => {
-              const index = bannedEmails.indexOf(email);
-              if (index > -1) {
-                bannedEmails.splice(index, 1);
-                saveBanned();
-                console.log(`[UNBAN] ${email} 1-day ban expired.`);
-              }
-            }, 24 * 60 * 60 * 1000);
-          } else {
-            // Send warning back to socket
-            socket.emit("warning-alert", `⚠️ WARNING: Inappropriate content detected! If you repeat this, you will be banned for 1 day. Strike ${strikes}/3.`);
-            
-            // Emit partner-effect to blur remote partner's stream
-            if (socket.partner) {
-              socket.partner.emit("partner-effect", { type: "blur", value: true });
-            }
-
-            // Emit local strike alert
-            socket.emit("nsfw-strike-alert", { strikes, maxStrikes: 3, reason });
-
-            // Disconnect current partner session to safeguard partner
-            if (socket.partner) {
-              const partner = socket.partner;
-              partner.emit("partner-disconnected");
-              partner.partner = null;
-              socket.partner = null;
-              queueUser(partner);
-            }
-            queueUser(socket);
-          }
-        } else {
-          console.log(`[HIVE AI CLEAN] Suspicious frame verified CLEAN by Hive AI for ${email} (Porn: ${maxPornScore.toFixed(3)}, Sexual: ${maxSexualScore.toFixed(3)}, Sexy: ${maxSexyScore.toFixed(3)}).`);
         }
       });
 
@@ -4859,14 +4596,10 @@ function endQuiz(roomId) {
 
     app.post("/api/admin/ban", authenticateAdmin, (req, res) => {
       if (req.user.email !== "ds9376314@gmail.com") return res.status(403).send("Forbidden");
-      const { email } = req.body;
-      if (!bannedEmails.includes(email)) {
-        bannedEmails.push(email);
-        saveBanned();
-        res.json({ success: true, message: "User banned" });
-      } else {
-        res.json({ success: false, message: "Already banned" });
-      }
+      const { email, reason } = req.body;
+      if (!email) return res.status(400).json({ error: "Email is required" });
+      banUser(email, reason || "Terminated by Administrator via Panel");
+      res.json({ success: true, message: "User banned successfully" });
     });
 
 

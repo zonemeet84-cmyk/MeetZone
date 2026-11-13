@@ -177,9 +177,7 @@ export default function Home(props) {
   const originalVideoTrackRef = useRef(null);
   const faceMeshRef = useRef(null);
   const onResultsRef = useRef(null);
-  const nsfwModel = useRef(null);
   const isFaceDetectedRef = useRef(false);
-  const prevFramePixelsRef = useRef(null);
 
 
   // Helper to convert 2-letter ISO country code to Emoji Flag
@@ -300,7 +298,7 @@ export default function Home(props) {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [currency, setCurrency] = useState("INR");
   const [paymentStep, setPaymentStep] = useState("methods"); // 'methods', 'processing', 'success'
-  // const [nsfwModel, setNsfwModel] = useState(null); // REMOVED duplicate
+
   const [showCoinPopup, setShowCoinPopup] = useState(false);
   const [pendingMessage, setPendingMessage] = useState("");
 
@@ -620,21 +618,7 @@ export default function Home(props) {
     { id: "Ghost", name: "Ghost Overlay", icon: "👻", cost: 80, category: "Couple" }
   ];
 
-  useEffect(() => {
-    // Load NSFW Model via Ref
-    const loadModel = async () => {
-      if (typeof window !== "undefined" && window.nsfwjs && !nsfwModel.current) {
-        try {
-          const model = await window.nsfwjs.load();
-          nsfwModel.current = model;
-          console.log("NSFW Model Loaded");
-        } catch (err) {
-          console.error("NSFW Model Load Error:", err);
-        }
-      }
-    };
-    loadModel();
-  }, []);
+
 
     // ROBUST MANUAL FACE TRACKING WITH MEDIA-PIPE FACEMESH DIRECTLY
     useEffect(() => {
@@ -1773,130 +1757,6 @@ export default function Home(props) {
         console.log("[Text Mode] Skipping camera and microphone permission request.");
       }
 
-      // 4. AI Guard: Multi-Layer Hybrid NSFW Detection (NSFWJS Client-Side + Hive AI Backend-Side Verification)
-      const initNSFW = async () => {
-        try {
-          if (typeof window !== "undefined" && window.nsfwjs) {
-            nsfwModel.current = await window.nsfwjs.load();
-            console.log("NSFW Guardian active.");
-          }
-          
-          const checkVideo = async () => {
-            if (localVideo.current && localVideo.current.readyState === 4 && socket && socket.connected) {
-              try {
-                // 1. LIGHTWEIGHT MOTION DETECTION (Save user CPU by skipping scans if stream is static/idle)
-                let hasMotion = true;
-                try {
-                  const mCanvas = document.createElement("canvas");
-                  mCanvas.width = 32;
-                  mCanvas.height = 24;
-                  const mCtx = mCanvas.getContext("2d");
-                  mCtx.drawImage(localVideo.current, 0, 0, 32, 24);
-                  const imgData = mCtx.getImageData(0, 0, 32, 24).data;
-
-                  if (!prevFramePixelsRef.current) {
-                    prevFramePixelsRef.current = imgData;
-                  } else {
-                    let totalDiff = 0;
-                    const len = imgData.length;
-                    for (let i = 0; i < len; i += 4) {
-                      const currentIntensity = (imgData[i] + imgData[i+1] + imgData[i+2]) / 3;
-                      const prevIntensity = (prevFramePixelsRef.current[i] + prevFramePixelsRef.current[i+1] + prevFramePixelsRef.current[i+2]) / 3;
-                      totalDiff += Math.abs(currentIntensity - prevIntensity);
-                    }
-                    prevFramePixelsRef.current = imgData;
-                    const avgDiff = totalDiff / (32 * 24);
-                    // If average shift is less than 3 units, video is static/idle (no motion)
-                    hasMotion = avgDiff > 3;
-                  }
-                } catch (e) {
-                  // Fallback to active motion on error
-                }
-
-                if (!hasMotion) {
-                  // Video is frozen or static, skip heavy model execution to conserve CPU
-                  setTimeout(checkVideo, 3000);
-                  return;
-                }
-
-                // 2. FACE DETECTION STATUS
-                const faceDetected = isFaceDetectedRef.current;
-
-                // 3. HEAVY NSFWJS LOCAL CLASSIFICATION (only triggered if motion exists)
-                const predictions = await nsfwModel.current.classify(localVideo.current);
-                
-                const porn = predictions.find(p => p.className === "Porn");
-                const hentai = predictions.find(p => p.className === "Hentai");
-                const sexy = predictions.find(p => p.className === "Sexy");
-                
-                const pornProb = porn ? porn.probability : 0;
-                const hentaiProb = hentai ? hentai.probability : 0;
-                const sexyProb = sexy ? sexy.probability : 0;
-
-                // Soft trigger threshold of 0.65 for any suspicious visual category
-                const isSuspicious = pornProb > 0.65 || hentaiProb > 0.65 || sexyProb > 0.65;
-
-                if (isSuspicious) {
-                  console.warn(`[NSFWJS SOFT TRIG] Suspicious frame (Porn: ${pornProb.toFixed(2)}, Hentai: ${hentaiProb.toFixed(2)}, Sexy: ${sexyProb.toFixed(2)}, FacePresent: ${faceDetected}). Requesting backend Hive AI verification...`);
-                  
-                  // 1. Show notification
-                  showToast("⚠️ Inappropriate content detected! If you repeat this, your account will be banned for 1 day. Auto-skipping...", "error", 6000);
-
-                  // 2. Auto-blur local stream instantly on the frontend as a soft precaution while verifying
-                  setIsFaceBlurred(true);
-                  if (socket) {
-                    socket.emit("partner-effect", { type: "blur", value: true });
-                  }
-
-                  // 3. Auto-skip disabled based on user request (only blurs now)
-                  /*
-                  if (socket && partnerIdRef.current) {
-                    socket.emit("next");
-                  }
-                  */
-
-                  // 4. Unblur after 5 seconds
-                  setTimeout(() => {
-                    setIsFaceBlurred(false);
-                    if (socket) {
-                      socket.emit("partner-effect", { type: "blur", value: false });
-                    }
-                  }, 5000);
-
-                  // Capture the exact video frame as base64 JPEG
-                  let screenshot = null;
-                  try {
-                    const canvas = document.createElement("canvas");
-                    canvas.width = localVideo.current.videoWidth || 320;
-                    canvas.height = localVideo.current.videoHeight || 240;
-                    const ctx = canvas.getContext("2d");
-                    ctx.drawImage(localVideo.current, 0, 0, canvas.width, canvas.height);
-                    screenshot = canvas.toDataURL("image/jpeg", 0.65);
-                  } catch (e) {
-                    console.error("Failed to capture screenshot for Hive AI verification:", e);
-                  }
-
-                  if (screenshot) {
-                    socket.emit("nsfw-suspicious-verify", { screenshot });
-                  }
-                }
-              } catch (e) {
-                console.error("Error running client classification:", e);
-              }
-            }
-            // Repeat every 3 seconds to protect CPU and bandwidth
-            setTimeout(checkVideo, 3000);
-          };
-          
-          checkVideo();
-        } catch (err) {
-          console.error("NSFW Guardian failed to load:", err);
-        }
-      };
-      if (!isTextModeInitial) {
-        initNSFW();
-      }
-
       // 3. Socket Logic
       socket = io("https://api.zonemeet.chat");
 
@@ -1957,30 +1817,7 @@ export default function Home(props) {
         showToast(msg, "warning", 5000);
       });
 
-      socket.on("nsfw-strike-alert", ({ strikes, maxStrikes, reason }) => {
-        // 1. Show notification
-        showToast("⚠️ Inappropriate content detected! If you repeat this, your account will be banned for 1 day. Auto-skipping...", "error", 6000);
 
-        // 2. Blur screen
-        setIsFaceBlurred(true);
-        if (socket) {
-          socket.emit("partner-effect", { type: "blur", value: true });
-        }
-        
-        // 3. System message
-        setMessages(prev => [...prev, { sender: "system", text: `⚠️ [Safety Alert]: AI detected safety violation (${reason}). Strike ${strikes}/${maxStrikes} registered.` }]);
-
-        // 4. Auto-skip disabled based on user request (only blurs now)
-        // socket.emit("next");
-
-        // 5. Unblur after 5 seconds
-        setTimeout(() => {
-          setIsFaceBlurred(false);
-          if (socket) {
-            socket.emit("partner-effect", { type: "blur", value: false });
-          }
-        }, 5000);
-      });
 
       socket.on("maintenance_active", (data) => {
         let email = session?.user?.email || "";
