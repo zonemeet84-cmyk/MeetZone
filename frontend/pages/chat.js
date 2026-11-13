@@ -303,7 +303,10 @@ export default function Home(props) {
   const [photoConsentStatus, setPhotoConsentStatus] = useState("idle"); // "idle" | "requested_by_me" | "requested_by_partner" | "approved" | "declined"
   const [photoPreviewModal, setPhotoPreviewModal] = useState(null);
   const [isCompressingImage, setIsCompressingImage] = useState(false);
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
   const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
 
   const [showCoinPopup, setShowCoinPopup] = useState(false);
   const [pendingMessage, setPendingMessage] = useState("");
@@ -368,7 +371,7 @@ export default function Home(props) {
       return;
     }
     if (photoConsentStatus === "approved") {
-      fileInputRef.current?.click();
+      setShowPhotoMenu(prev => !prev);
       return;
     }
     if (photoConsentStatus === "requested_by_me") {
@@ -409,9 +412,10 @@ export default function Home(props) {
     showToast("Photo sharing declined.", "info");
   };
 
-  const handleImageSelected = async (e) => {
+  const handleImageSelected = async (e, source = 'gallery') => {
     const file = e.target.files?.[0];
     if (e.target) e.target.value = "";
+    setShowPhotoMenu(false);
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
@@ -424,18 +428,20 @@ export default function Home(props) {
       return;
     }
 
+    const isLive = source === 'camera';
+
     try {
       setIsCompressingImage(true);
       const compressed = await compressImage(file);
       setIsCompressingImage(false);
 
-      // Forward directly through socket (ephemeral memory only)
-      socket?.emit("send-photo", { image: compressed, to: partnerId });
+      // Forward directly through socket with isLive metadata (ephemeral memory only)
+      socket?.emit("send-photo", { image: compressed, to: partnerId, isLive });
 
       // Add to own message list
       setMessages(prev => [
         ...prev,
-        { type: "photo", image: compressed, sender: "user", timestamp: Date.now() }
+        { type: "photo", image: compressed, sender: "user", isLive, timestamp: Date.now() }
       ]);
     } catch (err) {
       console.error("Image processing error:", err);
@@ -2041,6 +2047,7 @@ export default function Home(props) {
         setPhotoConsentStatus("idle");
         setPhotoPreviewModal(null);
         setIsCompressingImage(false);
+        setShowPhotoMenu(false);
         iceCandidatesQueue.current = [];
 
         if (!isCurrentTextMode) {
@@ -2172,17 +2179,17 @@ export default function Home(props) {
         }
       });
 
-      socket.on("receive-photo", ({ image, timestamp }) => {
+      socket.on("receive-photo", ({ image, timestamp, isLive }) => {
         setIsPartnerTyping(false);
         if (partnerTypingTimeoutRef.current) clearTimeout(partnerTypingTimeoutRef.current);
         setMessages((prev) => [
           ...prev,
-          { type: "photo", image, sender: "partner", timestamp: timestamp || Date.now() }
+          { type: "photo", image, sender: "partner", isLive: !!isLive, timestamp: timestamp || Date.now() }
         ]);
         if (typeof window !== 'undefined' && window.innerWidth < 768) {
-          setCurrentSubtitle("📷 Stranger sent a photo");
+          setCurrentSubtitle(isLive ? "📸 Stranger sent a live snap" : "📷 Stranger sent a photo");
           setTimeout(() => {
-            setCurrentSubtitle(prev => prev === "📷 Stranger sent a photo" ? "" : prev);
+            setCurrentSubtitle(prev => (prev === "📸 Stranger sent a live snap" || prev === "📷 Stranger sent a photo") ? "" : prev);
           }, 5000);
         }
       });
@@ -2755,6 +2762,7 @@ export default function Home(props) {
     setPhotoConsentStatus("idle");
     setPhotoPreviewModal(null);
     setIsCompressingImage(false);
+    setShowPhotoMenu(false);
     setMessage("");
     setCurrentSubtitle("");
     setPartnerMicOn(true);
@@ -4133,7 +4141,12 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                           </div>
                         ) : msg.type === "photo" ? (
                           <div className="photo-message-card">
-                            <div className="photo-thumbnail-box" onClick={() => setPhotoPreviewModal(msg.image)}>
+                            {msg.isLive && (
+                              <div className="live-snap-badge">
+                                <span className="live-snap-dot"></span> 📸 Verified Live Snap
+                              </div>
+                            )}
+                            <div className="photo-thumbnail-box" onClick={() => setPhotoPreviewModal(msg)}>
                               <img src={msg.image} alt="Shared photo" className="photo-thumbnail-img" />
                               <div className="photo-thumbnail-overlay">
                                 <span>🔍 Tap to view</span>
@@ -4234,34 +4247,87 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     <span className="btn-composer-icon">⏪</span>
                     <span className="btn-composer-label">Rewind</span>
                   </button>
-                  <button 
-                    type="button" 
-                    className={`btn-composer-photo ${photoConsentStatus === 'approved' ? 'consent-granted' : ''}`}
-                    onClick={handlePhotoClick}
-                    title={
-                      !partnerId
-                        ? "Connect to a partner first"
-                        : photoConsentStatus === 'approved'
-                          ? "Send a photo from gallery"
-                          : photoConsentStatus === 'requested_by_me'
-                            ? "Waiting for partner to allow photos..."
-                            : "Mutual Consent: Request to share photos"
-                    }
-                    disabled={!partnerId || isCompressingImage}
-                  >
-                    <span className="btn-composer-icon">
-                      {isCompressingImage ? '⏳' : photoConsentStatus === 'approved' ? '📷' : '📷🔒'}
-                    </span>
-                    <span className="btn-composer-label">
-                      {isCompressingImage ? 'Loading...' : photoConsentStatus === 'approved' ? 'Photo' : 'Photos'}
-                    </span>
-                  </button>
+                  <div style={{ position: 'relative', display: 'inline-flex' }}>
+                    <button 
+                      type="button" 
+                      className={`btn-composer-photo ${photoConsentStatus === 'approved' ? 'consent-granted' : ''}`}
+                      onClick={handlePhotoClick}
+                      title={
+                        !partnerId
+                          ? "Connect to a partner first"
+                          : photoConsentStatus === 'approved'
+                            ? "Take Live Snap or Choose from Gallery"
+                            : photoConsentStatus === 'requested_by_me'
+                              ? "Waiting for partner to allow photos..."
+                              : "Mutual Consent: Request to share photos"
+                      }
+                      disabled={!partnerId || isCompressingImage}
+                    >
+                      <span className="btn-composer-icon">
+                        {isCompressingImage ? '⏳' : photoConsentStatus === 'approved' ? '📷' : '📷🔒'}
+                      </span>
+                      <span className="btn-composer-label">
+                        {isCompressingImage ? 'Loading...' : photoConsentStatus === 'approved' ? 'Photo' : 'Photos'}
+                      </span>
+                    </button>
+
+                    {showPhotoMenu && photoConsentStatus === "approved" && (
+                      <div className="photo-source-popover">
+                        <div className="photo-source-header">
+                          <span>Send Photo</span>
+                          <button type="button" className="photo-source-close" onClick={() => setShowPhotoMenu(false)}>×</button>
+                        </div>
+                        <div className="photo-source-actions">
+                          <button 
+                            type="button" 
+                            className="photo-source-btn camera-source"
+                            onClick={() => {
+                              setShowPhotoMenu(false);
+                              cameraInputRef.current?.click();
+                            }}
+                          >
+                            <span className="source-icon">📸</span>
+                            <div className="source-info">
+                              <span className="source-title">Take Live Photo</span>
+                              <span className="source-desc">Snap live selfie right now</span>
+                            </div>
+                          </button>
+                          <button 
+                            type="button" 
+                            className="photo-source-btn gallery-source"
+                            onClick={() => {
+                              setShowPhotoMenu(false);
+                              galleryInputRef.current?.click();
+                            }}
+                          >
+                            <span className="source-icon">🖼️</span>
+                            <div className="source-info">
+                              <span className="source-title">Choose from Gallery</span>
+                              <span className="source-desc">Upload from your photos</span>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Direct Camera capture for Live Snap */}
                   <input 
                     type="file" 
-                    ref={fileInputRef} 
+                    ref={cameraInputRef} 
+                    accept="image/*" 
+                    capture="user"
+                    style={{ display: 'none' }} 
+                    onChange={(e) => handleImageSelected(e, 'camera')} 
+                  />
+
+                  {/* Standard file picker for Gallery */}
+                  <input 
+                    type="file" 
+                    ref={galleryInputRef} 
                     accept="image/*" 
                     style={{ display: 'none' }} 
-                    onChange={handleImageSelected} 
+                    onChange={(e) => handleImageSelected(e, 'gallery')} 
                   />
                   <input
                     type="text"
@@ -5922,13 +5988,24 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           <div className="photo-lightbox-card" onClick={(e) => e.stopPropagation()}>
             <div className="photo-lightbox-header">
               <div className="photo-lightbox-info">
-                <span className="photo-lightbox-badge">📷 Ephemeral Photo</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="photo-lightbox-badge">📷 Ephemeral Photo</span>
+                  {photoPreviewModal.isLive && (
+                    <span className="live-snap-badge modal-badge">
+                      <span className="live-snap-dot"></span> 📸 Verified Live Snap
+                    </span>
+                  )}
+                </div>
                 <span className="photo-lightbox-hint">Zero storage • Cleared on disconnect</span>
               </div>
               <button className="photo-lightbox-close" onClick={() => setPhotoPreviewModal(null)}>×</button>
             </div>
             <div className="photo-lightbox-body">
-              <img src={photoPreviewModal} alt="Expanded photo" className="photo-lightbox-img" />
+              <img 
+                src={typeof photoPreviewModal === 'string' ? photoPreviewModal : photoPreviewModal.image} 
+                alt="Expanded photo" 
+                className="photo-lightbox-img" 
+              />
             </div>
             <div className="photo-lightbox-footer">
               <button 
@@ -6958,7 +7035,122 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           }
           .btn-composer-stop,
           .btn-composer-rewind,
-          .btn-composer-photo {
+          /* Photo Choice Popover */
+        .photo-source-popover {
+          position: absolute;
+          bottom: calc(100% + 10px);
+          left: 0;
+          background: #0f172a;
+          border: 1px solid rgba(168, 85, 247, 0.4);
+          border-radius: 18px;
+          padding: 12px;
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+          z-index: 2000;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          min-width: 250px;
+          animation: modalScaleUp 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .photo-source-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 0.78rem;
+          font-weight: 800;
+          color: #94a3b8;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          padding-bottom: 6px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .photo-source-close {
+          background: none;
+          border: none;
+          color: #94a3b8;
+          font-size: 1.1rem;
+          cursor: pointer;
+          padding: 0 4px;
+          line-height: 1;
+        }
+        .photo-source-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .photo-source-btn {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 9px 12px;
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.03);
+          color: #fff;
+          cursor: pointer;
+          transition: all 0.2s;
+          text-align: left;
+        }
+        .photo-source-btn:hover {
+          background: rgba(168, 85, 247, 0.15);
+          border-color: rgba(168, 85, 247, 0.3);
+          transform: translateY(-1px);
+        }
+        .photo-source-btn .source-icon {
+          font-size: 1.35rem;
+        }
+        .photo-source-btn .source-info {
+          display: flex;
+          flex-direction: column;
+        }
+        .photo-source-btn .source-title {
+          font-size: 0.86rem;
+          font-weight: 700;
+          color: #fff;
+        }
+        .photo-source-btn .source-desc {
+          font-size: 0.7rem;
+          color: #94a3b8;
+        }
+
+        /* Live Snap Badge */
+        .live-snap-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.68rem;
+          font-weight: 800;
+          padding: 2px 8px;
+          border-radius: 12px;
+          background: rgba(16, 185, 129, 0.15);
+          border: 1px solid rgba(16, 185, 129, 0.35);
+          color: #34d399;
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+          margin-bottom: 4px;
+          align-self: flex-start;
+        }
+        .live-snap-badge.modal-badge {
+          font-size: 0.72rem;
+          padding: 3px 10px;
+          margin-bottom: 0;
+        }
+        .live-snap-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #10b981;
+          box-shadow: 0 0 8px #10b981;
+          display: inline-block;
+          animation: pulseLiveDot 1.5s infinite;
+        }
+        @keyframes pulseLiveDot {
+          0% { transform: scale(0.9); opacity: 0.7; }
+          50% { transform: scale(1.2); opacity: 1; }
+          100% { transform: scale(0.9); opacity: 0.7; }
+        }
+
+        .btn-composer-photo {
             width: 36px !important;
             min-width: 36px !important;
             max-width: 36px !important;

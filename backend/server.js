@@ -3205,7 +3205,7 @@ function endQuiz(roomId) {
         }
       });
 
-      socket.on("send-photo", ({ image, to }) => {
+      socket.on("send-photo", ({ image, to, isLive }) => {
         const targetId = to || (socket.partner ? socket.partner.id : null);
         if (!targetId || !image) return;
         // In-memory pass-through only; ensure valid data URL and under 1.2MB payload
@@ -3213,6 +3213,7 @@ function endQuiz(roomId) {
           io.to(targetId).emit("receive-photo", {
             image,
             senderId: socket.id,
+            isLive: !!isLive,
             timestamp: Date.now()
           });
         }
