@@ -78,7 +78,7 @@ export default function Terms() {
         }}>
           <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.8', margin: 0 }}>
             <span style={{ color: '#c4b5fd', fontWeight: 700 }}>ZoneMeet</span> is independently developed and managed by{' '}
-            <span style={{ color: '#a5b4fc', fontWeight: 700 }}>Davinder Singh</span>.<br />
+            <span style={{ color: '#a5b4fc', fontWeight: 700 }}>ZoneMeet Team</span>.<br />
             For support, partnerships, business inquiries, or any important concerns, please contact:{' '}
             <a href="mailto:zonemeet84@gmail.com" style={{ color: '#818cf8', fontWeight: 700, textDecoration: 'none' }}>
               zonemeet84@gmail.com

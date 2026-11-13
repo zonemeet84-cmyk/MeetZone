@@ -6,7 +6,7 @@ export default function About() {
     <div className="about-wrap">
       <Head>
         <title>About Us | ZoneMeet</title>
-        <meta name="description" content="Learn about ZoneMeet — the global video chat platform independently built by Davinder Singh. Strictly 18+ only." />
+        <meta name="description" content="Learn about ZoneMeet — the global video chat platform built for authentic connections worldwide. Strictly 18+ only." />
       </Head>
 
       {/* DYNAMIC BACKGROUND */}
@@ -193,7 +193,7 @@ export default function About() {
                 <h2>Independently Built with ❤️</h2>
                 <p className="founder-highlight">
                   ZoneMeet is independently developed and managed by{" "}
-                  <span className="name-highlight">Davinder Singh</span>.
+                  <span className="name-highlight">the ZoneMeet Team</span>.
                 </p>
                 <p className="founder-sub">
                   What started as a bold vision to build a world-class, safe and lightning-fast video chat 
@@ -222,7 +222,7 @@ export default function About() {
 
         {/* FOOTER */}
         <footer className="about-footer">
-          <p>© 2026 ZoneMeet. All rights reserved. | Independently owned & operated by Davinder Singh.</p>
+          <p>© 2026 ZoneMeet. All rights reserved.</p>
           <div className="footer-links">
             <Link href="/">Home</Link>
             <Link href="/contact">Contact</Link>

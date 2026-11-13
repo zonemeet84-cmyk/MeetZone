@@ -413,7 +413,7 @@ export default function OmegleVsChatrouletteBlog() {
 
         {/* FOOTER */}
         <footer className="blog-footer">
-          <p>© 2026 ZoneMeet. All rights reserved. | Developed by Davinder Singh.</p>
+          <p>© 2026 ZoneMeet. All rights reserved.</p>
           <div className="footer-links">
             <Link href="/">Home</Link>
             <Link href="/contact">Contact</Link>
