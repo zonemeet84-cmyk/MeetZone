@@ -437,6 +437,7 @@ export default function Home(props) {
 
       // Forward directly through socket with isLive metadata (ephemeral memory only)
       socket?.emit("send-photo", { image: compressed, to: partnerId, isLive });
+      socket?.emit("photo-done", { to: partnerId });
 
       // Add to own message list
       setMessages(prev => [
@@ -1615,6 +1616,22 @@ export default function Home(props) {
   const originalAudioTrackRef = useRef(null);
   const pitchWorkletRegistered = useRef(false);
 
+  useEffect(() => {
+    const handleWindowFocus = () => {
+      if (socket && partnerId) {
+        socket.emit("photo-done", { to: partnerId });
+      }
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("focus", handleWindowFocus);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("focus", handleWindowFocus);
+      }
+    };
+  }, [socket, partnerId]);
+
   // Global AudioContext auto-resume helpers for mobile and desktop compatibility
   useEffect(() => {
     const resumeAudio = async () => {
@@ -1662,9 +1679,13 @@ export default function Home(props) {
     }
   }, [messages, isPartnerTyping]);
 
-  // Close identity popup on outside click
+  // Close identity popup and photo menu on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
+      if (showPhotoMenu && !event.target.closest(".composer-photo-container")) {
+        setShowPhotoMenu(false);
+      }
+
       if (activeIdentityMenu) {
         if (
           !event.target.closest(".identity-popup-bubble") &&
@@ -2177,6 +2198,16 @@ export default function Home(props) {
           ]);
           showToast("Stranger declined photo sharing.", "info");
         }
+      });
+
+      socket.on("partner-taking-photo", () => {
+        setIsPartnerTyping(false);
+        showToast("📸 Stranger is capturing a live photo... Holding chat!", "info");
+        setStatus("Partner is taking a live photo... 📸");
+      });
+
+      socket.on("partner-photo-done", () => {
+        setStatus("Connected");
       });
 
       socket.on("receive-photo", ({ image, timestamp, isLive }) => {
@@ -4247,7 +4278,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     <span className="btn-composer-icon">⏪</span>
                     <span className="btn-composer-label">Rewind</span>
                   </button>
-                  <div style={{ position: 'relative', display: 'inline-flex' }}>
+                  <div className="composer-photo-container">
                     <button 
                       type="button" 
                       className={`btn-composer-photo ${photoConsentStatus === 'approved' ? 'consent-granted' : ''}`}
@@ -4256,7 +4287,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                         !partnerId
                           ? "Connect to a partner first"
                           : photoConsentStatus === 'approved'
-                            ? "Take Live Snap or Choose from Gallery"
+                            ? "Send Photo (Camera or Gallery)"
                             : photoConsentStatus === 'requested_by_me'
                               ? "Waiting for partner to allow photos..."
                               : "Mutual Consent: Request to share photos"
@@ -4272,41 +4303,30 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     </button>
 
                     {showPhotoMenu && photoConsentStatus === "approved" && (
-                      <div className="photo-source-popover">
-                        <div className="photo-source-header">
-                          <span>Send Photo</span>
-                          <button type="button" className="photo-source-close" onClick={() => setShowPhotoMenu(false)}>×</button>
-                        </div>
-                        <div className="photo-source-actions">
-                          <button 
-                            type="button" 
-                            className="photo-source-btn camera-source"
-                            onClick={() => {
-                              setShowPhotoMenu(false);
-                              cameraInputRef.current?.click();
-                            }}
-                          >
-                            <span className="source-icon">📸</span>
-                            <div className="source-info">
-                              <span className="source-title">Take Live Photo</span>
-                              <span className="source-desc">Snap live selfie right now</span>
-                            </div>
-                          </button>
-                          <button 
-                            type="button" 
-                            className="photo-source-btn gallery-source"
-                            onClick={() => {
-                              setShowPhotoMenu(false);
-                              galleryInputRef.current?.click();
-                            }}
-                          >
-                            <span className="source-icon">🖼️</span>
-                            <div className="source-info">
-                              <span className="source-title">Choose from Gallery</span>
-                              <span className="source-desc">Upload from your photos</span>
-                            </div>
-                          </button>
-                        </div>
+                      <div className="photo-source-mini-popover">
+                        <button 
+                          type="button" 
+                          className="photo-source-mini-btn"
+                          onClick={() => {
+                            setShowPhotoMenu(false);
+                            socket?.emit("taking-photo", { to: partnerId });
+                            cameraInputRef.current?.click();
+                          }}
+                        >
+                          <span className="source-mini-icon">📸</span>
+                          <span className="source-mini-text">Camera</span>
+                        </button>
+                        <button 
+                          type="button" 
+                          className="photo-source-mini-btn"
+                          onClick={() => {
+                            setShowPhotoMenu(false);
+                            galleryInputRef.current?.click();
+                          }}
+                        >
+                          <span className="source-mini-icon">🖼️</span>
+                          <span className="source-mini-text">Gallery</span>
+                        </button>
                       </div>
                     )}
                   </div>
@@ -7031,87 +7051,24 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             box-sizing: border-box !important;
             width: 100% !important;
             max-width: 100vw !important;
-            overflow: hidden !important;
+            overflow: visible !important;
+            position: relative !important;
           }
           .btn-composer-stop,
           .btn-composer-rewind,
-          /* Photo Choice Popover */
-        .photo-source-popover {
-          position: absolute;
-          bottom: calc(100% + 10px);
-          left: 0;
-          background: #0f172a;
-          border: 1px solid rgba(168, 85, 247, 0.4);
-          border-radius: 18px;
-          padding: 12px;
-          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
-          z-index: 2000;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          min-width: 250px;
-          animation: modalScaleUp 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .photo-source-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 0.78rem;
-          font-weight: 800;
-          color: #94a3b8;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          padding-bottom: 6px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        }
-        .photo-source-close {
-          background: none;
-          border: none;
-          color: #94a3b8;
-          font-size: 1.1rem;
-          cursor: pointer;
-          padding: 0 4px;
-          line-height: 1;
-        }
-        .photo-source-actions {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-        .photo-source-btn {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 9px 12px;
-          border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          background: rgba(255, 255, 255, 0.03);
-          color: #fff;
-          cursor: pointer;
-          transition: all 0.2s;
-          text-align: left;
-        }
-        .photo-source-btn:hover {
-          background: rgba(168, 85, 247, 0.15);
-          border-color: rgba(168, 85, 247, 0.3);
-          transform: translateY(-1px);
-        }
-        .photo-source-btn .source-icon {
-          font-size: 1.35rem;
-        }
-        .photo-source-btn .source-info {
-          display: flex;
-          flex-direction: column;
-        }
-        .photo-source-btn .source-title {
-          font-size: 0.86rem;
-          font-weight: 700;
-          color: #fff;
-        }
-        .photo-source-btn .source-desc {
-          font-size: 0.7rem;
-          color: #94a3b8;
-        }
+          .btn-composer-photo {
+            width: 36px !important;
+            min-width: 36px !important;
+            max-width: 36px !important;
+            height: 36px !important;
+            padding: 0 !important;
+            border-radius: 10px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex: 0 0 36px !important;
+            font-size: 1.05rem !important;
+          }
 
         /* Live Snap Badge */
         .live-snap-badge {
@@ -9730,6 +9687,60 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         }
 
         /* Ephemeral Photo Sharing & Consent Styles */
+        .composer-photo-container {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+        }
+        .photo-source-mini-popover {
+          position: absolute;
+          bottom: calc(100% + 8px);
+          left: 0;
+          background: #0f172a;
+          border: 1px solid rgba(168, 85, 247, 0.45);
+          border-radius: 12px;
+          padding: 4px;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8), 0 0 12px rgba(168, 85, 247, 0.25);
+          z-index: 10000;
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+          width: 105px;
+          box-sizing: border-box;
+          animation: modalScaleUp 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .photo-source-mini-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 10px;
+          border-radius: 8px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.04);
+          color: #ffffff;
+          cursor: pointer;
+          font-size: 0.8rem;
+          font-weight: 700;
+          transition: all 0.15s ease;
+          width: 100%;
+          justify-content: flex-start;
+          white-space: nowrap;
+        }
+        .photo-source-mini-btn:hover {
+          background: rgba(168, 85, 247, 0.25);
+          border-color: rgba(168, 85, 247, 0.5);
+          color: #ffffff;
+          transform: translateY(-1px);
+        }
+        .photo-source-mini-btn .source-mini-icon {
+          font-size: 0.95rem;
+          line-height: 1;
+        }
+        .photo-source-mini-btn .source-mini-text {
+          font-size: 0.78rem;
+          font-weight: 700;
+          color: #f1f5f9;
+        }
         .btn-composer-photo {
           background: rgba(255, 255, 255, 0.06);
           border: 1px solid rgba(255, 255, 255, 0.12);
@@ -11395,7 +11406,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             box-sizing: border-box !important;
             width: 100% !important;
             max-width: 100vw !important;
-            overflow: hidden !important;
+            overflow: visible !important;
             display: flex !important;
             flex-direction: row !important;
             align-items: center !important;

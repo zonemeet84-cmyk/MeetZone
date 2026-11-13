@@ -3205,8 +3205,28 @@ function endQuiz(roomId) {
         }
       });
 
-      socket.on("send-photo", ({ image, to, isLive }) => {
+      socket.on("taking-photo", ({ to }) => {
+        socket.isTakingPhoto = true;
         const targetId = to || (socket.partner ? socket.partner.id : null);
+        if (targetId) {
+          io.to(targetId).emit("partner-taking-photo");
+        }
+      });
+
+      socket.on("photo-done", ({ to }) => {
+        socket.isTakingPhoto = false;
+        const targetId = to || (socket.partner ? socket.partner.id : null);
+        if (targetId) {
+          io.to(targetId).emit("partner-photo-done");
+        }
+      });
+
+      socket.on("send-photo", ({ image, to, isLive }) => {
+        socket.isTakingPhoto = false;
+        const targetId = to || (socket.partner ? socket.partner.id : null);
+        if (targetId) {
+          io.to(targetId).emit("partner-photo-done");
+        }
         if (!targetId || !image) return;
         // In-memory pass-through only; ensure valid data URL and under 1.2MB payload
         if (typeof image === "string" && image.startsWith("data:image/") && image.length < 1200000) {
@@ -3320,6 +3340,10 @@ function endQuiz(roomId) {
       });
 
       socket.on("next", () => {
+        if (socket.pendingDisconnectTimer) {
+          clearTimeout(socket.pendingDisconnectTimer);
+          socket.pendingDisconnectTimer = null;
+        }
         if (socket.partner) {
           socket.partner.emit("partner-stop-typing");
           socket.partner.emit("partner-disconnected");
@@ -3332,6 +3356,10 @@ function endQuiz(roomId) {
       });
 
       socket.on("stop-matching", () => {
+        if (socket.pendingDisconnectTimer) {
+          clearTimeout(socket.pendingDisconnectTimer);
+          socket.pendingDisconnectTimer = null;
+        }
         if (socket.partner) {
           socket.partner.emit("partner-stop-typing");
           socket.partner.emit("partner-stopped");
@@ -3430,10 +3458,27 @@ function endQuiz(roomId) {
 
         if (socket.partner) {
           const partner = socket.partner;
-          partner.emit("partner-stop-typing");
-          partner.emit("partner-disconnected");
-          partner.partner = null;
-          queueUser(partner);
+          const currentId = socket.id;
+          const wasTakingPhoto = socket.isTakingPhoto;
+
+          if (wasTakingPhoto) {
+            // Mobile browser went to native camera: Hold match for 60 seconds!
+            partner.emit("partner-taking-photo");
+            const graceTimer = setTimeout(() => {
+              if (partner && partner.partner && partner.partner.id === currentId) {
+                partner.emit("partner-stop-typing");
+                partner.emit("partner-disconnected");
+                partner.partner = null;
+                queueUser(partner);
+              }
+            }, 60000);
+            partner.pendingDisconnectTimer = graceTimer;
+          } else {
+            partner.emit("partner-stop-typing");
+            partner.emit("partner-disconnected");
+            partner.partner = null;
+            queueUser(partner);
+          }
         }
       });
 
