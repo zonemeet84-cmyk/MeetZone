@@ -446,8 +446,8 @@ export default function Dashboard(props) {
       const KNOWLEDGE = {
         greeting: {
           keywords: ['hi', 'hello', 'hey', 'kaise ho', 'hlo', 'namaste', 'kaise ho aap', 'kaise ho bhai', 'how are you', 'wbu', 'wassup', 'good morning', 'good evening', 'good night'],
-          en: "Hello! 👋 I'm doing great! I'm ZoneMeet's AI Assistant. How can I help you today? You can ask me about Coins, VIP Plans, Safety, or Leaderboards!",
-          hi: "Namaste! 👋 Main ekdum mast hoon! Main ZoneMeet AI Assistant hoon. Aaj main aapki kya help karoon? Aap mujhse Coins, VIP Plans, Rules, ya Leaderboard ke baare me puch sakte hain!"
+          en: "Hello! 👋 I'm doing great! I'm ZoneMeet's Assistant. How can I help you today? You can ask me about Coins, VIP Plans, Safety, or Leaderboards!",
+          hi: "Namaste! 👋 Main ekdum mast hoon! Main ZoneMeet Assistant hoon. Aaj main aapki kya help karoon? Aap mujhse Coins, VIP Plans, Rules, ya Leaderboard ke baare me puch sakte hain!"
         },
         thanks: {
           keywords: ['thanks', 'thank you', 'dhanyawad', 'shukriya', 'thx', 'shukriyaa', 'welcome', 'badiya', 'great', 'awesome', 'mast'],
@@ -491,8 +491,8 @@ export default function Dashboard(props) {
         },
         safety: {
           keywords: ['ban', 'report', 'safe', 'rule', 'nude', 'bad', 'block', 'ganda', 'safety', 'guardian', 'harass'],
-          en: "Safety is #1! 🛡️ Our AI Guardian monitors calls. Harassment or 18+ content results in a permanent ban. Report users using the 🚩 button to keep the community safe.",
-          hi: "Safety humari priority hai! 🛡️ Ganda kaam karne walo ko AI Guardian turant ban kar deta hai. Kisi ko report karne ke liye 🚩 button dabayein."
+          en: "Safety is #1! 🛡️ Our Guardian moderation team enforces safety. Harassment or 18+ content results in a permanent ban. Report users using the 🚩 button to keep the community safe.",
+          hi: "Safety humari priority hai! 🛡️ Ganda kaam karne walo ko turant ban kar diya jata hai. Kisi ko report karne ke liye 🚩 button dabayein."
         },
         referral: {
           keywords: ['refer', 'invite', 'earn', 'code', 'link', 'friend', 'share', 'gift', 'bonus'],
@@ -517,8 +517,8 @@ export default function Dashboard(props) {
       };
 
       let reply = isHindi
-        ? "Main ZoneMeet AI hoon. Main aapki Coins, VIP, Mystery Boxes, Safety, ya Friends system mein help kar sakta hoon. Aap kya puchna chahte hain?"
-        : "I am ZoneMeet AI. I can help you with Coins, VIP Plans, Mystery Boxes, Safety rules, or the Friends system. What would you like to know?";
+        ? "Main ZoneMeet Assistant hoon. Main aapki Coins, VIP, Mystery Boxes, Safety, ya Friends system mein help kar sakta hoon. Aap kya puchna chahte hain?"
+        : "I am ZoneMeet Assistant. I can help you with Coins, VIP Plans, Mystery Boxes, Safety rules, or the Friends system. What would you like to know?";
 
       for (const key in KNOWLEDGE) {
         if (matches(KNOWLEDGE[key].keywords)) {
@@ -1476,14 +1476,14 @@ export default function Dashboard(props) {
                 <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "8px" }}>
                   <span style={{ fontSize: "32px" }}>🔞</span>
                   <p style={{ color: "#fca5a5", fontSize: "12px", fontWeight: 600, margin: 0 }}>Inappropriate Content Detected</p>
-                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "11px", margin: 0 }}>Recorded by AI Guardian</p>
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "11px", margin: 0 }}>Incident evidence recorded by ZoneMeet Guardian</p>
                 </div>
               </div>
             </div>
           )}
           <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "16px 20px", marginBottom: "28px", textAlign: "left" }}>
             <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px", lineHeight: 1.7, margin: 0 }}>
-              🛡️ Our AI Guardian detected a safety violation. To appeal, contact <span style={{ color: "#818cf8" }}>zonemeet84@gmail.com</span>
+              🛡️ A safety violation was confirmed on this account. To appeal, contact <span style={{ color: "#818cf8" }}>zonemeet84@gmail.com</span>
             </p>
           </div>
           <button
@@ -2126,9 +2126,9 @@ export default function Dashboard(props) {
             </div>
 
             <div className="stat-premium-card">
-              <h3 style={{ color: '#f472b6' }}>AI</h3>
+              <h3 style={{ color: '#f472b6' }}>100%</h3>
               <p className="stat-label">Smart Guardian</p>
-              <p className="stat-desc">Real-time AI moderation ensuring clean and friendly video & text rooms.</p>
+              <p className="stat-desc">Active moderation ensuring clean and friendly video & text rooms.</p>
             </div>
           </div>
         </div>
@@ -2256,7 +2256,7 @@ export default function Dashboard(props) {
           <div className="support-banner-visual">
             <picture style={{ width: '100%', height: 'auto' }}>
               <source media="(max-width: 768px)" srcSet="/home-support-3d_mobile.webp" />
-              <img src="/home-support-3d.webp" alt="ZoneMeet AI Guardian and Safety Shield 3D illustration for fully moderated video chat" loading="lazy" className="floating-3d-shield" style={{ width: '100%', height: 'auto' }} />
+              <img src="/home-support-3d.webp" alt="ZoneMeet Guardian and Safety Shield 3D illustration for fully moderated video chat" loading="lazy" className="floating-3d-shield" style={{ width: '100%', height: 'auto' }} />
             </picture>
             <div className="visual-glow" />
           </div>
@@ -2264,14 +2264,14 @@ export default function Dashboard(props) {
             <div className="support-tag">🛡️ ZERO TOLERANCE PLATFORM</div>
             <h2>Your Safety is our <br /><span>Top Priority.</span></h2>
             <p>
-              ZoneMeet uses AI moderation and manual review systems to prevent nudity, abuse, harassment, and unsafe behavior. Our advanced NSFW detection models scan streams in real time to ensure a fully moderated, secure live interaction experience.
+              ZoneMeet uses active moderation and human review systems to prevent nudity, abuse, harassment, and unsafe behavior. Our rapid 1-click reporting captures verified evidence to ensure a fully moderated, secure live interaction experience.
             </p>
             <div className="support-features" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
               <div className="s-feat">
-                <span className="s-icon">🤖</span>
+                <span className="s-icon">🛡️</span>
                 <div>
-                  <h4>AI Moderation</h4>
-                  <p>AI scans inappropriate content in real time.</p>
+                  <h4>Instant Reporting</h4>
+                  <p>1-tap reporting with automatic evidence capture.</p>
                 </div>
               </div>
               <div className="s-feat">
@@ -3965,12 +3965,12 @@ export default function Dashboard(props) {
         </div>
       )}
 
-      {/* ZONEMEET AI CHATBOT WIDGET */}
+      {/* ZONEMEET SUPPORT CHATBOT WIDGET */}
       <div className="zonemeetbot-widget bot-toggle-widget">
         {!isBotOpen ? (
           <button className="bot-toggle-btn" onClick={() => setIsBotOpen(true)}>
             <span className="bot-icon">🤖</span>
-            <span className="bot-tooltip">24/7 AI Support</span>
+            <span className="bot-tooltip">24/7 Support Assistant</span>
           </button>
         ) : (
           <div className="bot-window">
@@ -3978,7 +3978,7 @@ export default function Dashboard(props) {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span className="bot-avatar">🤖</span>
                 <div>
-                  <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>ZoneMeet AI</div>
+                  <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>ZoneMeet Assistant</div>
                   <div style={{ fontSize: '0.7rem', color: '#10b981' }}>● Online 24/7</div>
                 </div>
               </div>

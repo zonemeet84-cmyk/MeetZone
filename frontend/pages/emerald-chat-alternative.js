@@ -27,7 +27,7 @@ export default function EmeraldChatAlternative() {
         "name": "How does ZoneMeet handle user safety?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "We combine advanced real-time AI image analysis with secure sign-in verification. The AI Guardian automatically scans for violations like vulgarity or static screens and issues immediate blocks. Respectful users can also flag inappropriate partners using the on-screen report button."
+          "text": "We combine advanced rapid report evidence verification with secure sign-in verification. Our administration team reviews verified in-call reports and terminates violating profiles. Respectful users can also flag inappropriate partners using the on-screen report button."
         }
       },
       {
@@ -143,8 +143,8 @@ export default function EmeraldChatAlternative() {
           </div>
           <div className="feat-card">
             <div className="feat-icon">👮</div>
-            <h3>Active AI Moderation</h3>
-            <p>Our real-time AI Guardian keeps the platform clean by automatically scanning feeds and blocking vulgarity, spambots, and fake streams.</p>
+            <h3>Active Active Moderation</h3>
+            <p>Our real-time ZoneMeet Guardian keeps the platform clean by automatically scanning feeds and blocking vulgarity, spambots, and fake streams.</p>
           </div>
         </section>
 
@@ -194,9 +194,9 @@ export default function EmeraldChatAlternative() {
               </p>
             </div>
             <div className="sub-card">
-              <h3>4. Smart AI Spam Defense</h3>
+              <h3>4. Smart Spam Defense</h3>
               <p>
-                To keep the community positive, our AI Guardian automatically identifies and filters spambots, static image loops, and pre-recorded advertising feeds, so you only meet real people.
+                To keep the community positive, our ZoneMeet Guardian automatically identifies and filters spambots, static image loops, and pre-recorded advertising feeds, so you only meet real people.
               </p>
             </div>
           </div>
@@ -232,7 +232,7 @@ export default function EmeraldChatAlternative() {
                 </tr>
                 <tr>
                   <td><strong>Spam Prevention</strong></td>
-                  <td className="highlight-yes">Real-Time AI Scanner + Verified Login</td>
+                  <td className="highlight-yes">1-Click Reports + Verified Login</td>
                   <td>Basic captcha checks</td>
                 </tr>
                 <tr>
@@ -261,10 +261,10 @@ export default function EmeraldChatAlternative() {
         <section className="content-section">
           <h2>Real-Time Safety &amp; Moderation at Scale</h2>
           <p>
-            Spontaneous video platforms require active safety measures. While anonymity can be fun, it can also attract inappropriate behavior. To address this, ZoneMeet combines automated AI detection with user reporting systems.
+            Spontaneous video platforms require active safety measures. While anonymity can be fun, it can also attract inappropriate behavior. To address this, ZoneMeet combines rapid in-call user reporting with admin review.
           </p>
           <p>
-            Our AI Guardian monitors active connections, automatically detecting terms-of-service violations. In addition, users can click the report flag to submit feeds for immediate review. Any users violating our guidelines receive permanent bans, keeping the matching pool respectful.
+            Our ZoneMeet Guardian monitors active connections, automatically detecting terms-of-service violations. In addition, users can click the report flag to submit feeds for immediate review. Any users violating our guidelines receive permanent bans, keeping the matching pool respectful.
           </p>
           <p>
             We also restrict access to users aged 18 and older. To learn more about our safety standards, please read our <Link href="/safety" className="blog-link">Safety Portal</Link> and review our <Link href="/guidelines" className="blog-link">Community Standards</Link>.
@@ -331,7 +331,7 @@ export default function EmeraldChatAlternative() {
             </div>
             <div className="faq-item">
               <h3>How does ZoneMeet handle user safety?</h3>
-              <p>We combine advanced real-time AI image analysis with secure sign-in verification. The AI Guardian automatically scans for violations like vulgarity or static screens and issues immediate blocks. Respectful users can also flag inappropriate partners using the on-screen report button.</p>
+              <p>We combine advanced rapid report evidence verification with secure sign-in verification. Our administration team reviews verified in-call reports and terminates violating profiles. Respectful users can also flag inappropriate partners using the on-screen report button.</p>
             </div>
             <div className="faq-item">
               <h3>Can I reconnect with matches I like?</h3>
@@ -355,7 +355,7 @@ export default function EmeraldChatAlternative() {
 
         {/* FOOTER */}
         <footer className="footer">
-          <p>© 2026 ZoneMeet AI. All rights reserved. | Developed by Davinder Singh.</p>
+          <p>© 2026 ZoneMeet. All rights reserved. | Developed by Davinder Singh.</p>
           <div className="footer-links">
             <Link href="/">Home</Link>
             <Link href="/contact">Contact</Link>

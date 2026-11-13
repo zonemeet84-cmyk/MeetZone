@@ -27,7 +27,7 @@ export default function CoomeetAlternative() {
         "name": "How does ZoneMeet protect my safety during video chats?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "We combine advanced real-time AI content scanning with secure Google login requirements to eliminate automated bots and spam feeds. Additionally, all our audio/video feeds are routed direct peer-to-peer using WebRTC, meaning your calls are fully encrypted and private."
+          "text": "We combine advanced rapid reporting and verification with secure Google login requirements to eliminate automated bots and spam feeds. Additionally, all our audio/video feeds are routed direct peer-to-peer using WebRTC, meaning your calls are fully encrypted and private."
         }
       },
       {
@@ -129,7 +129,7 @@ export default function CoomeetAlternative() {
           </div>
           <div className="feat-card">
             <div className="feat-icon">🛡️</div>
-            <h3>Active AI Moderation</h3>
+            <h3>Active Active Moderation</h3>
             <p>Our real-time safety guardians monitor reports and flagged streams to keep the network respectful and safe. Connect with peace of mind in a friendly, positive digital environment.</p>
           </div>
         </section>
@@ -167,7 +167,7 @@ export default function CoomeetAlternative() {
             <div className="sub-card">
               <h3>2. Safe, Bot-Free verified Network</h3>
               <p>
-                A major complaint on standard chat networks is the sheer volume of automated spambots, fake feeds, and pre-recorded video loops. ZoneMeet tackles this by requiring secure authentication (such as Google Sign-In) to verify active accounts. Coupled with real-time AI scanning and rapid-report flags, we keep our community authentic.
+                A major complaint on standard chat networks is the sheer volume of automated spambots, fake feeds, and pre-recorded video loops. ZoneMeet tackles this by requiring secure authentication (such as Google Sign-In) to verify active accounts. Coupled with rapid reporting and evidence verification and rapid-report flags, we keep our community authentic.
               </p>
             </div>
             <div className="sub-card">
@@ -215,7 +215,7 @@ export default function CoomeetAlternative() {
                 </tr>
                 <tr>
                   <td><strong>Bot Prevention</strong></td>
-                  <td className="highlight-yes">AI filters & Secure Account Auth</td>
+                  <td className="highlight-yes">moderation filters & Secure Account Auth</td>
                   <td>Basic captcha checks</td>
                 </tr>
                 <tr>
@@ -325,7 +325,7 @@ export default function CoomeetAlternative() {
             </div>
             <div className="faq-item">
               <h3>How does ZoneMeet protect my safety during video chats?</h3>
-              <p>We combine advanced real-time AI content scanning with secure Google login requirements to eliminate automated bots and spam feeds. Additionally, all our audio/video feeds are routed direct peer-to-peer using WebRTC, meaning your calls are fully encrypted and private.</p>
+              <p>We combine advanced rapid reporting and verification with secure Google login requirements to eliminate automated bots and spam feeds. Additionally, all our audio/video feeds are routed direct peer-to-peer using WebRTC, meaning your calls are fully encrypted and private.</p>
             </div>
             <div className="faq-item">
               <h3>Do I need to download a mobile application?</h3>
@@ -349,7 +349,7 @@ export default function CoomeetAlternative() {
 
         {/* FOOTER */}
         <footer className="footer">
-          <p>© 2026 ZoneMeet AI. All rights reserved. | Developed by Davinder Singh.</p>
+          <p>© 2026 ZoneMeet. All rights reserved. | Developed by Davinder Singh.</p>
           <div className="footer-links">
             <Link href="/">Home</Link>
             <Link href="/contact">Contact</Link>

@@ -43,7 +43,7 @@ export default function FreeCamChat() {
         "name": "Is free cam chat safe from automated bots?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes. ZoneMeet implements hardware and browser telemetry analysis alongside real-time AI scanning to detect and block bots, emulator software, and fake video feeds, ensuring your matches are with real, active webcams."
+          "text": "Yes. ZoneMeet implements hardware and browser telemetry analysis alongside rapid reporting and evidence verification to detect and block bots, emulator software, and fake video feeds, ensuring your matches are with real, active webcams."
         }
       }
     ]
@@ -117,8 +117,8 @@ export default function FreeCamChat() {
           </div>
           <div className="feat-card">
             <div className="feat-icon">🛡️</div>
-            <h3>AI Guard Protection</h3>
-            <p>Our background AI filters scan active connections for policy violations, instantly flagging nudity and harassment to preserve safety.</p>
+            <h3>Guardian Protection</h3>
+            <p>Our in-call reporting tools and moderators review active connections for policy violations, instantly flagging nudity and harassment to preserve safety.</p>
           </div>
         </section>
 
@@ -173,7 +173,7 @@ export default function FreeCamChat() {
             <li><strong>Preserve Your Anonymity:</strong> Do not share personal files, phone numbers, or social media links in casual chat rooms.</li>
             <li><strong>Verify Before Clicking:</strong> Never click on links shared in text blocks. These can be cookies or IP harvesting scripts.</li>
             <li><strong>Adjust Your Camera View:</strong> Check your background to ensure no personal items like mail, uniform logos, or landmarks are visible.</li>
-            <li><strong>Participate in Safety:</strong> If a match behaves inappropriately, click the report flag immediately to trigger our AI Guardian safety scanner.</li>
+            <li><strong>Participate in Safety:</strong> If a match behaves inappropriately, click the report flag immediately to trigger our ZoneMeet Guardian safety scanner.</li>
           </ol>
         </section>
 
@@ -259,7 +259,7 @@ export default function FreeCamChat() {
             </div>
             <div className="faq-item">
               <h3>Is free cam chat safe from automated bots?</h3>
-              <p>Yes. ZoneMeet implements hardware and browser telemetry analysis alongside real-time AI scanning to detect and block bots, emulator software, and fake video feeds, ensuring your matches are with real, active webcams.</p>
+              <p>Yes. ZoneMeet implements hardware and browser telemetry analysis alongside rapid reporting and evidence verification to detect and block bots, emulator software, and fake video feeds, ensuring your matches are with real, active webcams.</p>
             </div>
           </div>
         </section>
@@ -275,7 +275,7 @@ export default function FreeCamChat() {
 
         {/* FOOTER */}
         <footer className="footer">
-          <p>© 2026 ZoneMeet AI. All rights reserved. | Developed by Davinder Singh.</p>
+          <p>© 2026 ZoneMeet. All rights reserved. | Developed by Davinder Singh.</p>
           <div className="footer-links">
             <Link href="/">Home</Link>
             <Link href="/contact">Contact</Link>

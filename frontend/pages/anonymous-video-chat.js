@@ -134,8 +134,8 @@ export default function AnonymousVideoChat() {
             </div>
             <div className="why-card">
               <div className="why-icon">🛡️</div>
-              <h3>AI-Moderated Safety</h3>
-              <p>Our real-time AI moderation system keeps every chat safe and respectful. Harmful content is detected and removed instantly so you can focus on connecting.</p>
+              <h3>Fully Moderated Safety</h3>
+              <p>Our real-time active moderation system keeps every chat safe and respectful. Harmful content is detected and removed instantly so you can focus on connecting.</p>
             </div>
             <div className="why-card">
               <div className="why-icon">🎯</div>
@@ -235,7 +235,7 @@ export default function AnonymousVideoChat() {
             </div>
             <div className="faq-item">
               <h3>Is it safe to video chat with random strangers?</h3>
-              <p>ZoneMeet makes random video calls as safe as possible with AI moderation, real-time content filtering, and a strict 18+ policy. You can also skip or report any user instantly.</p>
+              <p>ZoneMeet makes random video calls as safe as possible with active moderation, real-time content filtering, and a strict 18+ policy. You can also skip or report any user instantly.</p>
             </div>
             <div className="faq-item">
               <h3>Do I need to create an account to start an anonymous video chat?</h3>
@@ -261,7 +261,7 @@ export default function AnonymousVideoChat() {
 
         {/* FOOTER */}
         <footer className="footer">
-          <p>© 2026 ZoneMeet AI. All rights reserved. | Developed by Davinder Singh.</p>
+          <p>© 2026 ZoneMeet. All rights reserved. | Developed by Davinder Singh.</p>
           <div className="footer-links">
             <Link href="/">Home</Link>
             <Link href="/contact">Contact</Link>

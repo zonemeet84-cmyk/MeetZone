@@ -38,7 +38,7 @@ export default function Contact() {
   return (
     <div className="contact-premium-v2">
       <Head>
-        <title>Support Center | ZoneMeet AI</title>
+        <title>Support Center | ZoneMeet</title>
       </Head>
 
       {/* DYNAMIC BACKGROUND */}
@@ -59,7 +59,7 @@ export default function Contact() {
         <section className="hero-split">
           <div className="hero-text">
             <div className="status-badge"><span>●</span> WE ARE ONLINE</div>
-            <h1>Human support, <span>AI speed.</span></h1>
+            <h1>Dedicated support, <span>fast resolution.</span></h1>
             <p>
               Got a glitch? Or just want to talk about your experience? 
               Our global team is distributed across 3 continents to ensure you're never left waiting.
@@ -163,7 +163,7 @@ export default function Contact() {
               </div>
               <div className="faq-item">
                 <h4>How do I report inappropriate behavior?</h4>
-                <p>You can instantly report any user during a call by clicking the red flag button. Our AI Guardian and support team review reports 24/7 to keep the community safe.</p>
+                <p>You can instantly report any user during a call by clicking the red flag button. Our Guardian team reviews reports 24/7 to keep the community safe.</p>
               </div>
             </div>
 
@@ -178,7 +178,7 @@ export default function Contact() {
         </section>
 
         <footer className="contact-footer">
-          <p>&copy; 2026 ZoneMeet AI. All rights reserved.</p>
+          <p>&copy; 2026 ZoneMeet. All rights reserved.</p>
           <div className="footer-links">
             <Link href="/terms">Terms</Link>
             <Link href="/privacy">Privacy</Link>

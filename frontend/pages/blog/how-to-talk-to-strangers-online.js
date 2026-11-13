@@ -105,7 +105,7 @@ export default function HowToTalkToStrangersOnlineBlog() {
             <h4>💡 Spark Real Connections on ZoneMeet</h4>
             <p>
               ZoneMeet makes it simple and enjoyable to meet new people online. 
-              By incorporating advanced real-time AI moderation, full browser compatibility, and dynamic search filters, 
+              By incorporating advanced real-time active moderation, full browser compatibility, and dynamic search filters, 
               we ensure you experience clean, safe, and lightning-fast connections. 
               Explore our <Link href="/free-random-video-chat" className="blog-link">free random video chat</Link> and start chatting in seconds!
             </p>
@@ -138,7 +138,7 @@ export default function HowToTalkToStrangersOnlineBlog() {
 
         {/* FOOTER */}
         <footer className="blog-footer">
-          <p>© 2026 ZoneMeet AI. All rights reserved. | Developed by Davinder Singh.</p>
+          <p>© 2026 ZoneMeet. All rights reserved. | Developed by Davinder Singh.</p>
           <div className="footer-links">
             <Link href="/">Home</Link>
             <Link href="/contact">Contact</Link>

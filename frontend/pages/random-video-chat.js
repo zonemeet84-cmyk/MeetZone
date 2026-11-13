@@ -112,8 +112,8 @@ export default function RandomVideoChat() {
           </div>
           <div className="feat-card">
             <div className="feat-icon">🛡️</div>
-            <h3>Active AI Moderation</h3>
-            <p>Our real-time AI scans streams in the background to flag offensive conduct, spambots, and loops, maintaining community safety.</p>
+            <h3>Active Active Moderation</h3>
+            <p>Our active reporting tools streams in the background to flag offensive conduct, spambots, and loops, maintaining community safety.</p>
           </div>
           <div className="feat-card">
             <div className="feat-icon">🌍</div>
@@ -131,7 +131,7 @@ export default function RandomVideoChat() {
             The concept of spontaneous communication has transformed since the early days of chatrooms. In the late 2000s, the introduction of video-based stranger matchmaking platforms altered the social landscape. Users could suddenly connect with a random person globally at the click of a button. While these early platforms offered high novelty, they struggled to maintain user safety, which frequently led to problems with spam, advertising bots, and unverified pre-recorded feeds.
           </p>
           <p>
-            Modern web users demand a much higher standard of technology and security. ZoneMeet addresses this by acting as a next-generation <strong>random video chat</strong> successor. We combine direct, peer-to-peer WebRTC connections with real-time AI moderation, offering the excitement of random matches while removing the security risks associated with legacy sites.
+            Modern web users demand a much higher standard of technology and security. ZoneMeet addresses this by acting as a next-generation <strong>random video chat</strong> successor. We combine direct, peer-to-peer WebRTC connections with real-time active moderation, offering the excitement of random matches while removing the security risks associated with legacy sites.
           </p>
         </section>
 
@@ -150,12 +150,12 @@ export default function RandomVideoChat() {
 
         {/* SEO SECTION 3 */}
         <section className="content-section">
-          <h2>AI Guardian: Keeping Our Online Community Safe</h2>
+          <h2>ZoneMeet Guardian: Keeping Our Online Community Safe</h2>
           <p>
-            Ensuring a respectful community requires proactive safety features. Older platforms relied entirely on manual report systems, meaning users had to witness inappropriate behavior before moderators could act. ZoneMeet introduces the **AI Guardian**—an automated moderation tool that runs in the background of active calls.
+            Ensuring a respectful community requires proactive safety features. Older platforms relied entirely on manual report systems, meaning users had to witness inappropriate behavior before moderators could act. ZoneMeet introduces the **ZoneMeet Guardian**—an automated moderation tool that runs in the background of active calls.
           </p>
           <p>
-            The AI Guardian scans video feeds in real time to detect nudity, commercial loops, and policy violations. Accounts violating terms are immediately flagged and suspended, ensuring a clean, respectful digital environment.
+            The ZoneMeet Guardian scans video feeds in real time to detect nudity, commercial loops, and policy violations. Accounts violating terms are immediately flagged and suspended, ensuring a clean, respectful digital environment.
           </p>
         </section>
 
@@ -163,13 +163,13 @@ export default function RandomVideoChat() {
         <section className="content-section">
           <h2>Guidelines for Staying Safe on Stranger Video Chat Apps</h2>
           <p>
-            While our AI tools block malicious actors, practicing solid digital safety habits is critical when participating in any <strong>stranger video chat</strong>:
+            While our moderation tools block malicious actors, practicing solid digital safety habits is critical when participating in any <strong>stranger video chat</strong>:
           </p>
           <ol>
             <li><strong>Keep Details Private:</strong> Do not reveal personal information like your full name, phone number, address, or email in casual chats.</li>
             <li><strong>Watch Your Background:</strong> Make sure your camera angle does not show items like mail envelopes, school details, or landmarks that indicate your physical location.</li>
             <li><strong>Decline External Links:</strong> Never click on links shared in chat windows. These are often phishing attempts or malware redirects.</li>
-            <li><strong>Report Instantly:</strong> If a match behaves inappropriately, click the report flag immediately to alert our AI and support teams.</li>
+            <li><strong>Report Instantly:</strong> If a match behaves inappropriately, click the report flag immediately to alert our support and moderation teams.</li>
           </ol>
         </section>
 
@@ -271,7 +271,7 @@ export default function RandomVideoChat() {
 
         {/* FOOTER */}
         <footer className="footer">
-          <p>© 2026 ZoneMeet AI. All rights reserved. | Developed by Davinder Singh.</p>
+          <p>© 2026 ZoneMeet. All rights reserved. | Developed by Davinder Singh.</p>
           <div className="footer-links">
             <Link href="/">Home</Link>
             <Link href="/contact">Contact</Link>

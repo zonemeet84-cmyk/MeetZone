@@ -69,7 +69,7 @@ export default function RandomVideoCallApp() {
           </div>
           <div className="feat-card">
             <div className="feat-icon">🛡️</div>
-            <h3>AI-Driven Safety</h3>
+            <h3>Active Community Safety</h3>
             <p>Our real-time smart moderation checks flag inappropriate streams and bad behavior instantly, creating a safe environment for genuine conversationalists.</p>
           </div>
         </section>
@@ -173,11 +173,11 @@ export default function RandomVideoCallApp() {
             </div>
             <div className="faq-item">
               <h3>What makes ZoneMeet the ultimate random video chat app?</h3>
-              <p>Unlike classic legacy chat platforms, ZoneMeet integrates advanced AI safety filters, eliminates automated spambots through user verification, and lets you add friends to stay in touch for unlimited direct calls.</p>
+              <p>Unlike classic legacy chat platforms, ZoneMeet integrates advanced moderators, eliminates automated spambots through user verification, and lets you add friends to stay in touch for unlimited direct calls.</p>
             </div>
             <div className="faq-item">
               <h3>How can I securely enjoy a live video call with strangers?</h3>
-              <p>Our streams are routed via WebRTC using direct end-to-end encryption. In addition, our report system and AI safety scanners work in the background to ensure you have a secure and enjoyable chatting experience.</p>
+              <p>Our streams are routed via WebRTC using direct end-to-end encryption. In addition, our report system and moderation teams work in the background to ensure you have a secure and enjoyable chatting experience.</p>
             </div>
             <div className="faq-item">
               <h3>Can I use my mobile network (3G/4G/5G) for matching?</h3>
@@ -197,7 +197,7 @@ export default function RandomVideoCallApp() {
 
         {/* FOOTER */}
         <footer className="footer">
-          <p>© 2026 ZoneMeet AI. All rights reserved. | Developed by Davinder Singh.</p>
+          <p>© 2026 ZoneMeet. All rights reserved. | Developed by Davinder Singh.</p>
           <div className="footer-links">
             <Link href="/">Home</Link>
             <Link href="/contact">Contact</Link>

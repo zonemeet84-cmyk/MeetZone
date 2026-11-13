@@ -107,7 +107,7 @@ export default function FreeRandomVideoChat() {
               <span className="bullet">🛡️</span>
               <div>
                 <strong>Moderated &amp; Safe Network</strong>
-                <p>We combine advanced real-time AI moderation with an active reporting system to block bots, spam, and inappropriate behavior. Relax and chat in a safe, secure atmosphere.</p>
+                <p>We combine advanced real-time active moderation with an active reporting system to block bots, spam, and inappropriate behavior. Relax and chat in a safe, secure atmosphere.</p>
               </div>
             </div>
           </div>
@@ -220,7 +220,7 @@ export default function FreeRandomVideoChat() {
             </div>
             <div className="faq-item">
               <h3>Is it safe to talk to strangers free here?</h3>
-              <p>We work tirelessly to ensure a safe environment by implementing AI content scanning and rapid moderation. You can skip any match instantly if you feel uncomfortable.</p>
+              <p>We work tirelessly to ensure a safe environment by implementing rapid reporting tools and strict admin moderation. You can skip any match instantly if you feel uncomfortable.</p>
             </div>
             <div className="faq-item">
               <h3>Can I choose who I match with?</h3>
@@ -242,7 +242,7 @@ export default function FreeRandomVideoChat() {
 
         {/* FOOTER */}
         <footer className="footer">
-          <p>© 2026 ZoneMeet AI. All rights reserved. | Developed by Davinder Singh.</p>
+          <p>© 2026 ZoneMeet. All rights reserved. | Developed by Davinder Singh.</p>
           <div className="footer-links">
             <Link href="/">Home</Link>
             <Link href="/contact">Contact</Link>

@@ -5,8 +5,8 @@ export default function About() {
   return (
     <div className="about-wrap">
       <Head>
-        <title>About Us | ZoneMeet AI</title>
-        <meta name="description" content="Learn about ZoneMeet — the AI-powered global video chat platform independently built by Davinder Singh. Strictly 18+ only." />
+        <title>About Us | ZoneMeet</title>
+        <meta name="description" content="Learn about ZoneMeet — the global video chat platform independently built by Davinder Singh. Strictly 18+ only." />
       </Head>
 
       {/* DYNAMIC BACKGROUND */}
@@ -28,7 +28,7 @@ export default function About() {
           <div className="badge">🌐 ABOUT ZONEMEET</div>
           <h1>Built to Connect<br /><span>the Entire World.</span></h1>
           <p className="hero-sub">
-            ZoneMeet is an AI-powered random video chat platform that lets you meet real people from 190+ countries — 
+            ZoneMeet is a global stranger video chat platform that lets you meet real people from 190+ countries — 
             instantly, safely, and without borders.
           </p>
         </section>
@@ -76,8 +76,8 @@ export default function About() {
               <div className="age-item">
                 <span className="age-item-icon">🛡️</span>
                 <div>
-                  <strong>AI Guardian Moderation</strong>
-                  <p>Our real-time AI Guardian monitors all video sessions to detect nudity, inappropriate behaviour, and violations. Offenders are permanently banned and evidence is logged.</p>
+                  <strong>Guardian Moderation & Reports</strong>
+                  <p>Our moderation system and rapid reporting tools monitor sessions to keep out inappropriate behaviour. Offenders face immediate permanent bans with logged evidence.</p>
                 </div>
               </div>
               <div className="age-item">
@@ -126,14 +126,14 @@ export default function About() {
               <p>Lightning-fast WebRTC-powered video calls with intelligent network routing. We maintain 99.9% uptime so you're never left with a blank screen.</p>
             </div>
             <div className="val-box">
-              <div className="val-icon">🤖</div>
-              <h3>AI-Powered Safety</h3>
-              <p>Our Guardian AI runs silently in the background during every session, automatically detecting and acting on policy violations in real time.</p>
+              <div className="val-icon">🛡️</div>
+              <h3>Active Community Safety</h3>
+              <p>Our Guardian safety system works with instant user reporting and verified evidence logging to quickly detect and terminate policy violations.</p>
             </div>
             <div className="val-box">
               <div className="val-icon">🎯</div>
               <h3>Smart Matchmaking</h3>
-              <p>Our AI pairs you with strangers based on your preferences, country, and interests — making every conversation feel intentional, not random.</p>
+              <p>Our matchmaking engine pairs you with strangers based on your preferences, country, and interests — making every conversation feel intentional, not random.</p>
             </div>
             <div className="val-box">
               <div className="val-icon">💰</div>
@@ -222,7 +222,7 @@ export default function About() {
 
         {/* FOOTER */}
         <footer className="about-footer">
-          <p>© 2026 ZoneMeet AI. All rights reserved. | Independently owned & operated by Davinder Singh.</p>
+          <p>© 2026 ZoneMeet. All rights reserved. | Independently owned & operated by Davinder Singh.</p>
           <div className="footer-links">
             <Link href="/">Home</Link>
             <Link href="/contact">Contact</Link>

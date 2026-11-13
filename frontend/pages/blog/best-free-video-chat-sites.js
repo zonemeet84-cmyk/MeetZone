@@ -72,7 +72,7 @@ export default function BestFreeVideoChatSitesBlog() {
             without filling up your mobile storage space.
           </p>
           <p>
-            What makes ZoneMeet stand out is its commitment to safety. By incorporating real-time AI safety guardians 
+            What makes ZoneMeet stand out is its commitment to safety. By incorporating real-time safety guardians 
             along with Google auth verification, the network stays clean, respectful, and completely free of spambots. 
             You can enjoy unlimited matching sessions through their <Link href="/free-random-video-chat" className="blog-link">free random video chat</Link> 
             filter, or choose to utilize the <Link href="/anonymous-video-chat" className="blog-link">anonymous video chat</Link> 
@@ -136,7 +136,7 @@ export default function BestFreeVideoChatSitesBlog() {
           <section className="highlight-box">
             <h4>⚡ Experience Safe Video Chat on ZoneMeet</h4>
             <p>
-              Why settle for sketchy, bot-filled chat rooms? ZoneMeet combines reliable WebRTC streams, active AI moderation, 
+              Why settle for sketchy, bot-filled chat rooms? ZoneMeet combines reliable WebRTC streams, active active moderation, 
               and global filters to bring you the premium free random video chat experience online. 
               Start matching anonymously in seconds!
             </p>
@@ -168,7 +168,7 @@ export default function BestFreeVideoChatSitesBlog() {
 
         {/* FOOTER */}
         <footer className="blog-footer">
-          <p>© 2026 ZoneMeet AI. All rights reserved. | Developed by Davinder Singh.</p>
+          <p>© 2026 ZoneMeet. All rights reserved. | Developed by Davinder Singh.</p>
           <div className="footer-links">
             <Link href="/">Home</Link>
             <Link href="/contact">Contact</Link>

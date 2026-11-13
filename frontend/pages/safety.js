@@ -41,9 +41,9 @@ export default function Safety() {
           <li>Spam, phishing, or financial scams.</li>
         </ul>
 
-        <h2>3. AI Moderation System</h2>
+        <h2>3. Active Moderation System</h2>
         <p>
-          ZoneMeet employs real-time, on-device AI moderation. If the system detects prohibited content (such as nudity where not permitted or illegal imagery), it will automatically blur your camera feed. Repeated violations will result in automated strikes, which will lead to a permanent account ban.
+          ZoneMeet employs a strict community safety policy backed by in-call 1-click reporting and verified evidence capture. If prohibited content (such as nudity or illegal imagery) is reported, our administration team will review the verified evidence and permanently ban violating accounts and IP addresses.
         </p>
 
         <h2>4. User Empowerment & Reporting</h2>

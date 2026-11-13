@@ -27,7 +27,7 @@ export default function Guidelines() {
         <h2>🚫 Zero Tolerance Policy</h2>
         <p>We have a strict zero-tolerance policy for the following behaviors. Violating these rules will result in an immediate, permanent ban:</p>
         <ul>
-          <li><strong>Nudity & Sexual Content:</strong> Any form of nudity, sexual acts, or sexually explicit content is strictly prohibited on camera. Our AI Guardian actively monitors for this.</li>
+          <li><strong>Nudity & Sexual Content:</strong> Any form of nudity, sexual acts, or sexually explicit content is strictly prohibited on camera. Our Guardian moderation and rapid reporting system strictly enforces this.</li>
           <li><strong>Underage Usage:</strong> ZoneMeet is strictly for users aged 18 and older.</li>
           <li><strong>Hate Speech & Discrimination:</strong> Using slurs, derogatory language, or promoting violence/hatred against any race, religion, gender, or sexual orientation.</li>
           <li><strong>Illegal Acts:</strong> Promoting or broadcasting illegal acts, drug use, or violence.</li>

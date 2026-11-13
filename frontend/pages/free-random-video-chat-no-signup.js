@@ -49,7 +49,7 @@ export default function FreeRandomVideoChatNoSignup() {
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <link rel="canonical" href="https://zonemeet.chat/free-random-video-chat-no-signup" />
         <meta property="og:title" content="Free Random Video Chat No Signup: Instant Anonymous Matching | ZoneMeet" />
-        <meta property="og:description" content="Start instant video chat online. Pair up with strangers worldwide securely. 24/7 AI moderation, high-definition streaming, and no tracking." />
+        <meta property="og:description" content="Start instant video chat online. Pair up with strangers worldwide securely. 24/7 active moderation, high-definition streaming, and no tracking." />
         <meta property="og:url" content="https://zonemeet.chat/free-random-video-chat-no-signup" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
@@ -140,7 +140,7 @@ export default function FreeRandomVideoChatNoSignup() {
               <strong>Instant P2P Encryption:</strong> Every single connection you establish uses secure peer-to-peer WebRTC technology. Your audio and video go directly to your partner; nothing is routed, processed, or saved on our servers.
             </li>
             <li>
-              <strong>24/7 AI Guardian Moderation:</strong> Our automated AI moderator continuously scans streams to filter out abusive behavior, nudity, or graphic screens, delivering a safe space for mature, respectful adults.
+              <strong>24/7 ZoneMeet Guardian Moderation:</strong> Our Guardian moderation system rapidly reviews reported evidence to remove abusive behavior, nudity, or graphic screens, delivering a safe space for mature, respectful adults.
             </li>
             <li>
               <strong>Vast Global Reach:</strong> Connect with chat companions from more than 190 countries instantly. Practice Spanish, English, French, or Japanese in real-time conversations.
@@ -152,7 +152,7 @@ export default function FreeRandomVideoChatNoSignup() {
 
           <h3>Safety Practices for a Respectful Anonymous Chat</h3>
           <p>
-            Even though our backend processes and AI Guardian do the heavy lifting to block spam and abuse, keeping these guidelines in mind ensures your conversations remain positive:
+            Even though our backend processes and ZoneMeet Guardian do the heavy lifting to block spam and abuse, keeping these guidelines in mind ensures your conversations remain positive:
           </p>
           <ol>
             <li><strong>Protect Personal Details:</strong> Avoid sharing your address, social media links, email, or financial information during video matching.</li>
@@ -193,7 +193,7 @@ export default function FreeRandomVideoChatNoSignup() {
                 <tr>
                   <td><strong>Moderation</strong></td>
                   <td>None (High exposure to shock feeds)</td>
-                  <td>🟢 Instant 24/7 AI Guardian Filter</td>
+                  <td>🟢 Instant 24/7 ZoneMeet Guardian Filter</td>
                 </tr>
                 <tr>
                   <td><strong>Video Streaming</strong></td>
@@ -249,7 +249,7 @@ export default function FreeRandomVideoChatNoSignup() {
 
         {/* FOOTER */}
         <footer className="footer">
-          <p>© 2026 ZoneMeet AI. All rights reserved. | Developed by Davinder Singh.</p>
+          <p>© 2026 ZoneMeet. All rights reserved. | Developed by Davinder Singh.</p>
           <div className="footer-links">
             <Link href="/">Home</Link>
             <Link href="/contact">Contact</Link>

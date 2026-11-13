@@ -28,9 +28,9 @@ export default function Privacy() {
           ZoneMeet utilizes WebRTC technology to establish direct peer-to-peer (P2P) connections between users. This means your video and audio data flows directly between you and your chat partner. We do not intercept, record, or store any video or audio streams on our servers. 
         </p>
 
-        <h2>3. AI Moderation</h2>
+        <h2>3. Content Moderation & Reporting</h2>
         <p>
-          To maintain a safe environment, ZoneMeet uses client-side AI moderation to detect NSFW content (e.g., nudity or explicit material). This processing happens entirely on your device. The AI only sends a mathematical flag (a safety signal) to our servers if a violation is detected. No visual data or images are ever transmitted to our servers for moderation.
+          To maintain a safe community, ZoneMeet provides an in-call reporting system. When a user submits a report for abusive, explicit, or inappropriate conduct, visual evidence is securely captured and sent to our administrative moderation team solely for reviewing the violation and taking permanent enforcement actions.
         </p>
 
         <h2>4. Data Usage</h2>

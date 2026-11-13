@@ -11,7 +11,7 @@ export default function OmeTvAlternative() {
         "name": "Is ZoneMeet a good OmeTV alternative for meeting new people?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes, ZoneMeet is one of the best OmeTV alternatives. It offers completely free matches, low latency WebRTC video connections, strict AI-driven safety moderation, and does not require you to download any bulky mobile apps."
+          "text": "Yes, ZoneMeet is one of the best OmeTV alternatives. It offers completely free matches, low latency WebRTC video connections, strict smart safety moderation, and does not require you to download any bulky mobile apps."
         }
       },
       {
@@ -19,7 +19,7 @@ export default function OmeTvAlternative() {
         "name": "Why do users get banned on OmeTV and how is ZoneMeet different?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "OmeTV is known for automated, strict bans that are often difficult to appeal. ZoneMeet uses a transparent system of real-time AI warnings and reports, encouraging a friendly community. While we do ban malicious actors permanently, our automated filters target bots and policy violations without punishing casual, respectful chatters."
+          "text": "OmeTV is known for automated, strict bans that are often difficult to appeal. ZoneMeet uses a transparent system of rapid in-call warnings and reports, encouraging a friendly community. While we do ban malicious actors permanently, our automated filters target bots and policy violations without punishing casual, respectful chatters."
         }
       },
       {
@@ -119,7 +119,7 @@ export default function OmeTvAlternative() {
           <p className="hero-sub">
             Skip the app store downloads, annoying paywalls, and random, unexplained account bans. ZoneMeet is the ultimate 
             <strong> OmeTV alternative</strong> designed to help you start an <strong>online video chat</strong> with real people instantly. 
-            Enjoy seamless P2P matches, active AI-based moderation, and <strong>free random chat</strong> directly in your mobile browser.
+            Enjoy seamless P2P matches, active report-based moderation, and <strong>free random chat</strong> directly in your mobile browser.
           </p>
           <div className="hero-btns">
             <Link href="/" className="btn-primary">
@@ -183,7 +183,7 @@ export default function OmeTvAlternative() {
             <div className="sub-card">
               <h3>2. Smart Anti-Ban Safeguards</h3>
               <p>
-                We do not believe in banning users without reason. Our moderation system uses a combination of automated AI scanning and human review. If a user receives a warning, we clearly communicate the issue, preventing arbitrary locks and keeping the platform fair and accessible.
+                We do not believe in banning users without reason. Our moderation system uses a combination of instant reporting tools and transparent human review. If a user receives a warning, we clearly communicate the issue, preventing arbitrary locks and keeping the platform fair and accessible.
               </p>
             </div>
             <div className="sub-card">
@@ -231,7 +231,7 @@ export default function OmeTvAlternative() {
                 </tr>
                 <tr>
                   <td><strong>Ban System</strong></td>
-                  <td className="highlight-yes">AI Warnings + Transparent Human Appeals</td>
+                  <td className="highlight-yes">Admin Review + Transparent Appeals</td>
                   <td className="highlight-no">Frequent, arbitrary automated bans</td>
                 </tr>
                 <tr>
@@ -246,7 +246,7 @@ export default function OmeTvAlternative() {
                 </tr>
                 <tr>
                   <td><strong>Spam Control</strong></td>
-                  <td className="highlight-yes">AI detection + Account Sign-in checks</td>
+                  <td className="highlight-yes">Rapid Reports + Account Sign-in checks</td>
                   <td>Basic reporting flags</td>
                 </tr>
               </tbody>
@@ -277,7 +277,7 @@ export default function OmeTvAlternative() {
         <section className="content-section">
           <h2>Strict Safety and Community Guidelines</h2>
           <p>
-            A common issue with open random chat platforms is the risk of encountering inappropriate behavior. At ZoneMeet, we maintain a zero-tolerance policy to protect our community. Our AI Guardian scans connections in real-time, detecting policy violations and commercial spam instantly.
+            A common issue with open random chat platforms is the risk of encountering inappropriate behavior. At ZoneMeet, we maintain a zero-tolerance policy to protect our community. Our ZoneMeet Guardian scans connections in real-time, detecting policy violations and commercial spam instantly.
           </p>
           <p>
             We enforce rules against nudity, harassment, hate speech, and marketing scripts. By maintaining these high standards, we ensure that ZoneMeet remains a safe, welcoming space for everyone. We require all users to be at least 18 years old to access the matching network.
@@ -325,11 +325,11 @@ export default function OmeTvAlternative() {
           <div className="faq-list">
             <div className="faq-item">
               <h3>Is ZoneMeet a good OmeTV alternative for meeting new people?</h3>
-              <p>Yes, ZoneMeet is one of the best OmeTV alternatives. It offers completely free matches, low latency WebRTC video connections, strict AI-driven safety moderation, and does not require you to download any bulky mobile apps.</p>
+              <p>Yes, ZoneMeet is one of the best OmeTV alternatives. It offers completely free matches, low latency WebRTC video connections, strict smart safety moderation, and does not require you to download any bulky mobile apps.</p>
             </div>
             <div className="faq-item">
               <h3>Why do users get banned on OmeTV and how is ZoneMeet different?</h3>
-              <p>OmeTV is known for automated, strict bans that are often difficult to appeal. ZoneMeet uses a transparent system of real-time AI warnings and reports, encouraging a friendly community. While we do ban malicious actors permanently, our automated filters target bots and policy violations without punishing casual, respectful chatters.</p>
+              <p>OmeTV is known for automated, strict bans that are often difficult to appeal. ZoneMeet uses a transparent system of rapid in-call warnings and reports, encouraging a friendly community. While we do ban malicious actors permanently, our automated filters target bots and policy violations without punishing casual, respectful chatters.</p>
             </div>
             <div className="faq-item">
               <h3>Can I select specific regions or languages?</h3>
@@ -357,7 +357,7 @@ export default function OmeTvAlternative() {
 
         {/* FOOTER */}
         <footer className="footer">
-          <p>© 2026 ZoneMeet AI. All rights reserved. | Developed by Davinder Singh.</p>
+          <p>© 2026 ZoneMeet. All rights reserved. | Developed by Davinder Singh.</p>
           <div className="footer-links">
             <Link href="/">Home</Link>
             <Link href="/contact">Contact</Link>

@@ -32,10 +32,10 @@ export default function StrangerVideoChat() {
       },
       {
         "@type": "Question",
-        "name": "How does AI moderation keep the chat rooms clean?",
+        "name": "How does active moderation keep the chat rooms clean?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Our automated AI Guardian scanner monitors video feeds in real time, automatically flagging and banning profiles that violate our terms of service (such as presenting nudity or advertising loops), protecting you from bad actors."
+          "text": "Our ZoneMeet Guardian reporting system monitors video feeds in real time, automatically flagging and banning profiles that violate our terms of service (such as presenting nudity or advertising loops), protecting you from bad actors."
         }
       },
       {
@@ -55,7 +55,7 @@ export default function StrangerVideoChat() {
         <title>Stranger Video Chat: Meet New People Instantly | ZoneMeet</title>
         <meta
           name="description"
-          content="Looking for a secure stranger video chat? Talk to strangers in safe, AI-moderated video chat rooms and make new friends on ZoneMeet free."
+          content="Looking for a secure stranger video chat? Talk to strangers in safe, fully moderated video chat rooms and make new friends on ZoneMeet free."
         />
         <meta
           name="viewport"
@@ -88,7 +88,7 @@ export default function StrangerVideoChat() {
 
         {/* HERO */}
         <section className="hero">
-          <div className="badge">🛡️ AI-MODERATED &amp; SECURE</div>
+          <div className="badge">🛡️ MODERATED &amp; SECURE</div>
           <h1>
             Secure Online<br />
             <span>Stranger Video Chat.</span>
@@ -112,7 +112,7 @@ export default function StrangerVideoChat() {
           </div>
           <div className="feat-card">
             <div className="feat-icon">🛡️</div>
-            <h3>AI Guardian</h3>
+            <h3>ZoneMeet Guardian</h3>
             <p>Our real-time safety scanning system automatically identifies and bans policy violations, ensuring a respectful space.</p>
           </div>
           <div className="feat-card">
@@ -131,7 +131,7 @@ export default function StrangerVideoChat() {
             The ways we socialize and build relationships have shifted dramatically. In the past, meeting people was limited to physical events or text-based chat containers. The rise of camera-enabled web interfaces introduced the era of **stranger video chat**, letting individuals bridge distances and share experiences with people worldwide.
           </p>
           <p>
-            However, early chat rooms struggled with safety challenges. Without active moderation, legacy sites were overrun by spambots, malicious links, and offensive behavior. ZoneMeet is designed to correct these flaws. By implementing active AI scanning and secure account verification, we provide a modern stranger chat platform that keeps matching fun, authentic, and safe.
+            However, early chat rooms struggled with safety challenges. Without active moderation, legacy sites were overrun by spambots, malicious links, and offensive behavior. ZoneMeet is designed to correct these flaws. By implementing active reporting and secure account verification, we provide a modern stranger chat platform that keeps matching fun, authentic, and safe.
           </p>
         </section>
 
@@ -142,7 +142,7 @@ export default function StrangerVideoChat() {
             Anonymity is exciting, but unregulated anonymity can attract bad actors. When looking for the best places to **talk to strangers**, safety should be your top priority. ZoneMeet implements several structural safeguards:
           </p>
           <ul>
-            <li><strong>AI Guardian System:</strong> Running in the background of active matching channels, our AI scanner monitors video streams to identify nudity, abuse, and spam. Violations result in immediate, permanent bans.</li>
+            <li><strong>ZoneMeet Guardian System:</strong> Running in the background of active matching channels, our moderation tool monitors video streams to identify nudity, abuse, and spam. Violations result in immediate, permanent bans.</li>
             <li><strong>Secure User Verification:</strong> We prevent emulator software and advertising loops by requiring secure social sign-ins, ensuring you only pair with live, real people.</li>
             <li><strong>Instant reporting:</strong> Help maintain a clean community. If a match behaves inappropriately, a single tap on the report icon flags their profile for immediate review.</li>
           </ul>
@@ -163,7 +163,7 @@ export default function StrangerVideoChat() {
         <section className="content-section">
           <h2>Practical Advice for a Positive and Secure Match Session</h2>
           <p>
-            While our AI-Guardian blocks bots and inappropriate content, following standard digital safety guidelines is important:
+            While our ZoneMeet Guardian blocks bots and inappropriate content, following standard digital safety guidelines is important:
           </p>
           <ol>
             <li><strong>Preserve Your Anonymity:</strong> Do not reveal sensitive details (such as your full name, location, address, or email) in casual matching pools.</li>
@@ -250,8 +250,8 @@ export default function StrangerVideoChat() {
               <p>Registration is completely optional. You can enter chat rooms and match with strangers anonymously. Creating a free account lets you access additional perks, such as the friend circle and regional filtering settings.</p>
             </div>
             <div className="faq-item">
-              <h3>How does AI moderation keep the chat rooms clean?</h3>
-              <p>Our automated AI Guardian scanner monitors video feeds in real time, automatically flagging and banning profiles that violate our terms of service (such as presenting nudity or advertising loops), protecting you from bad actors.</p>
+              <h3>How does active moderation keep the chat rooms clean?</h3>
+              <p>Our ZoneMeet Guardian reporting system monitors video feeds in real time, automatically flagging and banning profiles that violate our terms of service (such as presenting nudity or advertising loops), protecting you from bad actors.</p>
             </div>
             <div className="faq-item">
               <h3>Can I match with people from a specific country?</h3>
@@ -271,7 +271,7 @@ export default function StrangerVideoChat() {
 
         {/* FOOTER */}
         <footer className="footer">
-          <p>© 2026 ZoneMeet AI. All rights reserved. | Developed by Davinder Singh.</p>
+          <p>© 2026 ZoneMeet. All rights reserved. | Developed by Davinder Singh.</p>
           <div className="footer-links">
             <Link href="/">Home</Link>
             <Link href="/contact">Contact</Link>

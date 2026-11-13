@@ -16,7 +16,7 @@ export default function FAQ() {
         },
         {
           q: "Is ZoneMeet strictly for 18+?",
-          a: "Yes. ZoneMeet is strictly restricted to users who are 18 years of age or older. We employ strict age verification and automatic AI-based content scanning. Underage accounts will be permanently banned and blocked from accessing the platform."
+          a: "Yes. ZoneMeet is strictly restricted to users who are 18 years of age or older. We employ strict age verification and zero-tolerance community moderation. Underage accounts will be permanently banned and blocked from accessing the platform."
         },
         {
           q: "Is it free to use?",
@@ -88,11 +88,11 @@ export default function FAQ() {
         },
         {
           q: "How do I report an abusive user?",
-          a: "If your partner violates our guidelines or behaves inappropriately, click the 'Report' button on their card. Choose a reason and submit it. Our system automatically processes reports. Users who receive multiple reports are subjected to an automated ban review."
+          a: "If your partner violates our guidelines or behaves inappropriately, click the 'Report' (flag) button on screen. Choose a reason and submit it. Our system automatically attaches verified visual evidence, and our administration team reviews reports 24/7 to permanently ban violators."
         },
         {
-          q: "What is the AI Blur Guardian?",
-          a: "ZoneMeet uses an automated real-time NSFW detection engine. If a user displays prohibited explicit imagery, the system instantly blurs the video feed and issues a warning strike. Three strikes will result in a permanent hardware-level ban."
+          q: "What is the Guardian Moderation System?",
+          a: "ZoneMeet uses an active community safety framework with 1-click in-call reporting and verified evidence capture. When inappropriate behavior or explicit content is reported, our administration team reviews the incident and permanently bans violating accounts at the device and IP level."
         }
       ]
     }

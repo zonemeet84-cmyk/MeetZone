@@ -46,16 +46,16 @@ export default function Terms() {
           ZoneMeet offers auto-renewing premium subscriptions. Payment will be charged to your chosen payment method at confirmation of purchase. All subscription purchases are final and non-refundable. Subscriptions automatically renew unless cancelled at least 24 hours before the end of the current period. Cancellation stops future renewals but does not entitle you to any full or partial refund for active billing periods.
         </p>
 
-        <h2>5. Automated Moderation & Strike System</h2>
+        <h2>5. Moderation & Enforcement Policy</h2>
         <p>
-          To maintain a safe and respectful environment, ZoneMeet employs real-time AI moderation for both Video and Chat. By using the service, you acknowledge and agree to our <strong>"2-Strike Enforcement Policy"</strong>:
+          To maintain a safe and respectful environment, ZoneMeet enforces strict community safety guidelines backed by instant in-call reporting and administrative review. By using the service, you acknowledge and agree to our enforcement policy:
         </p>
         <ul>
-          <li><strong>Strike 1 (Warning):</strong> Upon the first detection of abusive language (Hinglish/English) or inappropriate 18+ video content, you will receive an automated formal warning.</li>
-          <li><strong>Strike 2 (Permanent Ban):</strong> If a second violation is detected, your account and IP address will be permanently banned from the platform without exception.</li>
+          <li><strong>Zero Tolerance for 18+ / Harassment:</strong> Any display of explicit nudity, sexual conduct, abuse, harassment, or illegal material is strictly prohibited. Violations lead to immediate permanent account, device, and IP bans upon administrative verification.</li>
+          <li><strong>Verified Evidence Logging:</strong> When a user reports inappropriate conduct, encrypted screenshot evidence is automatically attached to allow our moderation team to make conclusive, fair termination decisions.</li>
         </ul>
         <p>
-          Serious violations (e.g., severe illegal activity) may result in an immediate permanent ban without a warning strike at our sole discretion.
+          Serious violations will result in an immediate permanent ban without prior warning at our sole administrative discretion.
         </p>
 
         <h2>6. Termination</h2>

@@ -3440,7 +3440,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                 }}>
                   <span style={{ fontSize: "32px" }}>🔞</span>
                   <p style={{ color: "#fca5a5", fontSize: "12px", fontWeight: 600, margin: 0 }}>Inappropriate Content Detected</p>
-                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "11px", margin: 0 }}>This evidence has been recorded by AI Guardian</p>
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "11px", margin: 0 }}>Incident evidence recorded by ZoneMeet Guardian</p>
                 </div>
               </div>
             </div>
@@ -3455,7 +3455,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             textAlign: "left"
           }}>
             <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px", lineHeight: 1.7, margin: 0 }}>
-              🛡️ Our AI Guardian system detected a violation of ZoneMeet's safety guidelines.
+              🛡️ A violation of ZoneMeet's safety guidelines was confirmed on this account.
               If you believe this is a mistake, please contact us at <span style={{ color: "#818cf8" }}>zonemeet84@gmail.com</span>
             </p>
           </div>

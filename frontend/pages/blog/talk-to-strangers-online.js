@@ -77,7 +77,7 @@ export default function TalkToStrangersOnlineBlog() {
 
           <h3>3. Keep an Eye on the Moderation Features</h3>
           <p>
-            If you're looking for the absolute best successor sites, make sure they have a zero-tolerance policy. Check our list of the <Link href="/blog/best-omegle-alternatives" className="blog-link">best Omegle alternatives</Link> to compare platforms with built-in AI moderation and active reporting.
+            If you're looking for the absolute best successor sites, make sure they have a zero-tolerance policy. Check our list of the <Link href="/blog/best-omegle-alternatives" className="blog-link">best Omegle alternatives</Link> to compare platforms with built-in active moderation and active reporting.
           </p>
 
           <div className="divider" />
@@ -91,7 +91,7 @@ export default function TalkToStrangersOnlineBlog() {
             <h4>💡 Why ZoneMeet Leads the Way</h4>
             <p>
               Unlike old portals that suffered from heavy spam, <strong>ZoneMeet</strong> is constructed as a secure, verified environment.
-              With active AI Guardian models scanning for abuse, gender and country-specific filters, and a rewarding coin system, you can easily <strong>meet new people online</strong> while enjoying peace of mind.
+              With active Guardian safety systems scanning for abuse, gender and country-specific filters, and a rewarding coin system, you can easily <strong>meet new people online</strong> while enjoying peace of mind.
             </p>
             <div className="box-cta">
               <Link href="/" className="btn-primary">
@@ -126,7 +126,7 @@ export default function TalkToStrangersOnlineBlog() {
 
         {/* FOOTER */}
         <footer className="blog-footer">
-          <p>© 2026 ZoneMeet AI. All rights reserved. | Developed by Davinder Singh.</p>
+          <p>© 2026 ZoneMeet. All rights reserved. | Developed by Davinder Singh.</p>
           <div className="footer-links">
             <Link href="/">Home</Link>
             <Link href="/contact">Contact</Link>

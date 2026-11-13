@@ -27,7 +27,7 @@ export default function ChatrouletteAlternative() {
         "name": "How does ZoneMeet prevent spambots and fake feeds?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "We implement strict security checks, including secure third-party login requirements and real-time AI computer vision scanning. Our AI scanner detects and instantly terminates pre-recorded streams, commercial advertisements, and static image loops to ensure you only meet real, active people."
+          "text": "We implement strict security checks, including secure third-party login requirements and evidence-backed rapid report tools. Our moderation tool detects and instantly terminates pre-recorded streams, commercial advertisements, and static image loops to ensure you only meet real, active people."
         }
       },
       {
@@ -138,7 +138,7 @@ export default function ChatrouletteAlternative() {
           </div>
           <div className="feat-card">
             <div className="feat-icon">🤖</div>
-            <h3>AI Bot Prevention</h3>
+            <h3>Bot Prevention</h3>
             <p>Our real-time computer vision engines block fake feeds, pre-recorded loops, and advertising scripts so you only talk to real, active users.</p>
           </div>
           <div className="feat-card">
@@ -182,7 +182,7 @@ export default function ChatrouletteAlternative() {
               </p>
             </div>
             <div className="sub-card">
-              <h3>2. Real-Time AI Guardian Moderation</h3>
+              <h3>2. Real-Time ZoneMeet Guardian Moderation</h3>
               <p>
                 Your safety is our absolute priority. We use real-time computer vision scanners to analyze active video feeds. This system instantly flags and filters inappropriate content, commercial advertising, and pre-recorded spam feeds, creating a clean, respectful digital environment.
               </p>
@@ -227,12 +227,12 @@ export default function ChatrouletteAlternative() {
                 </tr>
                 <tr>
                   <td><strong>Moderation</strong></td>
-                  <td className="highlight-yes">Real-Time AI Scanning + Live Reports</td>
+                  <td className="highlight-yes">1-Click Reports + Admin Verification</td>
                   <td>Basic user flags & delay-prone reviews</td>
                 </tr>
                 <tr>
                   <td><strong>Spam & Bot Protection</strong></td>
-                  <td className="highlight-yes">Strict account verification & AI filters</td>
+                  <td className="highlight-yes">Strict account verification & rapid reports</td>
                   <td className="highlight-no">High bot traffic and fake feeds</td>
                 </tr>
                 <tr>
@@ -334,7 +334,7 @@ export default function ChatrouletteAlternative() {
             </div>
             <div className="faq-item">
               <h3>How does ZoneMeet prevent spambots and fake feeds?</h3>
-              <p>We implement strict security checks, including secure third-party login requirements and real-time AI computer vision scanning. Our AI scanner detects and instantly terminates pre-recorded streams, commercial advertisements, and static image loops to ensure you only meet real, active people.</p>
+              <p>We implement strict security checks, including secure third-party login requirements and evidence-backed rapid report tools. Our moderation tool detects and instantly terminates pre-recorded streams, commercial advertisements, and static image loops to ensure you only meet real, active people.</p>
             </div>
             <div className="faq-item">
               <h3>Is my video call private and secure?</h3>
@@ -358,7 +358,7 @@ export default function ChatrouletteAlternative() {
 
         {/* FOOTER */}
         <footer className="footer">
-          <p>© 2026 ZoneMeet AI. All rights reserved. | Developed by Davinder Singh.</p>
+          <p>© 2026 ZoneMeet. All rights reserved. | Developed by Davinder Singh.</p>
           <div className="footer-links">
             <Link href="/">Home</Link>
             <Link href="/contact">Contact</Link>

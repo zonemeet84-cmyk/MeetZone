@@ -940,7 +940,7 @@ export default function AdminDashboard() {
                       <div className="pulse-icon"><i className="fa fa-shield-cat"></i></div>
                       <div>
                          <strong>ZoneMeet Guardian Active</strong>
-                         <small>AI Fraud Detection: Scanning every 2s</small>
+                         <small>Incident & Report Monitor: Active</small>
                       </div>
                    </div>
                 </div>

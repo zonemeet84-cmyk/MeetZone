@@ -256,8 +256,8 @@ export default function Dashboard() {
         },
         safety: {
           keywords: ['ban', 'report', 'safe', 'rule', 'nude', 'bad', 'block', 'ganda', 'safety', 'guardian', 'harass'],
-          en: "Safety is #1! 🛡️ Our AI Guardian monitors calls. Harassment or 18+ content results in a permanent ban. Report users using the 🚩 button to keep the community safe.",
-          hi: "Safety humari priority hai! 🛡️ Ganda kaam karne walo ko AI Guardian turant ban kar deta hai. Kisi ko report karne ke liye 🚩 button dabayein."
+          en: "Safety is #1! 🛡️ Our Guardian moderation team enforces safety. Harassment or 18+ content results in a permanent ban. Report users using the 🚩 button to keep the community safe.",
+          hi: "Safety humari priority hai! 🛡️ Ganda kaam karne walo ko turant ban kar diya jata hai. Kisi ko report karne ke liye 🚩 button dabayein."
         },
         referral: {
           keywords: ['refer', 'invite', 'earn', 'code', 'link', 'friend', 'share', 'gift', 'bonus'],
@@ -282,8 +282,8 @@ export default function Dashboard() {
       };
 
       let reply = isHindi
-        ? "Main ZoneMeet AI hoon. Main aapki Coins, VIP, Mystery Boxes, Safety, ya Friends system mein help kar sakta hoon. Aap kya puchna chahte hain?"
-        : "I am ZoneMeet AI. I can help you with Coins, VIP Plans, Mystery Boxes, Safety rules, or the Friends system. What would you like to know?";
+        ? "Main ZoneMeet Assistant hoon. Main aapki Coins, VIP, Mystery Boxes, Safety, ya Friends system mein help kar sakta hoon. Aap kya puchna chahte hain?"
+        : "I am ZoneMeet Assistant. I can help you with Coins, VIP Plans, Mystery Boxes, Safety rules, or the Friends system. What would you like to know?";
 
       // Iterate through knowledge base
       for (const key in KNOWLEDGE) {
@@ -1350,9 +1350,9 @@ export default function Dashboard() {
             </div>
 
             <div className="stat-premium-card">
-              <h3 style={{ color: '#f472b6' }}>AI</h3>
+              <h3 style={{ color: '#f472b6' }}>100%</h3>
               <p className="stat-label">Smart Guardian</p>
-              <p className="stat-desc">Real-time AI moderation to ensure a clean and friendly space.</p>
+              <p className="stat-desc">Active moderation to ensure a clean and friendly space.</p>
             </div>
           </div>
         </div>
@@ -1466,14 +1466,14 @@ export default function Dashboard() {
             <div className="support-tag">🛡️ ZERO TOLERANCE PLATFORM</div>
             <h2>Your Safety is our <br /><span>Top Priority.</span></h2>
             <p>
-              ZoneMeet uses AI moderation and manual review systems to prevent nudity, abuse, harassment, and unsafe behavior. Our advanced NSFW detection models scan streams in real time to ensure a fully moderated, secure live interaction experience.
+              ZoneMeet uses active moderation and human review systems to prevent nudity, abuse, harassment, and unsafe behavior. Our rapid 1-click reporting captures verified evidence to ensure a fully moderated, secure live interaction experience.
             </p>
             <div className="support-features" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
               <div className="s-feat">
                 <span className="s-icon">🤖</span>
                 <div>
-                  <h4>AI Moderation</h4>
-                  <p>AI scans inappropriate content in real time.</p>
+                  <h4>Instant Reporting</h4>
+                  <p>1-tap reporting with automatic evidence capture.</p>
                 </div>
               </div>
               <div className="s-feat">
@@ -2320,7 +2320,7 @@ export default function Dashboard() {
         {!isBotOpen ? (
           <button className="bot-toggle-btn" onClick={() => setIsBotOpen(true)}>
             <span className="bot-icon">🤖</span>
-            <span className="bot-tooltip">24/7 AI Support</span>
+            <span className="bot-tooltip">24/7 Support Assistant</span>
           </button>
         ) : (
           <div className="bot-window">
@@ -2328,7 +2328,7 @@ export default function Dashboard() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span className="bot-avatar">🤖</span>
                 <div>
-                  <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>ZoneMeet AI</div>
+                  <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>ZoneMeet Assistant</div>
                   <div style={{ fontSize: '0.7rem', color: '#10b981' }}>● Online 24/7</div>
                 </div>
               </div>
