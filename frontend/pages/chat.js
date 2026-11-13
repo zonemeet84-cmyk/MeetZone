@@ -299,6 +299,12 @@ export default function Home(props) {
   const [currency, setCurrency] = useState("INR");
   const [paymentStep, setPaymentStep] = useState("methods"); // 'methods', 'processing', 'success'
 
+  // Ephemeral Mutual Consent Photo Sharing (Zero Server Storage)
+  const [photoConsentStatus, setPhotoConsentStatus] = useState("idle"); // "idle" | "requested_by_me" | "requested_by_partner" | "approved" | "declined"
+  const [photoPreviewModal, setPhotoPreviewModal] = useState(null);
+  const [isCompressingImage, setIsCompressingImage] = useState(false);
+  const fileInputRef = useRef(null);
+
   const [showCoinPopup, setShowCoinPopup] = useState(false);
   const [pendingMessage, setPendingMessage] = useState("");
 
@@ -311,6 +317,132 @@ export default function Home(props) {
   useEffect(() => {
     partnerInfoRef.current = partnerInfo;
   }, [partnerInfo]);
+
+  // Client-side image downscaling & compression (Zero Disk / Zero RAM strain)
+  const compressImage = (file) => {
+    return new Promise((resolve, reject) => {
+      if (!file || !file.type.startsWith("image/")) {
+        return reject(new Error("Please select an image file"));
+      }
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_DIM = 960;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_DIM) {
+              height = Math.round((height * MAX_DIM) / width);
+              width = MAX_DIM;
+            }
+          } else {
+            if (height > MAX_DIM) {
+              width = Math.round((width * MAX_DIM) / height);
+              height = MAX_DIM;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Compress to JPEG with 0.65 quality (clean view, tiny payload ~40-80KB)
+          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.65);
+          resolve(compressedBase64);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  };
+
+  const handlePhotoClick = () => {
+    if (!partnerId) {
+      showToast("Please wait until you are connected to a partner!", "info");
+      return;
+    }
+    if (photoConsentStatus === "approved") {
+      fileInputRef.current?.click();
+      return;
+    }
+    if (photoConsentStatus === "requested_by_me") {
+      showToast("Photo request already sent. Waiting for stranger to accept...", "info");
+      return;
+    }
+    if (photoConsentStatus === "declined") {
+      showToast("Photo sharing was declined for this chat session.", "warning");
+      return;
+    }
+    // Mutual Consent Request
+    socket?.emit("photo-consent-request", { to: partnerId });
+    setPhotoConsentStatus("requested_by_me");
+    setMessages(prev => [
+      ...prev,
+      { type: "system", text: "📷 You requested photo sharing. Waiting for partner's permission..." }
+    ]);
+    showToast("Photo sharing request sent to stranger!", "info");
+  };
+
+  const handleAcceptPhotoConsent = () => {
+    socket?.emit("photo-consent-response", { to: partnerId, accepted: true });
+    setPhotoConsentStatus("approved");
+    setMessages(prev => [
+      ...prev.filter(m => m.type !== "photo-consent-prompt"),
+      { type: "system", text: "✅ Photo sharing unlocked! Both users agreed. Tap 📷 to send a photo." }
+    ]);
+    showToast("Photo sharing unlocked! Tap 📷 to send a photo.", "success");
+  };
+
+  const handleDeclinePhotoConsent = () => {
+    socket?.emit("photo-consent-response", { to: partnerId, accepted: false });
+    setPhotoConsentStatus("declined");
+    setMessages(prev => [
+      ...prev.filter(m => m.type !== "photo-consent-prompt"),
+      { type: "system", text: "❌ You declined photo sharing for this chat." }
+    ]);
+    showToast("Photo sharing declined.", "info");
+  };
+
+  const handleImageSelected = async (e) => {
+    const file = e.target.files?.[0];
+    if (e.target) e.target.value = "";
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      showToast("Please choose a valid image file", "error");
+      return;
+    }
+
+    if (photoConsentStatus !== "approved") {
+      showToast("Both users must allow photo sharing first!", "warning");
+      return;
+    }
+
+    try {
+      setIsCompressingImage(true);
+      const compressed = await compressImage(file);
+      setIsCompressingImage(false);
+
+      // Forward directly through socket (ephemeral memory only)
+      socket?.emit("send-photo", { image: compressed, to: partnerId });
+
+      // Add to own message list
+      setMessages(prev => [
+        ...prev,
+        { type: "photo", image: compressed, sender: "user", timestamp: Date.now() }
+      ]);
+    } catch (err) {
+      console.error("Image processing error:", err);
+      setIsCompressingImage(false);
+      showToast("Failed to process image. Try another photo.", "error");
+    }
+  };
 
   const handleRewindClick = () => {
     const candidate = lastPartner || lastPartnerRef.current || (user?.recentStrangers && user.recentStrangers.length > 0 ? user.recentStrangers[0] : null);
@@ -1906,6 +2038,9 @@ export default function Home(props) {
         setShowPartnerPreview(!isCurrentTextMode);
         setStatus(isCurrentTextMode ? "Connected" : "Partner Found!");
         setMessages([]);
+        setPhotoConsentStatus("idle");
+        setPhotoPreviewModal(null);
+        setIsCompressingImage(false);
         iceCandidatesQueue.current = [];
 
         if (!isCurrentTextMode) {
@@ -2001,6 +2136,54 @@ export default function Home(props) {
           setTimeout(() => {
             setCurrentSubtitle(prev => prev === `💬 ${text}` ? "" : prev);
           }, 6000);
+        }
+      });
+
+      // Ephemeral Mutual Consent Photo Listeners
+      socket.on("photo-consent-requested", () => {
+        setPhotoConsentStatus("requested_by_partner");
+        setMessages((prev) => [
+          ...prev.filter(m => m.type !== "photo-consent-prompt"),
+          { type: "photo-consent-prompt", sender: "partner" }
+        ]);
+        if (typeof window !== 'undefined' && window.innerWidth < 768) {
+          setCurrentSubtitle("📷 Stranger requested photo sharing");
+          setTimeout(() => {
+            setCurrentSubtitle(prev => prev === "📷 Stranger requested photo sharing" ? "" : prev);
+          }, 5000);
+        }
+      });
+
+      socket.on("photo-consent-result", ({ accepted }) => {
+        if (accepted) {
+          setPhotoConsentStatus("approved");
+          setMessages((prev) => [
+            ...prev,
+            { type: "system", text: "🎉 Stranger accepted! Photo sharing is unlocked. Tap 📷 to send a photo." }
+          ]);
+          showToast("Stranger allowed photo sharing! Tap 📷 to send.", "success");
+        } else {
+          setPhotoConsentStatus("declined");
+          setMessages((prev) => [
+            ...prev,
+            { type: "system", text: "❌ Stranger declined photo sharing for this chat." }
+          ]);
+          showToast("Stranger declined photo sharing.", "info");
+        }
+      });
+
+      socket.on("receive-photo", ({ image, timestamp }) => {
+        setIsPartnerTyping(false);
+        if (partnerTypingTimeoutRef.current) clearTimeout(partnerTypingTimeoutRef.current);
+        setMessages((prev) => [
+          ...prev,
+          { type: "photo", image, sender: "partner", timestamp: timestamp || Date.now() }
+        ]);
+        if (typeof window !== 'undefined' && window.innerWidth < 768) {
+          setCurrentSubtitle("📷 Stranger sent a photo");
+          setTimeout(() => {
+            setCurrentSubtitle(prev => prev === "📷 Stranger sent a photo" ? "" : prev);
+          }, 5000);
         }
       });
 
@@ -2569,6 +2752,9 @@ export default function Home(props) {
     setPartnerId(null);
     setPartnerInfo(null);
     setMessages([]);
+    setPhotoConsentStatus("idle");
+    setPhotoPreviewModal(null);
+    setIsCompressingImage(false);
     setMessage("");
     setCurrentSubtitle("");
     setPartnerMicOn(true);
@@ -3906,14 +4092,69 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                   )}
 
                   {messages.map((msg, idx) => (
-                    <div key={idx} className={`text-msg-item ${msg.sender}`}>
-                      {msg.sender === "partner" && (
+                    <div key={idx} className={`text-msg-item ${msg.sender} ${msg.type === 'system' ? 'system-msg-row' : ''}`}>
+                      {msg.sender === "partner" && msg.type !== "system" && (
                         <div className="msg-sender-name">
                           {partnerInfo?.name || "Stranger"}
                         </div>
                       )}
-                      <div className="msg-bubble-content">
-                        {msg.type === "coin-prompt" ? (
+                      <div className={`msg-bubble-content ${msg.type === 'photo' ? 'photo-bubble' : ''}`}>
+                        {msg.type === "system" ? (
+                          <div className="chat-system-badge">
+                            <span>{msg.text}</span>
+                          </div>
+                        ) : msg.type === "photo-consent-prompt" ? (
+                          <div className="photo-consent-box">
+                            <div className="consent-top">
+                              <span className="consent-emoji">📷</span>
+                              <div className="consent-headline">
+                                <strong>{partnerInfo?.name || "Stranger"}</strong> wants to share photos
+                              </div>
+                            </div>
+                            <p className="consent-subtext">
+                              Both must allow. Photos are strictly temporary, never stored on any server, and vanish the moment this chat ends.
+                            </p>
+                            <div className="consent-btn-group">
+                              <button 
+                                type="button" 
+                                className="btn-consent-allow" 
+                                onClick={handleAcceptPhotoConsent}
+                              >
+                                ✅ Allow Photos
+                              </button>
+                              <button 
+                                type="button" 
+                                className="btn-consent-decline" 
+                                onClick={handleDeclinePhotoConsent}
+                              >
+                                ❌ Decline
+                              </button>
+                            </div>
+                          </div>
+                        ) : msg.type === "photo" ? (
+                          <div className="photo-message-card">
+                            <div className="photo-thumbnail-box" onClick={() => setPhotoPreviewModal(msg.image)}>
+                              <img src={msg.image} alt="Shared photo" className="photo-thumbnail-img" />
+                              <div className="photo-thumbnail-overlay">
+                                <span>🔍 Tap to view</span>
+                              </div>
+                            </div>
+                            {msg.sender === "partner" && (
+                              <button 
+                                type="button" 
+                                className="btn-report-photo-mini"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedReason("Nudity / NSFW");
+                                  setShowReportModal(true);
+                                }}
+                                title="Report this photo"
+                              >
+                                🚨 Report
+                              </button>
+                            )}
+                          </div>
+                        ) : msg.type === "coin-prompt" ? (
                           <div className="coin-prompt-bubble">
                             <span>💰 {msg.text}</span>
                             <div className="coin-prompt-buttons">
@@ -3993,6 +4234,35 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     <span className="btn-composer-icon">⏪</span>
                     <span className="btn-composer-label">Rewind</span>
                   </button>
+                  <button 
+                    type="button" 
+                    className={`btn-composer-photo ${photoConsentStatus === 'approved' ? 'consent-granted' : ''}`}
+                    onClick={handlePhotoClick}
+                    title={
+                      !partnerId
+                        ? "Connect to a partner first"
+                        : photoConsentStatus === 'approved'
+                          ? "Send a photo from gallery"
+                          : photoConsentStatus === 'requested_by_me'
+                            ? "Waiting for partner to allow photos..."
+                            : "Mutual Consent: Request to share photos"
+                    }
+                    disabled={!partnerId || isCompressingImage}
+                  >
+                    <span className="btn-composer-icon">
+                      {isCompressingImage ? '⏳' : photoConsentStatus === 'approved' ? '📷' : '📷🔒'}
+                    </span>
+                    <span className="btn-composer-label">
+                      {isCompressingImage ? 'Loading...' : photoConsentStatus === 'approved' ? 'Photo' : 'Photos'}
+                    </span>
+                  </button>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    accept="image/*" 
+                    style={{ display: 'none' }} 
+                    onChange={handleImageSelected} 
+                  />
                   <input
                     type="text"
                     className="text-mode-input-field"
@@ -5646,7 +5916,38 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
               </div>
             )}
 
-            {/* PREMIUM PRICING MODAL */}
+      {/* EPHEMERAL PHOTO LIGHTBOX MODAL */}
+      {photoPreviewModal && (
+        <div className="photo-lightbox-overlay" onClick={() => setPhotoPreviewModal(null)}>
+          <div className="photo-lightbox-card" onClick={(e) => e.stopPropagation()}>
+            <div className="photo-lightbox-header">
+              <div className="photo-lightbox-info">
+                <span className="photo-lightbox-badge">📷 Ephemeral Photo</span>
+                <span className="photo-lightbox-hint">Zero storage • Cleared on disconnect</span>
+              </div>
+              <button className="photo-lightbox-close" onClick={() => setPhotoPreviewModal(null)}>×</button>
+            </div>
+            <div className="photo-lightbox-body">
+              <img src={photoPreviewModal} alt="Expanded photo" className="photo-lightbox-img" />
+            </div>
+            <div className="photo-lightbox-footer">
+              <button 
+                type="button" 
+                className="photo-lightbox-report-btn"
+                onClick={() => {
+                  setPhotoPreviewModal(null);
+                  setSelectedReason("Nudity / NSFW");
+                  setShowReportModal(true);
+                }}
+              >
+                🚨 Report Photo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PREMIUM PRICING MODAL */}
       {showPricingModal && (
         <div className="payment-overlay" onClick={() => setShowPricingModal(false)}>
           <div className="premium-modal pricing-wide" onClick={(e) => e.stopPropagation()}>
@@ -6656,7 +6957,8 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             overflow: hidden !important;
           }
           .btn-composer-stop,
-          .btn-composer-rewind {
+          .btn-composer-rewind,
+          .btn-composer-photo {
             width: 36px !important;
             min-width: 36px !important;
             max-width: 36px !important;
@@ -9235,6 +9537,256 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           letter-spacing: 0.2px;
         }
 
+        /* Ephemeral Photo Sharing & Consent Styles */
+        .btn-composer-photo {
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          color: #94a3b8;
+          padding: 8px 12px;
+          border-radius: 12px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.8rem;
+          font-weight: 700;
+          transition: all 0.2s ease;
+          flex-shrink: 0;
+        }
+        .btn-composer-photo:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.12);
+          color: #fff;
+          border-color: rgba(255, 255, 255, 0.25);
+        }
+        .btn-composer-photo.consent-granted {
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+          border-color: rgba(168, 85, 247, 0.4);
+          color: #c084fc;
+          box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+        }
+        .btn-composer-photo:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+
+        .chat-system-badge {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          padding: 6px 14px;
+          border-radius: 20px;
+          font-size: 0.8rem;
+          color: #94a3b8;
+          text-align: center;
+          margin: 6px auto;
+          display: inline-block;
+          backdrop-filter: blur(8px);
+        }
+
+        .photo-consent-box {
+          background: rgba(15, 23, 42, 0.95);
+          border: 1px solid rgba(168, 85, 247, 0.35);
+          border-radius: 18px;
+          padding: 16px;
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+          max-width: 320px;
+        }
+        .consent-top {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 8px;
+        }
+        .consent-emoji {
+          font-size: 1.4rem;
+        }
+        .consent-headline {
+          color: #fff;
+          font-size: 0.95rem;
+        }
+        .consent-subtext {
+          font-size: 0.78rem;
+          color: #94a3b8;
+          line-height: 1.4;
+          margin: 0 0 14px 0;
+        }
+        .consent-btn-group {
+          display: flex;
+          gap: 10px;
+        }
+        .btn-consent-allow {
+          flex: 1;
+          background: linear-gradient(135deg, #10b981, #059669);
+          color: white;
+          border: none;
+          border-radius: 10px;
+          padding: 8px 12px;
+          font-weight: 700;
+          font-size: 0.82rem;
+          cursor: pointer;
+          transition: transform 0.15s;
+        }
+        .btn-consent-allow:hover {
+          transform: translateY(-1px);
+        }
+        .btn-consent-decline {
+          flex: 1;
+          background: rgba(239, 68, 68, 0.15);
+          border: 1px solid rgba(239, 68, 68, 0.3);
+          color: #f87171;
+          border-radius: 10px;
+          padding: 8px 12px;
+          font-weight: 700;
+          font-size: 0.82rem;
+          cursor: pointer;
+        }
+        .btn-consent-decline:hover {
+          background: rgba(239, 68, 68, 0.25);
+        }
+
+        .photo-message-card {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          max-width: 260px;
+        }
+        .photo-thumbnail-box {
+          position: relative;
+          border-radius: 14px;
+          overflow: hidden;
+          cursor: pointer;
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          background: #000;
+          transition: transform 0.2s ease;
+        }
+        .photo-thumbnail-box:hover {
+          transform: scale(1.02);
+        }
+        .photo-thumbnail-img {
+          width: 100%;
+          max-height: 240px;
+          object-fit: cover;
+          display: block;
+        }
+        .photo-thumbnail-overlay {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          padding: 6px;
+          background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+          color: #fff;
+          font-size: 0.72rem;
+          font-weight: 600;
+          text-align: center;
+        }
+        .btn-report-photo-mini {
+          align-self: flex-start;
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid rgba(239, 68, 68, 0.25);
+          color: #f87171;
+          font-size: 0.72rem;
+          padding: 3px 8px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-weight: 600;
+          transition: all 0.15s;
+        }
+        .btn-report-photo-mini:hover {
+          background: #ef4444;
+          color: white;
+        }
+
+        .photo-lightbox-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.9);
+          backdrop-filter: blur(16px);
+          z-index: 100060;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          animation: modalFadeIn 0.25s ease-out;
+        }
+        .photo-lightbox-card {
+          background: #0f172a;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 24px;
+          max-width: 600px;
+          width: 100%;
+          max-height: 90vh;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+        }
+        .photo-lightbox-header {
+          padding: 14px 18px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .photo-lightbox-info {
+          display: flex;
+          flex-direction: column;
+        }
+        .photo-lightbox-badge {
+          color: #fff;
+          font-weight: 800;
+          font-size: 0.95rem;
+        }
+        .photo-lightbox-hint {
+          color: #64748b;
+          font-size: 0.72rem;
+        }
+        .photo-lightbox-close {
+          background: none;
+          border: none;
+          color: #94a3b8;
+          font-size: 1.5rem;
+          cursor: pointer;
+          padding: 4px;
+          line-height: 1;
+        }
+        .photo-lightbox-body {
+          padding: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #020617;
+          overflow: auto;
+          max-height: 65vh;
+        }
+        .photo-lightbox-img {
+          max-width: 100%;
+          max-height: 60vh;
+          object-fit: contain;
+          border-radius: 12px;
+        }
+        .photo-lightbox-footer {
+          padding: 12px 18px;
+          display: flex;
+          justify-content: flex-end;
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.02);
+        }
+        .photo-lightbox-report-btn {
+          background: rgba(239, 68, 68, 0.15);
+          border: 1px solid rgba(239, 68, 68, 0.35);
+          color: #f87171;
+          padding: 8px 14px;
+          border-radius: 10px;
+          font-weight: 700;
+          font-size: 0.82rem;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .photo-lightbox-report-btn:hover {
+          background: #ef4444;
+          color: white;
+        }
+
         /* Modal Overlay */
         .filter-modal-overlay {
           position: fixed;
@@ -10679,6 +11231,26 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             border: 1px solid rgba(239, 68, 68, 0.35) !important;
             color: #fca5a5 !important;
             cursor: pointer !important;
+          }
+          .text-mode-composer .btn-composer-photo {
+            width: 36px !important;
+            min-width: 36px !important;
+            max-width: 36px !important;
+            height: 36px !important;
+            flex: 0 0 36px !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: 1.05rem !important;
+            border-radius: 10px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-sizing: border-box !important;
+            background: rgba(168, 85, 247, 0.16) !important;
+            border: 1px solid rgba(168, 85, 247, 0.35) !important;
+            color: #c084fc !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease;
           }
           .text-mode-composer .btn-composer-rewind {
             width: 36px !important;

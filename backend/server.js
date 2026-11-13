@@ -3190,6 +3190,34 @@ function endQuiz(roomId) {
         }
       });
 
+      // Ephemeral Mutual-Consent Photo Sharing (Zero Disk / Zero Memory Storage)
+      socket.on("photo-consent-request", ({ to }) => {
+        const targetId = to || (socket.partner ? socket.partner.id : null);
+        if (targetId) {
+          io.to(targetId).emit("photo-consent-requested", { from: socket.id });
+        }
+      });
+
+      socket.on("photo-consent-response", ({ to, accepted }) => {
+        const targetId = to || (socket.partner ? socket.partner.id : null);
+        if (targetId) {
+          io.to(targetId).emit("photo-consent-result", { from: socket.id, accepted });
+        }
+      });
+
+      socket.on("send-photo", ({ image, to }) => {
+        const targetId = to || (socket.partner ? socket.partner.id : null);
+        if (!targetId || !image) return;
+        // In-memory pass-through only; ensure valid data URL and under 1.2MB payload
+        if (typeof image === "string" && image.startsWith("data:image/") && image.length < 1200000) {
+          io.to(targetId).emit("receive-photo", {
+            image,
+            senderId: socket.id,
+            timestamp: Date.now()
+          });
+        }
+      });
+
       socket.on("send-subtitle", async ({ text, to }) => {
         let finalText = text;
         const targetSocket = io.sockets.sockets.get(to);
