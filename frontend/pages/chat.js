@@ -4090,7 +4090,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     </>
                   )}
                   <button 
-                    className="action-pill-btn"
+                    className="action-pill-btn prefs-round-btn"
                     onClick={() => {
                       setTempGender(gender);
                       setTempCountry(country);
@@ -4099,10 +4099,8 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                       setShowFilterModal(true);
                     }}
                     title="Matchmaking Preferences"
-                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
                   >
                     <span className="pill-icon">⚙️</span>
-                    <span className="pill-text"> Prefs</span>
                   </button>
                   <button 
                     className="action-pill-btn skip-pill-btn"
@@ -6495,6 +6493,28 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         .friend-pill-btn:hover {
           background: rgba(99, 102, 241, 0.25) !important;
           color: #ffffff !important;
+        }
+        .prefs-round-btn {
+          width: 32px !important;
+          height: 32px !important;
+          min-width: 32px !important;
+          padding: 0 !important;
+          border-radius: 50% !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          background: rgba(255, 255, 255, 0.08) !important;
+          border: 1px solid rgba(255, 255, 255, 0.16) !important;
+          color: #f8fafc !important;
+          font-size: 0.95rem !important;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          box-sizing: border-box !important;
+        }
+        .prefs-round-btn:hover {
+          background: rgba(168, 85, 247, 0.25) !important;
+          border-color: rgba(168, 85, 247, 0.5) !important;
+          transform: rotate(45deg) scale(1.06);
         }
         .action-pill-btn.friend-sent {
           background: rgba(34, 197, 94, 0.2) !important;
@@ -11264,6 +11284,14 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             background: rgba(239, 68, 68, 0.16) !important;
             border: 1px solid rgba(239, 68, 68, 0.35) !important;
             color: #fca5a5 !important;
+          }
+          .prefs-round-btn {
+            width: 28px !important;
+            height: 28px !important;
+            min-width: 28px !important;
+            padding: 0 !important;
+            border-radius: 50% !important;
+            font-size: 0.85rem !important;
           }
           .skip-pill-btn {
             padding: 0 10px !important;
