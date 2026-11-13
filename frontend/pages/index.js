@@ -268,13 +268,26 @@ export default function Dashboard(props) {
   }, []);
 
   useEffect(() => {
-    if (!showProfileDrop || !isMobileView) return;
+    if (!showProfileDrop) return;
+    const scrollY = window.scrollY || document.documentElement.scrollTop;
     const prevOverflow = document.body.style.overflow;
+    const prevPosition = document.body.style.position;
+    const prevTop = document.body.style.top;
+    const prevWidth = document.body.style.width;
+
     document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+
     return () => {
       document.body.style.overflow = prevOverflow;
+      document.body.style.position = prevPosition;
+      document.body.style.top = prevTop;
+      document.body.style.width = prevWidth;
+      window.scrollTo(0, scrollY);
     };
-  }, [showProfileDrop, isMobileView]);
+  }, [showProfileDrop]);
 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showCoinPopup, setShowCoinPopup] = useState(false);
@@ -1714,7 +1727,11 @@ export default function Dashboard(props) {
               </div>
               {showProfileDrop && (() => {
                 const profileModal = (
-                <div className={`profile-modal-overlay${isMobileView ? " profile-modal-overlay--mobile" : ""}`} onClick={() => setShowProfileDrop(false)}>
+                <div 
+                  className={`profile-modal-overlay${isMobileView ? " profile-modal-overlay--mobile" : ""}`} 
+                  onClick={() => setShowProfileDrop(false)}
+                  onTouchMove={(e) => { if (e.target === e.currentTarget) e.preventDefault(); }}
+                >
                   <div className={`profile-modal-card${isMobileView ? " profile-modal-card--mobile" : ""}`} onClick={(e) => e.stopPropagation()}>
                     <div className="profile-modal-header">
                       My Profile
@@ -2033,7 +2050,7 @@ export default function Dashboard(props) {
                   </div>
                 </div>
                 );
-                return isMobileView && typeof document !== "undefined"
+                return typeof document !== "undefined"
                   ? createPortal(profileModal, document.body)
                   : profileModal;
               })()}
@@ -4820,6 +4837,8 @@ export default function Dashboard(props) {
             display: flex;
             align-items: center;
             justify-content: center;
+            overscroll-behavior: contain;
+            touch-action: none;
           }
           .profile-modal-card {
             position: fixed;
@@ -4836,6 +4855,9 @@ export default function Dashboard(props) {
             animation: dropdownSlideDown 0.3s cubic-bezier(0.16,1,0.3,1);
             scrollbar-width: none;
             z-index: 1001;
+            overscroll-behavior: contain;
+            touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
           }
           .header-premium-mobile-only {
             display: none;
@@ -7618,6 +7640,8 @@ export default function Dashboard(props) {
               justify-content: center !important;
               padding: 12px !important;
               z-index: 10050 !important;
+              overscroll-behavior: contain !important;
+              touch-action: none !important;
             }
             .profile-modal-card--mobile {
               position: relative !important;
@@ -7633,6 +7657,9 @@ export default function Dashboard(props) {
               overflow-x: hidden !important;
               border-radius: 20px !important;
               margin: auto !important;
+              overscroll-behavior: contain !important;
+              touch-action: pan-y !important;
+              -webkit-overflow-scrolling: touch !important;
             }
             .streak-reward-modal {
               width: 95% !important;

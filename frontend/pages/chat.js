@@ -3865,6 +3865,21 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     </>
                   )}
                   <button 
+                    className="action-pill-btn"
+                    onClick={() => {
+                      setTempGender(gender);
+                      setTempCountry(country);
+                      setTempStateProv(stateProv);
+                      setTempAge(age);
+                      setShowFilterModal(true);
+                    }}
+                    title="Matchmaking Preferences"
+                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
+                  >
+                    <span className="pill-icon">⚙️</span>
+                    <span className="pill-text"> Prefs</span>
+                  </button>
+                  <button 
                     className="action-pill-btn skip-pill-btn"
                     onClick={nextPartner}
                     title="Skip to next stranger"
@@ -4009,248 +4024,6 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           ) : (
             <>
               <div className="video-column">
-
-            {/* PREMIUM FILTER SETTINGS MODAL */}
-            {showFilterModal && (
-              <div className="filter-modal-overlay">
-                <div className="filter-modal-card">
-                  <div className="filter-modal-header">
-                    <h2>🎯 Matchmaking Preferences</h2>
-                    <button className="close-btn" onClick={() => setShowFilterModal(false)}>×</button>
-                  </div>
-                  
-                  <div className="filter-modal-body">
-                    {/* 1. GENDER SELECTION */}
-                    <div className="filter-section-group">
-                      <label className="section-label">Preferred Gender</label>
-                      <div className="gender-options-grid">
-                        {GENDERS.map(g => (
-                          <div
-                            key={g.id}
-                            className={`gender-option-card ${tempGender === g.id ? 'active' : ''}`}
-                            onClick={() => {
-                              const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
-                              const currentUser = user || storedUser;
-                              const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
-                              if (g.id !== "all" && !canUseGenderCountryFilters(currentUser) && !isOwner) {
-                                setShowPricingModal(true);
-                                return;
-                              }
-                              setTempGender(g.id);
-                            }}
-                          >
-                            <span className="emoji">{g.icon}</span>
-                            <span className="name">{g.name}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 2. COUNTRY SELECTION */}
-                    <div className="filter-section-group">
-                      <label className="section-label">Preferred Country (Premium Feature)</label>
-                      <div className="select-dropdown-trigger" onClick={(e) => {
-                        const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
-                        const currentUser = user || storedUser;
-                        const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
-                        if (!canUseGenderCountryFilters(currentUser) && !isOwner) {
-                          setShowPricingModal(true);
-                          return;
-                        }
-                        const nextState = !showCountryDrop;
-                        setShowCountryDrop(nextState);
-                        if (nextState) {
-                          setTimeout(() => {
-                            e.currentTarget.closest('.filter-section-group')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          }, 120);
-                        }
-                      }}>
-                        <span className="val-icon">
-                          {tempCountry === "all" ? "🌎" : Country.getCountryByCode(tempCountry)?.flag}
-                        </span>
-                        <span className="val-text">
-                          {tempCountry === "all" ? "Worldwide" : Country.getCountryByCode(tempCountry)?.name}
-                        </span>
-                        <span className="arrow">▼</span>
-                      </div>
-                      {showCountryDrop && (
-                        <div className="filter-dropdown-menu">
-                          <div className="search-box">
-                            <input
-                              placeholder="Search country..."
-                              autoFocus
-                              value={countrySearch}
-                              onChange={(e) => setCountrySearch(e.target.value)}
-                            />
-                          </div>
-                          <div className="items-list">
-                            <div className={`dropdown-item ${tempCountry === "all" ? "active" : ""}`} onClick={() => {
-                              setTempCountry("all");
-                              setTempStateProv("All States");
-                              setShowCountryDrop(false);
-                            }}>
-                              <span className="icon">🌎</span> Worldwide
-                            </div>
-                            {Country.getAllCountries().filter(c => c.name.toLowerCase().includes(countrySearch.toLowerCase())).map(c => (
-                              <div key={c.isoCode} className={`dropdown-item ${tempCountry === c.isoCode ? "active" : ""}`} onClick={() => {
-                                setTempCountry(c.isoCode);
-                                setTempStateProv("All States");
-                                setShowCountryDrop(false);
-                              }}>
-                                <span className="icon">{c.flag}</span> {c.name}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* State & Age — VIP Elite only */}
-                    {(canUseEliteFilters(user) || user?.email?.toLowerCase() === "ds9376314@gmail.com") && (
-                    <div className="filter-section-group">
-                      <label className="section-label">State / Province (VIP Elite Premium Feature)</label>
-                      <div className="select-dropdown-trigger" onClick={(e) => {
-                        const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
-                        const currentUser = user || storedUser;
-                        const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
-                        if (!canUseEliteFilters(currentUser) && !isOwner) {
-                          showToast("State / Province selection is exclusive to VIP Elite members!", "warning");
-                          setShowPricingModal(true);
-                          return;
-                        }
-                        if (tempCountry === "all") { showToast("Please select a country first", "info"); return; }
-                        const nextState = !showStateDrop;
-                        setShowStateDrop(nextState);
-                        if (nextState) {
-                          setTimeout(() => {
-                            e.currentTarget.closest('.filter-section-group')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          }, 120);
-                        }
-                      }}>
-                        <span className="val-icon">📍</span>
-                        <span className="val-text">{tempStateProv}</span>
-                        <span className="arrow">▼</span>
-                      </div>
-                      {showStateDrop && (
-                        <div className="filter-dropdown-menu">
-                          <div className="items-list">
-                            <div className={`dropdown-item ${tempStateProv === "All States" ? "active" : ""}`} onClick={() => {
-                              setTempStateProv("All States");
-                              setShowStateDrop(false);
-                            }}>
-                              All States
-                            </div>
-                            {State.getStatesOfCountry(tempCountry).map(s => (
-                              <div key={s.isoCode || s.name} className={`dropdown-item ${tempStateProv === s.name ? "active" : ""}`} onClick={() => {
-                                setTempStateProv(s.name);
-                                setShowStateDrop(false);
-                              }}>
-                                {s.name}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    )}
-
-                    {(canUseEliteFilters(user) || user?.email?.toLowerCase() === "ds9376314@gmail.com") && (
-                    <div className="filter-section-group">
-                      <label className="section-label">Age Group (VIP Elite Premium Feature)</label>
-                      <div className="select-dropdown-trigger" onClick={(e) => {
-                        const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
-                        const currentUser = user || storedUser;
-                        const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
-                        if (!canUseEliteFilters(currentUser) && !isOwner) {
-                          showToast("Age Group selection is exclusive to VIP Elite members!", "warning");
-                          setShowPricingModal(true);
-                          return;
-                        }
-                        const nextState = !showAgeDrop;
-                        setShowAgeDrop(nextState);
-                        if (nextState) {
-                          setTimeout(() => {
-                            e.currentTarget.closest('.filter-section-group')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          }, 120);
-                        }
-                      }}>
-                        <span className="val-icon">🎯</span>
-                        <span className="val-text">{tempAge === "all" ? "All Ages" : tempAge}</span>
-                        <span className="arrow">▼</span>
-                      </div>
-                      {showAgeDrop && (
-                        <div className="filter-dropdown-menu">
-                          <div className="items-list">
-                            <div className={`dropdown-item ${tempAge === "all" ? "active" : ""}`} onClick={() => {
-                              setTempAge("all");
-                              setShowAgeDrop(false);
-                            }}>
-                              All Ages
-                            </div>
-                            {AGES.filter(a => a !== "All Ages").map(a => (
-                              <div key={a} className={`dropdown-item ${tempAge === a ? "active" : ""}`} onClick={() => {
-                                setTempAge(a);
-                                setShowAgeDrop(false);
-                              }}>
-                                {a}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    )}
-                  </div>
-
-                  <div className="filter-modal-footer">
-                    <button className="apply-btn" onClick={() => {
-                      const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
-                      const currentUser = user || storedUser;
-                      const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
-
-                      // 1. Gender Selection Gating (must be premium for Male or Female)
-                      if (tempGender !== "all" && !canUseGenderCountryFilters(currentUser) && !isOwner) {
-                        setShowPricingModal(true);
-                        return;
-                      }
-                      // 2. Country Selection Gating (must be premium for non-Worldwide)
-                      if (tempCountry !== "all" && !canUseGenderCountryFilters(currentUser) && !isOwner) {
-                        setShowPricingModal(true);
-                        return;
-                      }
-                      // 3. State Selection Gating (must be VIP Elite)
-                      if (tempStateProv !== "All States" && !canUseEliteFilters(currentUser) && !isOwner) {
-                        showToast("State selection is exclusive to VIP Elite members!", "warning");
-                        setShowPricingModal(true);
-                        return;
-                      }
-                      // 4. Age Group Selection Gating (must be VIP Elite)
-                      if (tempAge !== "all" && !canUseEliteFilters(currentUser) && !isOwner) {
-                        showToast("Age selection is exclusive to VIP Elite members!", "warning");
-                        setShowPricingModal(true);
-                        return;
-                      }
-
-                      setGender(tempGender);
-                      setCountry(tempCountry);
-                      setStateProv(tempStateProv);
-                      setAge(tempAge);
-                      
-                      socket?.emit("update-filters", {
-                        gender: tempGender,
-                        country: tempCountry,
-                        age: tempAge,
-                        state: tempStateProv
-                      });
-
-                      setShowFilterModal(false);
-                    }}>
-                      🎯 Apply Preferences
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* QUIZ ROOMS MODAL */}
             {showQuizRoomsModal && (
@@ -5631,7 +5404,249 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         );
       })()}
 
-      {/* PREMIUM PRICING MODAL */}
+            {/* PREMIUM FILTER SETTINGS MODAL */}
+            {showFilterModal && (
+              <div className="filter-modal-overlay" onClick={() => setShowFilterModal(false)}>
+                <div className="filter-modal-card" onClick={(e) => e.stopPropagation()}>
+                  <div className="filter-modal-header">
+                    <h2>🎯 Matchmaking Preferences</h2>
+                    <button className="close-btn" onClick={() => setShowFilterModal(false)}>×</button>
+                  </div>
+                  
+                  <div className="filter-modal-body">
+                    {/* 1. GENDER SELECTION */}
+                    <div className="filter-section-group">
+                      <label className="section-label">Preferred Gender</label>
+                      <div className="gender-options-grid">
+                        {GENDERS.map(g => (
+                          <div
+                            key={g.id}
+                            className={`gender-option-card ${tempGender === g.id ? 'active' : ''}`}
+                            onClick={() => {
+                              const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+                              const currentUser = user || storedUser;
+                              const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
+                              if (g.id !== "all" && !canUseGenderCountryFilters(currentUser) && !isOwner) {
+                                setShowPricingModal(true);
+                                return;
+                              }
+                              setTempGender(g.id);
+                            }}
+                          >
+                            <span className="emoji">{g.icon}</span>
+                            <span className="name">{g.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 2. COUNTRY SELECTION */}
+                    <div className="filter-section-group">
+                      <label className="section-label">Preferred Country (Premium Feature)</label>
+                      <div className="select-dropdown-trigger" onClick={(e) => {
+                        const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+                        const currentUser = user || storedUser;
+                        const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
+                        if (!canUseGenderCountryFilters(currentUser) && !isOwner) {
+                          setShowPricingModal(true);
+                          return;
+                        }
+                        const nextState = !showCountryDrop;
+                        setShowCountryDrop(nextState);
+                        if (nextState) {
+                          setTimeout(() => {
+                            e.currentTarget.closest('.filter-section-group')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }, 120);
+                        }
+                      }}>
+                        <span className="val-icon">
+                          {tempCountry === "all" ? "🌎" : Country.getCountryByCode(tempCountry)?.flag}
+                        </span>
+                        <span className="val-text">
+                          {tempCountry === "all" ? "Worldwide" : Country.getCountryByCode(tempCountry)?.name}
+                        </span>
+                        <span className="arrow">▼</span>
+                      </div>
+                      {showCountryDrop && (
+                        <div className="filter-dropdown-menu">
+                          <div className="search-box">
+                            <input
+                              placeholder="Search country..."
+                              autoFocus
+                              value={countrySearch}
+                              onChange={(e) => setCountrySearch(e.target.value)}
+                            />
+                          </div>
+                          <div className="items-list">
+                            <div className={`dropdown-item ${tempCountry === "all" ? "active" : ""}`} onClick={() => {
+                              setTempCountry("all");
+                              setTempStateProv("All States");
+                              setShowCountryDrop(false);
+                            }}>
+                              <span className="icon">🌎</span> Worldwide
+                            </div>
+                            {Country.getAllCountries().filter(c => c.name.toLowerCase().includes(countrySearch.toLowerCase())).map(c => (
+                              <div key={c.isoCode} className={`dropdown-item ${tempCountry === c.isoCode ? "active" : ""}`} onClick={() => {
+                                setTempCountry(c.isoCode);
+                                setTempStateProv("All States");
+                                setShowCountryDrop(false);
+                              }}>
+                                <span className="icon">{c.flag}</span> {c.name}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* State & Age — VIP Elite only */}
+                    {(canUseEliteFilters(user) || user?.email?.toLowerCase() === "ds9376314@gmail.com") && (
+                    <div className="filter-section-group">
+                      <label className="section-label">State / Province (VIP Elite Premium Feature)</label>
+                      <div className="select-dropdown-trigger" onClick={(e) => {
+                        const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+                        const currentUser = user || storedUser;
+                        const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
+                        if (!canUseEliteFilters(currentUser) && !isOwner) {
+                          showToast("State / Province selection is exclusive to VIP Elite members!", "warning");
+                          setShowPricingModal(true);
+                          return;
+                        }
+                        if (tempCountry === "all") { showToast("Please select a country first", "info"); return; }
+                        const nextState = !showStateDrop;
+                        setShowStateDrop(nextState);
+                        if (nextState) {
+                          setTimeout(() => {
+                            e.currentTarget.closest('.filter-section-group')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }, 120);
+                        }
+                      }}>
+                        <span className="val-icon">📍</span>
+                        <span className="val-text">{tempStateProv}</span>
+                        <span className="arrow">▼</span>
+                      </div>
+                      {showStateDrop && (
+                        <div className="filter-dropdown-menu">
+                          <div className="items-list">
+                            <div className={`dropdown-item ${tempStateProv === "All States" ? "active" : ""}`} onClick={() => {
+                              setTempStateProv("All States");
+                              setShowStateDrop(false);
+                            }}>
+                              All States
+                            </div>
+                            {State.getStatesOfCountry(tempCountry).map(s => (
+                              <div key={s.isoCode || s.name} className={`dropdown-item ${tempStateProv === s.name ? "active" : ""}`} onClick={() => {
+                                setTempStateProv(s.name);
+                                setShowStateDrop(false);
+                              }}>
+                                {s.name}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    )}
+
+                    {(canUseEliteFilters(user) || user?.email?.toLowerCase() === "ds9376314@gmail.com") && (
+                    <div className="filter-section-group">
+                      <label className="section-label">Age Group (VIP Elite Premium Feature)</label>
+                      <div className="select-dropdown-trigger" onClick={(e) => {
+                        const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+                        const currentUser = user || storedUser;
+                        const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
+                        if (!canUseEliteFilters(currentUser) && !isOwner) {
+                          showToast("Age Group selection is exclusive to VIP Elite members!", "warning");
+                          setShowPricingModal(true);
+                          return;
+                        }
+                        const nextState = !showAgeDrop;
+                        setShowAgeDrop(nextState);
+                        if (nextState) {
+                          setTimeout(() => {
+                            e.currentTarget.closest('.filter-section-group')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }, 120);
+                        }
+                      }}>
+                        <span className="val-icon">🎯</span>
+                        <span className="val-text">{tempAge === "all" ? "All Ages" : tempAge}</span>
+                        <span className="arrow">▼</span>
+                      </div>
+                      {showAgeDrop && (
+                        <div className="filter-dropdown-menu">
+                          <div className="items-list">
+                            <div className={`dropdown-item ${tempAge === "all" ? "active" : ""}`} onClick={() => {
+                              setTempAge("all");
+                              setShowAgeDrop(false);
+                            }}>
+                              All Ages
+                            </div>
+                            {AGES.filter(a => a !== "All Ages").map(a => (
+                              <div key={a} className={`dropdown-item ${tempAge === a ? "active" : ""}`} onClick={() => {
+                                setTempAge(a);
+                                setShowAgeDrop(false);
+                              }}>
+                                {a}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    )}
+                  </div>
+
+                  <div className="filter-modal-footer">
+                    <button className="apply-btn" onClick={() => {
+                      const storedUser = typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+                      const currentUser = user || storedUser;
+                      const isOwner = currentUser?.email?.toLowerCase() === "ds9376314@gmail.com";
+
+                      // 1. Gender Selection Gating (must be premium for Male or Female)
+                      if (tempGender !== "all" && !canUseGenderCountryFilters(currentUser) && !isOwner) {
+                        setShowPricingModal(true);
+                        return;
+                      }
+                      // 2. Country Selection Gating (must be premium for non-Worldwide)
+                      if (tempCountry !== "all" && !canUseGenderCountryFilters(currentUser) && !isOwner) {
+                        setShowPricingModal(true);
+                        return;
+                      }
+                      // 3. State Selection Gating (must be VIP Elite)
+                      if (tempStateProv !== "All States" && !canUseEliteFilters(currentUser) && !isOwner) {
+                        showToast("State selection is exclusive to VIP Elite members!", "warning");
+                        setShowPricingModal(true);
+                        return;
+                      }
+                      // 4. Age Group Selection Gating (must be VIP Elite)
+                      if (tempAge !== "all" && !canUseEliteFilters(currentUser) && !isOwner) {
+                        showToast("Age selection is exclusive to VIP Elite members!", "warning");
+                        setShowPricingModal(true);
+                        return;
+                      }
+
+                      setGender(tempGender);
+                      setCountry(tempCountry);
+                      setStateProv(tempStateProv);
+                      setAge(tempAge);
+                      
+                      socket?.emit("update-filters", {
+                        gender: tempGender,
+                        country: tempCountry,
+                        age: tempAge,
+                        state: tempStateProv
+                      });
+
+                      setShowFilterModal(false);
+                    }}>
+                      🎯 Apply Preferences
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* PREMIUM PRICING MODAL */}
       {showPricingModal && (
         <div className="payment-overlay" onClick={() => setShowPricingModal(false)}>
           <div className="premium-modal pricing-wide" onClick={(e) => e.stopPropagation()}>
@@ -9227,7 +9242,8 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           background: rgba(7, 10, 19, 0.85);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          z-index: 2000;
+          z-index: 100050;
+          overscroll-behavior: contain;
           display: flex;
           align-items: center;
           justify-content: center;
