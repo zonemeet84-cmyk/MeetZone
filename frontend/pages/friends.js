@@ -52,8 +52,9 @@ export default function Friends() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/login");
+    const isGuest = localStorage.getItem("isGuest") === "true" || (token && token.startsWith("guest_"));
+    if (!token || isGuest) {
+      router.push("/login?reason=guest_friends_restricted");
       return;
     }
 

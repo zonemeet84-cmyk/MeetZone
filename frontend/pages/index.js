@@ -639,7 +639,8 @@ export default function Dashboard(props) {
 
       // 0. IMMEDIATE CACHE LOAD (Fast UI)
       const stored = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
-      if (stored && stored.email) {
+      const isGuestSession = localStorage.getItem("isGuest") === "true";
+      if (stored && (stored.email || stored.isGuest || isGuestSession)) {
         console.log("Found stored user, displaying immediately");
         setUser(stored);
         setAuthLoading(false);
@@ -689,6 +690,15 @@ export default function Dashboard(props) {
           }
         }
       } else if (token && token !== "undefined") {
+        const isGuest = localStorage.getItem("isGuest") === "true" || token.startsWith("guest_");
+        if (isGuest) {
+          const storedGuest = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+          if (storedGuest) {
+            setUser(storedGuest);
+          }
+          setAuthLoading(false);
+          return;
+        }
         try {
           const res = await axios.get("https://api.zonemeet.chat/api/auth/verify", {
             headers: { Authorization: `Bearer ${token}` },
@@ -742,7 +752,7 @@ export default function Dashboard(props) {
   }, [showOnboarding]);
 
   useEffect(() => {
-    if (user && (user.email || user.phone) && !dailyStatus) {
+    if (user && !user.isGuest && (user.email || user.phone) && !dailyStatus) {
       axios.post("https://api.zonemeet.chat/api/user/daily-check", { email: user.email, phone: user.phone })
         .then(res => {
           if (res.data.success) {
@@ -777,7 +787,8 @@ export default function Dashboard(props) {
     if (authLoading) return; // Wait for verification
 
     const token = localStorage.getItem("token");
-    if (!session && (!token || token === "undefined")) {
+    const isGuest = localStorage.getItem("isGuest") === "true" || (token && token.startsWith("guest_"));
+    if (!session && (!token || token === "undefined") && !isGuest) {
       router.push("/login"); // Redirect to login if not authenticated
     }
   }, [session, authLoading]);
@@ -806,6 +817,13 @@ export default function Dashboard(props) {
   }, [user, referralStats]);
 
   const collectDailyReward = async () => {
+    if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
+      showModal({
+        message: "⚠️ You are currently using a Guest account. Daily login streaks and rewards require a registered account. Please log in or sign up to claim streak bonuses!",
+        type: "info"
+      });
+      return;
+    }
     try {
       const res = await axios.post("https://api.zonemeet.chat/api/user/collect-daily-reward", { email: user.email, phone: user.phone });
       if (res.data.success) {
@@ -1200,6 +1218,7 @@ export default function Dashboard(props) {
     
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("isGuest");
     setUser(null);
     if (session) {
       await signOut({ redirect: false });
@@ -1215,6 +1234,7 @@ export default function Dashboard(props) {
       
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+      localStorage.removeItem("isGuest");
       setUser(null);
       if (session) {
         await signOut({ redirect: false });
@@ -1311,10 +1331,21 @@ export default function Dashboard(props) {
     } catch (e) {}
 
     const token = localStorage.getItem("token");
-    if (!token && !session) {
+    const isGuest = user?.isGuest || localStorage.getItem("isGuest") === "true";
+
+    if (!token && !session && !isGuest) {
       console.log("No auth found, redirecting...");
       router.push(`/login?callbackUrl=/chat?mode=${mode}`);
       setStartingChat(false);
+      return;
+    }
+
+    if (isGuest && mode === "video") {
+      setStartingChat(false);
+      showModal({
+        message: "🔒 Video Chat is locked for Guest users. Please log in or create a free account to start live video calls!",
+        type: "info"
+      });
       return;
     }
 
@@ -1355,7 +1386,10 @@ export default function Dashboard(props) {
   };
 
   const handleCashfreePayment = async () => {
-    if (!user) { showModal({ message: "Please login first", type: "info" }); return; }
+    if (!user || user?.isGuest || localStorage.getItem("isGuest") === "true") {
+      showModal({ message: "⚠️ You are currently using a Guest account. Subscriptions and coin purchases require a registered account. Please log in first.", type: "info" });
+      return;
+    }
     const CF_APP_ID = process.env.NEXT_PUBLIC_CASHFREE_APP_ID;
     if (!CF_APP_ID || CF_APP_ID === "YOUR_CASHFREE_APP_ID") {
       showModal({ message: "⚠️ Cashfree gateway is being configured. Please try again in a few minutes or contact support.", type: "info" }); return;
@@ -1384,7 +1418,10 @@ export default function Dashboard(props) {
   };
 
   const handlePaypalPayment = async () => {
-    if (!user) { showModal({ message: "Please login first", type: "info" }); return; }
+    if (!user || user?.isGuest || localStorage.getItem("isGuest") === "true") {
+      showModal({ message: "⚠️ You are currently using a Guest account. Subscriptions and coin purchases require a registered account. Please log in first.", type: "info" });
+      return;
+    }
     const PP_CLIENT = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
     if (!PP_CLIENT || PP_CLIENT === "YOUR_PAYPAL_CLIENT_ID") {
       showModal({ message: "⚠️ PayPal gateway is being configured. Please contact support.", type: "info" }); return;
@@ -1762,12 +1799,48 @@ export default function Dashboard(props) {
 
         <nav className="header-nav">
           <div className="nav-link" onClick={() => router.push("/")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Home</div>
-          <div className="nav-link" onClick={() => router.push("/friends")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Friends</div>
-          <div className="nav-link" onClick={() => setShowHistoryModal(true)} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>History</div>
-          <div className="nav-link" onClick={() => router.push("/chat?quiz=true")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: '#f59e0b', transition: 'all 0.3s', display: 'flex', alignItems: 'center', gap: '4px' }}>⚔️ Quiz</div>
-          <div className="nav-link" onClick={() => document.getElementById("coins-section")?.scrollIntoView({ behavior: 'smooth' })} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Coins</div>
           <div className="nav-link" onClick={() => {
-            if (!user) {
+            if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
+              showModal({
+                message: "⚠️ You are currently using a Guest account. Friends list and chat history are not saved. Please log in to add and chat with friends.",
+                type: "info"
+              });
+              return;
+            }
+            router.push("/friends");
+          }} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Friends</div>
+          <div className="nav-link" onClick={() => {
+            if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
+              showModal({
+                message: "⚠️ You are currently using a Guest account. Chat history is not saved for guest sessions. Please log in or sign up.",
+                type: "info"
+              });
+              return;
+            }
+            setShowHistoryModal(true);
+          }} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>History</div>
+          <div className="nav-link" onClick={() => {
+            if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
+              showModal({
+                message: "🔒 Brain Clash Quiz requires a registered account. Please log in or sign up to play!",
+                type: "info"
+              });
+              return;
+            }
+            router.push("/chat?quiz=true");
+          }} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: '#f59e0b', transition: 'all 0.3s', display: 'flex', alignItems: 'center', gap: '4px' }}>⚔️ Quiz</div>
+          <div className="nav-link" onClick={() => {
+            if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
+              showModal({
+                message: "⚠️ You are currently using a Guest account. Coins and subscriptions cannot be saved to guest sessions. Please log in to unlock coins and store!",
+                type: "info"
+              });
+              return;
+            }
+            document.getElementById("coins-section")?.scrollIntoView({ behavior: 'smooth' });
+          }} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Coins</div>
+          <div className="nav-link" onClick={() => {
+            if (!user || user?.isGuest || localStorage.getItem("isGuest") === "true") {
               showModal({
                 title: "Invite & Earn",
                 message: "Please login to see your unique referral link and earn free coins!",
@@ -1780,7 +1853,16 @@ export default function Dashboard(props) {
               document.getElementById("referral-section")?.scrollIntoView({ behavior: 'smooth' });
             }
           }} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: '#10b981', transition: 'all 0.3s' }}>🎁 Invite</div>
-          <div className="nav-link" onClick={() => document.getElementById("pricing-section")?.scrollIntoView({ behavior: 'smooth' })} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>VIP</div>
+          <div className="nav-link" onClick={() => {
+            if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
+              showModal({
+                message: "⚠️ You are currently using a Guest account. Subscriptions and coin balances cannot be saved to guest sessions. Please log in or sign up to purchase!",
+                type: "info"
+              });
+              return;
+            }
+            document.getElementById("pricing-section")?.scrollIntoView({ behavior: 'smooth' });
+          }} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>VIP</div>
           <div className="nav-link" onClick={() => router.push("/contact")} style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', transition: 'all 0.3s' }}>Contact</div>
         </nav>
 
@@ -1790,10 +1872,42 @@ export default function Dashboard(props) {
           </div>
         ) : user ? (
           <div className="user-dashboard-row header-actions-group" style={{ display: 'flex', alignItems: 'center', gap: '20px', flexShrink: 0 }}>
+            {user?.isGuest && (
+              <button 
+                onClick={() => router.push("/login")}
+                style={{
+                  background: 'linear-gradient(135deg, #00f2fe, #4facfe)',
+                  color: '#020617',
+                  border: 'none',
+                  borderRadius: '20px',
+                  padding: '6px 14px',
+                  fontWeight: '800',
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  boxShadow: '0 0 14px rgba(0, 242, 254, 0.45)',
+                  flexShrink: 0
+                }}
+              >
+                <span>✨</span> Log In / Sign Up
+              </button>
+            )}
+
             <div
               className="header-streak-pill"
-              onClick={() => setShowStreakModal(true)}
-              title={`${user.streak_day || user.streak || 0} day login streak! Log in 7 days in a row for 100 free coins.`}
+              onClick={() => {
+                if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
+                  showModal({
+                    message: "⚠️ You are currently using a Guest account. Daily login streaks and rewards require a registered account. Please log in to start earning streak bonuses!",
+                    type: "info"
+                  });
+                  return;
+                }
+                setShowStreakModal(true);
+              }}
+              title={user?.isGuest ? "Guest Mode: Login required for streak" : `${user.streak_day || user.streak || 0} day login streak! Log in 7 days in a row for 100 free coins.`}
             >
               <span className="streak-fire">🔥</span>
               <div className="streak-info">
@@ -1805,7 +1919,16 @@ export default function Dashboard(props) {
               </div>
             </div>
 
-            <div className="header-coins-pill" onClick={() => document.getElementById("coins-section")?.scrollIntoView({ behavior: 'smooth' })}>
+            <div className="header-coins-pill" onClick={() => {
+              if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
+                showModal({
+                  message: "⚠️ You are currently using a Guest account. Coins and subscriptions cannot be saved to guest sessions. Please log in to unlock coins and store!",
+                  type: "info"
+                });
+                return;
+              }
+              document.getElementById("coins-section")?.scrollIntoView({ behavior: 'smooth' });
+            }}>
               <span className="coin-icon">💰</span>
               <span className="coin-count">{user.coins || 0}</span>
               <span className="plus-icon">+</span>
@@ -1818,8 +1941,14 @@ export default function Dashboard(props) {
 
             <div className="profile-dropdown-container">
               <div className="profile-trigger" onClick={() => setShowProfileDrop(!showProfileDrop)} style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
-                <span className="profile-trigger-name" style={{ color: '#ffffff', fontWeight: '500', fontSize: '1rem' }}>
-                  {user.name} {user.email === "ds9376314@gmail.com" && <span style={{ color: '#f59e0b', fontSize: '0.7rem', fontWeight: '800', border: '1px solid #f59e0b', padding: '1px 5px', borderRadius: '4px', marginLeft: '5px' }}>VIP</span>}
+                <span className="profile-trigger-name" style={{ color: '#ffffff', fontWeight: '500', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {user.name} 
+                  {user.isGuest && (
+                    <span style={{ background: 'rgba(255, 193, 7, 0.2)', color: '#ffc107', border: '1px solid #ffc107', fontSize: '0.65rem', fontWeight: '800', padding: '1px 6px', borderRadius: '4px' }}>
+                      GUEST
+                    </span>
+                  )}
+                  {user.email === "ds9376314@gmail.com" && <span style={{ color: '#f59e0b', fontSize: '0.7rem', fontWeight: '800', border: '1px solid #f59e0b', padding: '1px 5px', borderRadius: '4px', marginLeft: '5px' }}>VIP</span>}
                 </span>
                 <div className="profile-avatar">
                   {user.name ? user.name.charAt(0).toUpperCase() : "U"}

@@ -521,6 +521,10 @@ export default function Home(props) {
   };
 
   const handlePhotoClick = () => {
+    if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
+      showToast("⚠️ You are currently using a Guest account. Photo sharing requires a registered account. Please log in to share photos.", "warning", 5000);
+      return;
+    }
     if (!partnerId) {
       showToast("Please wait until you are connected to a partner!", "info");
       return;
@@ -674,6 +678,10 @@ export default function Home(props) {
   };
 
   const handleRewindClick = () => {
+    if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
+      showToast("⚠️ You are currently using a Guest account. Rewind requires a registered account. Please log in to reconnect.", "warning", 5000);
+      return;
+    }
     const candidate = lastPartner || lastPartnerRef.current || (user?.recentStrangers && user.recentStrangers.length > 0 ? user.recentStrangers[0] : null);
     if (!candidate) {
       showToast("No previous partner to rewind to yet! Match someone first.", "warning");
@@ -1547,6 +1555,10 @@ export default function Home(props) {
   };
 
   const handleSendGift = async (sticker) => {
+    if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
+      showToast("⚠️ You are currently using a Guest account. Sending gifts requires a registered account. Please log in first.", "warning", 5000);
+      return;
+    }
     if (!partnerId || !partnerInfo) {
       showToast("Connect with someone first!", "info");
       return;
@@ -1601,6 +1613,10 @@ export default function Home(props) {
 
 
   const addFriend = async () => {
+    if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
+      showToast("⚠️ You are currently using a Guest account. Nothing will be saved. Please log in to add friends.", "warning", 5000);
+      return;
+    }
     if (!partnerInfo?.id) {
       showToast("Partner ID not found. Try again.", "error");
       return;
@@ -2043,49 +2059,86 @@ export default function Home(props) {
         }
         setAuthLoading(false);
       } else if (token && token !== "undefined") {
-        try {
-          const res = await axios.get("https://api.zonemeet.chat/api/auth/verify", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (res.data.valid) {
-            let userData = res.data.user;
-            if (userData.email?.toLowerCase() === "ds9376314@gmail.com") {
-              userData.premium = true;
-              userData.planName = "VIP Elite";
-            }
-            if (userData.premium) isPremiumUser = true;
-            setUser(userData);
-            if (userData.unlockedFilters) {
-              setUnlockedFilters(userData.unlockedFilters);
-            }
-            localStorage.setItem("user", JSON.stringify(userData));
-
-            // Check for incomplete profile
-            if (!userData.gender || userData.gender === "All" || !userData.country || userData.country === "All" || userData.gender === "Other" || userData.country === "Unknown") {
-              router.push("/");
+        const isGuest = localStorage.getItem("isGuest") === "true" || token.startsWith("guest_");
+        if (isGuest) {
+          try {
+            const guestObj = savedUser ? JSON.parse(savedUser) : null;
+            if (guestObj) {
+              setUser(guestObj);
+              setAuthLoading(false);
+            } else {
+              router.push("/login");
               return;
             }
-          } else {
-            setAuthError("Session invalid. Please login again.");
+          } catch(e) {
+            router.push("/login");
+            return;
+          }
+        } else {
+          try {
+            const res = await axios.get("https://api.zonemeet.chat/api/auth/verify", {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.data.valid) {
+              let userData = res.data.user;
+              if (userData.email?.toLowerCase() === "ds9376314@gmail.com") {
+                userData.premium = true;
+                userData.planName = "VIP Elite";
+              }
+              if (userData.premium) isPremiumUser = true;
+              setUser(userData);
+              if (userData.unlockedFilters) {
+                setUnlockedFilters(userData.unlockedFilters);
+              }
+              localStorage.setItem("user", JSON.stringify(userData));
+
+              // Check for incomplete profile
+              if (!userData.gender || userData.gender === "All" || !userData.country || userData.country === "All" || userData.gender === "Other" || userData.country === "Unknown") {
+                router.push("/");
+                return;
+              }
+            } else {
+              setAuthError("Session invalid. Please login again.");
+              localStorage.removeItem("token");
+              localStorage.removeItem("user");
+              router.push("/login");
+            }
+          } catch (err) {
             localStorage.removeItem("token");
             localStorage.removeItem("user");
+            setUser(null);
             router.push("/login");
+          } finally {
+            setAuthLoading(false);
           }
-        } catch (err) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          setUser(null);
-          router.push("/login");
-        } finally {
-          setAuthLoading(false);
         }
       } else {
-        setAuthError("No token found. Please login.");
-        setAuthLoading(false);
-        return;
+        const isGuest = localStorage.getItem("isGuest") === "true";
+        if (isGuest && savedUser) {
+          try {
+            const guestObj = JSON.parse(savedUser);
+            setUser(guestObj);
+            setAuthLoading(false);
+          } catch(e) {
+            router.push("/login");
+            return;
+          }
+        } else {
+          setAuthError("No token found. Please login.");
+          setAuthLoading(false);
+          router.push("/login");
+          return;
+        }
       }
 
       const isTextModeInitial = (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("mode") === "text") || router.query.mode === "text";
+
+      // Guest Video Chat Lock Guard
+      const isGuestModeActive = localStorage.getItem("isGuest") === "true" || (token && token.startsWith("guest_"));
+      if (isGuestModeActive && !isTextModeInitial) {
+        router.push("/login?reason=guest_video_restricted");
+        return;
+      }
 
       // 2. Camera Logic (Only for Video Mode)
       if (!isTextModeInitial) {
@@ -3227,6 +3280,10 @@ export default function Home(props) {
   };
 
   const handleBrainClashClick = () => {
+    if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
+      showToast("🔒 Brain Clash Quiz requires a registered account. Please log in or sign up to play!", "warning", 5000);
+      return;
+    }
     if (quizState === "queued") {
       socket?.emit("leave-quiz-queue");
     } else {
@@ -4232,6 +4289,11 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                 <span className="user-name" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   {user?.name || "ZoneMeet User"}
                   <span style={{ fontSize: '0.65rem', opacity: 0.7 }} title="Edit Profile">✏️</span>
+                  {user?.isGuest && (
+                    <span style={{ background: 'rgba(255, 193, 7, 0.2)', color: '#ffc107', border: '1px solid #ffc107', fontSize: '0.62rem', fontWeight: '800', padding: '1px 5px', borderRadius: '4px' }}>
+                      GUEST
+                    </span>
+                  )}
                   {user?.email === "ds9376314@gmail.com" && <span className="vip-badge-inline">VIP</span>}
                   {(user?.activeSubscription || user?.premium) && (user?.userBadge || user?.planName) && user?.email !== "ds9376314@gmail.com" && (
                     <span className="pro-badge-v2" style={{ padding: '0.08rem 0.35rem', fontSize: '0.62rem', margin: 0 }}>
@@ -4256,6 +4318,30 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                 )
               )}
             </div>
+
+            {user?.isGuest && (
+              <button 
+                onClick={() => router.push("/login")}
+                style={{
+                  background: 'linear-gradient(135deg, #00f2fe, #4facfe)',
+                  color: '#020617',
+                  border: 'none',
+                  borderRadius: '16px',
+                  padding: '5px 12px',
+                  fontWeight: '800',
+                  fontSize: '0.75rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  marginRight: '6px',
+                  boxShadow: '0 0 10px rgba(0, 242, 254, 0.4)'
+                }}
+                title="Log In to save profile and unlock video calls"
+              >
+                <span>✨</span> Log In
+              </button>
+            )}
 
             <button className="btn-home circular-home-btn" onClick={() => router.push("/")} title="Home">
               <span className="icon">🏠</span>
