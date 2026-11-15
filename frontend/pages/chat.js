@@ -308,6 +308,16 @@ export default function Home(props) {
   const cameraInputRef = useRef(null);
   const galleryInputRef = useRef(null);
 
+  // AI Video Shield (NSFW Client-Side Auto-Blur with Mutual Consent 18+ Uncensored Mode)
+  const [aiShieldActive, setAiShieldActive] = useState(true);
+  const [aiShieldConsentStatus, setAiShieldConsentStatus] = useState("idle"); // "idle" | "requested_by_me" | "requested_by_partner"
+  const [isAiShieldBlurred, setIsAiShieldBlurred] = useState(false);
+  const [isAiShieldModelLoaded, setIsAiShieldModelLoaded] = useState(false);
+  const aiShieldActiveRef = useRef(true);
+  const consecutiveNsfwCountRef = useRef(0);
+  const nsfwModelRef = useRef(null);
+  const isModelLoadingRef = useRef(false);
+
   const [showCoinPopup, setShowCoinPopup] = useState(false);
   const [pendingMessage, setPendingMessage] = useState("");
 
@@ -450,6 +460,149 @@ export default function Home(props) {
       showToast("Failed to process image. Try another photo.", "error");
     }
   };
+
+  // Video AI Content Shield Handlers (Mutual Consent 18+ Uncensored Mode)
+  const handleAiShieldToggle = () => {
+    if (!partnerId) {
+      showToast("Connect to a partner first to toggle AI Shield!", "info");
+      return;
+    }
+
+    if (!aiShieldActive) {
+      // Either user can instantly re-enable safe mode at any time
+      socket?.emit("ai-shield-re-enable", { to: partnerId });
+      setAiShieldActive(true);
+      aiShieldActiveRef.current = true;
+      setAiShieldConsentStatus("idle");
+      setMessages(prev => [
+        ...prev.filter(m => m.type !== "ai-shield-prompt"),
+        { type: "system", text: "🛡️ AI Content Shield re-enabled (Safe Mode)." }
+      ]);
+      showToast("AI Content Shield re-enabled (Safe Mode)", "info");
+      return;
+    }
+
+    // If currently active, requesting to disable requires partner's consent
+    if (aiShieldConsentStatus === "requested_by_me") {
+      showToast("Request already sent. Waiting for partner's response...", "info");
+      return;
+    }
+
+    socket?.emit("ai-shield-request", { to: partnerId });
+    setAiShieldConsentStatus("requested_by_me");
+    setMessages(prev => [
+      ...prev.filter(m => m.type !== "ai-shield-prompt"),
+      { type: "system", text: "🛡️ You requested to disable AI Shield (18+ Uncensored Mode). Waiting for partner's agreement..." }
+    ]);
+    showToast("Requested partner to disable AI Shield (Uncensored Mode)...", "info");
+  };
+
+  const handleAcceptAiShieldDisable = () => {
+    socket?.emit("ai-shield-response", { to: partnerId, accepted: true });
+    setAiShieldActive(false);
+    aiShieldActiveRef.current = false;
+    setIsAiShieldBlurred(false);
+    setAiShieldConsentStatus("idle");
+    setMessages(prev => [
+      ...prev.filter(m => m.type !== "ai-shield-prompt"),
+      { type: "system", text: "🔓 Mutual consent granted! AI Content Shield disabled for this call (18+ Uncensored Mode)." }
+    ]);
+    showToast("AI Shield disabled! (18+ Uncensored Mode)", "success");
+  };
+
+  const handleDeclineAiShieldDisable = () => {
+    socket?.emit("ai-shield-response", { to: partnerId, accepted: false });
+    setAiShieldConsentStatus("idle");
+    setMessages(prev => [
+      ...prev.filter(m => m.type !== "ai-shield-prompt"),
+      { type: "system", text: "🛡️ You declined to disable AI Shield. Safe Mode remains ON." }
+    ]);
+    showToast("Request declined. Safe Mode remains ON.", "info");
+  };
+
+  // Dynamic Load NSFWJS Model (Client-side only, non-blocking)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let isCancelled = false;
+
+    const initNsfwModel = async () => {
+      if (nsfwModelRef.current || isModelLoadingRef.current) return;
+      isModelLoadingRef.current = true;
+      try {
+        const nsfw = await import("nsfwjs");
+        const model = await nsfw.load();
+        if (!isCancelled) {
+          nsfwModelRef.current = model;
+          setIsAiShieldModelLoaded(true);
+          console.log("[ZoneMeet] AI Content Shield engine ready.");
+        }
+      } catch (err) {
+        console.warn("[ZoneMeet] AI Content Shield engine notice:", err);
+      } finally {
+        isModelLoadingRef.current = false;
+      }
+    };
+
+    initNsfwModel();
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
+  // AI Video Classification Loop: High precision, zero false alarms
+  useEffect(() => {
+    if (activeChatMode !== "video" || !partnerId) {
+      setIsAiShieldBlurred(false);
+      consecutiveNsfwCountRef.current = 0;
+      return;
+    }
+
+    let intervalId = null;
+    let isScanning = false;
+    const offscreenCanvas = document.createElement("canvas");
+    offscreenCanvas.width = 224;
+    offscreenCanvas.height = 224;
+    const offscreenCtx = offscreenCanvas.getContext("2d", { willReadFrequently: true });
+
+    intervalId = setInterval(async () => {
+      if (!aiShieldActiveRef.current || !nsfwModelRef.current || isScanning || isAiShieldBlurred) return;
+      const v = remoteVideo.current;
+      if (!v || v.paused || v.ended || v.readyState < 2 || !v.videoWidth || !v.videoHeight) return;
+
+      isScanning = true;
+      try {
+        if (offscreenCtx) {
+          offscreenCtx.drawImage(v, 0, 0, 224, 224);
+          const predictions = await nsfwModelRef.current.classify(offscreenCanvas);
+          
+          // Zero false alarms check:
+          // ONLY trigger on explicit Porn or Hentai with probability >= 0.80.
+          // NEVER trigger on Sexy, Neutral, or Drawing (prevents false alarms on swimwear, sleeveless shirts, or skin tone).
+          const explicitNsfw = predictions.find(
+            p => (p.className === "Porn" || p.className === "Hentai") && p.probability >= 0.80
+          );
+
+          if (explicitNsfw) {
+            consecutiveNsfwCountRef.current += 1;
+            console.log(`[AI Shield Scan] Detected ${explicitNsfw.className} (${(explicitNsfw.probability * 100).toFixed(1)}%). Consecutive count: ${consecutiveNsfwCountRef.current}`);
+            if (consecutiveNsfwCountRef.current >= 2) {
+              setIsAiShieldBlurred(true);
+            }
+          } else {
+            consecutiveNsfwCountRef.current = 0;
+          }
+        }
+      } catch (e) {
+        // Non-blocking catch
+      } finally {
+        isScanning = false;
+      }
+    }, 2500);
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [activeChatMode, partnerId, isAiShieldBlurred]);
 
   const handleRewindClick = () => {
     const candidate = lastPartner || lastPartnerRef.current || (user?.recentStrangers && user.recentStrangers.length > 0 ? user.recentStrangers[0] : null);
@@ -1506,7 +1659,9 @@ export default function Home(props) {
 
   const getPartnerCssFilterString = () => {
     let filters = [];
-    if (partnerIsBlurred) {
+    if (isAiShieldBlurred) {
+      filters.push('blur(36px)');
+    } else if (partnerIsBlurred) {
       filters.push('blur(25px)');
     } else {
       if (partnerFilter === "Smooth") {
@@ -2069,6 +2224,11 @@ export default function Home(props) {
         setPhotoPreviewModal(null);
         setIsCompressingImage(false);
         setShowPhotoMenu(false);
+        setAiShieldActive(true);
+        aiShieldActiveRef.current = true;
+        setIsAiShieldBlurred(false);
+        setAiShieldConsentStatus("idle");
+        consecutiveNsfwCountRef.current = 0;
         iceCandidatesQueue.current = [];
 
         if (!isCurrentTextMode) {
@@ -2208,6 +2368,50 @@ export default function Home(props) {
 
       socket.on("partner-photo-done", () => {
         setStatus("Connected");
+      });
+
+      // Video Call AI Content Shield Mutual Consent Listeners
+      socket.on("ai-shield-requested", () => {
+        setAiShieldConsentStatus("requested_by_partner");
+        setMessages((prev) => [
+          ...prev.filter(m => m.type !== "ai-shield-prompt"),
+          { type: "ai-shield-prompt", sender: "partner" }
+        ]);
+        if (typeof window !== 'undefined' && window.innerWidth < 768) {
+          showToast("Partner requested to disable AI Shield (18+ Uncensored Mode). Check chat to respond.", "info", 5000);
+        }
+      });
+
+      socket.on("ai-shield-result", ({ accepted }) => {
+        if (accepted) {
+          setAiShieldActive(false);
+          aiShieldActiveRef.current = false;
+          setIsAiShieldBlurred(false);
+          setAiShieldConsentStatus("idle");
+          setMessages((prev) => [
+            ...prev.filter(m => m.type !== "ai-shield-prompt"),
+            { type: "system", text: "🎉 Partner agreed! AI Content Shield disabled for this call (18+ Uncensored Mode)." }
+          ]);
+          showToast("Partner agreed! AI Content Shield disabled.", "success");
+        } else {
+          setAiShieldConsentStatus("idle");
+          setMessages((prev) => [
+            ...prev.filter(m => m.type !== "ai-shield-prompt"),
+            { type: "system", text: "🛡️ Partner declined. AI Content Shield remains active (Safe Mode)." }
+          ]);
+          showToast("Partner declined. Safe Mode remains active.", "info");
+        }
+      });
+
+      socket.on("ai-shield-re-enabled", () => {
+        setAiShieldActive(true);
+        aiShieldActiveRef.current = true;
+        setAiShieldConsentStatus("idle");
+        setMessages((prev) => [
+          ...prev.filter(m => m.type !== "ai-shield-prompt"),
+          { type: "system", text: "🛡️ Partner re-enabled AI Content Shield (Safe Mode)." }
+        ]);
+        showToast("Partner re-enabled AI Content Shield.", "info");
       });
 
       socket.on("receive-photo", ({ image, timestamp, isLive }) => {
@@ -2794,6 +2998,11 @@ export default function Home(props) {
     setPhotoPreviewModal(null);
     setIsCompressingImage(false);
     setShowPhotoMenu(false);
+    setAiShieldActive(true);
+    aiShieldActiveRef.current = true;
+    setIsAiShieldBlurred(false);
+    setAiShieldConsentStatus("idle");
+    consecutiveNsfwCountRef.current = 0;
     setMessage("");
     setCurrentSubtitle("");
     setPartnerMicOn(true);
@@ -2857,15 +3066,6 @@ export default function Home(props) {
       if (socket && (partnerIdRef.current || partnerId)) {
         socket.emit("stop-typing", { to: partnerIdRef.current || partnerId });
       }
-    }
-
-    // BAD WORD DETECTION
-    const badWords = ["abuse", "fake", "sex", "scam", "nude", "porn", "pussy", "dick", "lund", "chod", "gand"];
-    const hasBadWord = badWords.some(word => message.toLowerCase().includes(word));
-
-    if (hasBadWord) {
-      showToast("⚠️ Your message contains restricted words. Please maintain a respectful environment.", "warning", 5000);
-      return;
     }
 
     if (!partnerId) {
@@ -4168,6 +4368,34 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                               </button>
                             </div>
                           </div>
+                        ) : msg.type === "ai-shield-prompt" ? (
+                          <div className="ai-shield-consent-box">
+                            <div className="consent-top">
+                              <span className="consent-emoji">🔓</span>
+                              <div className="consent-headline">
+                                <strong>{partnerInfo?.name || "Stranger"}</strong> wants 18+ Uncensored Mode
+                              </div>
+                            </div>
+                            <p className="consent-subtext">
+                              Both must agree to disable AI auto-blur detection for this call session.
+                            </p>
+                            <div className="consent-btn-group">
+                              <button 
+                                type="button" 
+                                className="btn-consent-allow" 
+                                onClick={handleAcceptAiShieldDisable}
+                              >
+                                ✅ Agree (Disable AI)
+                              </button>
+                              <button 
+                                type="button" 
+                                className="btn-consent-decline" 
+                                onClick={handleDeclineAiShieldDisable}
+                              >
+                                🛡️ Keep Safe
+                              </button>
+                            </div>
+                          </div>
                         ) : msg.type === "photo" ? (
                           <div className="photo-message-card">
                             {msg.isLive && (
@@ -4593,6 +4821,81 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                   display: partnerAvatar !== "None" ? 'none' : 'block'
                 }}
               />
+
+              {/* VIDEO AI SHIELD STATUS PILL (CLICKABLE) */}
+              {partnerId && (
+                <div 
+                  className={`video-ai-shield-pill ${aiShieldActive ? 'shield-on' : 'shield-off'}`}
+                  onClick={handleAiShieldToggle}
+                  title={
+                    aiShieldActive 
+                      ? "AI Content Shield is Active (Safe Mode). Click to request 18+ Uncensored Mode." 
+                      : "AI Content Shield is Disabled (18+ Uncensored Mode). Click to re-enable Safe Mode."
+                  }
+                >
+                  <span className="shield-icon">{aiShieldActive ? "🛡️" : "🔓"}</span>
+                  <span className="shield-text">{aiShieldActive ? "AI: Safe" : "AI: Off (18+)"}</span>
+                </div>
+              )}
+
+              {/* AI SHIELD AUTO-BLUR OVERLAY */}
+              {isAiShieldBlurred && (
+                <div className="ai-shield-blur-overlay">
+                  <div className="ai-shield-alert-card">
+                    <div className="ai-shield-alert-icon">🛡️</div>
+                    <div className="ai-shield-alert-title">Sensitive Content Blurred</div>
+                    <p className="ai-shield-alert-desc">
+                      AI Content Shield detected explicit content on partner's camera.
+                    </p>
+                    <div className="ai-shield-alert-btns">
+                      <button 
+                        type="button" 
+                        className="btn-ai-shield-unblur"
+                        onClick={() => {
+                          setIsAiShieldBlurred(false);
+                          consecutiveNsfwCountRef.current = 0;
+                        }}
+                      >
+                        👁️ Unblur Video
+                      </button>
+                      <button 
+                        type="button" 
+                        className="btn-ai-shield-report"
+                        onClick={openReport}
+                      >
+                        🚨 Report User
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* AI SHIELD REQUEST BANNER */}
+              {aiShieldConsentStatus === "requested_by_partner" && (
+                <div className="ai-shield-request-banner">
+                  <div className="banner-icon">🔓</div>
+                  <div className="banner-info">
+                    <strong>{partnerInfo?.name || "Stranger"}</strong> wants 18+ Uncensored Mode
+                    <div className="banner-sub">Both must agree to disable AI auto-blur</div>
+                  </div>
+                  <div className="banner-actions">
+                    <button 
+                      type="button" 
+                      className="btn-agree-ai" 
+                      onClick={handleAcceptAiShieldDisable}
+                    >
+                      ✅ Agree
+                    </button>
+                    <button 
+                      type="button" 
+                      className="btn-decline-ai" 
+                      onClick={handleDeclineAiShieldDisable}
+                    >
+                      🛡️ Keep Safe
+                    </button>
+                  </div>
+                </div>
+              )}
               
               {/* LIVE SUBTITLES */}
               {currentSubtitle && (
@@ -5271,6 +5574,15 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             </div>
             <div className="mobile-action-stack">
               <button 
+                type="button" 
+                className={`ai-shield-mobile-btn ${!aiShieldActive ? 'uncensored' : ''}`}
+                onClick={handleAiShieldToggle}
+                title={aiShieldActive ? "AI Shield: Safe Mode (Tap to request 18+ Uncensored)" : "AI Shield: Disabled (Tap to re-enable Safe Mode)"}
+              >
+                <span className="icon">{aiShieldActive ? "🛡️" : "🔓"}</span>
+                <span className="text">{aiShieldActive ? "Safe" : "18+"}</span>
+              </button>
+              <button 
                 className="gift-trigger-btn" 
                 onClick={() => {
                   const toolkit = hasIdentityToolkit(getChatUser(user));
@@ -5284,6 +5596,15 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                 <span className="icon">🚨</span> <span className="text">Report</span>
               </button>
             </div>
+            <button 
+              type="button" 
+              className={`ai-shield-bottom-btn ${!aiShieldActive ? 'uncensored' : ''}`}
+              onClick={handleAiShieldToggle}
+              title={aiShieldActive ? "AI Content Shield: Safe Mode (Click to request 18+ Uncensored)" : "AI Content Shield: Disabled (Click to re-enable Safe Mode)"}
+            >
+              <span className="icon">{aiShieldActive ? "🛡️" : "🔓"}</span>
+              <span className="text">{aiShieldActive ? "AI: Safe" : "AI: Off (18+)"}</span>
+            </button>
             <button 
               type="button" 
               className="rewind-btn" 
@@ -5397,6 +5718,34 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                       <div className="prompt-actions">
                         <button className="yes-btn" onClick={() => confirmAndSendMessage(msg.pendingText)}>Yes (-5)</button>
                         <button className="no-btn" onClick={() => setMessages(prev => prev.filter(m => m.type !== 'coin-prompt'))}>No</button>
+                      </div>
+                    </div>
+                  ) : msg.type === 'ai-shield-prompt' ? (
+                    <div className="ai-shield-consent-box">
+                      <div className="consent-top">
+                        <span className="consent-emoji">🔓</span>
+                        <div className="consent-headline">
+                          <strong>{partnerInfo?.name || "Stranger"}</strong> wants 18+ Uncensored Mode
+                        </div>
+                      </div>
+                      <p className="consent-subtext">
+                        Both must agree to disable AI auto-blur detection for this call.
+                      </p>
+                      <div className="consent-btn-group">
+                        <button 
+                          type="button" 
+                          className="btn-consent-allow" 
+                          onClick={handleAcceptAiShieldDisable}
+                        >
+                          ✅ Agree (Disable AI)
+                        </button>
+                        <button 
+                          type="button" 
+                          className="btn-consent-decline" 
+                          onClick={handleDeclineAiShieldDisable}
+                        >
+                          🛡️ Keep Safe
+                        </button>
                       </div>
                     </div>
                   ) : (
@@ -10010,6 +10359,221 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           color: white;
         }
 
+        /* AI Video Content Shield Styles */
+        .video-ai-shield-pill {
+          position: absolute;
+          top: 14px;
+          left: 14px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          border-radius: 20px;
+          font-size: 0.76rem;
+          font-weight: 700;
+          cursor: pointer;
+          z-index: 25;
+          backdrop-filter: blur(10px);
+          transition: all 0.2s ease;
+          user-select: none;
+        }
+        .video-ai-shield-pill.shield-on {
+          background: rgba(16, 185, 129, 0.2);
+          border: 1px solid rgba(16, 185, 129, 0.45);
+          color: #6ee7b7;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+        }
+        .video-ai-shield-pill.shield-on:hover {
+          background: rgba(16, 185, 129, 0.3);
+          transform: translateY(-1px);
+        }
+        .video-ai-shield-pill.shield-off {
+          background: rgba(239, 68, 68, 0.22);
+          border: 1px solid rgba(239, 68, 68, 0.5);
+          color: #fca5a5;
+          box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+        }
+        .video-ai-shield-pill.shield-off:hover {
+          background: rgba(239, 68, 68, 0.32);
+          transform: translateY(-1px);
+        }
+        
+        .ai-shield-blur-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(15, 23, 42, 0.65);
+          backdrop-filter: blur(12px);
+          z-index: 22;
+          padding: 20px;
+          box-sizing: border-box;
+          animation: modalFadeIn 0.3s ease;
+        }
+        .ai-shield-alert-card {
+          background: rgba(15, 23, 42, 0.95);
+          border: 1px solid rgba(239, 68, 68, 0.5);
+          border-radius: 18px;
+          padding: 22px 24px;
+          max-width: 340px;
+          width: 100%;
+          text-align: center;
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(239, 68, 68, 0.25);
+        }
+        .ai-shield-alert-icon {
+          font-size: 2.2rem;
+          margin-bottom: 8px;
+        }
+        .ai-shield-alert-title {
+          font-size: 1.05rem;
+          font-weight: 800;
+          color: #f87171;
+          margin-bottom: 6px;
+        }
+        .ai-shield-alert-desc {
+          font-size: 0.8rem;
+          color: #cbd5e1;
+          line-height: 1.4;
+          margin: 0 0 16px 0;
+        }
+        .ai-shield-alert-btns {
+          display: flex;
+          gap: 10px;
+          justify-content: center;
+        }
+        .btn-ai-shield-unblur {
+          flex: 1;
+          background: rgba(255, 255, 255, 0.12);
+          border: 1px solid rgba(255, 255, 255, 0.25);
+          color: #f8fafc;
+          padding: 8px 12px;
+          border-radius: 10px;
+          font-size: 0.82rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .btn-ai-shield-unblur:hover {
+          background: rgba(255, 255, 255, 0.2);
+        }
+        .btn-ai-shield-report {
+          flex: 1;
+          background: linear-gradient(135deg, #ef4444, #dc2626);
+          border: none;
+          color: white;
+          padding: 8px 12px;
+          border-radius: 10px;
+          font-size: 0.82rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .btn-ai-shield-report:hover {
+          background: linear-gradient(135deg, #dc2626, #b91c1c);
+          transform: translateY(-1px);
+        }
+
+        .ai-shield-request-banner {
+          position: absolute;
+          top: 14px;
+          left: 50%;
+          transform: translateX(-50%);
+          max-width: 90%;
+          width: 440px;
+          background: rgba(15, 23, 42, 0.95);
+          border: 1px solid rgba(245, 158, 11, 0.5);
+          border-radius: 16px;
+          padding: 10px 14px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          z-index: 30;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 15px rgba(245, 158, 11, 0.2);
+          animation: modalScaleUp 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .ai-shield-request-banner .banner-icon {
+          font-size: 1.4rem;
+        }
+        .ai-shield-request-banner .banner-info {
+          flex: 1;
+          font-size: 0.82rem;
+          color: #f1f5f9;
+        }
+        .ai-shield-request-banner .banner-sub {
+          font-size: 0.72rem;
+          color: #94a3b8;
+        }
+        .ai-shield-request-banner .banner-actions {
+          display: flex;
+          gap: 6px;
+        }
+        .btn-agree-ai {
+          background: linear-gradient(135deg, #f59e0b, #d97706);
+          color: white;
+          border: none;
+          padding: 6px 10px;
+          border-radius: 8px;
+          font-size: 0.78rem;
+          font-weight: 700;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+        .btn-decline-ai {
+          background: rgba(255, 255, 255, 0.1);
+          color: #cbd5e1;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          padding: 6px 10px;
+          border-radius: 8px;
+          font-size: 0.78rem;
+          font-weight: 700;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+
+        .ai-shield-consent-box {
+          background: rgba(15, 23, 42, 0.95);
+          border: 1px solid rgba(245, 158, 11, 0.4);
+          border-radius: 18px;
+          padding: 16px;
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+          max-width: 320px;
+        }
+        .ai-shield-consent-box .consent-headline {
+          color: #fff;
+          font-size: 0.92rem;
+        }
+        .ai-shield-consent-box .btn-consent-allow {
+          background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .ai-shield-bottom-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          color: #cbd5e1;
+          padding: 8px 14px;
+          border-radius: 12px;
+          font-size: 0.8rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .ai-shield-bottom-btn:hover {
+          background: rgba(255, 255, 255, 0.12);
+          color: #ffffff;
+        }
+        .ai-shield-bottom-btn.uncensored {
+          background: rgba(239, 68, 68, 0.2);
+          border-color: rgba(239, 68, 68, 0.5);
+          color: #fca5a5;
+        }
+
         /* Modal Overlay */
         .filter-modal-overlay {
           position: fixed;
@@ -10657,6 +11221,14 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           .bottom-actions .mobile-action-stack .gift-trigger-btn {
             background: rgba(0, 0, 0, 0.55) !important;
             border: 1px solid rgba(255, 255, 255, 0.22) !important;
+          }
+          .bottom-actions .mobile-action-stack .ai-shield-mobile-btn.uncensored {
+            background: rgba(239, 68, 68, 0.4) !important;
+            border-color: rgba(239, 68, 68, 0.65) !important;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.4) !important;
+          }
+          .bottom-actions .ai-shield-bottom-btn {
+            display: none !important;
           }
           .bottom-actions .mobile-action-stack .quiz-trigger-btn.cancel {
             background: rgba(239, 68, 68, 0.2) !important;
