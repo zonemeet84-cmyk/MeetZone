@@ -476,8 +476,16 @@ export default function Login() {
       {/* Guest Modal Flow: Step 1 (Comparison) & Step 2 (Profile Setup) */}
       {showGuestModal && (
         <div className="guest-modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setShowGuestModal(false); }}>
-          <div className="guest-modal-dialog">
-            <button className="guest-modal-close" onClick={() => setShowGuestModal(false)} title="Close">✕</button>
+          <div className={`guest-modal-dialog ${guestStep === 2 ? 'guest-dialog-step-profile' : 'guest-dialog-step-compare'}`}>
+            <button 
+              type="button" 
+              className="modal-close-btn guest-modal-close" 
+              onClick={() => setShowGuestModal(false)} 
+              title="Close"
+              aria-label="Close"
+            >
+              ×
+            </button>
 
             {guestStep === 1 ? (
               <div className="guest-comparison-step">
@@ -1135,41 +1143,59 @@ export default function Login() {
           position: relative;
           background: rgba(6, 16, 36, 0.96);
           border: 1.5px solid #00f2fe;
-          border-radius: 24px;
-          padding: 2rem 2.2rem;
-          max-width: 680px;
+          border-radius: 22px;
+          padding: 1.8rem 2rem;
+          max-width: 640px;
           width: 100%;
-          box-shadow: 0 0 40px rgba(0, 242, 254, 0.4), 0 30px 60px rgba(0,0,0,0.9);
+          box-shadow: 0 0 35px rgba(0, 242, 254, 0.4), 0 25px 50px rgba(0,0,0,0.85);
           max-height: 90vh;
           overflow-y: auto;
           color: #fff;
           text-align: left;
         }
-        .guest-modal-close {
-          position: absolute;
-          top: 1rem;
-          right: 1.2rem;
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          color: #94a3b8;
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1rem;
-          transition: all 0.2s ease;
+        .guest-dialog-step-profile {
+          max-width: 410px;
+          padding: 1.6rem 1.8rem;
         }
-        .guest-modal-close:hover {
-          background: rgba(239, 68, 68, 0.2);
-          color: #ef4444;
-          border-color: #ef4444;
+        .modal-close-btn.guest-modal-close {
+          position: absolute;
+          top: 14px;
+          right: 14px;
+          left: auto !important;
+          bottom: auto !important;
+          width: 32px !important;
+          height: 32px !important;
+          min-width: 32px !important;
+          max-width: 32px !important;
+          min-height: 32px !important;
+          max-height: 32px !important;
+          border-radius: 50% !important;
+          background: rgba(255, 255, 255, 0.14) !important;
+          border: 1.2px solid rgba(255, 255, 255, 0.3) !important;
+          color: #ffffff !important;
+          font-size: 1.3rem !important;
+          line-height: 1 !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          cursor: pointer !important;
+          z-index: 100 !important;
+          transition: all 0.2s ease !important;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
+        }
+        .modal-close-btn.guest-modal-close:hover,
+        .modal-close-btn.guest-modal-close:active {
+          background: rgba(239, 68, 68, 0.35) !important;
+          color: #ef4444 !important;
+          border-color: #ef4444 !important;
+          transform: scale(1.08);
         }
         .guest-modal-header {
           text-align: center;
-          margin-bottom: 1.5rem;
+          margin-bottom: 1.2rem;
+          padding: 0 30px;
         }
         .guest-step-badge {
           display: inline-block;
@@ -1419,14 +1445,115 @@ export default function Login() {
         }
 
         @media (max-width: 640px) {
-          .comparison-cards-grid {
-            grid-template-columns: 1fr;
-          }
-          .guest-form-row {
-            grid-template-columns: 1fr;
+          .guest-modal-backdrop {
+            padding: 0.75rem 0.5rem;
           }
           .guest-modal-dialog {
-            padding: 1.4rem 1.1rem;
+            padding: 1.15rem 0.9rem;
+            border-radius: 18px;
+            max-height: 88vh;
+          }
+          .guest-dialog-step-profile {
+            max-width: 340px;
+            padding: 1.1rem 0.85rem;
+          }
+          .modal-close-btn.guest-modal-close {
+            top: 10px;
+            right: 10px;
+            width: 28px !important;
+            height: 28px !important;
+            min-width: 28px !important;
+            max-width: 28px !important;
+            min-height: 28px !important;
+            max-height: 28px !important;
+            font-size: 1.15rem !important;
+          }
+          .guest-modal-header {
+            margin-bottom: 0.85rem;
+            padding: 0 24px;
+          }
+          .guest-step-badge {
+            font-size: 0.62rem;
+            padding: 2px 7px;
+            margin-bottom: 0.2rem;
+          }
+          .guest-modal-header h2 {
+            font-size: 1.15rem;
+            margin-bottom: 0.2rem;
+          }
+          .guest-modal-sub {
+            font-size: 0.74rem;
+            line-height: 1.35;
+          }
+          .comparison-cards-grid {
+            grid-template-columns: 1fr;
+            gap: 0.65rem;
+            margin-top: 0.5rem;
+          }
+          .comp-card {
+            padding: 0.8rem 0.85rem;
+            border-radius: 14px;
+          }
+          .comp-card-badge {
+            font-size: 0.58rem;
+            padding: 2px 6px;
+            margin-bottom: 0.3rem;
+          }
+          .comp-card-title {
+            font-size: 0.95rem;
+            margin-bottom: 0.1rem;
+          }
+          .comp-card-price {
+            font-size: 0.7rem;
+            margin-bottom: 0.5rem;
+          }
+          .comp-perks-list {
+            margin-bottom: 0.6rem;
+          }
+          .comp-perks-list li {
+            font-size: 0.73rem;
+            margin-bottom: 0.3rem;
+            gap: 5px;
+            line-height: 1.3;
+          }
+          .btn-choose-member, .btn-choose-guest {
+            padding: 0.55rem 0.75rem;
+            font-size: 0.78rem;
+            border-radius: 10px;
+          }
+          .guest-profile-form {
+            gap: 0.65rem;
+          }
+          .guest-form-row {
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem;
+          }
+          .guest-input-group label {
+            font-size: 0.75rem;
+          }
+          .guest-input-group input,
+          .guest-input-group select {
+            padding: 0.5rem 0.65rem;
+            font-size: 0.82rem;
+            border-radius: 8px;
+          }
+          .guest-input-hint {
+            font-size: 0.66rem;
+          }
+          .guest-warning-note {
+            padding: 0.45rem 0.6rem;
+            font-size: 0.7rem;
+            border-radius: 8px;
+            margin: 0.15rem 0;
+          }
+          .guest-modal-actions {
+            gap: 0.55rem;
+            margin-top: 0.3rem;
+          }
+          .btn-guest-back, .btn-guest-submit {
+            padding: 0.58rem 0.75rem;
+            font-size: 0.82rem;
+            border-radius: 10px;
           }
         }
       `}</style>
