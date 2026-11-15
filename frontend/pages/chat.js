@@ -328,9 +328,11 @@ export default function Home(props) {
   const [aiShieldActive, setAiShieldActive] = useState(true);
   const [aiShieldConsentStatus, setAiShieldConsentStatus] = useState("idle"); // "idle" | "requested_by_me" | "requested_by_partner"
   const [isAiShieldBlurred, setIsAiShieldBlurred] = useState(false);
+  const [isLocalAiShieldBlurred, setIsLocalAiShieldBlurred] = useState(false);
   const [isAiShieldModelLoaded, setIsAiShieldModelLoaded] = useState(false);
   const aiShieldActiveRef = useRef(true);
-  const consecutiveNsfwCountRef = useRef(0);
+  const remoteConsecutiveRef = useRef(0);
+  const localConsecutiveRef = useRef(0);
   const nsfwModelRef = useRef(null);
   const isModelLoadingRef = useRef(false);
 
@@ -715,9 +717,11 @@ export default function Home(props) {
 
   // AI Video Classification Loop: High precision, zero false alarms
   useEffect(() => {
-    if (activeChatMode !== "video" || !partnerId) {
+    if (activeChatMode !== "video") {
       setIsAiShieldBlurred(false);
-      consecutiveNsfwCountRef.current = 0;
+      setIsLocalAiShieldBlurred(false);
+      remoteConsecutiveRef.current = 0;
+      localConsecutiveRef.current = 0;
       return;
     }
 
@@ -729,20 +733,20 @@ export default function Home(props) {
     const offscreenCtx = offscreenCanvas.getContext("2d", { willReadFrequently: true });
 
     intervalId = setInterval(async () => {
-      if (!aiShieldActiveRef.current || !nsfwModelRef.current || isScanning || isAiShieldBlurred) return;
-      const v = remoteVideo.current;
-      if (!v || v.paused || v.ended || v.readyState < 2 || !v.videoWidth || !v.videoHeight) return;
-
+      if (!aiShieldActiveRef.current || !nsfwModelRef.current || isScanning) return;
       const tf = window.tf;
       if (!tf) return;
 
       isScanning = true;
       try {
-        if (offscreenCtx) {
-          offscreenCtx.drawImage(v, 0, 0, 224, 224);
+        const scanVideo = (videoEl) => {
+          if (!videoEl || videoEl.paused || videoEl.ended || videoEl.readyState < 2 || !videoEl.videoWidth || !videoEl.videoHeight) {
+            return null;
+          }
+          if (!offscreenCtx) return null;
+          offscreenCtx.drawImage(videoEl, 0, 0, 224, 224);
 
-          // Classify frame with MobileNetV2
-          const predictions = tf.tidy(() => {
+          return tf.tidy(() => {
             const pixels = tf.browser.fromPixels(offscreenCanvas);
             const normalized = pixels.toFloat().div(255);
             const batched = normalized.reshape([1, 224, 224, 3]);
@@ -754,25 +758,53 @@ export default function Home(props) {
               probability: values[idx] || 0
             }));
           });
+        };
 
-          if (predictions && predictions.length) {
-            const pornPred = predictions.find(p => p.className === "Porn");
-            const hentaiPred = predictions.find(p => p.className === "Hentai");
-            const pornProb = pornPred ? pornPred.probability : 0;
-            const hentaiProb = hentaiPred ? hentaiPred.probability : 0;
+        const checkNsfw = (preds) => {
+          if (!preds || !preds.length) return false;
+          const porn = preds.find(p => p.className === "Porn")?.probability || 0;
+          const sexy = preds.find(p => p.className === "Sexy")?.probability || 0;
+          const hentai = preds.find(p => p.className === "Hentai")?.probability || 0;
+          const neutral = preds.find(p => p.className === "Neutral")?.probability || 0;
+          
+          // Triggers on:
+          // 1. Explicit porn probability >= 0.38
+          // 2. Hentai >= 0.50
+          // 3. Combined nudity (Porn + Sexy >= 0.55 AND Neutral < 0.40)
+          // Normal chatting (clothes, face, room) has Neutral 0.85-0.99, so zero false alarms.
+          return (porn >= 0.38) || (hentai >= 0.50) || (porn + sexy >= 0.55 && neutral < 0.40);
+        };
 
-            // Trigger ONLY when explicit nudity/pornography is detected
-            // (Neutral is 0.85-0.99 for clothes, hands, room, so normal chats never trigger)
-            const isExplicit = (pornProb >= 0.55) || (hentaiProb >= 0.65);
+        // 1. Scan Local Video (Own camera / testing)
+        if (!isLocalAiShieldBlurred && localVideo.current) {
+          const localPreds = scanVideo(localVideo.current);
+          if (localPreds) {
+            const isLocalExplicit = checkNsfw(localPreds);
+            if (isLocalExplicit) {
+              localConsecutiveRef.current += 1;
+              console.log("[AI Shield Local] Explicit content detected on camera!", localPreds);
+              if (localConsecutiveRef.current >= 1) {
+                setIsLocalAiShieldBlurred(true);
+              }
+            } else {
+              localConsecutiveRef.current = 0;
+            }
+          }
+        }
 
-            if (isExplicit) {
-              consecutiveNsfwCountRef.current += 1;
-              console.log(`[AI Shield Scan] Explicit content detected! Porn: ${(pornProb * 100).toFixed(1)}%, Hentai: ${(hentaiProb * 100).toFixed(1)}%. Count: ${consecutiveNsfwCountRef.current}`);
-              if (consecutiveNsfwCountRef.current >= 2) {
+        // 2. Scan Remote Video (Partner's camera)
+        if (!isAiShieldBlurred && partnerId && remoteVideo.current) {
+          const remotePreds = scanVideo(remoteVideo.current);
+          if (remotePreds) {
+            const isRemoteExplicit = checkNsfw(remotePreds);
+            if (isRemoteExplicit) {
+              remoteConsecutiveRef.current += 1;
+              console.log("[AI Shield Remote] Explicit content detected on partner!", remotePreds);
+              if (remoteConsecutiveRef.current >= 1) {
                 setIsAiShieldBlurred(true);
               }
             } else {
-              consecutiveNsfwCountRef.current = 0;
+              remoteConsecutiveRef.current = 0;
             }
           }
         }
@@ -781,12 +813,12 @@ export default function Home(props) {
       } finally {
         isScanning = false;
       }
-    }, 1500);
+    }, 1000);
 
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [activeChatMode, partnerId, isAiShieldBlurred]);
+  }, [activeChatMode, partnerId, isAiShieldBlurred, isLocalAiShieldBlurred]);
 
   const handleRewindClick = () => {
     const candidate = lastPartner || lastPartnerRef.current || (user?.recentStrangers && user.recentStrangers.length > 0 ? user.recentStrangers[0] : null);
@@ -1813,7 +1845,9 @@ export default function Home(props) {
 
   const getCssFilterString = () => {
     let filters = [];
-    if (isFaceBlurred) {
+    if (isLocalAiShieldBlurred) {
+      filters.push('blur(36px)');
+    } else if (isFaceBlurred) {
       filters.push('blur(25px)');
     } else {
       if (activeMediaPipeFilter === "Smooth") {
@@ -5038,6 +5072,31 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     </button>
                   </form>
                 </div>
+
+                {/* LOCAL AI SHIELD AUTO-BLUR OVERLAY */}
+                {isLocalAiShieldBlurred && (
+                  <div className="ai-shield-blur-overlay">
+                    <div className="ai-shield-alert-card">
+                      <div className="ai-shield-alert-icon">🛡️</div>
+                      <div className="ai-shield-alert-title">Camera Blurred by AI</div>
+                      <p className="ai-shield-alert-desc">
+                        AI Content Shield detected sensitive / explicit content on your camera.
+                      </p>
+                      <div className="ai-shield-alert-btns">
+                        <button 
+                          type="button" 
+                          className="btn-ai-shield-unblur"
+                          onClick={() => {
+                            setIsLocalAiShieldBlurred(false);
+                            localConsecutiveRef.current = 0;
+                          }}
+                        >
+                          👁️ Unblur Camera
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Floating Gift Overlay */}
@@ -5088,8 +5147,8 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                       : "AI Content Shield is Disabled (18+ Uncensored Mode). Click to re-enable Safe Mode."
                   }
                 >
-                  <span className="shield-icon">{aiShieldActive ? "🛡️" : "🔓"}</span>
-                  <span className="shield-text">{aiShieldActive ? "AI: Safe" : "AI: Off (18+)"}</span>
+                  <span className="shield-icon">{aiShieldActive ? (isAiShieldModelLoaded ? "🛡️" : "⏳") : "🔓"}</span>
+                  <span className="shield-text">{aiShieldActive ? (isAiShieldModelLoaded ? "AI: Safe" : "AI: Loading...") : "AI: Off (18+)"}</span>
                 </div>
               )}
 
@@ -5834,8 +5893,8 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                 onClick={handleAiShieldToggle}
                 title={aiShieldActive ? "AI Content Shield: Safe Mode (Click to request 18+ Uncensored)" : "AI Content Shield: Disabled (Click to re-enable Safe Mode)"}
               >
-                <span className="icon">{aiShieldActive ? "🛡️" : "🔓"}</span>
-                <span className="text">{aiShieldActive ? "AI: Safe" : "AI: Off"}</span>
+                <span className="icon">{aiShieldActive ? (isAiShieldModelLoaded ? "🛡️" : "⏳") : "🔓"}</span>
+                <span className="text">{aiShieldActive ? (isAiShieldModelLoaded ? "AI: Safe" : "AI: Loading...") : "AI: Off"}</span>
               </button>
               <button 
                 className="gift-trigger-btn circular-bottom-btn" 

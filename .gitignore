@@ -11,3 +11,5 @@ serviceAccountKey.json
 !package.json
 !package-lock.json
 !tsconfig.json
+!frontend/public/models/**
+!**/public/models/**/*.json
