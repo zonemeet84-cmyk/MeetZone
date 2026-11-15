@@ -49,29 +49,50 @@ export default function RandomVideoChat() {
     ]
   };
 
-  const structuredData = {
+  const productSchema = {
     "@context": "https://schema.org",
-    "@graph": [
-      faqSchema,
-      {
-        "@type": "SoftwareApplication",
-        "name": "ZoneMeet: Random Video Chat",
-        "applicationCategory": "SocialNetworkingApplication",
-        "operatingSystem": "Web, Android, iOS, Windows, macOS",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        },
-        "aggregateRating": {
-          "@type": "AggregateRating",
-          "ratingValue": "4.9",
-          "ratingCount": "14820",
-          "bestRating": "5",
-          "worstRating": "1"
-        }
-      }
-    ]
+    "@type": "Product",
+    "name": "ZoneMeet: Random Video Chat",
+    "image": "https://zonemeet.chat/favicon.png",
+    "description": "Instant random video chat with verified active users worldwide.",
+    "brand": {
+      "@type": "Brand",
+      "name": "ZoneMeet"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "ratingCount": "14820",
+      "bestRating": "5",
+      "worstRating": "1"
+    }
+  };
+
+  const softwareSchema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "ZoneMeet Video Chat App",
+    "applicationCategory": "SocialNetworkingApplication",
+    "operatingSystem": "Web, Android, iOS, Windows, macOS",
+    "image": "https://zonemeet.chat/favicon.png",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "ratingCount": "14820",
+      "bestRating": "5",
+      "worstRating": "1"
+    }
   };
 
   return (
@@ -105,7 +126,15 @@ export default function RandomVideoChat() {
 
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
         />
       </Head>
 
