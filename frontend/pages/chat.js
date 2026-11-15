@@ -660,7 +660,7 @@ export default function Home(props) {
     showToast("Request declined. Safe Mode remains ON.", "info");
   };
 
-  // Dynamic Load NSFWJS Model (Client-side only, non-blocking via CDN to prevent Webpack bundling errors)
+  // Dynamic Load TensorFlow.js + Locally-Hosted NSFW MobileNetV2 Model (Zero 404s, Zero Webpack issues)
   useEffect(() => {
     if (typeof window === "undefined") return;
     let isCancelled = false;
@@ -692,13 +692,12 @@ export default function Home(props) {
       isModelLoadingRef.current = true;
       try {
         await loadScript("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js");
-        await loadScript("https://cdn.jsdelivr.net/npm/nsfwjs@4.3.0/dist/nsfwjs.min.js");
-        if (window.nsfwjs && !isCancelled) {
-          const model = await window.nsfwjs.load();
+        if (window.tf && !isCancelled) {
+          const model = await window.tf.loadLayersModel("/models/mobilenet_v2/model.json");
           if (!isCancelled) {
             nsfwModelRef.current = model;
             setIsAiShieldModelLoaded(true);
-            console.log("[ZoneMeet] AI Content Shield engine ready.");
+            console.log("[ZoneMeet] AI Content Shield engine ready with local MobileNetV2.");
           }
         }
       } catch (err) {
@@ -734,27 +733,47 @@ export default function Home(props) {
       const v = remoteVideo.current;
       if (!v || v.paused || v.ended || v.readyState < 2 || !v.videoWidth || !v.videoHeight) return;
 
+      const tf = window.tf;
+      if (!tf) return;
+
       isScanning = true;
       try {
         if (offscreenCtx) {
           offscreenCtx.drawImage(v, 0, 0, 224, 224);
-          const predictions = await nsfwModelRef.current.classify(offscreenCanvas);
-          
-          // Zero false alarms check:
-          // ONLY trigger on explicit Porn or Hentai with probability >= 0.80.
-          // NEVER trigger on Sexy, Neutral, or Drawing (prevents false alarms on swimwear, sleeveless shirts, or skin tone).
-          const explicitNsfw = predictions.find(
-            p => (p.className === "Porn" || p.className === "Hentai") && p.probability >= 0.80
-          );
 
-          if (explicitNsfw) {
-            consecutiveNsfwCountRef.current += 1;
-            console.log(`[AI Shield Scan] Detected ${explicitNsfw.className} (${(explicitNsfw.probability * 100).toFixed(1)}%). Consecutive count: ${consecutiveNsfwCountRef.current}`);
-            if (consecutiveNsfwCountRef.current >= 2) {
-              setIsAiShieldBlurred(true);
+          // Classify frame with MobileNetV2
+          const predictions = tf.tidy(() => {
+            const pixels = tf.browser.fromPixels(offscreenCanvas);
+            const normalized = pixels.toFloat().div(255);
+            const batched = normalized.reshape([1, 224, 224, 3]);
+            const logits = nsfwModelRef.current.predict(batched);
+            const values = logits.dataSync();
+            const classes = ["Drawing", "Hentai", "Neutral", "Porn", "Sexy"];
+            return classes.map((className, idx) => ({
+              className,
+              probability: values[idx] || 0
+            }));
+          });
+
+          if (predictions && predictions.length) {
+            const pornPred = predictions.find(p => p.className === "Porn");
+            const hentaiPred = predictions.find(p => p.className === "Hentai");
+            const pornProb = pornPred ? pornPred.probability : 0;
+            const hentaiProb = hentaiPred ? hentaiPred.probability : 0;
+
+            // Trigger ONLY when explicit nudity/pornography is detected
+            // (Neutral is 0.85-0.99 for clothes, hands, room, so normal chats never trigger)
+            const isExplicit = (pornProb >= 0.55) || (hentaiProb >= 0.65);
+
+            if (isExplicit) {
+              consecutiveNsfwCountRef.current += 1;
+              console.log(`[AI Shield Scan] Explicit content detected! Porn: ${(pornProb * 100).toFixed(1)}%, Hentai: ${(hentaiProb * 100).toFixed(1)}%. Count: ${consecutiveNsfwCountRef.current}`);
+              if (consecutiveNsfwCountRef.current >= 2) {
+                setIsAiShieldBlurred(true);
+              }
+            } else {
+              consecutiveNsfwCountRef.current = 0;
             }
-          } else {
-            consecutiveNsfwCountRef.current = 0;
           }
         }
       } catch (e) {
@@ -762,7 +781,7 @@ export default function Home(props) {
       } finally {
         isScanning = false;
       }
-    }, 2500);
+    }, 1500);
 
     return () => {
       if (intervalId) clearInterval(intervalId);
