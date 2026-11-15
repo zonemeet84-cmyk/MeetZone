@@ -18,6 +18,7 @@ import axios from "axios";
 import { useSession, signOut } from "next-auth/react";
 import { isSiteAdmin } from "../lib/admin";
 import { recordUserActivity, checkSessionInactivity } from "../lib/authSession";
+import { validateDisplayName } from "../lib/nameFilter";
 import io from "socket.io-client";
 
 let socket;
@@ -1100,6 +1101,14 @@ export default function Dashboard(props) {
   const handleOnboardSubmit = async (e) => {
     e.preventDefault();
     if (!user || isSavingProfile) return;
+
+    const trimmedName = (onboardForm.name && onboardForm.name.trim()) ? onboardForm.name.trim() : (user.name || "ZoneMeet User");
+    const nameCheck = validateDisplayName(trimmedName);
+    if (!nameCheck.valid) {
+      showModal({ message: nameCheck.error, type: "error" });
+      return;
+    }
+
     setIsSavingProfile(true);
 
     let countryName = onboardForm.countryCode;

@@ -10,6 +10,7 @@ import { FaceMaskArEngine, is3dArMask } from "../lib/faceMaskAr";
 import MaintenanceModal from "../components/MaintenanceModal";
 import { isSiteAdmin } from "../lib/admin";
 import { recordUserActivity } from "../lib/authSession";
+import { validateDisplayName } from "../lib/nameFilter";
 // MediaPipe + Three.js 3D AR (free stack, no DeepAR)
 
 let socket;
@@ -619,13 +620,14 @@ export default function Home(props) {
 
   const handleSaveProfile = async (e) => {
     if (e) e.preventDefault();
-    if (!editProfileForm.name || !editProfileForm.name.trim()) {
-      showToast("Please enter a valid display name", "error");
+    const trimmedName = editProfileForm.name ? editProfileForm.name.trim() : "";
+    const nameCheck = validateDisplayName(trimmedName);
+    if (!nameCheck.valid) {
+      showToast(nameCheck.error, "error", 4500);
       return;
     }
 
     setIsSavingProfile(true);
-    const trimmedName = editProfileForm.name.trim();
     const updatedUser = {
       ...(user || {}),
       name: trimmedName,

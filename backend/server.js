@@ -1313,10 +1313,61 @@ app.post("/api/auth/login", async (req, res) => {
   return res.json({ token, user });
 });
 
+const BANNED_NAME_SUBSTRINGS = [
+  'sexy', 'sex', 'horny', 'nude', 'naked', 'nudity', 'porn', 'xxx', 'erotic',
+  'vagina', 'penis', 'boob', 'boobs', 'tits', 'pussy', 'milf', 'slut', 'whore',
+  'bitch', 'escort', 'callgirl', 'dildo', 'onlyfans', 'sugarbaby', 'sugardaddy',
+  'blowjob', 'incest',
+  'choot', 'chut', 'chute', 'lund', 'loda', 'lauda', 'lowda', 'gaand', 'gand',
+  'chuchi', 'chuche', 'bhosd', 'bhosda', 'bhosdi', 'mutth', 'muthal', 'chudai',
+  'chodo', 'chuda', 'randi', 'raand', 'madarchod', 'behenchod', 'bhenchod',
+  'chutiya', 'chutiye', 'gandu', 'jhaat', 'jhat'
+];
+
+const BANNED_NAME_WHOLE_WORDS = [
+  'dick', 'cock', 'cum', 'anal', 'muth', 'chod', 'mc', 'bc',
+  'admin', 'moderator', 'staff', 'support'
+];
+
+function isDisplayNameValid(rawName) {
+  if (!rawName || typeof rawName !== 'string') return false;
+  const trimmed = rawName.trim();
+  if (trimmed.length < 2 || trimmed.length > 25) return false;
+  const digitsOnly = trimmed.replace(/[\s\-_.]/g, '');
+  if (/\d{7,}/.test(digitsOnly)) return false;
+
+  let normalized = trimmed.toLowerCase()
+    .replace(/@/g, 'a').replace(/3/g, 'e').replace(/1|!|\|/g, 'i')
+    .replace(/0/g, 'o').replace(/5|\$/g, 's').replace(/7/g, 't').replace(/8/g, 'b');
+
+  const stripped = normalized.replace(/[^a-z0-9]/g, '');
+  const collapsed = stripped.replace(/([a-z])\1+/gi, '$1');
+
+  for (const word of BANNED_NAME_SUBSTRINGS) {
+    if (stripped.includes(word) || collapsed.includes(word)) return false;
+  }
+
+  const tokens = trimmed.toLowerCase().split(/[^a-z0-9]+/);
+  for (const token of tokens) {
+    if (BANNED_NAME_WHOLE_WORDS.includes(token)) return false;
+  }
+
+  return true;
+}
+
 // Update Profile endpoint
 app.post("/api/auth/update-profile", (req, res) => {
   const { email, gender, country, state, age, name, id, phone } = req.body;
   console.log("Updating profile for:", email || id || phone || name);
+
+  if (name && name.trim()) {
+    if (!isDisplayNameValid(name.trim())) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Inappropriate, explicit, or nudity-related words are not allowed in display names." 
+      });
+    }
+  }
 
   let user = null;
   if (id) user = users.find((u) => u.id === id);
