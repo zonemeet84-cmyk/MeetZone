@@ -211,6 +211,9 @@ export default function Dashboard(props) {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [paymentStep, setPaymentStep] = useState("methods");
   const [showProfileDrop, setShowProfileDrop] = useState(false);
+  const [isBotOpen, setIsBotOpen] = useState(false);
+  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+  const scrollLockPosRef = useRef(0);
   const [isMobileView, setIsMobileView] = useState(false);
   const [news, setNews] = useState([]);
   const [dailyStatus, setDailyStatus] = useState(null);
@@ -270,26 +273,43 @@ export default function Dashboard(props) {
   }, []);
 
   useEffect(() => {
-    if (!showProfileDrop) return;
-    const scrollY = window.scrollY || document.documentElement.scrollTop;
-    const prevOverflow = document.body.style.overflow;
-    const prevPosition = document.body.style.position;
-    const prevTop = document.body.style.top;
-    const prevWidth = document.body.style.width;
+    const shouldLock = showProfileDrop || isLeaderboardOpen || isBotOpen;
+    if (shouldLock) {
+      if (document.body.style.position !== "fixed") {
+        const currentScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+        scrollLockPosRef.current = currentScrollY;
+        document.body.style.overflow = "hidden";
+        document.documentElement.style.overflow = "hidden";
+        document.body.style.position = "fixed";
+        document.body.style.top = `-${currentScrollY}px`;
+        document.body.style.width = "100%";
+      }
+    } else {
+      if (document.body.style.position === "fixed") {
+        const savedScrollY = scrollLockPosRef.current;
+        document.body.style.overflow = "";
+        document.documentElement.style.overflow = "";
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+        window.scrollTo(0, savedScrollY);
+      }
+    }
+  }, [showProfileDrop, isLeaderboardOpen, isBotOpen]);
 
-    document.body.style.overflow = "hidden";
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
-
+  useEffect(() => {
     return () => {
-      document.body.style.overflow = prevOverflow;
-      document.body.style.position = prevPosition;
-      document.body.style.top = prevTop;
-      document.body.style.width = prevWidth;
-      window.scrollTo(0, scrollY);
+      if (document.body.style.position === "fixed") {
+        const savedScrollY = scrollLockPosRef.current;
+        document.body.style.overflow = "";
+        document.documentElement.style.overflow = "";
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+        window.scrollTo(0, savedScrollY);
+      }
     };
-  }, [showProfileDrop]);
+  }, []);
 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showCoinPopup, setShowCoinPopup] = useState(false);
@@ -309,7 +329,6 @@ export default function Dashboard(props) {
   // Online count is now dynamically driven by real-time WebSocket events.
 
   // ZoneMeetBot State
-  const [isBotOpen, setIsBotOpen] = useState(false);
   const [botMessages, setBotMessages] = useState([
     { text: "Hi there! I'm ZoneMeetBot 🤖. I know everything about this platform. Ask me about Coins, VIP Elite, Rules, or how to Video Chat!", sender: "bot" }
   ]);
@@ -388,7 +407,6 @@ export default function Dashboard(props) {
       }
     }
   }, []);
-  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [leaderboardFilter, setLeaderboardFilter] = useState('all'); // 'all' or 'india'
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
@@ -4045,7 +4063,15 @@ export default function Dashboard(props) {
 
       {/* LEADERBOARD FULL-SCREEN OVERLAY */}
       {isLeaderboardOpen && (
-        <div className="leaderboard-overlay-fullscreen" onClick={() => setIsLeaderboardOpen(false)}>
+        <div
+          className="leaderboard-overlay-fullscreen"
+          onClick={() => setIsLeaderboardOpen(false)}
+          onTouchMove={(e) => {
+            if (e.target === e.currentTarget && e.cancelable) {
+              e.preventDefault();
+            }
+          }}
+        >
           <div className="leaderboard-modal-card" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div style={{ padding: '15px 20px', position: 'relative', background: 'linear-gradient(180deg, rgba(251, 191, 36, 0.15) 0%, transparent 100%)', textAlign: 'center' }}>
@@ -4215,7 +4241,7 @@ export default function Dashboard(props) {
       )}
 
       {/* LEADERBOARD BUTTON */}
-      {!isLeaderboardOpen && (
+      {!isLeaderboardOpen && !isBotOpen && (
         <div className="zonemeetbot-widget leaderboard-toggle-widget">
           <button className="bot-toggle-btn" style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', boxShadow: '0 10px 30px rgba(245, 158, 11, 0.4)' }} onClick={() => { setIsLeaderboardOpen(true); fetchLeaderboard(); }}>
             <span className="bot-icon">🏆</span>
@@ -4224,8 +4250,21 @@ export default function Dashboard(props) {
         </div>
       )}
 
+      {/* BOT BACKDROP OVERLAY */}
+      {isBotOpen && (
+        <div
+          className="bot-backdrop-overlay"
+          onClick={() => setIsBotOpen(false)}
+          onTouchMove={(e) => {
+            if (e.target === e.currentTarget && e.cancelable) {
+              e.preventDefault();
+            }
+          }}
+        />
+      )}
+
       {/* ZONEMEET SUPPORT CHATBOT WIDGET */}
-      <div className="zonemeetbot-widget bot-toggle-widget">
+      <div className={`zonemeetbot-widget bot-toggle-widget ${isBotOpen ? "bot-active" : ""}`}>
         {!isBotOpen ? (
           <button className="bot-toggle-btn" onClick={() => setIsBotOpen(true)}>
             <span className="bot-icon">🤖</span>
@@ -6909,6 +6948,24 @@ export default function Dashboard(props) {
             z-index: 10000;
             font-family: 'Inter', sans-serif;
           }
+          .bot-backdrop-overlay {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: rgba(2, 6, 23, 0.55) !important;
+            backdrop-filter: blur(4px) !important;
+            -webkit-backdrop-filter: blur(4px) !important;
+            z-index: 99990 !important;
+            cursor: pointer;
+            touch-action: none;
+          }
+          .bot-toggle-widget.bot-active {
+            z-index: 99995 !important;
+          }
           .leaderboard-overlay-fullscreen {
             position: fixed !important;
             top: 0 !important;
@@ -6927,6 +6984,7 @@ export default function Dashboard(props) {
             padding: 15px !important;
             margin: 0 !important;
             box-sizing: border-box !important;
+            overscroll-behavior: contain;
           }
           .leaderboard-modal-card {
             width: 94% !important;
@@ -6942,6 +7000,7 @@ export default function Dashboard(props) {
             overflow: hidden !important;
             margin: 0 auto !important;
             position: relative !important;
+            overscroll-behavior: contain;
           }
           .leaderboard-modal-close {
             position: absolute !important;
@@ -7092,6 +7151,7 @@ export default function Dashboard(props) {
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             overflow: hidden;
             animation: slideUpBot 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overscroll-behavior: contain;
           }
           @keyframes slideUpBot {
             from { opacity: 0; transform: translateY(20px) scale(0.95); }
@@ -7124,6 +7184,8 @@ export default function Dashboard(props) {
             flex: 1;
             padding: 20px;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
             display: flex;
             flex-direction: column;
             gap: 12px;
