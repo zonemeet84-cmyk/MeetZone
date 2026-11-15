@@ -153,6 +153,22 @@ const STICKERS = [
   { id: 'star', icon: '⭐', price: 20, label: 'Star' },
 ];
 
+const ReplyIcon = ({ size = 13, color = "currentColor" }) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2.5" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    style={{ display: "inline-block", verticalAlign: "middle" }}
+  >
+    <polyline points="9 17 4 12 9 7" />
+    <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
+  </svg>
+);
 
 export default function Home(props) {
   const { data: session, status: sessionStatus } = useSession();
@@ -321,6 +337,126 @@ export default function Home(props) {
   // Chat Message Reply Support
   const [replyingTo, setReplyingTo] = useState(null); // { id, text, sender, isPhoto }
   const textChatInputRef = useRef(null);
+
+  const touchSwipeRef = useRef({
+    startX: 0,
+    startY: 0,
+    element: null,
+    isSwiping: false,
+    triggered: false,
+    lastTap: 0,
+    msgId: null
+  });
+
+  const triggerReply = useCallback((msg, idx, mode) => {
+    if (!msg || msg.type === "system" || msg.type === "photo-consent-prompt" || msg.type === "ai-shield-prompt" || msg.type === "coin-prompt") {
+      return;
+    }
+    setReplyingTo({
+      id: idx,
+      text: msg.type === "photo" ? "📷 Photo" : (msg.text || ""),
+      sender: msg.sender === "me" || msg.sender === "user" ? "You" : (partnerInfo?.name || "Stranger"),
+      isPhoto: msg.type === "photo"
+    });
+    try {
+      if (typeof window !== "undefined" && window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(25);
+      }
+    } catch (_) {}
+    if (mode === "text") {
+      textChatInputRef.current?.focus();
+    } else {
+      const liveInput = document.querySelector(".chat-box-input input");
+      liveInput?.focus();
+    }
+  }, [partnerInfo]);
+
+  const handleMsgTouchStart = (e, msg, idx, mode) => {
+    if (!e.touches || e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    const target = e.currentTarget;
+    const now = Date.now();
+
+    // Double-tap to reply
+    if (touchSwipeRef.current.msgId === idx && (now - touchSwipeRef.current.lastTap) < 320) {
+      triggerReply(msg, idx, mode);
+      touchSwipeRef.current.lastTap = 0;
+      return;
+    }
+
+    touchSwipeRef.current = {
+      startX: touch.clientX,
+      startY: touch.clientY,
+      element: target,
+      isSwiping: false,
+      triggered: false,
+      lastTap: now,
+      msgId: idx
+    };
+  };
+
+  const handleMsgTouchMove = (e) => {
+    if (!touchSwipeRef.current.element || !e.touches || e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    const diffX = touch.clientX - touchSwipeRef.current.startX;
+    const diffY = touch.clientY - touchSwipeRef.current.startY;
+
+    if (!touchSwipeRef.current.isSwiping) {
+      if (Math.abs(diffY) > 8 && Math.abs(diffY) > Math.abs(diffX)) {
+        return;
+      }
+      if (diffX > 10 && Math.abs(diffX) > Math.abs(diffY)) {
+        touchSwipeRef.current.isSwiping = true;
+      }
+    }
+
+    if (touchSwipeRef.current.isSwiping && diffX > 0) {
+      const clampedX = Math.min(65, diffX * 0.65);
+      const elem = touchSwipeRef.current.element;
+      elem.style.transition = "none";
+      elem.style.transform = `translateX(${clampedX}px)`;
+
+      if (clampedX >= 40 && !touchSwipeRef.current.triggered) {
+        touchSwipeRef.current.triggered = true;
+        try {
+          if (typeof window !== "undefined" && window.navigator && window.navigator.vibrate) {
+            window.navigator.vibrate(20);
+          }
+        } catch (_) {}
+      } else if (clampedX < 40 && touchSwipeRef.current.triggered) {
+        touchSwipeRef.current.triggered = false;
+      }
+    }
+  };
+
+  const handleMsgTouchEnd = (e, msg, idx, mode) => {
+    const elem = touchSwipeRef.current.element;
+    const shouldReply = touchSwipeRef.current.triggered;
+
+    if (elem) {
+      elem.style.transition = "transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1)";
+      elem.style.transform = "translateX(0px)";
+    }
+
+    if (shouldReply) {
+      triggerReply(msg, idx, mode);
+    }
+
+    touchSwipeRef.current.element = null;
+    touchSwipeRef.current.isSwiping = false;
+    touchSwipeRef.current.triggered = false;
+  };
+
+  const handleMsgTouchCancel = () => {
+    const elem = touchSwipeRef.current.element;
+    if (elem) {
+      elem.style.transition = "transform 0.25s ease";
+      elem.style.transform = "translateX(0px)";
+    }
+    touchSwipeRef.current.element = null;
+    touchSwipeRef.current.isSwiping = false;
+    touchSwipeRef.current.triggered = false;
+  };
 
   const [showCoinPopup, setShowCoinPopup] = useState(false);
   const [pendingMessage, setPendingMessage] = useState("");
@@ -4384,7 +4520,13 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                           {partnerInfo?.name || "Stranger"}
                         </div>
                       )}
-                      <div className="msg-bubble-wrapper">
+                      <div 
+                        className="msg-bubble-wrapper"
+                        onTouchStart={(e) => handleMsgTouchStart(e, msg, idx, "text")}
+                        onTouchMove={handleMsgTouchMove}
+                        onTouchEnd={(e) => handleMsgTouchEnd(e, msg, idx, "text")}
+                        onTouchCancel={handleMsgTouchCancel}
+                      >
                         <div className={`msg-bubble-content ${msg.type === 'photo' ? 'photo-bubble' : ''}`}>
                           {msg.replyTo && (
                             <div className="msg-reply-quote">
@@ -4502,18 +4644,10 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                           <button
                             type="button"
                             className="btn-msg-reply"
-                            onClick={() => {
-                              setReplyingTo({
-                                id: idx,
-                                text: msg.type === "photo" ? "📷 Photo" : msg.text,
-                                sender: msg.sender === "me" || msg.sender === "user" ? "You" : (partnerInfo?.name || "Stranger"),
-                                isPhoto: msg.type === "photo"
-                              });
-                              textChatInputRef.current?.focus();
-                            }}
+                            onClick={() => triggerReply(msg, idx, "text")}
                             title="Reply to message"
                           >
-                            ↩️
+                            <ReplyIcon size={13} />
                           </button>
                         )}
                       </div>
@@ -4568,7 +4702,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                         <div className="reply-preview-accent" />
                         <div className="reply-preview-content">
                           <div className="reply-preview-header">
-                            <span className="reply-preview-icon">↩️</span>
+                            <span className="reply-preview-icon"><ReplyIcon size={13} color="#38bdf8" /></span>
                             <span className="reply-preview-sender">Replying to <strong>{replyingTo.sender}</strong></span>
                           </div>
                           <div className="reply-preview-snippet">{replyingTo.text}</div>
@@ -5677,36 +5811,32 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             <div className="mobile-action-stack">
               <button 
                 type="button" 
-                className={`ai-shield-mobile-btn ${!aiShieldActive ? 'uncensored' : ''}`}
+                className={`ai-shield-bottom-btn ${!aiShieldActive ? 'uncensored' : ''}`}
                 onClick={handleAiShieldToggle}
-                title={aiShieldActive ? "AI Shield: Safe Mode (Tap to request 18+ Uncensored)" : "AI Shield: Disabled (Tap to re-enable Safe Mode)"}
+                title={aiShieldActive ? "AI Content Shield: Safe Mode (Click to request 18+ Uncensored)" : "AI Content Shield: Disabled (Click to re-enable Safe Mode)"}
               >
                 <span className="icon">{aiShieldActive ? "🛡️" : "🔓"}</span>
-                <span className="text">{aiShieldActive ? "Safe" : "18+"}</span>
+                <span className="text">{aiShieldActive ? "AI: Safe" : "AI: Off"}</span>
               </button>
               <button 
-                className="gift-trigger-btn" 
+                className="gift-trigger-btn circular-bottom-btn" 
                 onClick={() => {
                   const toolkit = hasIdentityToolkit(getChatUser(user));
                   setMobileGiftActiveTab(toolkit ? "avatars" : "gifts");
                   setShowMobileGiftPopup(true);
                 }}
+                title="Send Gift"
               >
-                <span className="icon">🎁</span> <span className="text">Gifts</span>
+                <span className="icon">🎁</span>
               </button>
-              <button className="report-trigger-btn" onClick={openReport}>
-                <span className="icon">🚨</span> <span className="text">Report</span>
+              <button 
+                className="report-trigger-btn circular-bottom-btn" 
+                onClick={openReport}
+                title="Report Partner"
+              >
+                <span className="icon">🚨</span>
               </button>
             </div>
-            <button 
-              type="button" 
-              className={`ai-shield-bottom-btn ${!aiShieldActive ? 'uncensored' : ''}`}
-              onClick={handleAiShieldToggle}
-              title={aiShieldActive ? "AI Content Shield: Safe Mode (Click to request 18+ Uncensored)" : "AI Content Shield: Disabled (Click to re-enable Safe Mode)"}
-            >
-              <span className="icon">{aiShieldActive ? "🛡️" : "🔓"}</span>
-              <span className="text">{aiShieldActive ? "AI: Safe" : "AI: Off (18+)"}</span>
-            </button>
             <button 
               type="button" 
               className="rewind-btn" 
@@ -5803,8 +5933,6 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     </select>
                   </div>
                 )}
-
-                <button type="button" className="mobile-chat-close-btn-header" onClick={() => setIsMobileChatOpen(false)}>×</button>
               </div>
             </div>
             <div className="chat-box-messages">
@@ -5851,7 +5979,13 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                       </div>
                     </div>
                   ) : (
-                    <div className="msg-bubble-wrapper">
+                    <div 
+                      className="msg-bubble-wrapper"
+                      onTouchStart={(e) => handleMsgTouchStart(e, msg, i, "live")}
+                      onTouchMove={handleMsgTouchMove}
+                      onTouchEnd={(e) => handleMsgTouchEnd(e, msg, i, "live")}
+                      onTouchCancel={handleMsgTouchCancel}
+                    >
                       <div className="msg-content">
                         {msg.replyTo && (
                           <div className="msg-reply-quote">
@@ -5869,16 +6003,10 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                       <button
                         type="button"
                         className="btn-msg-reply"
-                        onClick={() => {
-                          setReplyingTo({
-                            id: i,
-                            text: msg.text,
-                            sender: msg.sender === "me" || msg.sender === "user" ? "You" : (partnerInfo?.name || "Stranger")
-                          });
-                        }}
+                        onClick={() => triggerReply(msg, i, "live")}
                         title="Reply to message"
                       >
-                        ↩️
+                        <ReplyIcon size={13} />
                       </button>
                     </div>
                   )}
@@ -5905,7 +6033,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                   <div className="reply-preview-accent" />
                   <div className="reply-preview-content">
                     <div className="reply-preview-header">
-                      <span className="reply-preview-icon">↩️</span>
+                      <span className="reply-preview-icon"><ReplyIcon size={13} color="#38bdf8" /></span>
                       <span className="reply-preview-sender">Replying to <strong>{replyingTo.sender}</strong></span>
                     </div>
                     <div className="reply-preview-snippet">{replyingTo.text}</div>
@@ -7317,6 +7445,8 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           align-items: center;
           gap: 6px;
           max-width: 100%;
+          touch-action: pan-y;
+          will-change: transform;
         }
         .text-msg-item.me .msg-bubble-wrapper {
           flex-direction: row-reverse;
@@ -7326,18 +7456,18 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         }
         .btn-msg-reply {
           background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 255, 255, 0.15);
+          border: 1px solid rgba(255, 255, 255, 0.16);
           color: #94a3b8;
-          width: 26px;
-          height: 26px;
+          width: 28px;
+          height: 28px;
+          min-width: 28px;
           border-radius: 50%;
           display: inline-flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          font-size: 0.8rem;
           opacity: 0.75;
-          transition: all 0.2s ease;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           flex-shrink: 0;
           padding: 0;
           user-select: none;
@@ -7345,13 +7475,13 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         .text-msg-item:hover .btn-msg-reply,
         .msg-row:hover .btn-msg-reply {
           opacity: 1;
-          color: #ffffff;
-          background: rgba(99, 102, 241, 0.25);
-          border-color: rgba(99, 102, 241, 0.5);
+          color: #38bdf8;
+          background: rgba(56, 189, 248, 0.16);
+          border-color: rgba(56, 189, 248, 0.4);
         }
         .btn-msg-reply:hover {
-          background: rgba(99, 102, 241, 0.45) !important;
-          border-color: rgba(99, 102, 241, 0.8) !important;
+          background: rgba(56, 189, 248, 0.3) !important;
+          border-color: rgba(56, 189, 248, 0.7) !important;
           color: #ffffff !important;
           transform: scale(1.15);
         }
@@ -10692,18 +10822,20 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         /* AI Video Content Shield Styles */
         .video-ai-shield-pill {
           position: absolute;
-          top: 14px;
-          left: 14px;
+          top: 12px;
+          right: 14px;
+          left: auto;
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          padding: 6px 12px;
+          padding: 5px 12px;
           border-radius: 20px;
-          font-size: 0.76rem;
+          font-size: 0.74rem;
           font-weight: 700;
           cursor: pointer;
-          z-index: 25;
+          z-index: 35;
           backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
           transition: all 0.2s ease;
           user-select: none;
         }
@@ -11552,13 +11684,17 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             background: rgba(0, 0, 0, 0.55) !important;
             border: 1px solid rgba(255, 255, 255, 0.22) !important;
           }
-          .bottom-actions .mobile-action-stack .ai-shield-mobile-btn.uncensored {
+          .bottom-actions .mobile-action-stack .ai-shield-bottom-btn.uncensored {
             background: rgba(239, 68, 68, 0.4) !important;
             border-color: rgba(239, 68, 68, 0.65) !important;
             box-shadow: 0 0 10px rgba(239, 68, 68, 0.4) !important;
           }
-          .bottom-actions .ai-shield-bottom-btn {
-            display: none !important;
+          .video-ai-shield-pill {
+            top: 8px !important;
+            right: 10px !important;
+            left: auto !important;
+            padding: 4px 10px !important;
+            font-size: 0.7rem !important;
           }
           .bottom-actions .mobile-action-stack .quiz-trigger-btn.cancel {
             background: rgba(239, 68, 68, 0.2) !important;
@@ -11845,6 +11981,38 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             padding: 8px 12px !important;
           }
           .mobile-action-stack button .text {
+            display: inline !important;
+          }
+          .mobile-action-stack .gift-trigger-btn,
+          .mobile-action-stack .report-trigger-btn,
+          .bottom-actions .gift-trigger-btn,
+          .bottom-actions .report-trigger-btn {
+            width: 38px !important;
+            height: 38px !important;
+            min-width: 38px !important;
+            max-width: 38px !important;
+            border-radius: 50% !important;
+            padding: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 1.15rem !important;
+            flex-shrink: 0 !important;
+          }
+          .bottom-actions .gift-trigger-btn .text,
+          .bottom-actions .report-trigger-btn .text,
+          .mobile-action-stack .gift-trigger-btn .text,
+          .mobile-action-stack .report-trigger-btn .text {
+            display: none !important;
+          }
+          .mobile-action-stack .ai-shield-bottom-btn {
+            border-radius: 12px !important;
+            padding: 8px 14px !important;
+            width: auto !important;
+            height: auto !important;
+            min-width: 0 !important;
+          }
+          .mobile-action-stack .ai-shield-bottom-btn .text {
             display: inline !important;
           }
           .video-grid-v2 {
