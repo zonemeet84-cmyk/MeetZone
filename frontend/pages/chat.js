@@ -324,17 +324,19 @@ export default function Home(props) {
   const cameraInputRef = useRef(null);
   const galleryInputRef = useRef(null);
 
-  // AI Video Shield (NSFW Client-Side Auto-Blur with Mutual Consent 18+ Uncensored Mode)
-  const [aiShieldActive, setAiShieldActive] = useState(true);
-  const [aiShieldConsentStatus, setAiShieldConsentStatus] = useState("idle"); // "idle" | "requested_by_me" | "requested_by_partner"
-  const [isAiShieldBlurred, setIsAiShieldBlurred] = useState(false);
-  const [isLocalAiShieldBlurred, setIsLocalAiShieldBlurred] = useState(false);
-  const [isAiShieldModelLoaded, setIsAiShieldModelLoaded] = useState(false);
-  const aiShieldActiveRef = useRef(true);
-  const remoteConsecutiveRef = useRef(0);
-  const localConsecutiveRef = useRef(0);
-  const nsfwModelRef = useRef(null);
-  const isModelLoadingRef = useRef(false);
+  // Partner Video Preview Safe Dismiss Timeout
+  const previewTimeoutRef = useRef(null);
+
+  // User Profile & Name Edit Modal
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [editProfileForm, setEditProfileForm] = useState({
+    name: "",
+    gender: "Male",
+    country: "India",
+    state: "Other",
+    age: "18-24"
+  });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
 
   // Chat Message Reply Support
   const [replyingTo, setReplyingTo] = useState(null); // { id, text, sender, isPhoto }
@@ -351,7 +353,7 @@ export default function Home(props) {
   });
 
   const triggerReply = useCallback((msg, idx, mode) => {
-    if (!msg || msg.type === "system" || msg.type === "photo-consent-prompt" || msg.type === "ai-shield-prompt" || msg.type === "coin-prompt") {
+    if (!msg || msg.type === "system" || msg.type === "photo-consent-prompt" || msg.type === "coin-prompt") {
       return;
     }
     setReplyingTo({
@@ -603,222 +605,71 @@ export default function Home(props) {
     }
   };
 
-  // Video AI Content Shield Handlers (Mutual Consent 18+ Uncensored Mode)
-  const handleAiShieldToggle = () => {
-    if (!partnerId) {
-      showToast("Connect to a partner first to toggle AI Shield!", "info");
+  // Profile & Name Editing Handlers
+  const handleOpenProfileModal = () => {
+    setEditProfileForm({
+      name: user?.name || "ZoneMeet User",
+      gender: user?.gender || "Male",
+      country: user?.country || "India",
+      state: user?.state || "Other",
+      age: user?.age || "18-24"
+    });
+    setShowProfileModal(true);
+  };
+
+  const handleSaveProfile = async (e) => {
+    if (e) e.preventDefault();
+    if (!editProfileForm.name || !editProfileForm.name.trim()) {
+      showToast("Please enter a valid display name", "error");
       return;
     }
 
-    if (!aiShieldActive) {
-      // Either user can instantly re-enable safe mode at any time
-      socket?.emit("ai-shield-re-enable", { to: partnerId });
-      setAiShieldActive(true);
-      aiShieldActiveRef.current = true;
-      setAiShieldConsentStatus("idle");
-      setMessages(prev => [
-        ...prev.filter(m => m.type !== "ai-shield-prompt"),
-        { type: "system", text: "🛡️ AI Content Shield re-enabled (Safe Mode)." }
-      ]);
-      showToast("AI Content Shield re-enabled (Safe Mode)", "info");
-      return;
-    }
-
-    // If currently active, requesting to disable requires partner's consent
-    if (aiShieldConsentStatus === "requested_by_me") {
-      showToast("Request already sent. Waiting for partner's response...", "info");
-      return;
-    }
-
-    socket?.emit("ai-shield-request", { to: partnerId });
-    setAiShieldConsentStatus("requested_by_me");
-    setMessages(prev => [
-      ...prev.filter(m => m.type !== "ai-shield-prompt"),
-      { type: "system", text: "🛡️ You requested to disable AI Shield (18+ Uncensored Mode). Waiting for partner's agreement..." }
-    ]);
-    showToast("Requested partner to disable AI Shield (Uncensored Mode)...", "info");
-  };
-
-  const handleAcceptAiShieldDisable = () => {
-    socket?.emit("ai-shield-response", { to: partnerId, accepted: true });
-    setAiShieldActive(false);
-    aiShieldActiveRef.current = false;
-    setIsAiShieldBlurred(false);
-    setAiShieldConsentStatus("idle");
-    setMessages(prev => [
-      ...prev.filter(m => m.type !== "ai-shield-prompt"),
-      { type: "system", text: "🔓 Mutual consent granted! AI Content Shield disabled for this call (18+ Uncensored Mode)." }
-    ]);
-    showToast("AI Shield disabled! (18+ Uncensored Mode)", "success");
-  };
-
-  const handleDeclineAiShieldDisable = () => {
-    socket?.emit("ai-shield-response", { to: partnerId, accepted: false });
-    setAiShieldConsentStatus("idle");
-    setMessages(prev => [
-      ...prev.filter(m => m.type !== "ai-shield-prompt"),
-      { type: "system", text: "🛡️ You declined to disable AI Shield. Safe Mode remains ON." }
-    ]);
-    showToast("Request declined. Safe Mode remains ON.", "info");
-  };
-
-  // Dynamic Load TensorFlow.js + Locally-Hosted NSFW MobileNetV2 Model (Zero 404s, Zero Webpack issues)
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    let isCancelled = false;
-
-    const loadScript = (src) => {
-      return new Promise((resolve, reject) => {
-        if (typeof document === "undefined") return resolve();
-        const existing = document.querySelector(`script[src="${src}"]`);
-        if (existing) {
-          if (existing.getAttribute("data-loaded") === "true") return resolve();
-          existing.addEventListener("load", () => resolve());
-          existing.addEventListener("error", (e) => reject(e));
-          return;
-        }
-        const script = document.createElement("script");
-        script.src = src;
-        script.async = true;
-        script.onload = () => {
-          script.setAttribute("data-loaded", "true");
-          resolve();
-        };
-        script.onerror = (e) => reject(e);
-        document.head.appendChild(script);
-      });
+    setIsSavingProfile(true);
+    const trimmedName = editProfileForm.name.trim();
+    const updatedUser = {
+      ...(user || {}),
+      name: trimmedName,
+      gender: editProfileForm.gender,
+      country: editProfileForm.country,
+      state: editProfileForm.state,
+      age: editProfileForm.age,
+      onboardingCompleted: true
     };
 
-    const initNsfwModel = async () => {
-      if (nsfwModelRef.current || isModelLoadingRef.current) return;
-      isModelLoadingRef.current = true;
-      try {
-        await loadScript("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js");
-        if (window.tf && !isCancelled) {
-          const model = await window.tf.loadLayersModel("/models/mobilenet_v2/model.json");
-          if (!isCancelled) {
-            nsfwModelRef.current = model;
-            setIsAiShieldModelLoaded(true);
-            console.log("[ZoneMeet] AI Content Shield engine ready with local MobileNetV2.");
-          }
-        }
-      } catch (err) {
-        console.warn("[ZoneMeet] AI Content Shield engine notice:", err);
-      } finally {
-        isModelLoadingRef.current = false;
+    // Instant optimistic update in React state
+    setUser(updatedUser);
+    try {
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    } catch (err) {}
+
+    // Emit to active socket so peer/matching queue updates instantly
+    try {
+      if (socket) {
+        socket.emit("set-profile", updatedUser);
       }
-    };
+    } catch (err) {}
 
-    initNsfwModel();
-    return () => {
-      isCancelled = true;
-    };
-  }, []);
+    showToast("Profile & Name updated successfully! ✨", "success");
+    setShowProfileModal(false);
 
-  // AI Video Classification Loop: High precision, zero false alarms
-  useEffect(() => {
-    if (activeChatMode !== "video") {
-      setIsAiShieldBlurred(false);
-      setIsLocalAiShieldBlurred(false);
-      remoteConsecutiveRef.current = 0;
-      localConsecutiveRef.current = 0;
-      return;
+    // Sync to backend in background
+    try {
+      await axios.post("https://api.zonemeet.chat/api/auth/update-profile", {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+        name: trimmedName,
+        gender: editProfileForm.gender,
+        country: editProfileForm.country,
+        state: editProfileForm.state,
+        age: editProfileForm.age
+      }, { timeout: 3500 });
+    } catch (err) {
+      console.warn("Profile background sync note:", err.message);
+    } finally {
+      setIsSavingProfile(false);
     }
-
-    let intervalId = null;
-    let isScanning = false;
-    const offscreenCanvas = document.createElement("canvas");
-    offscreenCanvas.width = 224;
-    offscreenCanvas.height = 224;
-    const offscreenCtx = offscreenCanvas.getContext("2d", { willReadFrequently: true });
-
-    intervalId = setInterval(async () => {
-      if (!aiShieldActiveRef.current || !nsfwModelRef.current || isScanning) return;
-      const tf = window.tf;
-      if (!tf) return;
-
-      isScanning = true;
-      try {
-        const scanVideo = (videoEl) => {
-          if (!videoEl || videoEl.paused || videoEl.ended || videoEl.readyState < 2 || !videoEl.videoWidth || !videoEl.videoHeight) {
-            return null;
-          }
-          if (!offscreenCtx) return null;
-          offscreenCtx.drawImage(videoEl, 0, 0, 224, 224);
-
-          return tf.tidy(() => {
-            const pixels = tf.browser.fromPixels(offscreenCanvas);
-            const normalized = pixels.toFloat().div(255);
-            const batched = normalized.reshape([1, 224, 224, 3]);
-            const logits = nsfwModelRef.current.predict(batched);
-            const values = logits.dataSync();
-            const classes = ["Drawing", "Hentai", "Neutral", "Porn", "Sexy"];
-            return classes.map((className, idx) => ({
-              className,
-              probability: values[idx] || 0
-            }));
-          });
-        };
-
-        const checkNsfw = (preds) => {
-          if (!preds || !preds.length) return false;
-          const porn = preds.find(p => p.className === "Porn")?.probability || 0;
-          const sexy = preds.find(p => p.className === "Sexy")?.probability || 0;
-          const hentai = preds.find(p => p.className === "Hentai")?.probability || 0;
-          const neutral = preds.find(p => p.className === "Neutral")?.probability || 0;
-          
-          // Triggers on:
-          // 1. Explicit porn probability >= 0.38
-          // 2. Hentai >= 0.50
-          // 3. Combined nudity (Porn + Sexy >= 0.55 AND Neutral < 0.40)
-          // Normal chatting (clothes, face, room) has Neutral 0.85-0.99, so zero false alarms.
-          return (porn >= 0.38) || (hentai >= 0.50) || (porn + sexy >= 0.55 && neutral < 0.40);
-        };
-
-        // 1. Scan Local Video (Own camera / testing)
-        if (!isLocalAiShieldBlurred && localVideo.current) {
-          const localPreds = scanVideo(localVideo.current);
-          if (localPreds) {
-            const isLocalExplicit = checkNsfw(localPreds);
-            if (isLocalExplicit) {
-              localConsecutiveRef.current += 1;
-              console.log("[AI Shield Local] Explicit content detected on camera!", localPreds);
-              if (localConsecutiveRef.current >= 1) {
-                setIsLocalAiShieldBlurred(true);
-              }
-            } else {
-              localConsecutiveRef.current = 0;
-            }
-          }
-        }
-
-        // 2. Scan Remote Video (Partner's camera)
-        if (!isAiShieldBlurred && partnerId && remoteVideo.current) {
-          const remotePreds = scanVideo(remoteVideo.current);
-          if (remotePreds) {
-            const isRemoteExplicit = checkNsfw(remotePreds);
-            if (isRemoteExplicit) {
-              remoteConsecutiveRef.current += 1;
-              console.log("[AI Shield Remote] Explicit content detected on partner!", remotePreds);
-              if (remoteConsecutiveRef.current >= 1) {
-                setIsAiShieldBlurred(true);
-              }
-            } else {
-              remoteConsecutiveRef.current = 0;
-            }
-          }
-        }
-      } catch (e) {
-        // Non-blocking catch
-      } finally {
-        isScanning = false;
-      }
-    }, 1000);
-
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [activeChatMode, partnerId, isAiShieldBlurred, isLocalAiShieldBlurred]);
+  };
 
   const handleRewindClick = () => {
     const candidate = lastPartner || lastPartnerRef.current || (user?.recentStrangers && user.recentStrangers.length > 0 ? user.recentStrangers[0] : null);
@@ -1845,9 +1696,7 @@ export default function Home(props) {
 
   const getCssFilterString = () => {
     let filters = [];
-    if (isLocalAiShieldBlurred) {
-      filters.push('blur(36px)');
-    } else if (isFaceBlurred) {
+    if (isFaceBlurred) {
       filters.push('blur(25px)');
     } else {
       if (activeMediaPipeFilter === "Smooth") {
@@ -1877,9 +1726,7 @@ export default function Home(props) {
 
   const getPartnerCssFilterString = () => {
     let filters = [];
-    if (isAiShieldBlurred) {
-      filters.push('blur(36px)');
-    } else if (partnerIsBlurred) {
+    if (partnerIsBlurred) {
       filters.push('blur(25px)');
     } else {
       if (partnerFilter === "Smooth") {
@@ -2092,7 +1939,11 @@ export default function Home(props) {
 
   const [iceServers, setIceServers] = useState([
     { urls: "stun:stun.l.google.com:19302" },
-    { urls: "stun:stun1.l.google.com:19302" }
+    { urls: "stun:stun1.l.google.com:19302" },
+    { urls: "stun:stun2.l.google.com:19302" },
+    { urls: "stun:stun3.l.google.com:19302" },
+    { urls: "stun:stun4.l.google.com:19302" },
+    { urls: "stun:stun.cloudflare.com:3478" }
   ]);
 
   // Fetch Twilio TURN credentials on load
@@ -2435,7 +2286,15 @@ export default function Home(props) {
         setPartnerId(partnerId);
         setPartnerInfo(partnerInfo);
         const isCurrentTextMode = router.query.mode === "text" || chatMode === "text";
-        setShowPartnerPreview(!isCurrentTextMode);
+        if (previewTimeoutRef.current) clearTimeout(previewTimeoutRef.current);
+        if (!isCurrentTextMode) {
+          setShowPartnerPreview(true);
+          previewTimeoutRef.current = setTimeout(() => {
+            setShowPartnerPreview(false);
+          }, 3500);
+        } else {
+          setShowPartnerPreview(false);
+        }
         setStatus(isCurrentTextMode ? "Connected" : "Partner Found!");
         setMessages([]);
         setReplyingTo(null);
@@ -2443,11 +2302,6 @@ export default function Home(props) {
         setPhotoPreviewModal(null);
         setIsCompressingImage(false);
         setShowPhotoMenu(false);
-        setAiShieldActive(true);
-        aiShieldActiveRef.current = true;
-        setIsAiShieldBlurred(false);
-        setAiShieldConsentStatus("idle");
-        consecutiveNsfwCountRef.current = 0;
         iceCandidatesQueue.current = [];
 
         if (!isCurrentTextMode) {
@@ -2589,49 +2443,6 @@ export default function Home(props) {
         setStatus("Connected");
       });
 
-      // Video Call AI Content Shield Mutual Consent Listeners
-      socket.on("ai-shield-requested", () => {
-        setAiShieldConsentStatus("requested_by_partner");
-        setMessages((prev) => [
-          ...prev.filter(m => m.type !== "ai-shield-prompt"),
-          { type: "ai-shield-prompt", sender: "partner" }
-        ]);
-        if (typeof window !== 'undefined' && window.innerWidth < 768) {
-          showToast("Partner requested to disable AI Shield (18+ Uncensored Mode). Check chat to respond.", "info", 5000);
-        }
-      });
-
-      socket.on("ai-shield-result", ({ accepted }) => {
-        if (accepted) {
-          setAiShieldActive(false);
-          aiShieldActiveRef.current = false;
-          setIsAiShieldBlurred(false);
-          setAiShieldConsentStatus("idle");
-          setMessages((prev) => [
-            ...prev.filter(m => m.type !== "ai-shield-prompt"),
-            { type: "system", text: "🎉 Partner agreed! AI Content Shield disabled for this call (18+ Uncensored Mode)." }
-          ]);
-          showToast("Partner agreed! AI Content Shield disabled.", "success");
-        } else {
-          setAiShieldConsentStatus("idle");
-          setMessages((prev) => [
-            ...prev.filter(m => m.type !== "ai-shield-prompt"),
-            { type: "system", text: "🛡️ Partner declined. AI Content Shield remains active (Safe Mode)." }
-          ]);
-          showToast("Partner declined. Safe Mode remains active.", "info");
-        }
-      });
-
-      socket.on("ai-shield-re-enabled", () => {
-        setAiShieldActive(true);
-        aiShieldActiveRef.current = true;
-        setAiShieldConsentStatus("idle");
-        setMessages((prev) => [
-          ...prev.filter(m => m.type !== "ai-shield-prompt"),
-          { type: "system", text: "🛡️ Partner re-enabled AI Content Shield (Safe Mode)." }
-        ]);
-        showToast("Partner re-enabled AI Content Shield.", "info");
-      });
 
       socket.on("receive-photo", ({ image, timestamp, isLive }) => {
         setIsPartnerTyping(false);
@@ -3134,11 +2945,28 @@ export default function Home(props) {
           });
         }
 
-        // Short delay to ensure video is ready
+        // Instant preview dismiss once track arrives
+        setShowPartnerPreview(false);
+        setStatus("Connected");
         setTimeout(() => {
           setShowPartnerPreview(false);
-          setStatus("Connected");
-        }, 200);
+        }, 150);
+      }
+    };
+
+    peerConnection.current.onconnectionstatechange = () => {
+      const state = peerConnection.current?.connectionState;
+      if (state === "connected") {
+        setShowPartnerPreview(false);
+        setStatus("Connected");
+      }
+    };
+
+    peerConnection.current.oniceconnectionstatechange = () => {
+      const iceState = peerConnection.current?.iceConnectionState;
+      if (iceState === "connected" || iceState === "completed") {
+        setShowPartnerPreview(false);
+        setStatus("Connected");
       }
     };
 
@@ -3218,11 +3046,8 @@ export default function Home(props) {
     setPhotoPreviewModal(null);
     setIsCompressingImage(false);
     setShowPhotoMenu(false);
-    setAiShieldActive(true);
-    aiShieldActiveRef.current = true;
-    setIsAiShieldBlurred(false);
-    setAiShieldConsentStatus("idle");
-    consecutiveNsfwCountRef.current = 0;
+    if (previewTimeoutRef.current) clearTimeout(previewTimeoutRef.current);
+    setShowPartnerPreview(false);
     setMessage("");
     setCurrentSubtitle("");
     setPartnerMicOn(true);
@@ -4392,13 +4217,19 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
               <span className="plus-icon">+</span>
             </div>
 
-            <div className="user-profile-tag">
+            <div 
+              className="user-profile-tag"
+              onClick={handleOpenProfileModal}
+              title="Click to edit Name & Profile"
+              style={{ cursor: 'pointer' }}
+            >
               <div className="avatar">
                 {user?.name?.charAt(0) || "?"}
               </div>
               <div className="user-details">
                 <span className="user-name" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   {user?.name || "ZoneMeet User"}
+                  <span style={{ fontSize: '0.65rem', opacity: 0.7 }} title="Edit Profile">✏️</span>
                   {user?.email === "ds9376314@gmail.com" && <span className="vip-badge-inline">VIP</span>}
                   {(user?.activeSubscription || user?.premium) && (user?.userBadge || user?.planName) && user?.email !== "ds9376314@gmail.com" && (
                     <span className="pro-badge-v2" style={{ padding: '0.08rem 0.35rem', fontSize: '0.62rem', margin: 0 }}>
@@ -4619,34 +4450,6 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                                 </button>
                               </div>
                             </div>
-                          ) : msg.type === "ai-shield-prompt" ? (
-                            <div className="ai-shield-consent-box">
-                              <div className="consent-top">
-                                <span className="consent-emoji">🔓</span>
-                                <div className="consent-headline">
-                                  <strong>{partnerInfo?.name || "Stranger"}</strong> wants 18+ Uncensored Mode
-                                </div>
-                              </div>
-                              <p className="consent-subtext">
-                                Both must agree to disable AI auto-blur detection for this call session.
-                              </p>
-                              <div className="consent-btn-group">
-                                <button 
-                                  type="button" 
-                                  className="btn-consent-allow" 
-                                  onClick={handleAcceptAiShieldDisable}
-                                >
-                                  ✅ Agree (Disable AI)
-                                </button>
-                                <button 
-                                  type="button" 
-                                  className="btn-consent-decline" 
-                                  onClick={handleDeclineAiShieldDisable}
-                                >
-                                  🛡️ Keep Safe
-                                </button>
-                              </div>
-                            </div>
                           ) : msg.type === "photo" ? (
                             <div className="photo-message-card">
                               {msg.isLive && (
@@ -4693,7 +4496,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                           )}
                         </div>
 
-                        {msg.type !== "system" && msg.type !== "photo-consent-prompt" && msg.type !== "ai-shield-prompt" && msg.type !== "coin-prompt" && (
+                        {msg.type !== "system" && msg.type !== "photo-consent-prompt" && msg.type !== "coin-prompt" && (
                           <button
                             type="button"
                             className="btn-msg-reply"
@@ -5072,31 +4875,6 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                     </button>
                   </form>
                 </div>
-
-                {/* LOCAL AI SHIELD AUTO-BLUR OVERLAY */}
-                {isLocalAiShieldBlurred && (
-                  <div className="ai-shield-blur-overlay">
-                    <div className="ai-shield-alert-card">
-                      <div className="ai-shield-alert-icon">🛡️</div>
-                      <div className="ai-shield-alert-title">Camera Blurred by AI</div>
-                      <p className="ai-shield-alert-desc">
-                        AI Content Shield detected sensitive / explicit content on your camera.
-                      </p>
-                      <div className="ai-shield-alert-btns">
-                        <button 
-                          type="button" 
-                          className="btn-ai-shield-unblur"
-                          onClick={() => {
-                            setIsLocalAiShieldBlurred(false);
-                            localConsecutiveRef.current = 0;
-                          }}
-                        >
-                          👁️ Unblur Camera
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Floating Gift Overlay */}
@@ -5122,94 +4900,20 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                 </div>
               )}
 
-
-
             <div className="video-card">
               <video
                 ref={remoteVideo}
                 autoPlay
                 playsInline
+                onLoadedMetadata={() => setShowPartnerPreview(false)}
+                onPlaying={() => setShowPartnerPreview(false)}
+                onCanPlay={() => setShowPartnerPreview(false)}
                 className={`natural-view ${partnerIsBlurred ? 'blurred-face' : ''}`}
                 style={{
                   filter: getPartnerCssFilterString(),
                   display: partnerAvatar !== "None" ? 'none' : 'block'
                 }}
               />
-
-              {/* VIDEO AI SHIELD STATUS PILL (CLICKABLE) */}
-              {partnerId && (
-                <div 
-                  className={`video-ai-shield-pill ${aiShieldActive ? 'shield-on' : 'shield-off'}`}
-                  onClick={handleAiShieldToggle}
-                  title={
-                    aiShieldActive 
-                      ? "AI Content Shield is Active (Safe Mode). Click to request 18+ Uncensored Mode." 
-                      : "AI Content Shield is Disabled (18+ Uncensored Mode). Click to re-enable Safe Mode."
-                  }
-                >
-                  <span className="shield-icon">{aiShieldActive ? (isAiShieldModelLoaded ? "🛡️" : "⏳") : "🔓"}</span>
-                  <span className="shield-text">{aiShieldActive ? (isAiShieldModelLoaded ? "AI: Safe" : "AI: Loading...") : "AI: Off (18+)"}</span>
-                </div>
-              )}
-
-              {/* AI SHIELD AUTO-BLUR OVERLAY */}
-              {isAiShieldBlurred && (
-                <div className="ai-shield-blur-overlay">
-                  <div className="ai-shield-alert-card">
-                    <div className="ai-shield-alert-icon">🛡️</div>
-                    <div className="ai-shield-alert-title">Sensitive Content Blurred</div>
-                    <p className="ai-shield-alert-desc">
-                      AI Content Shield detected explicit content on partner's camera.
-                    </p>
-                    <div className="ai-shield-alert-btns">
-                      <button 
-                        type="button" 
-                        className="btn-ai-shield-unblur"
-                        onClick={() => {
-                          setIsAiShieldBlurred(false);
-                          consecutiveNsfwCountRef.current = 0;
-                        }}
-                      >
-                        👁️ Unblur Video
-                      </button>
-                      <button 
-                        type="button" 
-                        className="btn-ai-shield-report"
-                        onClick={openReport}
-                      >
-                        🚨 Report User
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* AI SHIELD REQUEST BANNER */}
-              {aiShieldConsentStatus === "requested_by_partner" && (
-                <div className="ai-shield-request-banner">
-                  <div className="banner-icon">🔓</div>
-                  <div className="banner-info">
-                    <strong>{partnerInfo?.name || "Stranger"}</strong> wants 18+ Uncensored Mode
-                    <div className="banner-sub">Both must agree to disable AI auto-blur</div>
-                  </div>
-                  <div className="banner-actions">
-                    <button 
-                      type="button" 
-                      className="btn-agree-ai" 
-                      onClick={handleAcceptAiShieldDisable}
-                    >
-                      ✅ Agree
-                    </button>
-                    <button 
-                      type="button" 
-                      className="btn-decline-ai" 
-                      onClick={handleDeclineAiShieldDisable}
-                    >
-                      🛡️ Keep Safe
-                    </button>
-                  </div>
-                </div>
-              )}
               
               {/* LIVE SUBTITLES */}
               {currentSubtitle && (
@@ -5276,7 +4980,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
               )}
 
               {/* PARTNER PREVIEW OVERLAY */}
-              {showPartnerPreview && partnerInfo && (
+              {showPartnerPreview && partnerInfo && (!remoteVideo.current?.srcObject || !remoteVideo.current?.videoWidth) && (
                 <div className="partner-preview-overlay">
                   <div className="preview-content">
                     <div className="preview-avatar">
@@ -5888,15 +5592,6 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             </div>
             <div className="mobile-action-stack">
               <button 
-                type="button" 
-                className={`ai-shield-bottom-btn ${!aiShieldActive ? 'uncensored' : ''}`}
-                onClick={handleAiShieldToggle}
-                title={aiShieldActive ? "AI Content Shield: Safe Mode (Click to request 18+ Uncensored)" : "AI Content Shield: Disabled (Click to re-enable Safe Mode)"}
-              >
-                <span className="icon">{aiShieldActive ? (isAiShieldModelLoaded ? "🛡️" : "⏳") : "🔓"}</span>
-                <span className="text">{aiShieldActive ? (isAiShieldModelLoaded ? "AI: Safe" : "AI: Loading...") : "AI: Off"}</span>
-              </button>
-              <button 
                 className="gift-trigger-btn circular-bottom-btn" 
                 onClick={() => {
                   const toolkit = hasIdentityToolkit(getChatUser(user));
@@ -6026,34 +5721,6 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                       <div className="prompt-actions">
                         <button className="yes-btn" onClick={() => confirmAndSendMessage(msg.pendingText)}>Yes (-5)</button>
                         <button className="no-btn" onClick={() => setMessages(prev => prev.filter(m => m.type !== 'coin-prompt'))}>No</button>
-                      </div>
-                    </div>
-                  ) : msg.type === 'ai-shield-prompt' ? (
-                    <div className="ai-shield-consent-box">
-                      <div className="consent-top">
-                        <span className="consent-emoji">🔓</span>
-                        <div className="consent-headline">
-                          <strong>{partnerInfo?.name || "Stranger"}</strong> wants 18+ Uncensored Mode
-                        </div>
-                      </div>
-                      <p className="consent-subtext">
-                        Both must agree to disable AI auto-blur detection for this call.
-                      </p>
-                      <div className="consent-btn-group">
-                        <button 
-                          type="button" 
-                          className="btn-consent-allow" 
-                          onClick={handleAcceptAiShieldDisable}
-                        >
-                          ✅ Agree (Disable AI)
-                        </button>
-                        <button 
-                          type="button" 
-                          className="btn-consent-decline" 
-                          onClick={handleDeclineAiShieldDisable}
-                        >
-                          🛡️ Keep Safe
-                        </button>
                       </div>
                     </div>
                   ) : (
@@ -6741,6 +6408,103 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                 🚨 Report Photo
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* USER PROFILE & NAME EDIT MODAL */}
+      {showProfileModal && (
+        <div className="profile-edit-overlay" onClick={() => setShowProfileModal(false)}>
+          <div className="profile-edit-card" onClick={(e) => e.stopPropagation()}>
+            <button 
+              type="button" 
+              className="profile-edit-close-btn" 
+              onClick={() => setShowProfileModal(false)}
+              title="Close"
+            >
+              ×
+            </button>
+            <div className="profile-edit-header">
+              <div className="profile-edit-avatar-preview">
+                {editProfileForm.name ? editProfileForm.name.charAt(0).toUpperCase() : "?"}
+              </div>
+              <h2>Edit Profile & Name</h2>
+              <p>Update your display name and details</p>
+            </div>
+
+            <form onSubmit={handleSaveProfile} className="profile-edit-form">
+              <div className="profile-edit-field">
+                <label>Display Name / Naam</label>
+                <input
+                  type="text"
+                  className="profile-edit-input"
+                  value={editProfileForm.name}
+                  onChange={(e) => setEditProfileForm({ ...editProfileForm, name: e.target.value })}
+                  placeholder="Enter your name"
+                  maxLength={30}
+                  required
+                />
+              </div>
+
+              <div className="profile-edit-row">
+                <div className="profile-edit-field" style={{ flex: 1 }}>
+                  <label>Gender</label>
+                  <select
+                    className="profile-edit-select"
+                    value={editProfileForm.gender}
+                    onChange={(e) => setEditProfileForm({ ...editProfileForm, gender: e.target.value })}
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div className="profile-edit-field" style={{ flex: 1 }}>
+                  <label>Age</label>
+                  <select
+                    className="profile-edit-select"
+                    value={editProfileForm.age}
+                    onChange={(e) => setEditProfileForm({ ...editProfileForm, age: e.target.value })}
+                  >
+                    <option value="18-24">18-24</option>
+                    <option value="25-34">25-34</option>
+                    <option value="35-44">35-44</option>
+                    <option value="45-54">45-54</option>
+                    <option value="55+">55+</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="profile-edit-field">
+                <label>Country</label>
+                <select
+                  className="profile-edit-select"
+                  value={editProfileForm.country}
+                  onChange={(e) => setEditProfileForm({ ...editProfileForm, country: e.target.value })}
+                >
+                  <option value="India">🇮🇳 India</option>
+                  <option value="United States">🇺🇸 United States</option>
+                  <option value="United Kingdom">🇬🇧 United Kingdom</option>
+                  <option value="Canada">🇨🇦 Canada</option>
+                  <option value="Australia">🇦🇺 Australia</option>
+                  <option value="Germany">🇩🇪 Germany</option>
+                  <option value="France">🇫🇷 France</option>
+                  <option value="Japan">🇯🇵 Japan</option>
+                  <option value="Brazil">🇧🇷 Brazil</option>
+                  <option value="Russia">🇷🇺 Russia</option>
+                  <option value="Other">🌍 Other</option>
+                </select>
+              </div>
+
+              <button 
+                type="submit" 
+                className="profile-edit-submit-btn" 
+                disabled={isSavingProfile}
+              >
+                {isSavingProfile ? "Saving..." : "Save Changes ✨"}
+              </button>
+            </form>
           </div>
         </div>
       )}
@@ -10897,221 +10661,136 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           color: white;
         }
 
-        /* AI Video Content Shield Styles */
-        .video-ai-shield-pill {
-          position: absolute;
-          top: 12px;
-          right: 14px;
-          left: auto;
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 5px 12px;
-          border-radius: 20px;
-          font-size: 0.74rem;
-          font-weight: 700;
-          cursor: pointer;
-          z-index: 35;
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          transition: all 0.2s ease;
-          user-select: none;
-        }
-        .video-ai-shield-pill.shield-on {
-          background: rgba(16, 185, 129, 0.2);
-          border: 1px solid rgba(16, 185, 129, 0.45);
-          color: #6ee7b7;
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
-        }
-        .video-ai-shield-pill.shield-on:hover {
-          background: rgba(16, 185, 129, 0.3);
-          transform: translateY(-1px);
-        }
-        .video-ai-shield-pill.shield-off {
-          background: rgba(239, 68, 68, 0.22);
-          border: 1px solid rgba(239, 68, 68, 0.5);
-          color: #fca5a5;
-          box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
-        }
-        .video-ai-shield-pill.shield-off:hover {
-          background: rgba(239, 68, 68, 0.32);
-          transform: translateY(-1px);
-        }
-        
-        .ai-shield-blur-overlay {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
+        /* Profile Edit Modal Styles */
+        .profile-edit-overlay {
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(15, 23, 42, 0.85);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          z-index: 100060;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(15, 23, 42, 0.65);
-          backdrop-filter: blur(12px);
-          z-index: 22;
-          padding: 20px;
-          box-sizing: border-box;
-          animation: modalFadeIn 0.3s ease;
+          padding: 16px;
+          animation: modalFadeIn 0.25s ease;
         }
-        .ai-shield-alert-card {
-          background: rgba(15, 23, 42, 0.95);
-          border: 1px solid rgba(239, 68, 68, 0.5);
-          border-radius: 18px;
-          padding: 22px 24px;
-          max-width: 340px;
+        .profile-edit-card {
+          background: #111827;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 24px;
+          padding: 26px 28px;
+          max-width: 420px;
           width: 100%;
+          position: relative;
+          box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+          box-sizing: border-box;
+          animation: modalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .profile-edit-close-btn {
+          position: absolute;
+          top: 16px;
+          right: 18px;
+          background: rgba(255, 255, 255, 0.08);
+          border: none;
+          color: #94a3b8;
+          font-size: 1.4rem;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s;
+        }
+        .profile-edit-close-btn:hover {
+          background: rgba(255, 255, 255, 0.15);
+          color: #fff;
+        }
+        .profile-edit-header {
           text-align: center;
-          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(239, 68, 68, 0.25);
+          margin-bottom: 22px;
         }
-        .ai-shield-alert-icon {
-          font-size: 2.2rem;
-          margin-bottom: 8px;
-        }
-        .ai-shield-alert-title {
-          font-size: 1.05rem;
+        .profile-edit-avatar-preview {
+          width: 64px;
+          height: 64px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #6366f1, #a855f7);
+          color: white;
+          font-size: 1.8rem;
           font-weight: 800;
-          color: #f87171;
-          margin-bottom: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 12px;
+          box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
         }
-        .ai-shield-alert-desc {
+        .profile-edit-header h2 {
+          font-size: 1.3rem;
+          font-weight: 800;
+          color: #f8fafc;
+          margin: 0 0 4px;
+        }
+        .profile-edit-header p {
           font-size: 0.8rem;
-          color: #cbd5e1;
-          line-height: 1.4;
-          margin: 0 0 16px 0;
+          color: #94a3b8;
+          margin: 0;
         }
-        .ai-shield-alert-btns {
+        .profile-edit-form {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+        .profile-edit-field {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          text-align: left;
+        }
+        .profile-edit-field label {
+          font-size: 0.78rem;
+          font-weight: 700;
+          color: #cbd5e1;
+        }
+        .profile-edit-input,
+        .profile-edit-select {
+          width: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          color: #ffffff;
+          padding: 10px 14px;
+          border-radius: 12px;
+          font-size: 0.88rem;
+          outline: none;
+          transition: all 0.2s;
+          box-sizing: border-box;
+        }
+        .profile-edit-input:focus,
+        .profile-edit-select:focus {
+          border-color: #6366f1;
+          box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+        }
+        .profile-edit-row {
           display: flex;
           gap: 10px;
-          justify-content: center;
         }
-        .btn-ai-shield-unblur {
-          flex: 1;
-          background: rgba(255, 255, 255, 0.12);
-          border: 1px solid rgba(255, 255, 255, 0.25);
-          color: #f8fafc;
-          padding: 8px 12px;
-          border-radius: 10px;
-          font-size: 0.82rem;
-          font-weight: 700;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        .btn-ai-shield-unblur:hover {
-          background: rgba(255, 255, 255, 0.2);
-        }
-        .btn-ai-shield-report {
-          flex: 1;
-          background: linear-gradient(135deg, #ef4444, #dc2626);
-          border: none;
-          color: white;
-          padding: 8px 12px;
-          border-radius: 10px;
-          font-size: 0.82rem;
-          font-weight: 700;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        .btn-ai-shield-report:hover {
-          background: linear-gradient(135deg, #dc2626, #b91c1c);
-          transform: translateY(-1px);
-        }
-
-        .ai-shield-request-banner {
-          position: absolute;
-          top: 14px;
-          left: 50%;
-          transform: translateX(-50%);
-          max-width: 90%;
-          width: 440px;
-          background: rgba(15, 23, 42, 0.95);
-          border: 1px solid rgba(245, 158, 11, 0.5);
-          border-radius: 16px;
-          padding: 10px 14px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          z-index: 30;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 15px rgba(245, 158, 11, 0.2);
-          animation: modalScaleUp 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .ai-shield-request-banner .banner-icon {
-          font-size: 1.4rem;
-        }
-        .ai-shield-request-banner .banner-info {
-          flex: 1;
-          font-size: 0.82rem;
-          color: #f1f5f9;
-        }
-        .ai-shield-request-banner .banner-sub {
-          font-size: 0.72rem;
-          color: #94a3b8;
-        }
-        .ai-shield-request-banner .banner-actions {
-          display: flex;
-          gap: 6px;
-        }
-        .btn-agree-ai {
-          background: linear-gradient(135deg, #f59e0b, #d97706);
+        .profile-edit-submit-btn {
+          margin-top: 6px;
+          background: linear-gradient(135deg, #6366f1, #a855f7);
           color: white;
           border: none;
-          padding: 6px 10px;
-          border-radius: 8px;
-          font-size: 0.78rem;
-          font-weight: 700;
-          cursor: pointer;
-          white-space: nowrap;
-        }
-        .btn-decline-ai {
-          background: rgba(255, 255, 255, 0.1);
-          color: #cbd5e1;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          padding: 6px 10px;
-          border-radius: 8px;
-          font-size: 0.78rem;
-          font-weight: 700;
-          cursor: pointer;
-          white-space: nowrap;
-        }
-
-        .ai-shield-consent-box {
-          background: rgba(15, 23, 42, 0.95);
-          border: 1px solid rgba(245, 158, 11, 0.4);
-          border-radius: 18px;
-          padding: 16px;
-          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-          max-width: 320px;
-        }
-        .ai-shield-consent-box .consent-headline {
-          color: #fff;
-          font-size: 0.92rem;
-        }
-        .ai-shield-consent-box .btn-consent-allow {
-          background: linear-gradient(135deg, #f59e0b, #d97706);
-        }
-
-        .ai-shield-bottom-btn {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: rgba(255, 255, 255, 0.06);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          color: #cbd5e1;
-          padding: 8px 14px;
+          padding: 12px;
           border-radius: 12px;
-          font-size: 0.8rem;
+          font-size: 0.92rem;
           font-weight: 700;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.2s;
+          box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
         }
-        .ai-shield-bottom-btn:hover {
-          background: rgba(255, 255, 255, 0.12);
-          color: #ffffff;
-        }
-        .ai-shield-bottom-btn.uncensored {
-          background: rgba(239, 68, 68, 0.2);
-          border-color: rgba(239, 68, 68, 0.5);
-          color: #fca5a5;
+        .profile-edit-submit-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 12px 28px rgba(99, 102, 241, 0.45);
         }
 
         /* Modal Overlay */
@@ -11762,18 +11441,6 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             background: rgba(0, 0, 0, 0.55) !important;
             border: 1px solid rgba(255, 255, 255, 0.22) !important;
           }
-          .bottom-actions .mobile-action-stack .ai-shield-bottom-btn.uncensored {
-            background: rgba(239, 68, 68, 0.4) !important;
-            border-color: rgba(239, 68, 68, 0.65) !important;
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.4) !important;
-          }
-          .video-ai-shield-pill {
-            top: 8px !important;
-            right: 10px !important;
-            left: auto !important;
-            padding: 4px 10px !important;
-            font-size: 0.7rem !important;
-          }
           .bottom-actions .mobile-action-stack .quiz-trigger-btn.cancel {
             background: rgba(239, 68, 68, 0.2) !important;
             border-color: rgba(239, 68, 68, 0.35) !important;
@@ -12082,16 +11749,6 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           .mobile-action-stack .gift-trigger-btn .text,
           .mobile-action-stack .report-trigger-btn .text {
             display: none !important;
-          }
-          .mobile-action-stack .ai-shield-bottom-btn {
-            border-radius: 12px !important;
-            padding: 8px 14px !important;
-            width: auto !important;
-            height: auto !important;
-            min-width: 0 !important;
-          }
-          .mobile-action-stack .ai-shield-bottom-btn .text {
-            display: inline !important;
           }
           .video-grid-v2 {
             height: 100% !important;

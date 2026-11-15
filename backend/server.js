@@ -1315,21 +1315,26 @@ app.post("/api/auth/login", async (req, res) => {
 
 // Update Profile endpoint
 app.post("/api/auth/update-profile", (req, res) => {
-  const { email, gender, country, state, age, name } = req.body;
-  console.log("Updating profile for:", email);
+  const { email, gender, country, state, age, name, id, phone } = req.body;
+  console.log("Updating profile for:", email || id || phone || name);
 
-  let user = users.find((u) => u.email === email);
+  let user = null;
+  if (id) user = users.find((u) => u.id === id);
+  if (!user && email) user = users.find((u) => u.email === email);
+  if (!user && phone) user = users.find((u) => u.phone === phone);
+
   if (!user) {
     user = {
-      id: "u" + Date.now(),
-      email,
-      name: name || email.split("@")[0],
+      id: id || ("u" + Date.now()),
+      email: email || "",
+      phone: phone || "",
+      name: (name && name.trim()) ? name.trim() : (email ? email.split("@")[0] : "ZoneMeet User"),
       password: "google_user_" + Math.random(),
       premium: false,
-      gender,
-      country,
-      state,
-      age,
+      gender: gender || "Male",
+      country: country || "India",
+      state: state || "Other",
+      age: age || "18-24",
       onboardingCompleted: true
     };
     users.push(user);
@@ -1338,7 +1343,7 @@ app.post("/api/auth/update-profile", (req, res) => {
     if (country) user.country = country;
     if (state) user.state = state;
     if (age) user.age = age;
-    if (name) user.name = name;
+    if (name && name.trim()) user.name = name.trim();
     user.onboardingCompleted = true;
   }
 
@@ -1557,23 +1562,7 @@ app.post("/api/auth/firebase-register", async (req, res) => {
   }
 });
 
-// Update Profile endpoint
-app.post("/api/auth/update-profile", (req, res) => {
-  const { email, gender, country, state, age } = req.body;
-  const user = users.find((u) => u.email === email);
 
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
-
-  user.gender = gender || user.gender;
-  user.country = country || user.country;
-  user.state = state || user.state;
-  user.age = age || user.age;
-
-  saveUsers();
-  res.json({ success: true, user: { id: user.id, email: user.email, name: user.name, premium: user.premium, gender: user.gender, country: user.country, state: user.state, age: user.age, unlockedFilters: user.unlockedFilters } });
-});
 
 // Token verification endpoint
 app.get("/api/auth/verify", (req, res) => {
@@ -3240,27 +3229,6 @@ function endQuiz(roomId) {
         }
       });
 
-      // Video AI Shield Mutual Consent Handlers (In-memory, Zero Storage)
-      socket.on("ai-shield-request", ({ to }) => {
-        const targetId = to || (socket.partner ? socket.partner.id : null);
-        if (targetId) {
-          io.to(targetId).emit("ai-shield-requested", { from: socket.id });
-        }
-      });
-
-      socket.on("ai-shield-response", ({ to, accepted }) => {
-        const targetId = to || (socket.partner ? socket.partner.id : null);
-        if (targetId) {
-          io.to(targetId).emit("ai-shield-result", { from: socket.id, accepted });
-        }
-      });
-
-      socket.on("ai-shield-re-enable", ({ to }) => {
-        const targetId = to || (socket.partner ? socket.partner.id : null);
-        if (targetId) {
-          io.to(targetId).emit("ai-shield-re-enabled", { from: socket.id });
-        }
-      });
 
       socket.on("send-subtitle", async ({ text, to }) => {
         let finalText = text;

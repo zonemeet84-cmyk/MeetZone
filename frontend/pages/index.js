@@ -95,6 +95,7 @@ export default function Dashboard(props) {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [onboardForm, setOnboardForm] = useState({
+    name: "",
     gender: "Male",
     countryCode: "IN",
     stateCode: "",
@@ -1114,6 +1115,7 @@ export default function Dashboard(props) {
     }
 
     const updatedData = {
+      name: (onboardForm.name && onboardForm.name.trim()) ? onboardForm.name.trim() : (user.name || "ZoneMeet User"),
       gender: onboardForm.gender,
       country: countryName || user.country || "India",
       state: stateName || user.state || "Other",
@@ -1132,8 +1134,10 @@ export default function Dashboard(props) {
     // Background sync to backend with fast timeout
     try {
       await axios.post("https://api.zonemeet.chat/api/auth/update-profile", {
+        id: user.id,
         email: user.email,
-        name: user.name,
+        phone: user.phone,
+        name: updatedData.name,
         ...updatedData
       }, { timeout: 3500 });
     } catch (err) {
@@ -1171,6 +1175,7 @@ export default function Dashboard(props) {
     }
 
     setOnboardForm({
+      name: user?.name || "",
       gender: user?.gender || "Male",
       countryCode: countryCode,
       stateCode: stateCode,
@@ -3184,6 +3189,19 @@ export default function Dashboard(props) {
             </div>
 
             <form onSubmit={handleOnboardSubmit} className="onboarding-form">
+              <div className="onboarding-input-group">
+                <label>Display Name</label>
+                <input
+                  type="text"
+                  className="onboarding-input"
+                  value={onboardForm.name}
+                  onChange={(e) => setOnboardForm({ ...onboardForm, name: e.target.value })}
+                  placeholder="Enter your name"
+                  maxLength={30}
+                  required
+                />
+              </div>
+
               <div className="onboarding-input-group">
                 <label>Gender</label>
                 <select
@@ -5420,7 +5438,8 @@ export default function Dashboard(props) {
             font-size: 0.78rem;
             font-weight: 600;
           }
-          .onboarding-select {
+          .onboarding-select,
+          .onboarding-input {
             width: 100%;
             background: rgba(0, 0, 0, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -5432,7 +5451,8 @@ export default function Dashboard(props) {
             transition: all 0.2s;
             box-sizing: border-box;
           }
-          .onboarding-select:focus {
+          .onboarding-select:focus,
+          .onboarding-input:focus {
             border-color: #a855f7;
             box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
           }
@@ -8266,7 +8286,8 @@ export default function Dashboard(props) {
             .onboarding-form {
               gap: 9px !important;
             }
-            .onboarding-select {
+            .onboarding-select,
+            .onboarding-input {
               padding: 7px 10px !important;
               font-size: 0.78rem !important;
               border-radius: 10px !important;
