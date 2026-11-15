@@ -524,21 +524,46 @@ export default function Home(props) {
     showToast("Request declined. Safe Mode remains ON.", "info");
   };
 
-  // Dynamic Load NSFWJS Model (Client-side only, non-blocking)
+  // Dynamic Load NSFWJS Model (Client-side only, non-blocking via CDN to prevent Webpack bundling errors)
   useEffect(() => {
     if (typeof window === "undefined") return;
     let isCancelled = false;
+
+    const loadScript = (src) => {
+      return new Promise((resolve, reject) => {
+        if (typeof document === "undefined") return resolve();
+        const existing = document.querySelector(`script[src="${src}"]`);
+        if (existing) {
+          if (existing.getAttribute("data-loaded") === "true") return resolve();
+          existing.addEventListener("load", () => resolve());
+          existing.addEventListener("error", (e) => reject(e));
+          return;
+        }
+        const script = document.createElement("script");
+        script.src = src;
+        script.async = true;
+        script.onload = () => {
+          script.setAttribute("data-loaded", "true");
+          resolve();
+        };
+        script.onerror = (e) => reject(e);
+        document.head.appendChild(script);
+      });
+    };
 
     const initNsfwModel = async () => {
       if (nsfwModelRef.current || isModelLoadingRef.current) return;
       isModelLoadingRef.current = true;
       try {
-        const nsfw = await import("nsfwjs");
-        const model = await nsfw.load();
-        if (!isCancelled) {
-          nsfwModelRef.current = model;
-          setIsAiShieldModelLoaded(true);
-          console.log("[ZoneMeet] AI Content Shield engine ready.");
+        await loadScript("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js");
+        await loadScript("https://cdn.jsdelivr.net/npm/nsfwjs@4.3.0/dist/nsfwjs.min.js");
+        if (window.nsfwjs && !isCancelled) {
+          const model = await window.nsfwjs.load();
+          if (!isCancelled) {
+            nsfwModelRef.current = model;
+            setIsAiShieldModelLoaded(true);
+            console.log("[ZoneMeet] AI Content Shield engine ready.");
+          }
         }
       } catch (err) {
         console.warn("[ZoneMeet] AI Content Shield engine notice:", err);
@@ -7311,7 +7336,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           justify-content: center;
           cursor: pointer;
           font-size: 0.8rem;
-          opacity: 0;
+          opacity: 0.75;
           transition: all 0.2s ease;
           flex-shrink: 0;
           padding: 0;
@@ -7320,17 +7345,15 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         .text-msg-item:hover .btn-msg-reply,
         .msg-row:hover .btn-msg-reply {
           opacity: 1;
+          color: #ffffff;
+          background: rgba(99, 102, 241, 0.25);
+          border-color: rgba(99, 102, 241, 0.5);
         }
         .btn-msg-reply:hover {
-          background: rgba(99, 102, 241, 0.35);
-          border-color: rgba(99, 102, 241, 0.6);
-          color: #ffffff;
-          transform: scale(1.1);
-        }
-        @media (max-width: 768px) {
-          .btn-msg-reply {
-            opacity: 0.75;
-          }
+          background: rgba(99, 102, 241, 0.45) !important;
+          border-color: rgba(99, 102, 241, 0.8) !important;
+          color: #ffffff !important;
+          transform: scale(1.15);
         }
         .msg-reply-quote {
           background: rgba(0, 0, 0, 0.25);
