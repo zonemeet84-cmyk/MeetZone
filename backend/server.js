@@ -3148,7 +3148,7 @@ function endQuiz(roomId) {
         console.log(`User ${socket.id} updated chat mode to ${socket.chatMode}`);
       });
 
-      socket.on("send-message", async ({ text, to }) => {
+      socket.on("send-message", async ({ text, to, replyTo }) => {
         let finalText = text;
         let originalText = null;
 
@@ -3167,6 +3167,7 @@ function endQuiz(roomId) {
           text: finalText,
           originalText: originalText,
           senderId: socket.id,
+          replyTo: replyTo || null,
         });
 
         // Automatically stop typing indicator on message sent

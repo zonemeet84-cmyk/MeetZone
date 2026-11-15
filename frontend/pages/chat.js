@@ -318,6 +318,10 @@ export default function Home(props) {
   const nsfwModelRef = useRef(null);
   const isModelLoadingRef = useRef(false);
 
+  // Chat Message Reply Support
+  const [replyingTo, setReplyingTo] = useState(null); // { id, text, sender, isPhoto }
+  const textChatInputRef = useRef(null);
+
   const [showCoinPopup, setShowCoinPopup] = useState(false);
   const [pendingMessage, setPendingMessage] = useState("");
 
@@ -2220,6 +2224,7 @@ export default function Home(props) {
         setShowPartnerPreview(!isCurrentTextMode);
         setStatus(isCurrentTextMode ? "Connected" : "Partner Found!");
         setMessages([]);
+        setReplyingTo(null);
         setPhotoConsentStatus("idle");
         setPhotoPreviewModal(null);
         setIsCompressingImage(false);
@@ -2315,10 +2320,10 @@ export default function Home(props) {
         if (partnerTypingTimeoutRef.current) clearTimeout(partnerTypingTimeoutRef.current);
       });
 
-      socket.on("receive-message", ({ text }) => {
+      socket.on("receive-message", ({ text, originalText, replyTo }) => {
         setIsPartnerTyping(false);
         if (partnerTypingTimeoutRef.current) clearTimeout(partnerTypingTimeoutRef.current);
-        setMessages((prev) => [...prev, { text, sender: "partner" }]);
+        setMessages((prev) => [...prev, { text, originalText, replyTo, sender: "partner" }]);
         if (typeof window !== 'undefined' && window.innerWidth < 768) {
           setCurrentSubtitle(`💬 ${text}`);
           setTimeout(() => {
@@ -2994,6 +2999,7 @@ export default function Home(props) {
     setPartnerId(null);
     setPartnerInfo(null);
     setMessages([]);
+    setReplyingTo(null);
     setPhotoConsentStatus("idle");
     setPhotoPreviewModal(null);
     setIsCompressingImage(false);
@@ -3074,8 +3080,26 @@ export default function Home(props) {
     }
 
     if (message.trim()) {
-      socket.emit("send-message", { text: message, to: partnerId });
-      setMessages((prev) => [...prev, { text: message, sender: "me" }]);
+      const currentReply = replyingTo ? {
+        text: replyingTo.text || "Message",
+        sender: replyingTo.sender === "me" || replyingTo.sender === "user" ? "You" : (partnerInfo?.name || "Stranger"),
+        isPhoto: !!replyingTo.isPhoto
+      } : null;
+
+      socket.emit("send-message", { 
+        text: message, 
+        to: partnerId,
+        replyTo: currentReply
+      });
+
+      setMessages((prev) => [...prev, { 
+        text: message, 
+        sender: "me",
+        replyTo: currentReply
+      }]);
+
+      setReplyingTo(null);
+
       if (typeof window !== 'undefined' && window.innerWidth < 768) {
         setCurrentSubtitle(`You: ${message}`);
         setTimeout(() => {
@@ -4335,110 +4359,137 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                           {partnerInfo?.name || "Stranger"}
                         </div>
                       )}
-                      <div className={`msg-bubble-content ${msg.type === 'photo' ? 'photo-bubble' : ''}`}>
-                        {msg.type === "system" ? (
-                          <div className="chat-system-badge">
+                      <div className="msg-bubble-wrapper">
+                        <div className={`msg-bubble-content ${msg.type === 'photo' ? 'photo-bubble' : ''}`}>
+                          {msg.replyTo && (
+                            <div className="msg-reply-quote">
+                              <div className="quote-sender">{msg.replyTo.sender}</div>
+                              <div className="quote-text">{msg.replyTo.text}</div>
+                            </div>
+                          )}
+                          {msg.type === "system" ? (
+                            <div className="chat-system-badge">
+                              <span>{msg.text}</span>
+                            </div>
+                          ) : msg.type === "photo-consent-prompt" ? (
+                            <div className="photo-consent-box">
+                              <div className="consent-top">
+                                <span className="consent-emoji">📷</span>
+                                <div className="consent-headline">
+                                  <strong>{partnerInfo?.name || "Stranger"}</strong> wants to share photos
+                                </div>
+                              </div>
+                              <p className="consent-subtext">
+                                Both must allow. Photos are strictly temporary, never stored on any server, and vanish the moment this chat ends.
+                              </p>
+                              <div className="consent-btn-group">
+                                <button 
+                                  type="button" 
+                                  className="btn-consent-allow" 
+                                  onClick={handleAcceptPhotoConsent}
+                                >
+                                  ✅ Allow Photos
+                                </button>
+                                <button 
+                                  type="button" 
+                                  className="btn-consent-decline" 
+                                  onClick={handleDeclinePhotoConsent}
+                                >
+                                  ❌ Decline
+                                </button>
+                              </div>
+                            </div>
+                          ) : msg.type === "ai-shield-prompt" ? (
+                            <div className="ai-shield-consent-box">
+                              <div className="consent-top">
+                                <span className="consent-emoji">🔓</span>
+                                <div className="consent-headline">
+                                  <strong>{partnerInfo?.name || "Stranger"}</strong> wants 18+ Uncensored Mode
+                                </div>
+                              </div>
+                              <p className="consent-subtext">
+                                Both must agree to disable AI auto-blur detection for this call session.
+                              </p>
+                              <div className="consent-btn-group">
+                                <button 
+                                  type="button" 
+                                  className="btn-consent-allow" 
+                                  onClick={handleAcceptAiShieldDisable}
+                                >
+                                  ✅ Agree (Disable AI)
+                                </button>
+                                <button 
+                                  type="button" 
+                                  className="btn-consent-decline" 
+                                  onClick={handleDeclineAiShieldDisable}
+                                >
+                                  🛡️ Keep Safe
+                                </button>
+                              </div>
+                            </div>
+                          ) : msg.type === "photo" ? (
+                            <div className="photo-message-card">
+                              {msg.isLive && (
+                                <div className="live-snap-badge">
+                                  <span className="live-snap-dot"></span> 📸 Verified Live Snap
+                                </div>
+                              )}
+                              <div className="photo-thumbnail-box" onClick={() => setPhotoPreviewModal(msg)}>
+                                <img src={msg.image} alt="Shared photo" className="photo-thumbnail-img" />
+                                <div className="photo-thumbnail-overlay">
+                                  <span>🔍 Tap to view</span>
+                                </div>
+                              </div>
+                              {msg.sender === "partner" && (
+                                <button 
+                                  type="button" 
+                                  className="btn-report-photo-mini"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedReason("Nudity / NSFW");
+                                    setShowReportModal(true);
+                                  }}
+                                  title="Report this photo"
+                                >
+                                  🚨 Report
+                                </button>
+                              )}
+                            </div>
+                          ) : msg.type === "coin-prompt" ? (
+                            <div className="coin-prompt-bubble">
+                              <span>💰 {msg.text}</span>
+                              <div className="coin-prompt-buttons">
+                                <button onClick={() => confirmAndSendMessage(msg.pendingText)}>Send (-5 Coins)</button>
+                                <button onClick={() => setMessages(prev => prev.filter(m => m.type !== "coin-prompt"))}>Cancel</button>
+                              </div>
+                            </div>
+                          ) : (
                             <span>{msg.text}</span>
-                          </div>
-                        ) : msg.type === "photo-consent-prompt" ? (
-                          <div className="photo-consent-box">
-                            <div className="consent-top">
-                              <span className="consent-emoji">📷</span>
-                              <div className="consent-headline">
-                                <strong>{partnerInfo?.name || "Stranger"}</strong> wants to share photos
-                              </div>
+                          )}
+                          {msg.translated && (
+                            <div className="translated-subtext">
+                              Translated: {msg.translated}
                             </div>
-                            <p className="consent-subtext">
-                              Both must allow. Photos are strictly temporary, never stored on any server, and vanish the moment this chat ends.
-                            </p>
-                            <div className="consent-btn-group">
-                              <button 
-                                type="button" 
-                                className="btn-consent-allow" 
-                                onClick={handleAcceptPhotoConsent}
-                              >
-                                ✅ Allow Photos
-                              </button>
-                              <button 
-                                type="button" 
-                                className="btn-consent-decline" 
-                                onClick={handleDeclinePhotoConsent}
-                              >
-                                ❌ Decline
-                              </button>
-                            </div>
-                          </div>
-                        ) : msg.type === "ai-shield-prompt" ? (
-                          <div className="ai-shield-consent-box">
-                            <div className="consent-top">
-                              <span className="consent-emoji">🔓</span>
-                              <div className="consent-headline">
-                                <strong>{partnerInfo?.name || "Stranger"}</strong> wants 18+ Uncensored Mode
-                              </div>
-                            </div>
-                            <p className="consent-subtext">
-                              Both must agree to disable AI auto-blur detection for this call session.
-                            </p>
-                            <div className="consent-btn-group">
-                              <button 
-                                type="button" 
-                                className="btn-consent-allow" 
-                                onClick={handleAcceptAiShieldDisable}
-                              >
-                                ✅ Agree (Disable AI)
-                              </button>
-                              <button 
-                                type="button" 
-                                className="btn-consent-decline" 
-                                onClick={handleDeclineAiShieldDisable}
-                              >
-                                🛡️ Keep Safe
-                              </button>
-                            </div>
-                          </div>
-                        ) : msg.type === "photo" ? (
-                          <div className="photo-message-card">
-                            {msg.isLive && (
-                              <div className="live-snap-badge">
-                                <span className="live-snap-dot"></span> 📸 Verified Live Snap
-                              </div>
-                            )}
-                            <div className="photo-thumbnail-box" onClick={() => setPhotoPreviewModal(msg)}>
-                              <img src={msg.image} alt="Shared photo" className="photo-thumbnail-img" />
-                              <div className="photo-thumbnail-overlay">
-                                <span>🔍 Tap to view</span>
-                              </div>
-                            </div>
-                            {msg.sender === "partner" && (
-                              <button 
-                                type="button" 
-                                className="btn-report-photo-mini"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedReason("Nudity / NSFW");
-                                  setShowReportModal(true);
-                                }}
-                                title="Report this photo"
-                              >
-                                🚨 Report
-                              </button>
-                            )}
-                          </div>
-                        ) : msg.type === "coin-prompt" ? (
-                          <div className="coin-prompt-bubble">
-                            <span>💰 {msg.text}</span>
-                            <div className="coin-prompt-buttons">
-                              <button onClick={() => confirmAndSendMessage(msg.pendingText)}>Send (-5 Coins)</button>
-                              <button onClick={() => setMessages(prev => prev.filter(m => m.type !== "coin-prompt"))}>Cancel</button>
-                            </div>
-                          </div>
-                        ) : (
-                          <span>{msg.text}</span>
-                        )}
-                        {msg.translated && (
-                          <div className="translated-subtext">
-                            Translated: {msg.translated}
-                          </div>
+                          )}
+                        </div>
+
+                        {msg.type !== "system" && msg.type !== "photo-consent-prompt" && msg.type !== "ai-shield-prompt" && msg.type !== "coin-prompt" && (
+                          <button
+                            type="button"
+                            className="btn-msg-reply"
+                            onClick={() => {
+                              setReplyingTo({
+                                id: idx,
+                                text: msg.type === "photo" ? "📷 Photo" : msg.text,
+                                sender: msg.sender === "me" || msg.sender === "user" ? "You" : (partnerInfo?.name || "Stranger"),
+                                isPhoto: msg.type === "photo"
+                              });
+                              textChatInputRef.current?.focus();
+                            }}
+                            title="Reply to message"
+                          >
+                            ↩️
+                          </button>
                         )}
                       </div>
                     </div>
@@ -4485,122 +4536,148 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                 )}
 
                 {/* Chat Input Bar */}
-                <form className="text-mode-composer" onSubmit={sendMessage}>
-                  <button 
-                    type="button" 
-                    className="btn-composer-stop"
-                    onClick={handleTextChatStopAndGoHome}
-                    title="Home / Leave Chat"
-                  >
-                    <span className="btn-composer-icon">🏠</span>
-                    <span className="btn-composer-label">Home</span>
-                  </button>
-                  <button 
-                    type="button" 
-                    className="btn-composer-rewind"
-                    onClick={handleRewindClick}
-                    title="Rewind to previous partner"
-                  >
-                    <span className="btn-composer-icon">⏪</span>
-                    <span className="btn-composer-label">Rewind</span>
-                  </button>
-                  <div className="composer-photo-container">
+                <div className="text-mode-composer-wrapper">
+                  {replyingTo && (
+                    <div className="reply-preview-bar">
+                      <div className="reply-preview-left">
+                        <div className="reply-preview-accent" />
+                        <div className="reply-preview-content">
+                          <div className="reply-preview-header">
+                            <span className="reply-preview-icon">↩️</span>
+                            <span className="reply-preview-sender">Replying to <strong>{replyingTo.sender}</strong></span>
+                          </div>
+                          <div className="reply-preview-snippet">{replyingTo.text}</div>
+                        </div>
+                      </div>
+                      <button 
+                        type="button" 
+                        className="btn-cancel-reply" 
+                        onClick={() => setReplyingTo(null)}
+                        title="Cancel reply"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+
+                  <form className="text-mode-composer" onSubmit={sendMessage}>
                     <button 
                       type="button" 
-                      className={`btn-composer-photo ${photoConsentStatus === 'approved' ? 'consent-granted' : ''}`}
-                      onClick={handlePhotoClick}
-                      title={
-                        !partnerId
-                          ? "Connect to a partner first"
-                          : photoConsentStatus === 'approved'
-                            ? "Send Photo (Camera or Gallery)"
-                            : photoConsentStatus === 'requested_by_me'
-                              ? "Waiting for partner to allow photos..."
-                              : "Mutual Consent: Request to share photos"
-                      }
-                      disabled={!partnerId || isCompressingImage}
+                      className="btn-composer-stop"
+                      onClick={handleTextChatStopAndGoHome}
+                      title="Home / Leave Chat"
                     >
-                      <span className="btn-composer-icon">
-                        {isCompressingImage ? '⏳' : photoConsentStatus === 'approved' ? '📷' : '📷🔒'}
-                      </span>
-                      <span className="btn-composer-label">
-                        {isCompressingImage ? 'Loading...' : photoConsentStatus === 'approved' ? 'Photo' : 'Photos'}
-                      </span>
+                      <span className="btn-composer-icon">🏠</span>
+                      <span className="btn-composer-label">Home</span>
                     </button>
+                    <button 
+                      type="button" 
+                      className="btn-composer-rewind"
+                      onClick={handleRewindClick}
+                      title="Rewind to previous partner"
+                    >
+                      <span className="btn-composer-icon">⏪</span>
+                      <span className="btn-composer-label">Rewind</span>
+                    </button>
+                    <div className="composer-photo-container">
+                      <button 
+                        type="button" 
+                        className={`btn-composer-photo ${photoConsentStatus === 'approved' ? 'consent-granted' : ''}`}
+                        onClick={handlePhotoClick}
+                        title={
+                          !partnerId
+                            ? "Connect to a partner first"
+                            : photoConsentStatus === 'approved'
+                              ? "Send Photo (Camera or Gallery)"
+                              : photoConsentStatus === 'requested_by_me'
+                                ? "Waiting for partner to allow photos..."
+                                : "Mutual Consent: Request to share photos"
+                        }
+                        disabled={!partnerId || isCompressingImage}
+                      >
+                        <span className="btn-composer-icon">
+                          {isCompressingImage ? '⏳' : photoConsentStatus === 'approved' ? '📷' : '📷🔒'}
+                        </span>
+                        <span className="btn-composer-label">
+                          {isCompressingImage ? 'Loading...' : photoConsentStatus === 'approved' ? 'Photo' : 'Photos'}
+                        </span>
+                      </button>
 
-                    {showPhotoMenu && photoConsentStatus === "approved" && (
-                      <div className="photo-source-mini-popover">
-                        <button 
-                          type="button" 
-                          className="photo-source-mini-btn"
-                          onClick={() => {
-                            setShowPhotoMenu(false);
-                            socket?.emit("taking-photo", { to: partnerId });
-                            cameraInputRef.current?.click();
-                          }}
-                        >
-                          <span className="source-mini-icon">📸</span>
-                          <span className="source-mini-text">Camera</span>
-                        </button>
-                        <button 
-                          type="button" 
-                          className="photo-source-mini-btn"
-                          onClick={() => {
-                            setShowPhotoMenu(false);
-                            galleryInputRef.current?.click();
-                          }}
-                        >
-                          <span className="source-mini-icon">🖼️</span>
-                          <span className="source-mini-text">Gallery</span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                      {showPhotoMenu && photoConsentStatus === "approved" && (
+                        <div className="photo-source-mini-popover">
+                          <button 
+                            type="button" 
+                            className="photo-source-mini-btn"
+                            onClick={() => {
+                              setShowPhotoMenu(false);
+                              socket?.emit("taking-photo", { to: partnerId });
+                              cameraInputRef.current?.click();
+                            }}
+                          >
+                            <span className="source-mini-icon">📸</span>
+                            <span className="source-mini-text">Camera</span>
+                          </button>
+                          <button 
+                            type="button" 
+                            className="photo-source-mini-btn"
+                            onClick={() => {
+                              setShowPhotoMenu(false);
+                              galleryInputRef.current?.click();
+                            }}
+                          >
+                            <span className="source-mini-icon">🖼️</span>
+                            <span className="source-mini-text">Gallery</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
 
-                  {/* Direct Camera capture for Live Snap */}
-                  <input 
-                    type="file" 
-                    ref={cameraInputRef} 
-                    accept="image/*" 
-                    capture="user"
-                    style={{ display: 'none' }} 
-                    onChange={(e) => handleImageSelected(e, 'camera')} 
-                  />
+                    {/* Direct Camera capture for Live Snap */}
+                    <input 
+                      type="file" 
+                      ref={cameraInputRef} 
+                      accept="image/*" 
+                      capture="user"
+                      style={{ display: 'none' }} 
+                      onChange={(e) => handleImageSelected(e, 'camera')} 
+                    />
 
-                  {/* Standard file picker for Gallery */}
-                  <input 
-                    type="file" 
-                    ref={galleryInputRef} 
-                    accept="image/*" 
-                    style={{ display: 'none' }} 
-                    onChange={(e) => handleImageSelected(e, 'gallery')} 
-                  />
-                  <input
-                    type="text"
-                    className="text-mode-input-field"
-                    placeholder="Type a message..."
-                    value={message}
-                    onChange={handleInputChange}
-                    onFocus={() => {
-                      if (typeof window !== "undefined") {
-                        window.scrollTo(0, 0);
-                        document.body.scrollTop = 0;
-                      }
-                    }}
-                    autoFocus
-                  />
-                  <button 
-                    type="submit" 
-                    className="btn-composer-send"
-                    disabled={!message.trim()}
-                    title="Send message"
-                  >
-                    <span className="btn-send-label">Send</span>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                    </svg>
-                  </button>
-                </form>
+                    {/* Standard file picker for Gallery */}
+                    <input 
+                      type="file" 
+                      ref={galleryInputRef} 
+                      accept="image/*" 
+                      style={{ display: 'none' }} 
+                      onChange={(e) => handleImageSelected(e, 'gallery')} 
+                    />
+                    <input
+                      type="text"
+                      ref={textChatInputRef}
+                      className="text-mode-input-field"
+                      placeholder={replyingTo ? `Replying to ${replyingTo.sender}...` : "Type a message..."}
+                      value={message}
+                      onChange={handleInputChange}
+                      onFocus={() => {
+                        if (typeof window !== "undefined") {
+                          window.scrollTo(0, 0);
+                          document.body.scrollTop = 0;
+                        }
+                      }}
+                      autoFocus
+                    />
+                    <button 
+                      type="submit" 
+                      className="btn-composer-send"
+                      disabled={!message.trim()}
+                      title="Send message"
+                    >
+                      <span className="btn-send-label">Send</span>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                      </svg>
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
           ) : (
@@ -5749,13 +5826,35 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                       </div>
                     </div>
                   ) : (
-                    <div className="msg-content">
-                      {msg.text}
-                      {msg.originalText && msg.originalText !== msg.text && (
-                        <div style={{ fontSize: '0.7em', color: '#94a3b8', marginTop: '4px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2px', fontStyle: 'italic' }}>
-                          Original: {msg.originalText}
-                        </div>
-                      )}
+                    <div className="msg-bubble-wrapper">
+                      <div className="msg-content">
+                        {msg.replyTo && (
+                          <div className="msg-reply-quote">
+                            <div className="quote-sender">{msg.replyTo.sender}</div>
+                            <div className="quote-text">{msg.replyTo.text}</div>
+                          </div>
+                        )}
+                        {msg.text}
+                        {msg.originalText && msg.originalText !== msg.text && (
+                          <div style={{ fontSize: '0.7em', color: '#94a3b8', marginTop: '4px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2px', fontStyle: 'italic' }}>
+                            Original: {msg.originalText}
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        className="btn-msg-reply"
+                        onClick={() => {
+                          setReplyingTo({
+                            id: i,
+                            text: msg.text,
+                            sender: msg.sender === "me" || msg.sender === "user" ? "You" : (partnerInfo?.name || "Stranger")
+                          });
+                        }}
+                        title="Reply to message"
+                      >
+                        ↩️
+                      </button>
                     </div>
                   )}
                 </div>
@@ -5774,6 +5873,30 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
               )}
               <div ref={chatEndRef} />
             </div>
+
+            {replyingTo && (
+              <div className="reply-preview-bar live-chat-reply-bar">
+                <div className="reply-preview-left">
+                  <div className="reply-preview-accent" />
+                  <div className="reply-preview-content">
+                    <div className="reply-preview-header">
+                      <span className="reply-preview-icon">↩️</span>
+                      <span className="reply-preview-sender">Replying to <strong>{replyingTo.sender}</strong></span>
+                    </div>
+                    <div className="reply-preview-snippet">{replyingTo.text}</div>
+                  </div>
+                </div>
+                <button 
+                  type="button" 
+                  className="btn-cancel-reply" 
+                  onClick={() => setReplyingTo(null)}
+                  title="Cancel reply"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
             <form className="chat-box-input" onSubmit={sendMessage}>
               <input
                 value={message}
@@ -7161,6 +7284,173 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
           word-break: break-word;
         }
+
+        /* Reply to Message Styles */
+        .msg-bubble-wrapper {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          max-width: 100%;
+        }
+        .text-msg-item.me .msg-bubble-wrapper {
+          flex-direction: row-reverse;
+        }
+        .text-msg-item.partner .msg-bubble-wrapper {
+          flex-direction: row;
+        }
+        .btn-msg-reply {
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          color: #94a3b8;
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 0.8rem;
+          opacity: 0;
+          transition: all 0.2s ease;
+          flex-shrink: 0;
+          padding: 0;
+          user-select: none;
+        }
+        .text-msg-item:hover .btn-msg-reply,
+        .msg-row:hover .btn-msg-reply {
+          opacity: 1;
+        }
+        .btn-msg-reply:hover {
+          background: rgba(99, 102, 241, 0.35);
+          border-color: rgba(99, 102, 241, 0.6);
+          color: #ffffff;
+          transform: scale(1.1);
+        }
+        @media (max-width: 768px) {
+          .btn-msg-reply {
+            opacity: 0.75;
+          }
+        }
+        .msg-reply-quote {
+          background: rgba(0, 0, 0, 0.25);
+          border-left: 3px solid #38bdf8;
+          border-radius: 6px;
+          padding: 4px 8px;
+          margin-bottom: 6px;
+          font-size: 0.78rem;
+          line-height: 1.3;
+          max-width: 100%;
+          overflow: hidden;
+        }
+        .text-msg-item.me .msg-reply-quote,
+        .msg-row.me .msg-reply-quote {
+          border-left-color: #ffffff;
+          background: rgba(0, 0, 0, 0.2);
+        }
+        .msg-reply-quote .quote-sender {
+          font-weight: 700;
+          color: #38bdf8;
+          margin-bottom: 2px;
+          font-size: 0.74rem;
+        }
+        .text-msg-item.me .msg-reply-quote .quote-sender,
+        .msg-row.me .msg-reply-quote .quote-sender {
+          color: #e0f2fe;
+        }
+        .msg-reply-quote .quote-text {
+          color: rgba(255, 255, 255, 0.85);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          font-size: 0.75rem;
+        }
+
+        .text-mode-composer-wrapper {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          flex-shrink: 0;
+          position: relative;
+          z-index: 50;
+        }
+        .reply-preview-bar {
+          background: rgba(15, 23, 42, 0.98);
+          border: 1px solid rgba(99, 102, 241, 0.4);
+          border-bottom: none;
+          border-radius: 14px 14px 0 0;
+          padding: 8px 14px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          animation: slideUp 0.15s ease-out;
+          backdrop-filter: blur(12px);
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .live-chat-reply-bar {
+          border-radius: 10px 10px 0 0;
+          padding: 6px 10px;
+          border-color: rgba(255, 255, 255, 0.15);
+          background: rgba(15, 23, 42, 0.95);
+        }
+        .reply-preview-left {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          overflow: hidden;
+          flex: 1;
+        }
+        .reply-preview-accent {
+          width: 3px;
+          height: 28px;
+          background: #6366f1;
+          border-radius: 3px;
+          flex-shrink: 0;
+        }
+        .reply-preview-content {
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          flex: 1;
+        }
+        .reply-preview-header {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.74rem;
+          color: #a5b4fc;
+        }
+        .reply-preview-header strong {
+          color: #ffffff;
+        }
+        .reply-preview-snippet {
+          font-size: 0.78rem;
+          color: #cbd5e1;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .btn-cancel-reply {
+          background: rgba(255, 255, 255, 0.1);
+          border: none;
+          color: #94a3b8;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 0.8rem;
+          transition: all 0.15s;
+          flex-shrink: 0;
+        }
+        .btn-cancel-reply:hover {
+          background: rgba(239, 68, 68, 0.3);
+          color: #f87171;
+        }
         .text-msg-item.partner .msg-bubble-content.typing-bubble {
           display: inline-flex;
           align-items: center;
@@ -8496,10 +8786,27 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         .msg-row {
           display: flex;
           width: 100%;
+          position: relative;
         }
 
         .msg-row.me { justify-content: flex-end; }
         .msg-row.partner { justify-content: flex-start; }
+
+        .msg-row .msg-bubble-wrapper {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          max-width: 85%;
+        }
+        .msg-row.me .msg-bubble-wrapper {
+          flex-direction: row-reverse;
+        }
+        .msg-row.partner .msg-bubble-wrapper {
+          flex-direction: row;
+        }
+        .msg-row .msg-bubble-wrapper .msg-content {
+          max-width: 100%;
+        }
 
         .msg-content {
           max-width: 85%;
@@ -11997,6 +12304,13 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           }
 
           /* Text Mode Composer on Phones: Glued to Bottom with Safe-Area, Compact Home + Compact Rewind + Max Input Width + Send */
+          .text-mode-composer-wrapper {
+            width: 100% !important;
+            max-width: 100vw !important;
+            flex-shrink: 0 !important;
+            position: relative !important;
+            z-index: 100 !important;
+          }
           .text-mode-composer {
             flex-shrink: 0 !important;
             padding: 6px 8px !important;
