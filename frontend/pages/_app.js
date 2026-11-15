@@ -7,6 +7,7 @@ import { SessionProvider } from "next-auth/react"
 import Head from 'next/head'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import PWAInstallPrompt from '../components/PWAInstallPrompt'
 import { useRouter } from 'next/router'
 import Script from 'next/script'
 import CyberNotification from '../components/CyberNotification'
@@ -116,6 +117,16 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
   useEffect(() => {
     fetchMaintenance();
     const interval = setInterval(fetchMaintenance, 15000);
+
+    // Register PWA Service Worker
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch((err) => {
+          console.warn('[PWA] Service worker registration note:', err);
+        });
+      });
+    }
+
     return () => clearInterval(interval);
   }, []);
 
@@ -152,10 +163,17 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#6366f1" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="ZoneMeet" />
+        <link rel="apple-touch-icon" href="/favicon.png" />
       </Head>
       <MaintenanceBanner maintenance={maintenance} onRefresh={fetchMaintenance} />
       <Component {...pageProps} maintenance={maintenance} onRefreshMaintenance={fetchMaintenance} />
       <CyberNotification />
+      <PWAInstallPrompt />
     </SessionProvider>
   )
 }

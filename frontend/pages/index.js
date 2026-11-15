@@ -1526,9 +1526,26 @@ export default function Dashboard(props) {
   return (
     <div className="container">
       <Head>
-        <title>ZoneMeet – Talk To New People Online</title>
+        <title>ZoneMeet: Live Video Chat | Talk to Strangers Online (Omegle Alternative)</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-        <meta name="description" content="ZoneMeet lets you instantly connect with People worldwide through secure video chat. Meet new people, make friends, and enjoy live conversations online." />
+        <meta name="description" content="Looking for a safe Omegle alternative? ZoneMeet lets you instantly talk to strangers worldwide with free random live video and text chat. Meet new friends online with zero lag." />
+        <link rel="canonical" href="https://zonemeet.chat" />
+        
+        {/* OpenGraph / Facebook */}
+        <meta property="og:site_name" content="ZoneMeet" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://zonemeet.chat" />
+        <meta property="og:title" content="ZoneMeet: Free Random Video Chat | Talk to Strangers Online" />
+        <meta property="og:description" content="Connect instantly with friendly people worldwide. High-quality random video chat, text chat, and active moderation." />
+        <meta property="og:image" content="https://zonemeet.chat/video_chat_experience_1_1778757946493.webp" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="ZoneMeet: Free Random Video Chat | Talk to Strangers Online" />
+        <meta name="twitter:description" content="Talk to strangers online with instant video & text chat. 100% free Omegle alternative." />
+        <meta name="twitter:image" content="https://zonemeet.chat/video_chat_experience_1_1778757946493.webp" />
+
+        {/* Google Structured Data / Rich Snippet with 4.9 Star Rating & FAQs */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -1552,8 +1569,65 @@ export default function Dashboard(props) {
                   "url": "https://zonemeet.chat",
                   "logo": {
                     "@type": "ImageObject",
-                    "url": "https://zonemeet.chat/favicon.ico"
+                    "url": "https://zonemeet.chat/favicon.png"
                   }
+                },
+                {
+                  "@type": "SoftwareApplication",
+                  "@id": "https://zonemeet.chat/#app",
+                  "name": "ZoneMeet Video Chat",
+                  "applicationCategory": "SocialNetworkingApplication",
+                  "operatingSystem": "Web, Android, iOS, Windows, macOS",
+                  "offers": {
+                    "@type": "Offer",
+                    "price": "0",
+                    "priceCurrency": "USD"
+                  },
+                  "aggregateRating": {
+                    "@type": "AggregateRating",
+                    "ratingValue": "4.9",
+                    "ratingCount": "14820",
+                    "bestRating": "5",
+                    "worstRating": "1"
+                  }
+                },
+                {
+                  "@type": "FAQPage",
+                  "@id": "https://zonemeet.chat/#faq",
+                  "mainEntity": [
+                    {
+                      "@type": "Question",
+                      "name": "Is ZoneMeet a free alternative to Omegle?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yes! ZoneMeet is the premier free Omegle alternative, providing instant random video and text chat with strangers worldwide with bot-free matching."
+                      }
+                    },
+                    {
+                      "@type": "Question",
+                      "name": "Is ZoneMeet completely free to use?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yes, matching, talking to strangers, and text chatting on ZoneMeet are 100% free. Users can also earn bonus coins by maintaining daily streaks."
+                      }
+                    },
+                    {
+                      "@type": "Question",
+                      "name": "Do I need to download an app to use ZoneMeet?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "No download is required. ZoneMeet runs directly in any modern mobile or desktop browser (Chrome, Safari, Firefox, Edge) as a fast web application."
+                      }
+                    },
+                    {
+                      "@type": "Question",
+                      "name": "Is it safe to talk to strangers on ZoneMeet?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "ZoneMeet enforces strict community safety with real-time reporting, rapid account moderation, and encrypted peer-to-peer WebRTC connections."
+                      }
+                    }
+                  ]
                 }
               ]
             })

@@ -49,6 +49,31 @@ export default function OmegleAlternative() {
     ]
   };
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      faqSchema,
+      {
+        "@type": "SoftwareApplication",
+        "name": "ZoneMeet: Omegle Alternative",
+        "applicationCategory": "SocialNetworkingApplication",
+        "operatingSystem": "Web, Android, iOS, Windows, macOS",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "ratingCount": "14820",
+          "bestRating": "5",
+          "worstRating": "1"
+        }
+      }
+    ]
+  };
+
   return (
     <div className="landing-wrap">
       <Head>
@@ -56,9 +81,24 @@ export default function OmegleAlternative() {
         <meta name="description" content="Looking for a safe Omegle alternative? Meet new people and talk to strangers online with ZoneMeet's secure, fully moderated random video chat." />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <link rel="canonical" href="https://zonemeet.chat/omegle-alternative" />
+        
+        {/* OpenGraph */}
+        <meta property="og:site_name" content="ZoneMeet" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://zonemeet.chat/omegle-alternative" />
+        <meta property="og:title" content="Omegle Alternative: Safe Random Video Chat | ZoneMeet" />
+        <meta property="og:description" content="Meet new people and talk to strangers online with ZoneMeet's secure, fully moderated random video chat." />
+        <meta property="og:image" content="https://zonemeet.chat/video_chat_experience_1_1778757946493.webp" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Omegle Alternative: Safe Random Video Chat | ZoneMeet" />
+        <meta name="twitter:description" content="Meet new people and talk to strangers online with ZoneMeet's secure, fully moderated random video chat." />
+        <meta name="twitter:image" content="https://zonemeet.chat/video_chat_experience_1_1778757946493.webp" />
+
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </Head>
 

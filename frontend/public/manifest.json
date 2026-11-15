@@ -1,0 +1,37 @@
+{
+  "name": "ZoneMeet: Live Video Chat & Talk to Strangers",
+  "short_name": "ZoneMeet",
+  "description": "Instant live random video & text chat with friendly strangers worldwide. Safe, fast, and modern Omegle alternative.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070a13",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "categories": ["social", "entertainment", "communication"],
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Start Video Chat",
+      "url": "/chat?mode=video",
+      "description": "Start random live video chat"
+    },
+    {
+      "name": "Start Text Chat",
+      "url": "/chat?mode=text",
+      "description": "Start random text chat"
+    }
+  ]
+}

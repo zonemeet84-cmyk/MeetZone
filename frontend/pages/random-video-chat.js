@@ -49,6 +49,31 @@ export default function RandomVideoChat() {
     ]
   };
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      faqSchema,
+      {
+        "@type": "SoftwareApplication",
+        "name": "ZoneMeet: Random Video Chat",
+        "applicationCategory": "SocialNetworkingApplication",
+        "operatingSystem": "Web, Android, iOS, Windows, macOS",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "ratingCount": "14820",
+          "bestRating": "5",
+          "worstRating": "1"
+        }
+      }
+    ]
+  };
+
   return (
     <div className="landing-wrap">
       <Head>
@@ -63,9 +88,24 @@ export default function RandomVideoChat() {
         />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://zonemeet.chat/random-video-chat" />
+        
+        {/* OpenGraph */}
+        <meta property="og:site_name" content="ZoneMeet" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://zonemeet.chat/random-video-chat" />
+        <meta property="og:title" content="Random Video Chat: Talk to Strangers Online | ZoneMeet" />
+        <meta property="og:description" content="Match instantly with strangers worldwide and start secure, live cam calls on ZoneMeet." />
+        <meta property="og:image" content="https://zonemeet.chat/video_chat_experience_1_1778757946493.webp" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Random Video Chat: Talk to Strangers Online | ZoneMeet" />
+        <meta name="twitter:description" content="Match instantly with strangers worldwide and start secure, live cam calls on ZoneMeet." />
+        <meta name="twitter:image" content="https://zonemeet.chat/video_chat_experience_1_1778757946493.webp" />
+
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </Head>
 

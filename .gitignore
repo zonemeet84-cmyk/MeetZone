@@ -13,3 +13,5 @@ serviceAccountKey.json
 !tsconfig.json
 !frontend/public/models/**
 !**/public/models/**/*.json
+!frontend/public/manifest.json
+!**/public/manifest.json
