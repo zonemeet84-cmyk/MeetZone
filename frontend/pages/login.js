@@ -26,12 +26,9 @@ export default function Login() {
     gender: "Male",
     countryCode: "IN",
     countryName: "India",
-    stateCode: "",
-    stateName: "Other",
     age: "18-24"
   });
   const [guestCountries, setGuestCountries] = useState([]);
-  const [guestStates, setGuestStates] = useState([]);
   const [guestError, setGuestError] = useState("");
   const [guestLoading, setGuestLoading] = useState(false);
 
@@ -88,11 +85,9 @@ export default function Login() {
     setGuestStep(2);
     setGuestError("");
     if (guestCountries.length === 0) {
-      import("country-state-city").then(({ Country, State }) => {
+      import("country-state-city").then(({ Country }) => {
         const allCountries = Country.getAllCountries();
         setGuestCountries(allCountries);
-        const inStates = State.getStatesOfCountry("IN");
-        setGuestStates(inStates || []);
       });
     }
   };
@@ -103,23 +98,7 @@ export default function Login() {
     setGuestForm(prev => ({
       ...prev,
       countryCode: code,
-      countryName: cObj ? cObj.name : code,
-      stateCode: "",
-      stateName: "Other"
-    }));
-    import("country-state-city").then(({ State }) => {
-      const states = State.getStatesOfCountry(code);
-      setGuestStates(states || []);
-    });
-  };
-
-  const handleGuestStateChange = (e) => {
-    const code = e.target.value;
-    const sObj = guestStates.find(s => s.isoCode === code);
-    setGuestForm(prev => ({
-      ...prev,
-      stateCode: code,
-      stateName: sObj ? sObj.name : (code || "Other")
+      countryName: cObj ? cObj.name : code
     }));
   };
 
@@ -618,39 +597,22 @@ export default function Login() {
                     </div>
                   </div>
 
-                  <div className="guest-form-row">
-                    <div className="guest-input-group">
-                      <label>Country <span className="req-star">*</span></label>
-                      <select 
-                        value={guestForm.countryCode}
-                        onChange={handleGuestCountryChange}
-                      >
-                        {guestCountries.length > 0 ? (
-                          guestCountries.map(c => (
-                            <option key={c.isoCode} value={c.isoCode}>
-                              {c.name} {c.flag || ""}
-                            </option>
-                          ))
-                        ) : (
-                          <option value="IN">India</option>
-                        )}
-                      </select>
-                    </div>
-
-                    <div className="guest-input-group">
-                      <label>State / Province</label>
-                      <select 
-                        value={guestForm.stateCode}
-                        onChange={handleGuestStateChange}
-                      >
-                        <option value="">Other / All States</option>
-                        {guestStates.map(s => (
-                          <option key={s.isoCode} value={s.isoCode}>
-                            {s.name}
+                  <div className="guest-input-group">
+                    <label>Country <span className="req-star">*</span></label>
+                    <select 
+                      value={guestForm.countryCode}
+                      onChange={handleGuestCountryChange}
+                    >
+                      {guestCountries.length > 0 ? (
+                        guestCountries.map(c => (
+                          <option key={c.isoCode} value={c.isoCode}>
+                            {c.name} {c.flag || ""}
                           </option>
-                        ))}
-                      </select>
-                    </div>
+                        ))
+                      ) : (
+                        <option value="IN">India</option>
+                      )}
+                    </select>
                   </div>
 
                   <div className="guest-warning-note">

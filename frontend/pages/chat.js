@@ -2133,11 +2133,11 @@ export default function Home(props) {
 
       const isTextModeInitial = (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("mode") === "text") || router.query.mode === "text";
 
-      // Guest Video Chat Lock Guard
+      // Guest Video Chat Lock Guard - DO NOT kick to /login, switch to text mode with notification
       const isGuestModeActive = localStorage.getItem("isGuest") === "true" || (token && token.startsWith("guest_"));
       if (isGuestModeActive && !isTextModeInitial) {
-        router.push("/login?reason=guest_video_restricted");
-        return;
+        setActiveChatMode("text");
+        showToast("🔒 Video Chat is locked for Guest users. You are in Text Chat Mode! Log in anytime to start video calls.", "info", 5000);
       }
 
       // 2. Camera Logic (Only for Video Mode)
@@ -4247,6 +4247,10 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
               <button 
                 className="filter-settings-trigger-btn" 
                 onClick={() => {
+                  if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
+                    showToast("⚠️ You are currently using a Guest account. Matchmaking preferences and filters require a registered account. Please log in or sign up to customize filters.", "warning", 5000);
+                    return;
+                  }
                   setTempGender(gender);
                   setTempCountry(country);
                   setTempStateProv(stateProv);
@@ -4449,6 +4453,10 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                   <button 
                     className="action-pill-btn prefs-round-btn"
                     onClick={() => {
+                      if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
+                        showToast("⚠️ You are currently using a Guest account. Matchmaking preferences and filters require a registered account. Please log in or sign up to customize filters.", "warning", 5000);
+                        return;
+                      }
                       setTempGender(gender);
                       setTempCountry(country);
                       setTempStateProv(stateProv);
@@ -5714,6 +5722,10 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
               type="button"
               className="filter-settings-trigger-btn mobile-filter-btn"
               onClick={() => {
+                if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
+                  showToast("⚠️ You are currently using a Guest account. Matchmaking preferences and filters require a registered account. Please log in or sign up to customize filters.", "warning", 5000);
+                  return;
+                }
                 setTempGender(gender);
                 setTempCountry(country);
                 setTempStateProv(stateProv);
