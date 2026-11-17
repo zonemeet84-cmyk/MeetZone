@@ -2609,8 +2609,7 @@ export default function Dashboard(props) {
             </div>
             <ul className="premium-features">
               <li><span>✓</span> Gender & Country Filters</li>
-              <li><span>⏪</span> 5 Free Rewind Passes / Day (Reconnect with previous match)</li>
-              <li><span>🛡️</span> 1-Time Limit per Person (Anti-Spam)</li>
+              <li><span>⏪</span> Instant Rewind (Direct reconnect with previous match)</li>
               <li><span>★</span> 50 ZoneMeet Coins (Free)</li>
             </ul>
             <button className="premium-btn" onClick={() => {
@@ -2636,8 +2635,7 @@ export default function Dashboard(props) {
             <ul className="premium-features">
               <li><span>✓</span> Gender, Country & State Filters</li>
               <li><span>✓</span> 0-Sec Skip Cooldown (Instant Next)</li>
-              <li><span>⏪</span> 15 Free Rewind Passes / Day (Reconnect with previous match)</li>
-              <li><span>🛡️</span> 1-Time Limit per Person (Anti-Spam)</li>
+              <li><span>⏪</span> Instant Rewind (Direct reconnect with previous match)</li>
               <li><span>⚡</span> Instant Priority Matching</li>
               <li><span>🌐</span> Auto-Translate Chats & Live Subtitles</li>
               <li><span>★</span> 150 ZoneMeet Coins (Free)</li>
@@ -2663,8 +2661,7 @@ export default function Dashboard(props) {
             </div>
             <ul className="premium-features">
               <li><span>👑</span> 90 Days All VIP Elite Perks Included</li>
-              <li><span>⏪</span> 15 Free Rewind Passes / Day (Reconnect with previous match)</li>
-              <li><span>🛡️</span> 1-Time Limit per Person (Anti-Spam)</li>
+              <li><span>⏪</span> Instant Rewind (Direct reconnect with previous match)</li>
               <li><span>🎭</span> Privacy Screen Avatars & Camera Blur</li>
               <li><span>✨</span> Mythic Royal Identity Badge</li>
               <li><span>🌐</span> Auto-Translate Chats & Live Subtitles</li>
@@ -3958,13 +3955,13 @@ export default function Dashboard(props) {
                 <div className="reconnect-modal-body reconnect-subscriber-body">
                   <div className="reconnect-modal-icon">⏪</div>
                   <div className="reconnect-modal-badge" style={{ background: 'rgba(16, 185, 129, 0.15)', borderColor: 'rgba(16, 185, 129, 0.35)', color: '#34d399' }}>
-                    🎟️ Free Daily Rewind Pass
+                    ⚡ Instant Rewind
                   </div>
                   <h3 className="reconnect-modal-title">
-                    Rewind to <strong style={{ color: '#fbbf24' }}>{reconnectConfirm.name}</strong>?
+                    Reconnect with <strong style={{ color: '#fbbf24' }}>{reconnectConfirm.name}</strong>?
                   </h3>
                   <p className="reconnect-modal-desc">
-                    Use 1 of your daily Free Rewind Passes included with your <strong>{user?.planName || 'Active'}</strong> membership. (1 reconnect limit per partner to prevent harassment).
+                    Directly reconnect with your previous match included with your <strong>{user?.planName || 'VIP'}</strong> membership.
                   </p>
 
                   <div className="reconnect-modal-actions">

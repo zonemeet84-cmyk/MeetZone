@@ -359,17 +359,6 @@ export default function Home(props) {
   // Partner Video Preview Safe Dismiss Timeout
   const previewTimeoutRef = useRef(null);
 
-  // User Profile & Name Edit Modal
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [editProfileForm, setEditProfileForm] = useState({
-    name: "",
-    gender: "Male",
-    country: "India",
-    state: "Other",
-    age: "18-24"
-  });
-  const [isSavingProfile, setIsSavingProfile] = useState(false);
-
   // Chat Message Reply Support
   const [replyingTo, setReplyingTo] = useState(null); // { id, text, sender, isPhoto }
   const textChatInputRef = useRef(null);
@@ -499,7 +488,6 @@ export default function Home(props) {
 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [historyList, setHistoryList] = useState([]);
-  const [reconnectConfirm, setReconnectConfirm] = useState(null);
   const [lastPartner, setLastPartner] = useState(null);
   const lastPartnerRef = useRef(null);
   const partnerInfoRef = useRef(null);
@@ -641,89 +629,77 @@ export default function Home(props) {
     }
   };
 
-  // Profile & Name Editing Handlers
-  const handleOpenProfileModal = () => {
-    setEditProfileForm({
-      name: user?.name || "ZoneMeet User",
-      gender: user?.gender || "Male",
-      country: user?.country || "India",
-      state: user?.state || "Other",
-      age: user?.age || "18-24"
-    });
-    setShowProfileModal(true);
-  };
+  const handleRewindDirect = (specificCandidate = null) => {
+    if (quizState !== "idle") return;
 
-  const handleSaveProfile = async (e) => {
-    if (e) e.preventDefault();
-    const trimmedName = editProfileForm.name ? editProfileForm.name.trim() : "";
-    const nameCheck = validateDisplayName(trimmedName);
-    if (!nameCheck.valid) {
-      showToast(nameCheck.error, "error", 4500);
-      return;
-    }
-
-    setIsSavingProfile(true);
-    const updatedUser = {
-      ...(user || {}),
-      name: trimmedName,
-      gender: editProfileForm.gender,
-      country: editProfileForm.country,
-      state: editProfileForm.state,
-      age: editProfileForm.age,
-      onboardingCompleted: true
-    };
-
-    // Instant optimistic update in React state
-    setUser(updatedUser);
-    try {
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-    } catch (err) {}
-
-    // Emit to active socket so peer/matching queue updates instantly
-    try {
-      if (socket) {
-        socket.emit("set-profile", updatedUser);
-      }
-    } catch (err) {}
-
-    showToast("Profile & Name updated successfully! ✨", "success");
-    setShowProfileModal(false);
-
-    // Sync to backend in background
-    try {
-      await axios.post("https://api.zonemeet.chat/api/auth/update-profile", {
-        id: updatedUser.id,
-        email: updatedUser.email,
-        phone: updatedUser.phone,
-        name: trimmedName,
-        gender: editProfileForm.gender,
-        country: editProfileForm.country,
-        state: editProfileForm.state,
-        age: editProfileForm.age
-      }, { timeout: 3500 });
-    } catch (err) {
-      console.warn("Profile background sync note:", err.message);
-    } finally {
-      setIsSavingProfile(false);
-    }
-  };
-
-  const handleRewindClick = () => {
     if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
       showToast("⚠️ You are currently using a Guest account. Rewind requires a registered account. Please log in to reconnect.", "warning", 5000);
       return;
     }
-    const candidate = lastPartner || lastPartnerRef.current || (user?.recentStrangers && user.recentStrangers.length > 0 ? user.recentStrangers[0] : null);
-    if (!candidate) {
-      showToast("No previous partner to rewind to yet! Match someone first.", "warning");
+
+    const hasPlan = isPlanActive(user) || user?.email === "ds9376314@gmail.com";
+    if (!hasPlan) {
+      setShowPricingModal(true);
+      const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+      showToast(isMobile ? "🔒 Rewind is a VIP feature. Upgrade to reconnect!" : "🔒 Rewind is an exclusive VIP feature. Subscribe to reconnect with skipped matches!", "info", 4000);
       return;
     }
-    if (partnerId && String(candidate.id) === String(partnerId)) {
+
+    const candidate = specificCandidate || lastPartner || lastPartnerRef.current || (user?.recentStrangers && user.recentStrangers.length > 0 ? user.recentStrangers[0] : null);
+    if (!candidate) {
+      const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+      showToast(isMobile ? "No previous partner to rewind to!" : "No previous partner to rewind to yet! Match someone first.", "warning", 4000);
+      return;
+    }
+
+    if (partnerId && (candidate.socketId === partnerId || String(candidate.id) === String(partnerInfo?.id))) {
       showToast("You are already connected to this partner!", "info");
       return;
     }
-    setReconnectConfirm(candidate);
+
+    // 1-Time Limit Check per person (Anti-Spam)
+    const targetKey = String(candidate.id || candidate.socketId || candidate.name);
+    let rewoundIds = [];
+    try {
+      rewoundIds = JSON.parse(localStorage.getItem("zm_rewound_ids") || "[]");
+    } catch (e) {
+      rewoundIds = [];
+    }
+
+    if (rewoundIds.includes(targetKey)) {
+      const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+      if (isMobile) {
+        showToast("⚠️ Limit: 1 rewind per person allowed!", "warning", 4000);
+      } else {
+        showToast("⚠️ Anti-Spam Protection: You can only rewind with the same person once to prevent harassment.", "warning", 5000);
+      }
+      return;
+    }
+
+    // Record rewind for this person
+    rewoundIds.push(targetKey);
+    try {
+      localStorage.setItem("zm_rewound_ids", JSON.stringify(rewoundIds));
+    } catch (e) {}
+
+    // Direct Instant Connect
+    const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+    showToast(isMobile ? `⏪ Reconnecting to ${candidate.name || "match"}...` : `⏪ Rewinding directly to ${candidate.name || "previous match"}...`, "info", 3000);
+
+    if (showHistoryModal) setShowHistoryModal(false);
+    closeConnection();
+    setStatus("Directly reconnecting to previous match...");
+
+    if (socket) {
+      socket.emit("rewind-direct-connect", {
+        targetSocketId: candidate.socketId || null,
+        targetUserId: candidate.id || null,
+        chatMode: activeChatMode
+      });
+    }
   };
+
+  const handleRewindClick = () => handleRewindDirect();
   const [reportTargetFromHistory, setReportTargetFromHistory] = useState(null);
   const [showPremiumMiniBar, setShowPremiumMiniBar] = useState(false);
   const [translateLang, setTranslateLang] = useState("off");
@@ -2364,13 +2340,27 @@ export default function Home(props) {
         showToast("Call was declined.", "info");
       });
 
-
-
+      socket.on("rewind-failed", ({ reason, message }) => {
+        const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+        if (reason === "offline") {
+          showToast(isMobile ? "Partner is offline!" : "Previous partner is no longer online.", "info", 4000);
+        } else if (reason === "no_vip") {
+          setShowPricingModal(true);
+          showToast(isMobile ? "🔒 Rewind is a VIP feature!" : "🔒 Rewind requires an active VIP subscription.", "info", 4000);
+        } else {
+          showToast(message || "Rewind failed", "error");
+        }
+        nextPartner();
+      });
 
       socket.on("matched", async ({ partnerId, initiator, partnerInfo, chatMode }) => {
         if (partnerInfoRef.current && partnerInfoRef.current.id && String(partnerInfoRef.current.id) !== String(partnerId)) {
-          setLastPartner(partnerInfoRef.current);
-          lastPartnerRef.current = partnerInfoRef.current;
+          const prev = {
+            ...partnerInfoRef.current,
+            socketId: partnerIdRef.current || partnerId
+          };
+          setLastPartner(prev);
+          lastPartnerRef.current = prev;
         }
         // STRICT CLIENT CIRCUIT BREAKER: Never connect to yourself!
         const myUserId = user?.id || (typeof window !== "undefined" && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).id : null);
@@ -2606,8 +2596,12 @@ export default function Home(props) {
 
       socket.on("partner-disconnected", () => {
         if (partnerInfoRef.current) {
-          setLastPartner(partnerInfoRef.current);
-          lastPartnerRef.current = partnerInfoRef.current;
+          const prev = {
+            ...partnerInfoRef.current,
+            socketId: partnerIdRef.current || partnerId
+          };
+          setLastPartner(prev);
+          lastPartnerRef.current = prev;
         }
         // Instantly clear the partner's video feed so frozen frame doesn't linger
         if (remoteVideo.current && remoteVideo.current.srcObject) {
@@ -3137,8 +3131,12 @@ export default function Home(props) {
 
   const closeConnection = () => {
     if (partnerInfoRef.current) {
-      setLastPartner(partnerInfoRef.current);
-      lastPartnerRef.current = partnerInfoRef.current;
+      const prev = {
+        ...partnerInfoRef.current,
+        socketId: partnerIdRef.current || partnerId
+      };
+      setLastPartner(prev);
+      lastPartnerRef.current = prev;
     }
     // Instantly stop & clear remote video to prevent frozen frame
     if (remoteVideo.current && remoteVideo.current.srcObject) {
@@ -4350,9 +4348,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
 
             <div 
               className="user-profile-tag"
-              onClick={handleOpenProfileModal}
-              title="Click to edit Name & Profile"
-              style={{ cursor: 'pointer' }}
+              style={{ cursor: 'default' }}
             >
               <div className="avatar">
                 {user?.name?.charAt(0) || "?"}
@@ -4360,7 +4356,6 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
               <div className="user-details">
                 <span className="user-name" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   {user?.name || "ZoneMeet User"}
-                  <span style={{ fontSize: '0.65rem', opacity: 0.7 }} title="Edit Profile">✏️</span>
                   {user?.isGuest && (
                     <span style={{ background: 'rgba(255, 193, 7, 0.2)', color: '#ffc107', border: '1px solid #ffc107', fontSize: '0.62rem', fontWeight: '800', padding: '1px 5px', borderRadius: '4px' }}>
                       GUEST
@@ -6227,7 +6222,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                           cursor: 'pointer',
                           padding: '0'
                         }}
-                        onClick={() => setReconnectConfirm(s)}
+                        onClick={() => handleRewindDirect(s)}
                       >
                         <span style={{ fontSize: '1.2rem', background: 'white', borderRadius: '4px', padding: '2px 4px', display: 'flex' }}>💌</span>
                       </button>
@@ -6240,93 +6235,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         </div>
       )}
 
-      {/* RECONNECT / REWIND CONFIRMATION POPUP */}
-      {reconnectConfirm && (() => {
-        const hasPlan = isPlanActive(user);
-        return (
-          <div className="payment-overlay reconnect-overlay" style={{ zIndex: 12000 }} onClick={() => setReconnectConfirm(null)}>
-            <div className="reconnect-modal-card" onClick={e => e.stopPropagation()}>
-              <div style={{ height: '5px', background: hasPlan ? 'linear-gradient(90deg, #10b981, #00f2fe)' : 'linear-gradient(90deg, #fbbf24, #f59e0b)' }}></div>
-              
-              {!hasPlan ? (
-                <div className="reconnect-modal-body">
-                  <div className="reconnect-modal-icon">🔒</div>
-                  <div className="reconnect-modal-badge">
-                    Subscription Required
-                  </div>
-                  <h3 className="reconnect-modal-title">
-                    Membership Required
-                  </h3>
-                  <p className="reconnect-modal-desc">
-                    Rewind and reconnecting with previous partners requires an active membership subscription (Starter, Prime, Silver or VIP Elite).
-                  </p>
-
-                  <div className="reconnect-modal-actions">
-                    <button 
-                      onClick={() => setReconnectConfirm(null)} 
-                      className="reconnect-btn-cancel"
-                    >
-                      Cancel
-                    </button>
-                    <button 
-                      onClick={() => {
-                        setReconnectConfirm(null);
-                        setShowPricingModal(true);
-                      }} 
-                      className="reconnect-btn-upgrade"
-                    >
-                      View Plans
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="reconnect-modal-body reconnect-subscriber-body">
-                  <div className="reconnect-modal-icon">⏪</div>
-                  <div className="reconnect-modal-badge" style={{ background: 'rgba(16, 185, 129, 0.15)', borderColor: 'rgba(16, 185, 129, 0.35)', color: '#34d399' }}>
-                    🎟️ Free Daily Rewind Pass
-                  </div>
-                  <h3 className="reconnect-modal-title">
-                    Rewind to <strong style={{ color: '#fbbf24' }}>{reconnectConfirm.name}</strong>?
-                  </h3>
-                  <p className="reconnect-modal-desc">
-                    Use 1 of your daily Free Rewind Passes included with your <strong>{user?.planName || 'Active'}</strong> membership. (1 reconnect limit per partner to prevent harassment).
-                  </p>
-
-                  <div className="reconnect-modal-actions">
-                    <button 
-                      onClick={() => setReconnectConfirm(null)} 
-                      className="reconnect-btn-cancel"
-                    >
-                      Cancel
-                    </button>
-                    <button 
-                      onClick={async () => {
-                        try {
-                          const token = localStorage.getItem('token');
-                          const res = await axios.post('https://api.zonemeet.chat/api/user/spend-coins', { email: user.email, amount: 0, feature: 'reconnect' });
-                          if (res.data.success) {
-                            setUser({ ...user, coins: res.data.coins });
-                            await axios.post('https://api.zonemeet.chat/api/friends/request', { targetId: reconnectConfirm.id, type: 'reconnect' }, { headers: { Authorization: `Bearer ${token}` } });
-                            showToast(`Rewind request sent to ${reconnectConfirm.name}!`, "success");
-                          }
-                        } catch (err) {
-                          showToast(err.response?.data?.message || 'Failed to rewind', "error");
-                        }
-                        setReconnectConfirm(null);
-                      }} 
-                      className="reconnect-btn-confirm"
-                    >
-                      Confirm & Rewind
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })()}
-
-            {/* PREMIUM FILTER SETTINGS MODAL */}
+      {/* PREMIUM FILTER SETTINGS MODAL */}
             {showFilterModal && (
               <div className="filter-modal-overlay" onClick={() => setShowFilterModal(false)}>
                 <div className="filter-modal-card" onClick={(e) => e.stopPropagation()}>
@@ -6606,103 +6515,6 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                 🚨 Report Photo
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* USER PROFILE & NAME EDIT MODAL */}
-      {showProfileModal && (
-        <div className="profile-edit-overlay" onClick={() => setShowProfileModal(false)}>
-          <div className="profile-edit-card" onClick={(e) => e.stopPropagation()}>
-            <button 
-              type="button" 
-              className="profile-edit-close-btn" 
-              onClick={() => setShowProfileModal(false)}
-              title="Close"
-            >
-              ×
-            </button>
-            <div className="profile-edit-header">
-              <div className="profile-edit-avatar-preview">
-                {editProfileForm.name ? editProfileForm.name.charAt(0).toUpperCase() : "?"}
-              </div>
-              <h2>Edit Profile & Name</h2>
-              <p>Update your display name and details</p>
-            </div>
-
-            <form onSubmit={handleSaveProfile} className="profile-edit-form">
-              <div className="profile-edit-field">
-                <label>Display Name / Naam</label>
-                <input
-                  type="text"
-                  className="profile-edit-input"
-                  value={editProfileForm.name}
-                  onChange={(e) => setEditProfileForm({ ...editProfileForm, name: e.target.value })}
-                  placeholder="Enter your name"
-                  maxLength={30}
-                  required
-                />
-              </div>
-
-              <div className="profile-edit-row">
-                <div className="profile-edit-field" style={{ flex: 1 }}>
-                  <label>Gender</label>
-                  <select
-                    className="profile-edit-select"
-                    value={editProfileForm.gender}
-                    onChange={(e) => setEditProfileForm({ ...editProfileForm, gender: e.target.value })}
-                  >
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-
-                <div className="profile-edit-field" style={{ flex: 1 }}>
-                  <label>Age</label>
-                  <select
-                    className="profile-edit-select"
-                    value={editProfileForm.age}
-                    onChange={(e) => setEditProfileForm({ ...editProfileForm, age: e.target.value })}
-                  >
-                    <option value="18-24">18-24</option>
-                    <option value="25-34">25-34</option>
-                    <option value="35-44">35-44</option>
-                    <option value="45-54">45-54</option>
-                    <option value="55+">55+</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="profile-edit-field">
-                <label>Country</label>
-                <select
-                  className="profile-edit-select"
-                  value={editProfileForm.country}
-                  onChange={(e) => setEditProfileForm({ ...editProfileForm, country: e.target.value })}
-                >
-                  <option value="India">🇮🇳 India</option>
-                  <option value="United States">🇺🇸 United States</option>
-                  <option value="United Kingdom">🇬🇧 United Kingdom</option>
-                  <option value="Canada">🇨🇦 Canada</option>
-                  <option value="Australia">🇦🇺 Australia</option>
-                  <option value="Germany">🇩🇪 Germany</option>
-                  <option value="France">🇫🇷 France</option>
-                  <option value="Japan">🇯🇵 Japan</option>
-                  <option value="Brazil">🇧🇷 Brazil</option>
-                  <option value="Russia">🇷🇺 Russia</option>
-                  <option value="Other">🌍 Other</option>
-                </select>
-              </div>
-
-              <button 
-                type="submit" 
-                className="profile-edit-submit-btn" 
-                disabled={isSavingProfile}
-              >
-                {isSavingProfile ? "Saving..." : "Save Changes ✨"}
-              </button>
-            </form>
           </div>
         </div>
       )}

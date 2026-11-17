@@ -3369,6 +3369,115 @@ function endQuiz(roomId) {
         });
       });
 
+      // Direct Instant Rewind Reconnect (VIP Feature)
+      socket.on("rewind-direct-connect", ({ targetSocketId, targetUserId, chatMode }) => {
+        const isOwner = socket.email?.toLowerCase() === "ds9376314@gmail.com";
+        const isPremium = socket.premium || isOwner;
+        if (!isPremium) {
+          socket.emit("rewind-failed", { 
+            reason: "no_vip",
+            message: "Rewind requires an active VIP subscription." 
+          });
+          return;
+        }
+
+        // 1. Locate target socket
+        let targetSocket = null;
+        if (targetSocketId) {
+          targetSocket = io.sockets.sockets.get(targetSocketId);
+        }
+        if ((!targetSocket || !targetSocket.connected) && targetUserId) {
+          const mappedSocketId = onlineUsers.get(targetUserId);
+          if (mappedSocketId) {
+            targetSocket = io.sockets.sockets.get(mappedSocketId);
+          }
+        }
+
+        if (!targetSocket || !targetSocket.connected) {
+          socket.emit("rewind-failed", { 
+            reason: "offline",
+            message: "Previous partner is no longer online."
+          });
+          return;
+        }
+
+        // Prevent rewinding to oneself
+        if (targetSocket.id === socket.id || (targetSocket.userId && targetSocket.userId === socket.userId)) {
+          socket.emit("rewind-failed", { 
+            reason: "self",
+            message: "Cannot rewind to yourself."
+          });
+          return;
+        }
+
+        // Cleanly disconnect target's old partner if any
+        if (targetSocket.partner) {
+          const oldPartner = targetSocket.partner;
+          targetSocket.partner = null;
+          oldPartner.partner = null;
+          oldPartner.emit("partner-disconnected");
+          queueUser(oldPartner);
+        }
+
+        // Cleanly disconnect socket's old partner if any
+        if (socket.partner) {
+          const oldPartner = socket.partner;
+          socket.partner = null;
+          oldPartner.partner = null;
+          oldPartner.emit("partner-disconnected");
+          queueUser(oldPartner);
+        }
+
+        // Remove both from waitingUsers queue
+        waitingUsers = (waitingUsers || []).filter(s => s.id !== socket.id && s.id !== targetSocket.id);
+
+        // Pair them directly!
+        socket.partner = targetSocket;
+        targetSocket.partner = socket;
+
+        const mode = chatMode === "text" ? "text" : (socket.chatMode === "text" ? "text" : "video");
+
+        const u1 = users.find(u => u.id === socket.userId);
+        const u2 = users.find(u => u.id === targetSocket.userId);
+        const u1Friends = u1?.friends || [];
+        const u2Friends = u2?.friends || [];
+        const areFriends = (u2 && u1Friends.includes(u2.id)) || (u1 && u2Friends.includes(u1.id));
+
+        socket.emit("matched", {
+          partnerId: targetSocket.id,
+          initiator: true,
+          chatMode: mode,
+          partnerInfo: {
+            id: targetSocket.userId,
+            name: targetSocket.name,
+            country: targetSocket.country,
+            gender: targetSocket.gender,
+            premium: targetSocket.premium,
+            planName: targetSocket.planName,
+            isFriend: areFriends,
+            socketId: targetSocket.id
+          }
+        });
+
+        targetSocket.emit("matched", {
+          partnerId: socket.id,
+          initiator: false,
+          chatMode: mode,
+          partnerInfo: {
+            id: socket.userId,
+            name: socket.name,
+            country: socket.country,
+            gender: socket.gender,
+            premium: socket.premium,
+            planName: socket.planName,
+            isFriend: areFriends,
+            socketId: socket.id
+          }
+        });
+
+        console.log(`[Instant Direct Rewind] Socket ${socket.id} (${socket.name}) directly reconnected with Socket ${targetSocket.id} (${targetSocket.name})`);
+      });
+
       // Real-time gift relay (instant, before backend processes)
       socket.on("send-gift-to-partner", ({ to, stickerIcon, senderName, amount }) => {
         io.to(to).emit("receive-gift-from-partner", {
