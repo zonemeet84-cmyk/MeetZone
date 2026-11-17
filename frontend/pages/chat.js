@@ -5797,56 +5797,58 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             <div style={{ flex: 1, textAlign: 'center', fontSize: '0.75rem', color: '#94a3b8' }}>
               By continuing with Camera/Mic, you agree to our <a href="/terms" target="_blank" style={{ color: '#6366f1' }}>Terms</a> and <a href="/guidelines" target="_blank" style={{ color: '#6366f1' }}>Community Guidelines</a>.
             </div>
-            <div className="mobile-action-stack">
+            <div className="bottom-actions-btn-group">
+              <div className="mobile-action-stack">
+                <button 
+                  className="gift-trigger-btn circular-bottom-btn" 
+                  onClick={() => {
+                    const toolkit = hasIdentityToolkit(getChatUser(user));
+                    setMobileGiftActiveTab(toolkit ? "avatars" : "gifts");
+                    setShowMobileGiftPopup(true);
+                  }}
+                  title="Send Gift"
+                >
+                  <span className="icon">🎁</span>
+                </button>
+                <button 
+                  className="report-trigger-btn circular-bottom-btn" 
+                  onClick={openReport}
+                  title="Report Partner"
+                >
+                  <span className="icon">🚨</span>
+                </button>
+              </div>
               <button 
-                className="gift-trigger-btn circular-bottom-btn" 
-                onClick={() => {
-                  const toolkit = hasIdentityToolkit(getChatUser(user));
-                  setMobileGiftActiveTab(toolkit ? "avatars" : "gifts");
-                  setShowMobileGiftPopup(true);
-                }}
-                title="Send Gift"
+                type="button" 
+                className="rewind-btn" 
+                onClick={handleRewindClick} 
+                disabled={quizState !== "idle"}
+                title="Rewind to previous partner"
               >
-                <span className="icon">🎁</span>
+                <span className="icon">⏪</span> <span className="text">Rewind</span>
               </button>
-              <button 
-                className="report-trigger-btn circular-bottom-btn" 
-                onClick={openReport}
-                title="Report Partner"
+              <button className="next-btn" onClick={nextPartner} disabled={quizState !== "idle"}>
+                <span className="icon">⏭️</span> <span className="text">Skip</span>
+              </button>
+              <button
+                type="button"
+                className="filter-settings-trigger-btn mobile-filter-btn"
+                onClick={() => {
+                  if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
+                    showToast("⚠️ You are currently using a Guest account. Matchmaking preferences and filters require a registered account. Please log in or sign up to customize filters.", "warning", 5000);
+                    return;
+                  }
+                  setTempGender(gender);
+                  setTempCountry(country);
+                  setTempStateProv(stateProv);
+                  setTempAge(age);
+                  setShowFilterModal(true);
+                }}
               >
-                <span className="icon">🚨</span>
+                <span className="icon">⚙️</span>
+                <span className="text">All</span>
               </button>
             </div>
-            <button 
-              type="button" 
-              className="rewind-btn" 
-              onClick={handleRewindClick} 
-              disabled={quizState !== "idle"}
-              title="Rewind to previous partner"
-            >
-              <span className="icon">⏪</span> <span className="text">Rewind</span>
-            </button>
-            <button className="next-btn" onClick={nextPartner} disabled={quizState !== "idle"}>
-              <span className="icon">⏭️</span> <span className="text">Skip</span>
-            </button>
-            <button
-              type="button"
-              className="filter-settings-trigger-btn mobile-filter-btn"
-              onClick={() => {
-                if (user?.isGuest || localStorage.getItem("isGuest") === "true") {
-                  showToast("⚠️ You are currently using a Guest account. Matchmaking preferences and filters require a registered account. Please log in or sign up to customize filters.", "warning", 5000);
-                  return;
-                }
-                setTempGender(gender);
-                setTempCountry(country);
-                setTempStateProv(stateProv);
-                setTempAge(age);
-                setShowFilterModal(true);
-              }}
-            >
-              <span className="icon">⚙️</span>
-              <span className="text">All</span>
-            </button>
           </div>
         </div>
 
@@ -6962,12 +6964,42 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           border-radius: 8px;
           flex-shrink: 0;
           box-sizing: border-box;
-          height: 32px;
+          height: 30px;
           transition: all 0.2s ease;
         }
         .translate-pill-widget:hover {
           border-color: rgba(255, 255, 255, 0.25);
           background: rgba(255, 255, 255, 0.09);
+        }
+        .translate-toggle-btn {
+          width: auto !important;
+          height: 24px !important;
+          min-height: 24px !important;
+          padding: 2px 7px !important;
+          font-size: 11px !important;
+          border-radius: 5px !important;
+          margin: 0 !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 3px !important;
+          line-height: 1 !important;
+          box-sizing: border-box !important;
+          flex-shrink: 0 !important;
+        }
+        .translate-lang-select {
+          height: 24px !important;
+          min-height: 24px !important;
+          font-size: 11px !important;
+          padding: 0 4px !important;
+          margin: 0 !important;
+          border: none !important;
+          background: transparent !important;
+          color: #fff !important;
+          cursor: pointer !important;
+          outline: none !important;
+          max-width: 75px !important;
+          box-sizing: border-box !important;
         }
         .stop-pill-btn {
           background: rgba(239, 68, 68, 0.15) !important;
@@ -11736,40 +11768,105 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
           .bottom-actions .mobile-filter-btn {
             display: none !important;
           }
-          .mobile-action-stack {
+          .bottom-actions-btn-group {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            margin: 0 !important;
+          }
+          .bottom-actions-btn-group .mobile-action-stack {
             display: flex !important;
             flex-direction: row !important;
-            gap: 10px !important;
-            position: static !important;
             align-items: center !important;
-          }
-          .mobile-action-stack button {
+            gap: 12px !important;
+            margin: 0 !important;
             position: static !important;
             width: auto !important;
             height: auto !important;
-            min-width: 0 !important;
-            max-width: none !important;
-            border-radius: 10px !important;
-            padding: 8px 12px !important;
           }
-          .mobile-action-stack button .text {
-            display: inline !important;
-          }
-          .mobile-action-stack .gift-trigger-btn,
-          .mobile-action-stack .report-trigger-btn,
           .bottom-actions .gift-trigger-btn,
           .bottom-actions .report-trigger-btn {
-            width: 38px !important;
-            height: 38px !important;
-            min-width: 38px !important;
-            max-width: 38px !important;
+            width: 40px !important;
+            height: 40px !important;
+            min-width: 40px !important;
+            max-width: 40px !important;
             border-radius: 50% !important;
             padding: 0 !important;
+            margin: 0 !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
             font-size: 1.15rem !important;
             flex-shrink: 0 !important;
+            cursor: pointer !important;
+            box-sizing: border-box !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          }
+          .bottom-actions .gift-trigger-btn {
+            background: rgba(236, 72, 153, 0.12) !important;
+            border: 1px solid rgba(236, 72, 153, 0.3) !important;
+            color: #ec4899 !important;
+          }
+          .bottom-actions .gift-trigger-btn:hover {
+            background: rgba(236, 72, 153, 0.25) !important;
+            border-color: rgba(236, 72, 153, 0.6) !important;
+            transform: translateY(-2px) scale(1.05) !important;
+            box-shadow: 0 4px 14px rgba(236, 72, 153, 0.35) !important;
+          }
+          .bottom-actions .report-trigger-btn {
+            background: rgba(239, 68, 68, 0.12) !important;
+            border: 1px solid rgba(239, 68, 68, 0.3) !important;
+            color: #ef4444 !important;
+          }
+          .bottom-actions .report-trigger-btn:hover {
+            background: rgba(239, 68, 68, 0.25) !important;
+            border-color: rgba(239, 68, 68, 0.6) !important;
+            transform: translateY(-2px) scale(1.05) !important;
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35) !important;
+          }
+          .bottom-actions .rewind-btn,
+          .bottom-actions .next-btn {
+            height: 40px !important;
+            min-height: 40px !important;
+            max-height: 40px !important;
+            padding: 0 16px !important;
+            border-radius: 12px !important;
+            margin: 0 !important;
+            font-size: 0.88rem !important;
+            font-weight: 700 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 7px !important;
+            cursor: pointer !important;
+            flex-shrink: 0 !important;
+            box-sizing: border-box !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          }
+          .bottom-actions .rewind-btn {
+            background: rgba(30, 41, 59, 0.85) !important;
+            border: 1px solid rgba(59, 130, 246, 0.35) !important;
+            color: #93c5fd !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+          }
+          .bottom-actions .rewind-btn:hover {
+            background: rgba(59, 130, 246, 0.2) !important;
+            border-color: rgba(59, 130, 246, 0.7) !important;
+            color: #ffffff !important;
+            transform: translateY(-2px) scale(1.02) !important;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3) !important;
+          }
+          .bottom-actions .next-btn {
+            background: linear-gradient(135deg, #4f46e5, #6366f1) !important;
+            border: 1px solid rgba(165, 180, 252, 0.4) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 10px rgba(99, 102, 241, 0.35) !important;
+          }
+          .bottom-actions .next-btn:hover {
+            background: linear-gradient(135deg, #4338ca, #4f46e5) !important;
+            border-color: rgba(165, 180, 252, 0.7) !important;
+            transform: translateY(-2px) scale(1.02) !important;
+            box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5) !important;
           }
           .bottom-actions .gift-trigger-btn .text,
           .bottom-actions .report-trigger-btn .text,
@@ -11794,81 +11891,7 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             bottom: 1rem !important;
             z-index: 50 !important;
           }
-          /* Desktop Bottom Buttons styling to make them smaller and aligned in a row */
-          .bottom-actions button {
-            font-size: 0.8rem !important;
-            padding: 8px 12px !important;
-            border-radius: 10px !important;
-            font-weight: 700 !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            gap: 6px !important;
-            height: auto !important;
-            width: auto !important;
-            position: static !important;
-            box-shadow: none !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
-            background: #1e293b !important;
-            color: white !important;
-            cursor: pointer !important;
-            transition: all 0.2s !important;
-          }
-          .bottom-actions button:hover {
-            background: #334155 !important;
-            transform: translateY(-1px) !important;
-          }
-          .bottom-actions .stop-btn {
-            background: rgba(239, 68, 68, 0.1) !important;
-            color: #ef4444 !important;
-            border-color: rgba(239, 68, 68, 0.2) !important;
-          }
-          .bottom-actions .stop-btn:hover {
-            background: #ef4444 !important;
-            color: white !important;
-          }
-          .bottom-actions .report-trigger-btn {
-            background: rgba(239, 68, 68, 0.1) !important;
-            color: #ef4444 !important;
-            border-color: rgba(239, 68, 68, 0.2) !important;
-          }
-          .bottom-actions .report-trigger-btn:hover {
-            background: #ef4444 !important;
-            color: white !important;
-          }
-          .bottom-actions .next-btn {
-            background: rgba(99, 102, 241, 0.1) !important;
-            color: #6366f1 !important;
-            border-color: rgba(99, 102, 241, 0.2) !important;
-            margin-left: 10px !important;
-          }
-          .bottom-actions .next-btn:hover {
-            background: #6366f1 !important;
-            color: white !important;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
-          }
-          .bottom-actions .report-trigger-btn {
-            margin-right: 0px !important;
-          }
-          .bottom-actions .gift-trigger-btn {
-            background: rgba(236, 72, 153, 0.1) !important;
-            color: #ec4899 !important;
-            border-color: rgba(236, 72, 153, 0.2) !important;
-          }
-          .bottom-actions .gift-trigger-btn:hover {
-            background: #ec4899 !important;
-            color: white !important;
-            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3) !important;
-          }
-          .bottom-actions .quiz-trigger-btn {
-            background: rgba(245, 158, 11, 0.1) !important;
-            color: #f59e0b !important;
-            border-color: rgba(245, 158, 11, 0.2) !important;
-          }
-          .bottom-actions .quiz-trigger-btn:hover {
-            background: #f59e0b !important;
-            color: white !important;
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
-          }
+
           /* Desktop Filter Preferences Modal - Restored Roomy Size */
           .filter-modal-card {
             width: 90% !important;
@@ -12090,18 +12113,52 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             margin-left: auto !important;
             white-space: nowrap !important;
           }
+          .bottom-actions-btn-group {
+            display: contents !important;
+          }
           .text-mode-actions-right .translate-pill-widget {
-            height: 28px !important;
+            height: 26px !important;
+            max-height: 26px !important;
             padding: 0 4px !important;
+            gap: 3px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            width: auto !important;
+            max-width: 120px !important;
+            flex-shrink: 0 !important;
+            border-radius: 6px !important;
+            box-sizing: border-box !important;
+          }
+          .text-mode-actions-right .translate-pill-widget button,
+          .text-mode-actions-right .translate-toggle-btn {
+            width: auto !important;
+            height: 20px !important;
+            min-height: 20px !important;
+            max-height: 20px !important;
+            padding: 1px 5px !important;
+            font-size: 10px !important;
+            line-height: 1 !important;
+            margin: 0 !important;
+            border-radius: 4px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
             gap: 2px !important;
+            flex-shrink: 0 !important;
+            box-sizing: border-box !important;
           }
-          .text-mode-actions-right .translate-pill-widget button {
-            padding: 2px 4px !important;
+          .text-mode-actions-right .translate-pill-widget select,
+          .text-mode-actions-right .translate-lang-select {
+            height: 20px !important;
+            min-height: 20px !important;
+            max-height: 20px !important;
             font-size: 10px !important;
-          }
-          .text-mode-actions-right .translate-pill-widget select {
-            font-size: 10px !important;
-            max-width: 58px !important;
+            max-width: 52px !important;
+            padding: 0 2px !important;
+            margin: 0 !important;
+            outline: none !important;
+            border: none !important;
+            box-sizing: border-box !important;
           }
           .action-pill-btn {
             width: auto !important;

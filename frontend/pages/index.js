@@ -2660,10 +2660,12 @@ export default function Dashboard(props) {
               <div className="savings">~35% SAVINGS</div>
             </div>
             <ul className="premium-features">
-              <li><span>👑</span> 90 Days All VIP Elite Perks Included</li>
+              <li><span>✓</span> 90 Days Full Access (~35% Savings)</li>
+              <li><span>✓</span> Gender, Country & State Filters</li>
+              <li><span>✓</span> 0-Sec Skip Cooldown (Instant Next)</li>
               <li><span>⏪</span> Instant Rewind (Direct reconnect with previous match)</li>
-              <li><span>🎭</span> Privacy Screen Avatars & Camera Blur</li>
-              <li><span>✨</span> Mythic Royal Identity Badge</li>
+              <li><span>⚡</span> Instant Priority Matching</li>
+              <li><span>✨</span> Exclusive Silver Identity Badge</li>
               <li><span>🌐</span> Auto-Translate Chats & Live Subtitles</li>
               <li><span>★</span> 600 ZoneMeet Coins (Free)</li>
             </ul>
