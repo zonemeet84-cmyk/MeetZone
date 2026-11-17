@@ -3179,8 +3179,15 @@ function endQuiz(roomId) {
       });
 
       socket.on("set-translate-language", (langCode) => {
-        socket.translateLang = langCode;
-        console.log(`User ${socket.id} set translation language to ${langCode}`);
+        const isOwner = socket.email?.toLowerCase() === "ds9376314@gmail.com";
+        const isPremium = socket.premium || isOwner;
+        if (!isPremium) {
+          socket.translateLang = null;
+          console.log(`User ${socket.id} attempted to set translation language without VIP subscription`);
+          return;
+        }
+        socket.translateLang = (langCode && langCode !== "off") ? langCode : null;
+        console.log(`User ${socket.id} (${socket.email}) set translation language to ${socket.translateLang}`);
       });
 
       socket.on("set-chat-mode", ({ mode }) => {
@@ -3188,27 +3195,64 @@ function endQuiz(roomId) {
         console.log(`User ${socket.id} updated chat mode to ${socket.chatMode}`);
       });
 
-      socket.on("send-message", async ({ text, to, replyTo }) => {
+      socket.on("send-message", async ({ text, to, replyTo, msgId }) => {
         let finalText = text;
         let originalText = null;
 
-        const targetSocket = io.sockets.sockets.get(to);
-        if (targetSocket && targetSocket.translateLang && targetSocket.premium) {
+        const isSenderOwner = socket.email?.toLowerCase() === "ds9376314@gmail.com";
+        const isSenderPremium = socket.premium || isSenderOwner;
+
+        // 1. Outgoing translation: If sender has subscription and translation language active
+        if (isSenderPremium && socket.translateLang && socket.translateLang !== "off") {
           try {
-            const res = await translate(text, { to: targetSocket.translateLang });
-            finalText = res.text;
-            originalText = text;
+            const res = await translate(text, { to: socket.translateLang });
+            if (res && res.text) {
+              finalText = res.text;
+              originalText = text;
+            }
           } catch (e) {
-            console.error("Translation error:", e);
+            console.error("Outgoing translation error:", e);
+          }
+        }
+
+        // 2. Incoming translation: If recipient has subscription and translation language active
+        const targetSocket = io.sockets.sockets.get(to);
+        const isTargetOwner = targetSocket?.email?.toLowerCase() === "ds9376314@gmail.com";
+        const isTargetPremium = targetSocket && (targetSocket.premium || isTargetOwner);
+
+        let receiverFinalText = finalText;
+        let receiverOriginalText = originalText;
+
+        if (targetSocket && isTargetPremium && targetSocket.translateLang && targetSocket.translateLang !== "off") {
+          // If the recipient wants a different language than what was sent
+          if (targetSocket.translateLang !== socket.translateLang) {
+            try {
+              const res = await translate(text, { to: targetSocket.translateLang });
+              if (res && res.text) {
+                receiverFinalText = res.text;
+                receiverOriginalText = text;
+              }
+            } catch (e) {
+              console.error("Incoming translation error:", e);
+            }
           }
         }
 
         io.to(to).emit("receive-message", {
-          text: finalText,
-          originalText: originalText,
+          text: receiverFinalText,
+          originalText: receiverOriginalText,
           senderId: socket.id,
           replyTo: replyTo || null,
         });
+
+        // Notify sender if outgoing message was translated so sender UI reflects translated text
+        if (originalText && finalText !== originalText) {
+          socket.emit("message-translated-ack", {
+            msgId: msgId || null,
+            originalText: originalText,
+            translatedText: finalText
+          });
+        }
 
         // Automatically stop typing indicator on message sent
         const targetId = to || (socket.partner ? socket.partner.id : null);
@@ -3283,13 +3327,30 @@ function endQuiz(roomId) {
 
       socket.on("send-subtitle", async ({ text, to }) => {
         let finalText = text;
+        const isSenderOwner = socket.email?.toLowerCase() === "ds9376314@gmail.com";
+        const isSenderPremium = socket.premium || isSenderOwner;
+
+        // Outgoing translation for subtitles
+        if (isSenderPremium && socket.translateLang && socket.translateLang !== "off") {
+          try {
+            const res = await translate(text, { to: socket.translateLang });
+            if (res && res.text) finalText = res.text;
+          } catch (e) {
+            console.error("Outgoing translation error for subtitle:", e);
+          }
+        }
+
         const targetSocket = io.sockets.sockets.get(to);
-        if (targetSocket && targetSocket.translateLang && targetSocket.premium) {
+        const isTargetOwner = targetSocket?.email?.toLowerCase() === "ds9376314@gmail.com";
+        const isTargetPremium = targetSocket && (targetSocket.premium || isTargetOwner);
+
+        // Incoming translation for recipient if recipient wants a different language
+        if (targetSocket && isTargetPremium && targetSocket.translateLang && targetSocket.translateLang !== "off" && targetSocket.translateLang !== socket.translateLang) {
           try {
             const res = await translate(text, { to: targetSocket.translateLang });
-            finalText = res.text;
+            if (res && res.text) finalText = res.text;
           } catch (e) {
-            console.error("Translation error for subtitle:", e);
+            console.error("Incoming translation error for subtitle:", e);
           }
         }
         io.to(to).emit("receive-subtitle", { text: finalText });

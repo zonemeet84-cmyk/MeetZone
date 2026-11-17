@@ -92,6 +92,37 @@ if (typeof window !== "undefined") {
   glassesImg.src = "https://i.imgur.com/YGmkF.png";
 }
 
+const SUPPORTED_TRANSLATE_LANGUAGES = [
+  { code: "en", name: "English" },
+  { code: "hi", name: "Hindi" },
+  { code: "es", name: "Spanish" },
+  { code: "fr", name: "French" },
+  { code: "ar", name: "Arabic" },
+  { code: "zh-cn", name: "Chinese" },
+  { code: "ru", name: "Russian" },
+  { code: "ja", name: "Japanese" },
+  { code: "de", name: "German" },
+  { code: "ko", name: "Korean" },
+  { code: "pt", name: "Portuguese" },
+  { code: "it", name: "Italian" },
+  { code: "tr", name: "Turkish" },
+  { code: "nl", name: "Dutch" },
+  { code: "pl", name: "Polish" },
+  { code: "vi", name: "Vietnamese" },
+  { code: "th", name: "Thai" },
+  { code: "id", name: "Indonesian" },
+  { code: "bn", name: "Bengali" },
+  { code: "sv", name: "Swedish" },
+  { code: "da", name: "Danish" },
+  { code: "fi", name: "Finnish" },
+  { code: "no", name: "Norwegian" },
+  { code: "cs", name: "Czech" },
+  { code: "el", name: "Greek" },
+  { code: "he", name: "Hebrew" },
+  { code: "ro", name: "Romanian" },
+  { code: "hu", name: "Hungarian" }
+];
+
 const MATCHMAKING_TIPS = [
   { icon: "🐒", text: "Scanning for active friendly people right now...", tag: "Matchmaking" },
   { icon: "🌍", text: "Connecting you with people in 190+ countries...", tag: "Global" },
@@ -728,27 +759,41 @@ export default function Home(props) {
   }, []);
 
   const handleTranslateChange = (e) => {
+    if (!canUsePrimeFilters(user) && user?.email !== "ds9376314@gmail.com") {
+      setShowPricingModal(true);
+      showToast("✨ Auto-Translate is a VIP feature. Subscribe to unlock real-time incoming & outgoing translation!", "info");
+      return;
+    }
     const lang = e.target.value;
     setTranslateLang(lang);
     localStorage.setItem("translateLang", lang);
+    const langName = SUPPORTED_TRANSLATE_LANGUAGES.find(l => l.code === lang)?.name || lang.toUpperCase();
+    showToast(`🌐 Translate language: ${langName}`, "info");
   };
 
   const toggleTranslate = () => {
+    if (!canUsePrimeFilters(user) && user?.email !== "ds9376314@gmail.com") {
+      setShowPricingModal(true);
+      showToast("✨ Auto-Translate is a VIP feature. Subscribe to unlock real-time incoming & outgoing translation!", "info");
+      return;
+    }
     const newVal = !translateEnabled;
     setTranslateEnabled(newVal);
     localStorage.setItem("translateEnabled", newVal);
+    showToast(newVal ? `🌐 Auto-Translate ON (${translateLang === "off" ? "EN" : translateLang.toUpperCase()})` : "🌐 Auto-Translate OFF", "info");
   };
 
   useEffect(() => {
     if (socket) {
-      if (translateEnabled) {
+      const isSubscribed = canUsePrimeFilters(user) || user?.email === "ds9376314@gmail.com";
+      if (translateEnabled && isSubscribed) {
         const langToSend = translateLang === "off" ? "en" : translateLang;
         socket.emit("set-translate-language", langToSend);
       } else {
         socket.emit("set-translate-language", null);
       }
     }
-  }, [translateEnabled, translateLang]);
+  }, [translateEnabled, translateLang, user]);
 
   const fetchHistory = async () => {
     try {
@@ -2234,16 +2279,18 @@ export default function Home(props) {
           socket.emit("set-profile", guestProfile);
         }
 
-        // Send translate lang on connect if set
+        // Send translate lang on connect if set and user has VIP subscription
         const savedLang = localStorage.getItem("translateLang") || "off";
         const savedEnabled = localStorage.getItem("translateEnabled") === "true";
-        if (savedEnabled) {
+        const isSubscribed = canUsePrimeFilters(user) || user?.email === "ds9376314@gmail.com";
+        if (savedEnabled && isSubscribed) {
           const langToSend = savedLang === "off" ? "en" : savedLang;
           socket.emit("set-translate-language", langToSend);
         } else {
           socket.emit("set-translate-language", null);
         }
         setTranslateLang(savedLang);
+        setTranslateEnabled(savedEnabled && isSubscribed);
       });
 
       socket.on("friend-request-received", ({ fromName }) => {
@@ -2452,6 +2499,22 @@ export default function Home(props) {
           setTimeout(() => {
             setCurrentSubtitle(prev => prev === `💬 ${text}` ? "" : prev);
           }, 6000);
+        }
+      });
+
+      socket.on("message-translated-ack", ({ msgId, originalText, translatedText }) => {
+        setMessages((prev) => prev.map((m) => {
+          if ((msgId && m.id === msgId) || (m.sender === "me" && m.text === originalText && !m.originalText)) {
+            return {
+              ...m,
+              text: translatedText,
+              originalText: originalText
+            };
+          }
+          return m;
+        }));
+        if (typeof window !== 'undefined' && window.innerWidth < 768) {
+          setCurrentSubtitle(`You: ${translatedText}`);
         }
       });
 
@@ -3180,13 +3243,17 @@ export default function Home(props) {
         isPhoto: !!replyingTo.isPhoto
       } : null;
 
+      const clientMsgId = "msg_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
+
       socket.emit("send-message", { 
         text: message, 
         to: partnerId,
-        replyTo: currentReply
+        replyTo: currentReply,
+        msgId: clientMsgId
       });
 
       setMessages((prev) => [...prev, { 
+        id: clientMsgId,
         text: message, 
         sender: "me",
         replyTo: currentReply
@@ -3226,11 +3293,12 @@ export default function Home(props) {
       });
 
       if (res.data.success) {
-        socket.emit("send-message", { text: pendingText, to: partnerId });
+        const clientMsgId = "msg_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
+        socket.emit("send-message", { text: pendingText, to: partnerId, msgId: clientMsgId });
         setMessages((prev) => {
           // Remove the prompt message
           const filtered = prev.filter(m => m.type !== 'coin-prompt');
-          return [...filtered, { text: pendingText, sender: "me" }];
+          return [...filtered, { id: clientMsgId, text: pendingText, sender: "me" }];
         });
         if (typeof window !== 'undefined' && window.innerWidth < 768) {
           setCurrentSubtitle(`You: ${pendingText}`);
@@ -4450,6 +4518,54 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                       </button>
                     </>
                   )}
+                  {/* AUTO-TRANSLATE WIDGET (TEXT MODE) */}
+                  <div className="translate-pill-widget" title={canUsePrimeFilters(user) || user?.email === "ds9376314@gmail.com" ? "Auto-Translate (Outgoing & Incoming)" : "Upgrade to VIP to unlock Auto-Translate"}>
+                    <button 
+                      onClick={toggleTranslate}
+                      type="button"
+                      className="translate-toggle-btn"
+                      style={{
+                        background: translateEnabled ? '#10b981' : (canUsePrimeFilters(user) || user?.email === "ds9376314@gmail.com" ? '#475569' : 'rgba(245, 158, 11, 0.25)'),
+                        color: translateEnabled ? '#fff' : (canUsePrimeFilters(user) || user?.email === "ds9376314@gmail.com" ? '#fff' : '#fbbf24'),
+                        border: !canUsePrimeFilters(user) && user?.email !== "ds9376314@gmail.com" ? '1px solid rgba(245, 158, 11, 0.45)' : 'none',
+                        borderRadius: '6px',
+                        padding: '4px 7px',
+                        fontSize: '11px',
+                        cursor: 'pointer',
+                        fontWeight: '700',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '3px',
+                        lineHeight: '1'
+                      }}
+                    >
+                      <span style={{ fontSize: '12px' }}>🌐</span>
+                      <span>{translateEnabled ? 'ON' : (canUsePrimeFilters(user) || user?.email === "ds9376314@gmail.com" ? 'OFF' : '🔒 VIP')}</span>
+                    </button>
+                    <select 
+                      value={translateLang === "off" ? "en" : translateLang} 
+                      onChange={handleTranslateChange}
+                      disabled={!translateEnabled || (!canUsePrimeFilters(user) && user?.email !== "ds9376314@gmail.com")}
+                      className="translate-lang-select"
+                      style={{ 
+                        background: 'transparent', 
+                        color: '#fff', 
+                        border: 'none', 
+                        fontSize: '11px', 
+                        outline: 'none', 
+                        cursor: translateEnabled ? 'pointer' : 'not-allowed', 
+                        opacity: translateEnabled ? 1 : 0.4,
+                        maxWidth: '75px'
+                      }}
+                    >
+                      {SUPPORTED_TRANSLATE_LANGUAGES.map(lang => (
+                        <option key={lang.code} value={lang.code} style={{ background: '#1e293b', color: '#fff' }}>
+                          {lang.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <button 
                     className="action-pill-btn prefs-round-btn"
                     onClick={() => {
@@ -4585,9 +4701,9 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
                           ) : (
                             <span>{msg.text}</span>
                           )}
-                          {msg.translated && (
-                            <div className="translated-subtext">
-                              Translated: {msg.translated}
+                          {msg.originalText && msg.originalText !== msg.text && (
+                            <div className="translated-subtext" style={{ fontSize: '0.72em', color: '#94a3b8', marginTop: '4px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2px', fontStyle: 'italic' }}>
+                              Original: {msg.originalText}
                             </div>
                           )}
                         </div>
@@ -5744,68 +5860,50 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             <div className="chat-box-header">
               <h3>Live Chat</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                {canUsePrimeFilters(user) && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '8px' }}>
-                    <button 
-                      onClick={toggleTranslate}
-                      type="button"
-                      title="Toggle Auto-Translate"
-                      style={{
-                        background: translateEnabled ? '#10b981' : '#64748b',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        padding: '3px 6px',
-                        fontSize: '11px',
-                        cursor: 'pointer',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      {translateEnabled ? 'ON' : 'OFF'}
-                    </button>
-                    <select 
-                      value={translateLang === "off" ? "en" : translateLang} 
-                      onChange={handleTranslateChange}
-                      disabled={!translateEnabled}
-                      style={{ background: 'transparent', color: '#fff', border: 'none', fontSize: '12px', outline: 'none', cursor: translateEnabled ? 'pointer' : 'not-allowed', opacity: translateEnabled ? 1 : 0.5 }}
-                    >
-                      {[
-                        { code: "en", name: "English" },
-                        { code: "hi", name: "Hindi" },
-                        { code: "es", name: "Spanish" },
-                        { code: "fr", name: "French" },
-                        { code: "ar", name: "Arabic" },
-                        { code: "zh-cn", name: "Chinese" },
-                        { code: "ru", name: "Russian" },
-                        { code: "ja", name: "Japanese" },
-                        { code: "de", name: "German" },
-                        { code: "ko", name: "Korean" },
-                        { code: "pt", name: "Portuguese" },
-                        { code: "it", name: "Italian" },
-                        { code: "tr", name: "Turkish" },
-                        { code: "nl", name: "Dutch" },
-                        { code: "pl", name: "Polish" },
-                        { code: "vi", name: "Vietnamese" },
-                        { code: "th", name: "Thai" },
-                        { code: "id", name: "Indonesian" },
-                        { code: "bn", name: "Bengali" },
-                        { code: "sv", name: "Swedish" },
-                        { code: "da", name: "Danish" },
-                        { code: "fi", name: "Finnish" },
-                        { code: "no", name: "Norwegian" },
-                        { code: "cs", name: "Czech" },
-                        { code: "el", name: "Greek" },
-                        { code: "he", name: "Hebrew" },
-                        { code: "ro", name: "Romanian" },
-                        { code: "hu", name: "Hungarian" }
-                      ].map(lang => (
-                        <option key={lang.code} value={lang.code} style={{ background: '#1e293b', color: '#fff' }}>
-                          {lang.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
+                <div className="translate-pill-widget" title={canUsePrimeFilters(user) || user?.email === "ds9376314@gmail.com" ? "Auto-Translate (Outgoing & Incoming)" : "Upgrade to VIP to unlock Auto-Translate"} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', padding: '2px 6px', borderRadius: '8px' }}>
+                  <button 
+                    onClick={toggleTranslate}
+                    type="button"
+                    title={canUsePrimeFilters(user) || user?.email === "ds9376314@gmail.com" ? "Toggle Auto-Translate" : "Upgrade to VIP to unlock Auto-Translate"}
+                    style={{
+                      background: translateEnabled ? '#10b981' : (canUsePrimeFilters(user) || user?.email === "ds9376314@gmail.com" ? '#475569' : 'rgba(245, 158, 11, 0.25)'),
+                      color: translateEnabled ? '#fff' : (canUsePrimeFilters(user) || user?.email === "ds9376314@gmail.com" ? '#fff' : '#fbbf24'),
+                      border: !canUsePrimeFilters(user) && user?.email !== "ds9376314@gmail.com" ? '1px solid rgba(245, 158, 11, 0.45)' : 'none',
+                      borderRadius: '4px',
+                      padding: '3px 7px',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '3px'
+                    }}
+                  >
+                    <span>🌐</span>
+                    <span>{translateEnabled ? 'ON' : (canUsePrimeFilters(user) || user?.email === "ds9376314@gmail.com" ? 'OFF' : '🔒 VIP')}</span>
+                  </button>
+                  <select 
+                    value={translateLang === "off" ? "en" : translateLang} 
+                    onChange={handleTranslateChange}
+                    disabled={!translateEnabled || (!canUsePrimeFilters(user) && user?.email !== "ds9376314@gmail.com")}
+                    style={{ 
+                      background: 'transparent', 
+                      color: '#fff', 
+                      border: 'none', 
+                      fontSize: '12px', 
+                      outline: 'none', 
+                      cursor: translateEnabled ? 'pointer' : 'not-allowed', 
+                      opacity: translateEnabled ? 1 : 0.4,
+                      maxWidth: '85px'
+                    }}
+                  >
+                    {SUPPORTED_TRANSLATE_LANGUAGES.map(lang => (
+                      <option key={lang.code} value={lang.code} style={{ background: '#1e293b', color: '#fff' }}>
+                        {lang.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
             <div className="chat-box-messages">
@@ -7041,6 +7139,23 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
         }
         .skip-pill-btn:hover {
           box-shadow: 0 6px 18px rgba(0, 242, 254, 0.45) !important;
+        }
+        .translate-pill-widget {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          padding: 2px 7px;
+          border-radius: 8px;
+          flex-shrink: 0;
+          box-sizing: border-box;
+          height: 32px;
+          transition: all 0.2s ease;
+        }
+        .translate-pill-widget:hover {
+          border-color: rgba(255, 255, 255, 0.25);
+          background: rgba(255, 255, 255, 0.09);
         }
         .stop-pill-btn {
           background: rgba(239, 68, 68, 0.15) !important;
@@ -12162,6 +12277,19 @@ registerProcessor('pitch-shifter-processor', PitchShifterProcessor);
             flex-shrink: 0 !important;
             margin-left: auto !important;
             white-space: nowrap !important;
+          }
+          .text-mode-actions-right .translate-pill-widget {
+            height: 28px !important;
+            padding: 0 4px !important;
+            gap: 2px !important;
+          }
+          .text-mode-actions-right .translate-pill-widget button {
+            padding: 2px 4px !important;
+            font-size: 10px !important;
+          }
+          .text-mode-actions-right .translate-pill-widget select {
+            font-size: 10px !important;
+            max-width: 58px !important;
           }
           .action-pill-btn {
             width: auto !important;
